@@ -4,9 +4,12 @@
 #include "gen/TSqlParserBaseListener.h"
 
 class ListenerInterface : public TSqlParserBaseListener {
+private:
+        std::vector<std::string> _rule_names;
 public:
-    void enterEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
-    void exitEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
+        ListenerInterface(const std::vector<std::string>&);
+        void enterEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
+        void exitEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
 };
 
 

@@ -1,5 +1,6 @@
 SUBDIRS = gen
 
 AM_CPPFLAGS = -I/data/user/jason/include/antlr4-runtime
-lib_LTLIBRARIES = libfql.la
-libfql_la_SOURCES = upperstream.h upperstream.cpp errorlistener.h errorlistener.cpp 
+noinst_LTLIBRARIES = libantlr.la
+libantlr_la_SOURCES = upperstream.h upperstream.cpp errorlistener.h errorlistener.cpp listenerinterface.h listenerinterface.cpp antlr.h antlr.cpp
+libantlr_la_LIBADD = gen/libgen.la
