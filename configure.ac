@@ -2,13 +2,16 @@ AC_INIT([fql], [1.0])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])
-AM_CFLAGS="-g -O0 -fsanitize=address -Wall"
 
 AM_PROG_AR
 LT_INIT
 AC_PROG_CC
+AC_PROG_CXX
+
+#AC_CHECK_HEADER([antlr4-runtime.h])
+
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile lib/docs/Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile lib/antlr/Makefile lib/antlr/gen/Makefile src/Makefile lib/docs/Makefile])
 
 # Check
 AC_ARG_WITH([check],
