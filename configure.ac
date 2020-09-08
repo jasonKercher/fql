@@ -11,7 +11,7 @@ AC_PROG_CXX
 #AC_CHECK_HEADER([antlr4-runtime.h])
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile lib/Makefile lib/antlr/Makefile lib/antlr/gen/Makefile src/Makefile lib/docs/Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile lib/antlr/Makefile lib/antlr/gen/Makefile lib/util/Makefile lib/docs/Makefile src/Makefile ])
 
 # Check
 AC_ARG_WITH([check],

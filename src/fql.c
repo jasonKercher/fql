@@ -4,14 +4,6 @@
 #include <time.h>
 #include <getopt.h>
 #include <stdio.h>
-//#include <antlr4-runtime.h>
-
-//#include "analyzer.h"
-//#include "listener.h"
-//#include "antlr/TSqlLexer.h"
-//#include "antlr/ErrorListener.h"
-//#include "antlr/UpperStream.h"
-//#include "antlr/TSqlParser.h"
 
 #include <readline/readline.h>
 
