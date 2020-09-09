@@ -3,44 +3,35 @@
 #include <unistd.h>
 #include <time.h>
 #include <getopt.h>
+#include <string.h>
 #include <stdio.h>
 
 #include <readline/readline.h>
 
 #include "fql.h"
-#include "util.h"
-
-struct properties {
-        char in_delim[32];
-        char out_delim[32];
-        int verbose;
-        int dry_run;
-        int override_warnings;
-};
 
 static const char* help_string = "\n No Help here !\n\n";
 
-void parseargs(char c, struct properties* props)
+void parseargs(char c)
 {
         switch (c) {
         case 'h':
                 puts(help_string);
                 exit(0);
         case 'v':
-                props->verbose = TRUE;
+                fql_set_verbose(1);
                 break;
         case 'O':
-                props->override_warnings = TRUE;
+                fql_set_override_warnings(1);
                 break;
         case 'D':
-                props->dry_run = TRUE;
-                props->verbose = TRUE;
+                fql_set_dry_run(1);
                 break;
         case 's':
-                strncpy_(props->in_delim, optarg, 32);
+                fql_set_in_delim(optarg);
                 break;
         case 'S':
-                strncpy_(props->out_delim, optarg, 32);
+                fql_set_out_delim(optarg);
                 break;
         default:
                 abort();
@@ -65,15 +56,9 @@ int main (int argc, char **argv)
         sigaction(SIGTERM, &act, NULL);
         sigaction(SIGHUP, &act, NULL);
 
-        struct properties props = {
-                 ""
-                ,""
-                ,FALSE
-                ,FALSE
-                ,FALSE
-        };
-
         int c = 0;
+
+        fql_init();
 
         static struct option long_options[] =
         {
@@ -92,7 +77,7 @@ int main (int argc, char **argv)
 
         while ( (c = getopt_long (argc, argv, "hvODs:S:",
                                         long_options, &option_index)) != -1)
-                        parseargs(c, &props);
+                        parseargs(c);
 
 
         char query[1024] = "";
@@ -109,14 +94,14 @@ int main (int argc, char **argv)
                                 sprintf(query, "%s\n%s", query, line);
                         else
                                 break;
-                } while(TRUE);
+                } while(1);
         } else {
                 size_t n = 0;
                 while(getline(&line, &n, stdin) != -1)
                         strcat(query, line);
         }
 
-        int ret = execute_query(query);
+        int ret = fql_exec(query);
 
         free(line);
 

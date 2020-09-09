@@ -13,6 +13,8 @@ struct queue {
         struct queue* next;
 };
 
+typedef struct queue queue_t;
+
 struct queue* queue_push(struct queue** head, void*);
 void* queue_remove(struct queue** head, struct queue*);
 void queue_delete(struct queue** head, struct queue*);

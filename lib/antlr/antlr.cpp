@@ -3,7 +3,9 @@
 #include "listenerinterface.h"
 #include "errorlistener.h"
 
-int analyze_query(const char* query_str)
+#include "../plan.h"
+
+int analyze_query(plan_t* plan, const char* query_str)
 {
 
         UpperStream input(query_str);
@@ -35,7 +37,7 @@ int analyze_query(const char* query_str)
 
         std::vector<std::string> rule_names = parser.getRuleNames();
 
-        ListenerInterface analyzer(rule_names);
+        ListenerInterface analyzer(plan, rule_names);
 
         antlr4::tree::ParseTreeWalker::DEFAULT.walk(&analyzer, tree);
 
