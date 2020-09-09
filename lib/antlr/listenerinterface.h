@@ -8,11 +8,11 @@ class ListenerInterface : public TSqlParserBaseListener {
 private:
         std::vector<std::string> _error_tokens;
         std::vector<std::string> _rule_names;
-        plan_t* _plan;
+        queue_t** _plans;
 
         void _no_impl(const std::string&, int);
 public:
-        ListenerInterface(plan_t*, const std::vector<std::string>&);
+        ListenerInterface(queue_t**, const std::vector<std::string>&);
         void enterEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
         void exitEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
 

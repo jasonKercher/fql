@@ -3,20 +3,27 @@
 
 #include "util/queue.h"
 
-struct process {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct process_t {
         char name[128];
         char item[128];
         char description[512];
 };
 
-typedef struct process process_t;
+typedef struct process_t process_t;
 
 
-struct plan {
+struct plan_t {
         queue_t* process_queue;
 };
 
-typedef struct plan plan_t;
+typedef struct plan_t plan_t;
 
-
+#ifdef __cplusplus
+}
 #endif
+
+#endif /* PLAN_H */

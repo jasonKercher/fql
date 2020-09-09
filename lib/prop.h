@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-struct props {
+struct props_t {
         char in_delim[32];
         char out_delim[32];
         int verbose;
@@ -13,7 +13,7 @@ struct props {
         int override_warnings;
 };
 
-typedef struct props props_t;
+typedef struct props_t props_t;
 
 props_t g_props;
 
@@ -25,4 +25,4 @@ extern props_t g_props;
 
 void prop_init();
 
-#endif
+#endif /* PROP_H */

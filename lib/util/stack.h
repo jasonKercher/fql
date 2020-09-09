@@ -7,22 +7,22 @@
  * Doubly-linked list that can be treated as a
  * stack (pop) or a stack (destack)
  */
-struct stack {
+struct stack_t {
         void* data;
-        struct stack* prev;
-        struct stack* next;
+        struct stack_t* prev;
+        struct stack_t* next;
 };
 
-typedef struct stack stack_t;
+typedef struct stack_t stack_t;
 
-struct stack* stack_push(struct stack** head, void*);
-void* stack_remove(struct stack** head, struct stack*);
-void stack_delete(struct stack** head, struct stack*);
-void* stack_pop(struct stack** head);
-struct stack* stack_top(struct stack* node);
-struct stack* stack_bottom(struct stack* node);
-int stack_count(struct stack* head);
-void stack_free_data(struct stack* head);
-void stack_free(struct stack* head);
+stack_t* stack_push(stack_t** head, void*);
+void* stack_remove(stack_t** head, stack_t*);
+void stack_delete(stack_t** head, stack_t*);
+void* stack_pop(stack_t** head);
+stack_t* stack_top(stack_t* node);
+stack_t* stack_bottom(stack_t* node);
+int stack_count(stack_t* head);
+void stack_free_data(stack_t* head);
+void stack_free(stack_t* head);
 
 #endif /* STACK_H */

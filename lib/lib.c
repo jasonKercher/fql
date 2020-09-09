@@ -51,9 +51,9 @@ void fql_set_out_delim(const char* delim)
 
 int fql_exec(const char* query_str)
 {
-        plan_t plan = { NULL };
+        queue_t* plans = NULL;
 
-        analyze_query(&plan, query_str);
+        analyze_query(&plans, query_str);
 
         return 0;
 }

@@ -2,45 +2,10 @@
 #include "prop.h"
 #include "util/util.h"
 
-ListenerInterface::ListenerInterface(plan_t* plan, const std::vector<std::string>& rules)
+ListenerInterface::ListenerInterface(queue_t** plans, const std::vector<std::string>& rules)
 {
         _rule_names = rules;
-        _plan = plan;
-}
-
-void ListenerInterface::enterEveryRule(antlr4::ParserRuleContext * ctx)
-{
-        if(g_props.verbose)
-                std::cerr << "ENTER: " << _rule_names[ctx->getRuleIndex()] << " : " << ctx->getText() << std::endl;
-
-        if(_error_tokens.size() > 0)
-        {
-                std::cerr << "The following keyword is currently not supported:\n";
-                std::cerr << _error_tokens[0];
-                _error_tokens.pop_back();
-
-                if(g_props.override_warnings) {
-                        std::cerr << "\nCAUTION: Overriding the above warnings! Results may be incorrect!\n";
-                } else {
-                        std::cerr << "\nTerminated: Use -O to Override at your own risk.\n";
-                        exit(EXIT_FAILURE);
-                }
-        }
-}
-
-void ListenerInterface::exitEveryRule(antlr4::ParserRuleContext * ctx)
-{
-        if(g_props.verbose)
-                std::cerr << "EXIT:  " << _rule_names[ctx->getRuleIndex()] << " : " << ctx->getText() << std::endl;
-}
-
-/**
- * Not Implemented
- */
-
-void ListenerInterface::_no_impl(const std::string& text, int rule_idx)
-{
-        _error_tokens.push_back(text + " ( " + _rule_names[rule_idx] + " )");
+        _plans = plans;
 }
 
 void ListenerInterface::enterSelect_list(TSqlParser::Select_listContext * ctx) { }
@@ -174,6 +139,15 @@ void ListenerInterface::exitQuery_expression(TSqlParser::Query_expressionContext
 
 void ListenerInterface::enterQuery_specification(TSqlParser::Query_specificationContext * ctx) { }
 void ListenerInterface::exitQuery_specification(TSqlParser::Query_specificationContext * ctx) { }
+
+/**
+ * Not Implemented
+ */
+
+void ListenerInterface::_no_impl(const std::string& text, int rule_idx)
+{
+        _error_tokens.push_back(text + " ( " + _rule_names[rule_idx] + " )");
+}
 
 void ListenerInterface::enterDdl_clause(TSqlParser::Ddl_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitDdl_clause(TSqlParser::Ddl_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
@@ -1581,3 +1555,33 @@ void ListenerInterface::exitAssignment_operator(TSqlParser::Assignment_operatorC
 
 void ListenerInterface::enterFile_size(TSqlParser::File_sizeContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitFile_size(TSqlParser::File_sizeContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
+
+
+/* Every Rule Operations */
+
+void ListenerInterface::enterEveryRule(antlr4::ParserRuleContext * ctx)
+{
+        if(g_props.verbose)
+                std::cerr << "ENTER: " << _rule_names[ctx->getRuleIndex()] << " : " << ctx->getText() << std::endl;
+
+        if(_error_tokens.size() > 0)
+        {
+                std::cerr << "The following keyword is currently not supported:\n";
+                std::cerr << _error_tokens[0];
+                _error_tokens.pop_back();
+
+                if(g_props.override_warnings) {
+                        std::cerr << "\nCAUTION: Overriding the above warnings! Results may be incorrect!\n";
+                } else {
+                        std::cerr << "\nTerminated: Use -O to Override at your own risk.\n";
+                        exit(EXIT_FAILURE);
+                }
+        }
+}
+
+void ListenerInterface::exitEveryRule(antlr4::ParserRuleContext * ctx)
+{
+        if(g_props.verbose)
+                std::cerr << "EXIT:  " << _rule_names[ctx->getRuleIndex()] << " : " << ctx->getText() << std::endl;
+}
+
