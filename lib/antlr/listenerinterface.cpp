@@ -43,20 +43,137 @@ void ListenerInterface::_no_impl(const std::string& text, int rule_idx)
         _error_tokens.push_back(text + " ( " + _rule_names[rule_idx] + " )");
 }
 
-void ListenerInterface::enterTsql_file(TSqlParser::Tsql_fileContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitTsql_file(TSqlParser::Tsql_fileContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
+void ListenerInterface::enterSelect_list(TSqlParser::Select_listContext * ctx) { }
+void ListenerInterface::exitSelect_list(TSqlParser::Select_listContext * ctx) { }
 
-void ListenerInterface::enterBatch(TSqlParser::BatchContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitBatch(TSqlParser::BatchContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
+void ListenerInterface::enterAsterisk(TSqlParser::AsteriskContext * ctx) { }
+void ListenerInterface::exitAsterisk(TSqlParser::AsteriskContext * ctx) { }
 
-void ListenerInterface::enterSql_clauses(TSqlParser::Sql_clausesContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
+void ListenerInterface::enterColumn_elem(TSqlParser::Column_elemContext * ctx) { }
+void ListenerInterface::exitColumn_elem(TSqlParser::Column_elemContext * ctx) { }
 
-void ListenerInterface::enterSql_clause(TSqlParser::Sql_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSql_clause(TSqlParser::Sql_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
+void ListenerInterface::enterExpression_elem(TSqlParser::Expression_elemContext * ctx) { }
+void ListenerInterface::exitExpression_elem(TSqlParser::Expression_elemContext * ctx) { }
 
-void ListenerInterface::enterDml_clause(TSqlParser::Dml_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitDml_clause(TSqlParser::Dml_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
+void ListenerInterface::enterSelect_list_elem(TSqlParser::Select_list_elemContext * ctx) { }
+void ListenerInterface::exitSelect_list_elem(TSqlParser::Select_list_elemContext * ctx) { }
+
+void ListenerInterface::enterTable_sources(TSqlParser::Table_sourcesContext * ctx) { }
+void ListenerInterface::exitTable_sources(TSqlParser::Table_sourcesContext * ctx) { }
+
+void ListenerInterface::enterTable_source(TSqlParser::Table_sourceContext * ctx) { }
+void ListenerInterface::exitTable_source(TSqlParser::Table_sourceContext * ctx) { }
+
+void ListenerInterface::enterTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
+void ListenerInterface::exitTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
+
+void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemContext * ctx) { }
+void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx) { }
+
+void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx) { }
+void ListenerInterface::exitJoin_part(TSqlParser::Join_partContext * ctx) { }
+
+void ListenerInterface::enterTable_name_with_hint(TSqlParser::Table_name_with_hintContext * ctx) { }
+void ListenerInterface::exitTable_name_with_hint(TSqlParser::Table_name_with_hintContext * ctx) { }
+
+void ListenerInterface::enterDerived_table(TSqlParser::Derived_tableContext * ctx) { }
+void ListenerInterface::exitDerived_table(TSqlParser::Derived_tableContext * ctx) { }
+
+void ListenerInterface::enterAs_column_alias(TSqlParser::As_column_aliasContext * ctx) { }
+void ListenerInterface::exitAs_column_alias(TSqlParser::As_column_aliasContext * ctx) { }
+
+void ListenerInterface::enterAs_table_alias(TSqlParser::As_table_aliasContext * ctx) { }
+void ListenerInterface::exitAs_table_alias(TSqlParser::As_table_aliasContext * ctx) { }
+
+void ListenerInterface::enterTable_alias(TSqlParser::Table_aliasContext * ctx) { }
+void ListenerInterface::exitTable_alias(TSqlParser::Table_aliasContext * ctx) { }
+
+void ListenerInterface::enterExpression_list(TSqlParser::Expression_listContext * ctx) { }
+void ListenerInterface::exitExpression_list(TSqlParser::Expression_listContext * ctx) { }
+
+void ListenerInterface::enterTable_name(TSqlParser::Table_nameContext * ctx) { }
+void ListenerInterface::exitTable_name(TSqlParser::Table_nameContext * ctx) { }
+
+void ListenerInterface::enterFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * ctx) { }
+void ListenerInterface::exitFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * ctx) { }
+
+void ListenerInterface::enterFunc_proc_name_database_schema(TSqlParser::Func_proc_name_database_schemaContext * ctx) { }
+void ListenerInterface::exitFunc_proc_name_database_schema(TSqlParser::Func_proc_name_database_schemaContext * ctx) { }
+
+void ListenerInterface::enterFunc_proc_name_server_database_schema(TSqlParser::Func_proc_name_server_database_schemaContext * ctx) { }
+void ListenerInterface::exitFunc_proc_name_server_database_schema(TSqlParser::Func_proc_name_server_database_schemaContext * ctx) { }
+
+void ListenerInterface::enterFull_column_name(TSqlParser::Full_column_nameContext * ctx) { }
+void ListenerInterface::exitFull_column_name(TSqlParser::Full_column_nameContext * ctx) { }
+
+void ListenerInterface::enterNull_notnull(TSqlParser::Null_notnullContext * ctx) { }
+void ListenerInterface::exitNull_notnull(TSqlParser::Null_notnullContext * ctx) { }
+
+void ListenerInterface::enterTsql_file(TSqlParser::Tsql_fileContext * ctx) { }
+void ListenerInterface::exitTsql_file(TSqlParser::Tsql_fileContext * ctx) { }
+
+void ListenerInterface::enterBatch(TSqlParser::BatchContext * ctx) { }
+void ListenerInterface::exitBatch(TSqlParser::BatchContext * ctx) { }
+
+void ListenerInterface::enterSql_clauses(TSqlParser::Sql_clausesContext * ctx) { }
+void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext * ctx) { }
+
+void ListenerInterface::enterSql_clause(TSqlParser::Sql_clauseContext * ctx) { }
+void ListenerInterface::exitSql_clause(TSqlParser::Sql_clauseContext * ctx) { }
+
+void ListenerInterface::enterDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
+void ListenerInterface::exitDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
+
+void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx) { }
+void ListenerInterface::exitConstant(TSqlParser::ConstantContext * ctx) { }
+
+void ListenerInterface::enterSign(TSqlParser::SignContext * ctx) { }
+void ListenerInterface::exitSign(TSqlParser::SignContext * ctx) { }
+
+void ListenerInterface::enterId(TSqlParser::IdContext * ctx) { }
+void ListenerInterface::exitId(TSqlParser::IdContext * ctx) { }
+
+void ListenerInterface::enterSimple_id(TSqlParser::Simple_idContext * ctx) { }
+void ListenerInterface::exitSimple_id(TSqlParser::Simple_idContext * ctx) { }
+
+void ListenerInterface::enterComparison_operator(TSqlParser::Comparison_operatorContext * ctx) { }
+void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorContext * ctx) { }
+
+void ListenerInterface::enterSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) { }
+void ListenerInterface::exitSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) { }
+
+void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContext * ctx) { }
+void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx) { }
+
+void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx) { }
+void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx) { }
+
+void ListenerInterface::enterPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { }
+void ListenerInterface::exitPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { }
+
+void ListenerInterface::enterBracket_expression(TSqlParser::Bracket_expressionContext * ctx) { }
+void ListenerInterface::exitBracket_expression(TSqlParser::Bracket_expressionContext * ctx) { }
+
+void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx) { }
+void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx) { }
+
+void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContext * ctx) { }
+void ListenerInterface::exitSearch_condition(TSqlParser::Search_conditionContext * ctx) { }
+
+void ListenerInterface::enterSearch_condition_and(TSqlParser::Search_condition_andContext * ctx) { }
+void ListenerInterface::exitSearch_condition_and(TSqlParser::Search_condition_andContext * ctx) { }
+
+void ListenerInterface::enterSearch_condition_not(TSqlParser::Search_condition_notContext * ctx) { }
+void ListenerInterface::exitSearch_condition_not(TSqlParser::Search_condition_notContext * ctx) { }
+
+void ListenerInterface::enterPredicate(TSqlParser::PredicateContext * ctx) { }
+void ListenerInterface::exitPredicate(TSqlParser::PredicateContext * ctx) { }
+
+void ListenerInterface::enterQuery_expression(TSqlParser::Query_expressionContext * ctx) { }
+void ListenerInterface::exitQuery_expression(TSqlParser::Query_expressionContext * ctx) { }
+
+void ListenerInterface::enterQuery_specification(TSqlParser::Query_specificationContext * ctx) { }
+void ListenerInterface::exitQuery_specification(TSqlParser::Query_specificationContext * ctx) { }
 
 void ListenerInterface::enterDdl_clause(TSqlParser::Ddl_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitDdl_clause(TSqlParser::Ddl_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
@@ -709,9 +826,6 @@ void ListenerInterface::exitInsert_statement_value(TSqlParser::Insert_statement_
 void ListenerInterface::enterReceive_statement(TSqlParser::Receive_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitReceive_statement(TSqlParser::Receive_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
-void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
 void ListenerInterface::enterTime(TSqlParser::TimeContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitTime(TSqlParser::TimeContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
@@ -1132,26 +1246,14 @@ void ListenerInterface::exitSet_special(TSqlParser::Set_specialContext * ctx) { 
 void ListenerInterface::enterConstant_LOCAL_ID(TSqlParser::Constant_LOCAL_IDContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitConstant_LOCAL_ID(TSqlParser::Constant_LOCAL_IDContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
-void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
 void ListenerInterface::enterCase_expression(TSqlParser::Case_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitCase_expression(TSqlParser::Case_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
 void ListenerInterface::enterUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
-void ListenerInterface::enterBracket_expression(TSqlParser::Bracket_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitBracket_expression(TSqlParser::Bracket_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
 void ListenerInterface::enterConstant_expression(TSqlParser::Constant_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitConstant_expression(TSqlParser::Constant_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
 void ListenerInterface::enterWith_expression(TSqlParser::With_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitWith_expression(TSqlParser::With_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
@@ -1165,26 +1267,8 @@ void ListenerInterface::exitUpdate_elem(TSqlParser::Update_elemContext * ctx) { 
 void ListenerInterface::enterSearch_condition_list(TSqlParser::Search_condition_listContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitSearch_condition_list(TSqlParser::Search_condition_listContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
-void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSearch_condition(TSqlParser::Search_conditionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterSearch_condition_and(TSqlParser::Search_condition_andContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSearch_condition_and(TSqlParser::Search_condition_andContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterSearch_condition_not(TSqlParser::Search_condition_notContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSearch_condition_not(TSqlParser::Search_condition_notContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterPredicate(TSqlParser::PredicateContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitPredicate(TSqlParser::PredicateContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterQuery_expression(TSqlParser::Query_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitQuery_expression(TSqlParser::Query_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
 void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitSql_union(TSqlParser::Sql_unionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterQuery_specification(TSqlParser::Query_specificationContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitQuery_specification(TSqlParser::Query_specificationContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
 void ListenerInterface::enterTop_clause(TSqlParser::Top_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitTop_clause(TSqlParser::Top_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
@@ -1219,38 +1303,11 @@ void ListenerInterface::exitOption(TSqlParser::OptionContext * ctx) { _no_impl(c
 void ListenerInterface::enterOptimize_for_arg(TSqlParser::Optimize_for_argContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitOptimize_for_arg(TSqlParser::Optimize_for_argContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
-void ListenerInterface::enterSelect_list(TSqlParser::Select_listContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSelect_list(TSqlParser::Select_listContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
 void ListenerInterface::enterUdt_method_arguments(TSqlParser::Udt_method_argumentsContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitUdt_method_arguments(TSqlParser::Udt_method_argumentsContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
-void ListenerInterface::enterAsterisk(TSqlParser::AsteriskContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitAsterisk(TSqlParser::AsteriskContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterColumn_elem(TSqlParser::Column_elemContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitColumn_elem(TSqlParser::Column_elemContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
 void ListenerInterface::enterUdt_elem(TSqlParser::Udt_elemContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitUdt_elem(TSqlParser::Udt_elemContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterExpression_elem(TSqlParser::Expression_elemContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitExpression_elem(TSqlParser::Expression_elemContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterSelect_list_elem(TSqlParser::Select_list_elemContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSelect_list_elem(TSqlParser::Select_list_elemContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterTable_sources(TSqlParser::Table_sourcesContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitTable_sources(TSqlParser::Table_sourcesContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterTable_source(TSqlParser::Table_sourceContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitTable_source(TSqlParser::Table_sourceContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
 void ListenerInterface::enterOpen_xml(TSqlParser::Open_xmlContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitOpen_xml(TSqlParser::Open_xmlContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
@@ -1264,9 +1321,6 @@ void ListenerInterface::exitColumn_declaration(TSqlParser::Column_declarationCon
 void ListenerInterface::enterChange_table(TSqlParser::Change_tableContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitChange_table(TSqlParser::Change_tableContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
-void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitJoin_part(TSqlParser::Join_partContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
 void ListenerInterface::enterPivot_clause(TSqlParser::Pivot_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitPivot_clause(TSqlParser::Pivot_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
@@ -1276,17 +1330,11 @@ void ListenerInterface::exitUnpivot_clause(TSqlParser::Unpivot_clauseContext * c
 void ListenerInterface::enterFull_column_name_list(TSqlParser::Full_column_name_listContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitFull_column_name_list(TSqlParser::Full_column_name_listContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
-void ListenerInterface::enterTable_name_with_hint(TSqlParser::Table_name_with_hintContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitTable_name_with_hint(TSqlParser::Table_name_with_hintContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
 void ListenerInterface::enterRowset_function(TSqlParser::Rowset_functionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitRowset_function(TSqlParser::Rowset_functionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
 void ListenerInterface::enterBulk_option(TSqlParser::Bulk_optionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitBulk_option(TSqlParser::Bulk_optionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterDerived_table(TSqlParser::Derived_tableContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitDerived_table(TSqlParser::Derived_tableContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
 void ListenerInterface::enterBINARY_CHECKSUM(TSqlParser::BINARY_CHECKSUMContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitBINARY_CHECKSUM(TSqlParser::BINARY_CHECKSUMContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
@@ -1363,9 +1411,6 @@ void ListenerInterface::exitAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOW
 void ListenerInterface::enterANALYTIC_WINDOWED_FUNC(TSqlParser::ANALYTIC_WINDOWED_FUNCContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitANALYTIC_WINDOWED_FUNC(TSqlParser::ANALYTIC_WINDOWED_FUNCContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
-void ListenerInterface::enterSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
 void ListenerInterface::enterSTRINGAGG(TSqlParser::STRINGAGGContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitSTRINGAGG(TSqlParser::STRINGAGGContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
@@ -1393,15 +1438,6 @@ void ListenerInterface::exitSwitch_section(TSqlParser::Switch_sectionContext * c
 void ListenerInterface::enterSwitch_search_condition_section(TSqlParser::Switch_search_condition_sectionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitSwitch_search_condition_section(TSqlParser::Switch_search_condition_sectionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
-void ListenerInterface::enterAs_column_alias(TSqlParser::As_column_aliasContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitAs_column_alias(TSqlParser::As_column_aliasContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterAs_table_alias(TSqlParser::As_table_aliasContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitAs_table_alias(TSqlParser::As_table_aliasContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterTable_alias(TSqlParser::Table_aliasContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitTable_alias(TSqlParser::Table_aliasContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
 void ListenerInterface::enterWith_table_hints(TSqlParser::With_table_hintsContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitWith_table_hints(TSqlParser::With_table_hintsContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
@@ -1422,9 +1458,6 @@ void ListenerInterface::exitColumn_alias(TSqlParser::Column_aliasContext * ctx) 
 
 void ListenerInterface::enterTable_value_constructor(TSqlParser::Table_value_constructorContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitTable_value_constructor(TSqlParser::Table_value_constructorContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterExpression_list(TSqlParser::Expression_listContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitExpression_list(TSqlParser::Expression_listContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
 void ListenerInterface::enterRanking_windowed_function(TSqlParser::Ranking_windowed_functionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitRanking_windowed_function(TSqlParser::Ranking_windowed_functionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
@@ -1483,26 +1516,11 @@ void ListenerInterface::exitEntity_name_for_parallel_dw(TSqlParser::Entity_name_
 void ListenerInterface::enterFull_table_name(TSqlParser::Full_table_nameContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitFull_table_name(TSqlParser::Full_table_nameContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
-void ListenerInterface::enterTable_name(TSqlParser::Table_nameContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitTable_name(TSqlParser::Table_nameContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
 void ListenerInterface::enterSimple_name(TSqlParser::Simple_nameContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitSimple_name(TSqlParser::Simple_nameContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
-void ListenerInterface::enterFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterFunc_proc_name_database_schema(TSqlParser::Func_proc_name_database_schemaContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitFunc_proc_name_database_schema(TSqlParser::Func_proc_name_database_schemaContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterFunc_proc_name_server_database_schema(TSqlParser::Func_proc_name_server_database_schemaContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitFunc_proc_name_server_database_schema(TSqlParser::Func_proc_name_server_database_schemaContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
 void ListenerInterface::enterDdl_object(TSqlParser::Ddl_objectContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitDdl_object(TSqlParser::Ddl_objectContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterFull_column_name(TSqlParser::Full_column_nameContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitFull_column_name(TSqlParser::Full_column_nameContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
 void ListenerInterface::enterColumn_name_list_with_order(TSqlParser::Column_name_list_with_orderContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitColumn_name_list_with_order(TSqlParser::Column_name_list_with_orderContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
@@ -1518,9 +1536,6 @@ void ListenerInterface::exitOn_off(TSqlParser::On_offContext * ctx) { _no_impl(c
 
 void ListenerInterface::enterClustered(TSqlParser::ClusteredContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitClustered(TSqlParser::ClusteredContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterNull_notnull(TSqlParser::Null_notnullContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitNull_notnull(TSqlParser::Null_notnullContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
 void ListenerInterface::enterNull_or_default(TSqlParser::Null_or_defaultContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitNull_or_default(TSqlParser::Null_or_defaultContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
@@ -1560,21 +1575,6 @@ void ListenerInterface::exitData_type(TSqlParser::Data_typeContext * ctx) { _no_
 
 void ListenerInterface::enterDefault_value(TSqlParser::Default_valueContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitDefault_value(TSqlParser::Default_valueContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitConstant(TSqlParser::ConstantContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterSign(TSqlParser::SignContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSign(TSqlParser::SignContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterId(TSqlParser::IdContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitId(TSqlParser::IdContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterSimple_id(TSqlParser::Simple_idContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSimple_id(TSqlParser::Simple_idContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterComparison_operator(TSqlParser::Comparison_operatorContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
 void ListenerInterface::enterAssignment_operator(TSqlParser::Assignment_operatorContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitAssignment_operator(TSqlParser::Assignment_operatorContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
