@@ -133,7 +133,8 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libfql_la_DEPENDENCIES = antlr/libantlr.la util/libutil.la
-am_libfql_la_OBJECTS = lib.lo prop.lo
+am_libfql_la_OBJECTS = lib.lo prop.lo query.lo table.lo column.lo \
+	operation.lo
 libfql_la_OBJECTS = $(am_libfql_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -154,7 +155,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/lib.Plo ./$(DEPDIR)/prop.Plo
+am__depfiles_remade = ./$(DEPDIR)/column.Plo ./$(DEPDIR)/lib.Plo \
+	./$(DEPDIR)/operation.Plo ./$(DEPDIR)/prop.Plo \
+	./$(DEPDIR)/query.Plo ./$(DEPDIR)/table.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -376,7 +379,7 @@ SUBDIRS = docs util antlr
 AM_CPPFLAGS = -Iinclude
 include_HEADERS = include/fql.h
 lib_LTLIBRARIES = libfql.la
-libfql_la_SOURCES = include/fql.h lib.c plan.h prop.h prop.c select.h expression.h table.h column.h reader.h
+libfql_la_SOURCES = include/fql.h lib.c plan.h prop.h prop.c query.h query.c table.c column.c operation.c reader.h
 libfql_la_LIBADD = antlr/libantlr.la util/libutil.la
 all: all-recursive
 
@@ -456,8 +459,12 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/column.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/operation.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/prop.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/query.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/table.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -714,8 +721,12 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 	mostlyclean-am
 
 distclean: distclean-recursive
-		-rm -f ./$(DEPDIR)/lib.Plo
+		-rm -f ./$(DEPDIR)/column.Plo
+	-rm -f ./$(DEPDIR)/lib.Plo
+	-rm -f ./$(DEPDIR)/operation.Plo
 	-rm -f ./$(DEPDIR)/prop.Plo
+	-rm -f ./$(DEPDIR)/query.Plo
+	-rm -f ./$(DEPDIR)/table.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -761,8 +772,12 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-recursive
-		-rm -f ./$(DEPDIR)/lib.Plo
+		-rm -f ./$(DEPDIR)/column.Plo
+	-rm -f ./$(DEPDIR)/lib.Plo
+	-rm -f ./$(DEPDIR)/operation.Plo
 	-rm -f ./$(DEPDIR)/prop.Plo
+	-rm -f ./$(DEPDIR)/query.Plo
+	-rm -f ./$(DEPDIR)/table.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

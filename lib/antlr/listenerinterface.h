@@ -2,13 +2,37 @@
 #define LISTENERINTERFACE_H
 
 #include "gen/TSqlParserBaseListener.h"
-#include "plan.h"
+#include "query.h"
+#include "util/queue.h"
+#include "util/stack.h"
+
+#define TOK_COLUMN_NAME     0
+#define TOK_COLUMN_ALIAS    1
+#define TOK_TABLE_NAME      2
+#define TOK_TABLE_SOURCE    3
+#define TOK_TABLE_ALIAS     4
+
+#define MODE_UNDEFINED  0
+#define MODE_SELECT     1
+#define MODE_SOURCES    2
+#define MODE_SEARCH     3
 
 class ListenerInterface : public TSqlParserBaseListener {
 private:
         std::vector<std::string> _error_tokens;
         std::vector<std::string> _rule_names;
-        queue_t** _plans;
+        queue_t** _query_list;
+        stack_t* _subquery_list;
+        stack_t* _mode_stack;
+        query_t* _query;
+
+        int _next_list;
+        int _current_list;
+
+        /* This is unsigned long because I want to
+         * use it in stack_t which only accepts void*
+         */
+        unsigned long _mode = MODE_UNDEFINED;
 
         void _no_impl(const std::string&, int);
 public:

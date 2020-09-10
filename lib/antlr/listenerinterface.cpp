@@ -1,11 +1,12 @@
 #include "listenerinterface.h"
-#include "prop.h"
-#include "util/util.h"
 
-ListenerInterface::ListenerInterface(queue_t** plans, const std::vector<std::string>& rules)
+#include "prop.h"
+#include "query.h"
+
+ListenerInterface::ListenerInterface(queue_t** query_list, const std::vector<std::string>& rules)
 {
         _rule_names = rules;
-        _plans = plans;
+        _query_list = query_list;
 }
 
 void ListenerInterface::enterSelect_list(TSqlParser::Select_listContext * ctx) { }
@@ -83,7 +84,11 @@ void ListenerInterface::exitBatch(TSqlParser::BatchContext * ctx) { }
 void ListenerInterface::enterSql_clauses(TSqlParser::Sql_clausesContext * ctx) { }
 void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext * ctx) { }
 
-void ListenerInterface::enterSql_clause(TSqlParser::Sql_clauseContext * ctx) { }
+void ListenerInterface::enterSql_clause(TSqlParser::Sql_clauseContext * ctx)
+{
+        _query = query_new();
+        queue_enqueue(_query_list, (void*) _query);
+}
 void ListenerInterface::exitSql_clause(TSqlParser::Sql_clauseContext * ctx) { }
 
 void ListenerInterface::enterDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
@@ -107,8 +112,24 @@ void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorC
 void ListenerInterface::enterSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) { }
 void ListenerInterface::exitSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) { }
 
-void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContext * ctx) { }
-void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx) { }
+void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContext * ctx)
+{
+        /* Check if an operation is already defined. 
+         * If it is, this is a sub-query 
+         */
+        if (_query->operation->type != OP_NONE) {
+                _query = query_new();
+                stack_push(&_subquery_list, _query);
+                stack_push(&_mode_stack, (void*) _mode);
+        }
+        
+        _query->operation->type = OP_SELECT;
+        _current_list = TOK_COLUMN_NAME;
+}
+void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx) 
+{
+        
+}
 
 void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx) { }
 void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx) { }

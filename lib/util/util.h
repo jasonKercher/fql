@@ -1,6 +1,10 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <libgen.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -161,5 +165,9 @@ void string_to_lower(char* s);
  * Copy BSD's strnstr
  */
 char* strnstr(const char *s, const char *find, size_t slen);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -1,6 +1,10 @@
 #ifndef STACK_H
 #define STACK_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdlib.h>
 
 /**
@@ -24,5 +28,9 @@ stack_t* stack_bottom(stack_t* node);
 int stack_count(stack_t* head);
 void stack_free_data(stack_t* head);
 void stack_free(stack_t* head);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* STACK_H */

@@ -1,7 +1,7 @@
 #include "queue.h"
 #include "util.h"
 
-queue_t* queue_push(queue_t** head, void* data)
+queue_t* queue_enqueue(queue_t** head, void* data)
 {
         queue_t* newnode = NULL;
         malloc_(newnode, sizeof(*newnode));
