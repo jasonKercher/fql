@@ -8,8 +8,8 @@ expression_t* expression_new(int type, void* expr)
         malloc_(new_expression, sizeof(*new_expression));
 
         *new_expression = (expression_t) {
-                 expr           /* expression */
-                ,EXPR_NONE      /* type */
+                 expr   /* expression */
+                ,type   /* type */
         };
 
         return new_expression;

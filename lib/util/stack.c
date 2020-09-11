@@ -86,12 +86,12 @@ int stack_count(stack_t* head)
         return count;
 }
 
-void stack_free_data(stack_t* head)
+void stack_free_data(stack_t** head)
 {
-        for (; head; stack_delete(&head, head));
+        for (; *head; stack_delete(head, *head));
 }
 
-void stack_free(stack_t* head)
+void stack_free(stack_t** head)
 {
-        for (; head; stack_pop(&head));
+        for (; *head; stack_pop(head));
 }

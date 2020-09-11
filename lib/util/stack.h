@@ -26,8 +26,8 @@ void* stack_pop(stack_t** head);
 stack_t* stack_top(stack_t* node);
 stack_t* stack_bottom(stack_t* node);
 int stack_count(stack_t* head);
-void stack_free_data(stack_t* head);
-void stack_free(stack_t* head);
+void stack_free_data(stack_t** head);
+void stack_free(stack_t** head);
 
 #ifdef __cplusplus
 }

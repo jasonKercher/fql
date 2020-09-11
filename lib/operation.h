@@ -11,13 +11,12 @@ extern "C" {
 
 
 /** Operation **/
-#define OP_NONE         0
-#define OP_SELECT       1
-#define OP_DELETE       2
-#define OP_UPDATE       3
-
-
-
+enum oper {        
+        OP_NONE,  
+        OP_SELECT,
+        OP_DELETE,
+        OP_UPDATE,
+};
 
 
 #ifdef __cplusplus

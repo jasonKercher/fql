@@ -7,6 +7,10 @@
 #include "plan.h"
 #include "prop.h"
 
+#include "expression.h"
+#include "table.h"
+#include "query.h"
+
 void fql_init()
 {
         prop_init();

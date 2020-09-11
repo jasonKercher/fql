@@ -6,20 +6,14 @@
 #include "util/queue.h"
 #include "util/stack.h"
 
-#define TOK_COLUMN_NAME     0
-#define TOK_COLUMN_ALIAS    1
-#define TOK_TABLE_NAME      2
-#define TOK_TABLE_SOURCE    3
-#define TOK_TABLE_ALIAS     4
-
-#define MODE_UNDEFINED  0
-#define MODE_SELECT     1
-#define MODE_UPDATE     2
-#define MODE_SOURCES    3
-#define MODE_SEARCH     4
-
 class ListenerInterface : public TSqlParserBaseListener {
 private:
+        static const int TOK_COLUMN_NAME  = 0;
+        static const int TOK_COLUMN_ALIAS = 1;
+        static const int TOK_TABLE_NAME   = 2;
+        static const int TOK_TABLE_SOURCE = 3;
+        static const int TOK_TABLE_ALIAS  = 4;
+
         std::vector<std::string> _error_tokens;
         std::vector<std::string> _rule_names;
         queue_t** _query_list;
@@ -28,6 +22,8 @@ private:
 
         int _next_list;
         int _current_list;
+        char _table_name[TABLE_NAME_MAX];
+        stack_t* _source_stack;
 
         void _no_impl(const std::string&, int);
 public:

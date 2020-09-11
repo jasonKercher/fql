@@ -93,12 +93,12 @@ int queue_count(queue_t* head)
         return count;
 }
 
-void queue_free_data(queue_t* head)
+void queue_free_data(queue_t** head)
 {
-        for (; head; queue_delete(&head, head));
+        for (; *head; queue_delete(head, *head));
 }
 
-void queue_free(queue_t* head)
+void queue_free(queue_t** head)
 {
-        for (; head; queue_dequeue(&head));
+        for (; *head; queue_dequeue(head));
 }

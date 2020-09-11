@@ -12,24 +12,33 @@ extern "C" {
 #include "operation.h"
 #include "reader.h"
 
+enum mode {
+        MODE_UNDEFINED,
+        MODE_SELECT,
+        MODE_UPDATE,
+        MODE_SOURCES,
+        MODE_SEARCH,
+};
 
 /** Query **/
 struct query_t {
         table_t* table;         /* output table */
-        queue_t* sources;       /* table_t */
+        stack_t* sources;       /* source_t */
         queue_t* conditions;    /* expression_t */
         queue_t* groups;        /* expression_t */
         queue_t* having;        /* expression_t */
         expression_t* limit;    /* TOP */
-        int opid;               /* type of operation */
+        enum oper oper;         /* type of operation */
 
         /* temps used when traversing */
         expression_t* expr;
-        int mode;
+        enum mode mode;
+        enum join join;
 };
 typedef struct query_t query_t;
 
 query_t* query_new();
+void query_add_source(query_t*, stack_t*);
 
 
 

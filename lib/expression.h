@@ -7,15 +7,18 @@ extern "C" {
 #endif
 
 /** Expression **/
-#define EXPR_NONE               0
-#define EXPR_COLUMN_NAME        1
-#define EXPR_CONST              2
-#define EXPR_SUBQUERY           3
-#define EXPR_SUBQUERY_CONST     4
+enum expr_e {
+        EXPR_NONE,
+        EXPR_COLUMN_NAME,
+        EXPR_CONST,
+        EXPR_SOURCE,
+        EXPR_SUBQUERY,
+        EXPR_SUBQUERY_CONST,
+};
 
 struct expression_t {
         void* expr;
-        int type;
+        enum expr_e type;
 };
 typedef struct expression_t expression_t;
 
