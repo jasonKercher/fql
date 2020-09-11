@@ -9,8 +9,9 @@ column_t* column_new()
 
         *new_column = (column_t) {
                  NULL   /* table */
-                ,""     /* name */
+                ,NULL   /* expression */
                 ,""     /* alias */
+                ,""     /* table_name */
                 ,0      /* location */
                 ,0      /* width */
         };

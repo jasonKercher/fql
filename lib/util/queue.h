@@ -24,7 +24,7 @@ void* queue_remove(queue_t** head, queue_t* node);
 void queue_delete(queue_t** head, queue_t* node);
 void* queue_dequeue(queue_t** head);
 queue_t* queue_front(queue_t* node);
-queue_t* queue_tail(queue_t* node);
+queue_t* queue_back(queue_t* node);
 int queue_count(queue_t* head);
 void queue_free_data(queue_t* head);
 void queue_free(queue_t* head);

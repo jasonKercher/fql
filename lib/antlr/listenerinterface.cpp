@@ -87,7 +87,8 @@ void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext * ctx) { 
 void ListenerInterface::enterSql_clause(TSqlParser::Sql_clauseContext * ctx)
 {
         _query = query_new();
-        queue_enqueue(_query_list, (void*) _query);
+        queue_enqueue(_query_list, _query);
+        stack_push(&_query_stack, _query);
 }
 void ListenerInterface::exitSql_clause(TSqlParser::Sql_clauseContext * ctx) { }
 
@@ -112,23 +113,17 @@ void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorC
 void ListenerInterface::enterSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) { }
 void ListenerInterface::exitSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) { }
 
+void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx) { }
+void ListenerInterface::exitScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx) { }
+
 void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContext * ctx)
 {
-        /* Check if an operation is already defined. 
-         * If it is, this is a sub-query 
-         */
-        if (_query->operation->type != OP_NONE) {
-                _query = query_new();
-                stack_push(&_subquery_list, _query);
-                stack_push(&_mode_stack, (void*) _mode);
-        }
-        
-        _query->operation->type = OP_SELECT;
+        _query->mode = MODE_SELECT;
+        _query->opid = OP_SELECT;
         _current_list = TOK_COLUMN_NAME;
 }
-void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx) 
+void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx)
 {
-        
 }
 
 void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx) { }
@@ -140,8 +135,43 @@ void ListenerInterface::exitPrimitive_expression(TSqlParser::Primitive_expressio
 void ListenerInterface::enterBracket_expression(TSqlParser::Bracket_expressionContext * ctx) { }
 void ListenerInterface::exitBracket_expression(TSqlParser::Bracket_expressionContext * ctx) { }
 
-void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx) { }
-void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx) { }
+void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx) 
+{
+        /* Check if an operation is already defined.
+         * If it is, this is a sub-query
+         */
+        if (_query->opid != OP_NONE) {
+                _query = query_new();
+                stack_push(&_query_stack, _query);
+        }
+
+}
+void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx) 
+{ 
+        expression_t* new_expr = expression_new(EXPR_NONE, stack_pop(&_query_stack));
+        _query = (query_t*) _query_stack->data;
+        
+
+        switch(_query->mode) {
+        case MODE_SELECT:
+                new_expr->type = EXPR_SUBQUERY_CONST;
+                table_add_column(_query->table, new_expr);
+                break;
+        case MODE_UPDATE:
+                new_expr->type = EXPR_SUBQUERY;
+                /* TODO */
+                break;
+        case MODE_SOURCES:
+                new_expr->type = EXPR_SUBQUERY;
+                /* TODO */
+                break;
+        case MODE_SEARCH:
+                break;
+        default:
+                std::cerr << "Undefined mode\n";
+                exit(EXIT_FAILURE);
+        }
+}
 
 void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContext * ctx) { }
 void ListenerInterface::exitSearch_condition(TSqlParser::Search_conditionContext * ctx) { }
@@ -1534,9 +1564,6 @@ void ListenerInterface::exitClustered(TSqlParser::ClusteredContext * ctx) { _no_
 
 void ListenerInterface::enterNull_or_default(TSqlParser::Null_or_defaultContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitNull_or_default(TSqlParser::Null_or_defaultContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-
-void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 
 void ListenerInterface::enterBegin_conversation_timer(TSqlParser::Begin_conversation_timerContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitBegin_conversation_timer(TSqlParser::Begin_conversation_timerContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }

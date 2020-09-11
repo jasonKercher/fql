@@ -8,12 +8,16 @@ query_t* query_new()
         malloc_(new_query, sizeof(*new_query));
 
         *new_query = (query_t) {
-                 operation_new()   /* operation */
-                ,NULL              /* sources */
-                ,NULL              /* conditions */
-                ,NULL              /* groups */
-                ,NULL              /* having */
-                ,NULL              /* limit */
+                 table_new()            /* table */
+                ,NULL                   /* sources */
+                ,NULL                   /* conditions */
+                ,NULL                   /* groups */
+                ,NULL                   /* having */
+                ,NULL                   /* limit */
+                ,OP_NONE                /* operation */
+
+                ,NULL                   /* expr */
+                ,0                      /* mode */
         };
 
         return new_query;

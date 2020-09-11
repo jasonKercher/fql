@@ -11,11 +11,11 @@ queue_t* queue_enqueue(queue_t** head, void* data)
                 ,NULL
         };
 
-        queue_t* last = queue_tail(*head);
+        queue_t* back = queue_back(*head);
 
-        if (last) {
-                newnode->prev = last;
-                last->next = newnode;
+        if (back) {
+                newnode->prev = back;
+                back->next = newnode;
         }
 
         if (!*head)
@@ -68,16 +68,16 @@ queue_t* queue_front(queue_t* node)
         return head;
 }
 
-queue_t* queue_tail(queue_t* node)
+queue_t* queue_back(queue_t* node)
 {
         if (!node)
                 return NULL;
 
-        queue_t* last = node;
-        while (last && last->next)
-                last = last->next;
+        queue_t* back = node;
+        while (back && back->next)
+                back = back->next;
 
-        return last;
+        return back;
 }
 
 int queue_count(queue_t* head)
@@ -86,8 +86,8 @@ int queue_count(queue_t* head)
                 return 0;
 
         int count = 1;
-        queue_t* last = head;
-        while ((last = last->next))
+        queue_t* back = head;
+        while ((back = back->next))
                 ++count;
 
         return count;

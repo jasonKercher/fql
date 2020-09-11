@@ -9,12 +9,17 @@ table_t* table_new()
 
         *new_table = (table_t) {
                  NULL   /* source */
-                ,NULL   /* column list */
+                ,NULL   /* column queue */
                 ,""     /* name */
                 ,""     /* alias */
         };
 
         return new_table;
+}
+
+void table_add_column(table_t* table, expression_t* expr)
+{
+        queue_enqueue(&table->columns, expr);
 }
 
 
