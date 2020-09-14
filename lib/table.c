@@ -17,6 +17,17 @@ table_t* table_new()
         return new_table;
 }
 
+void table_free(table_t* table)
+{
+        if (table == NULL)
+                return;
+
+        stack_t* item = table->columns;
+        for (; item; item = item->next)
+                column_free(item->data);
+        free_(table);
+}
+
 void table_add_column(table_t* table,
                       expression_t* expr,
                       const char* table_name)
@@ -42,4 +53,15 @@ source_t* source_new(table_t* table, enum source type)
 
         return new_source;
 }
+
+void source_free(source_t* source)
+{
+        if (source == NULL)
+                return;
+
+        table_free(source->table);
+        free_(source);
+}
+
+
 

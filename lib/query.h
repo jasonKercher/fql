@@ -38,6 +38,7 @@ struct query_t {
 typedef struct query_t query_t;
 
 query_t* query_new();
+void query_free();
 void query_add_source(query_t*, stack_t*);
 
 

@@ -16,14 +16,14 @@ private:
 
         std::vector<std::string> _error_tokens;
         std::vector<std::string> _rule_names;
-        queue_t** _query_list;
-        stack_t* _query_stack;
-        query_t* _query;
+        queue_t** _query_list = NULL;
+        stack_t* _query_stack = NULL;
+        query_t* _query = NULL;
 
         int _next_list;
         int _current_list;
         char _table_name[TABLE_NAME_MAX];
-        stack_t* _source_stack;
+        stack_t* _source_stack = NULL;
 
         void _no_impl(const std::string&, int);
 public:

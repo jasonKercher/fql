@@ -23,8 +23,7 @@ struct expression_t {
 typedef struct expression_t expression_t;
 
 expression_t* expression_new(int, void*);
-
-
+void expression_free(expression_t*);
 
 #ifdef __cplusplus
 }

@@ -15,4 +15,7 @@ expression_t* expression_new(int type, void* expr)
         return new_expression;
 }
 
-
+void expression_free(expression_t* expr)
+{
+        free_(expr);
+}

@@ -24,6 +24,24 @@ query_t* query_new()
         return new_query;
 }
 
+void query_free(query_t* query)
+{
+        stack_t* s_item = query->sources;
+        for (; s_item; s_item = s_item->next) {
+                source_free(s_item->data);
+        }
+        free_(query->sources);
+
+        queue_free_data(&query->conditions);
+        queue_free_data(&query->groups);
+        queue_free_data(&query->having);
+
+        free_(query->table);
+        free_(query->limit);
+        free_(query->expr);
+        free_(query);
+}
+
 /**
  * Create new table and source object
  * Assign name and schema if provided. If not provided,

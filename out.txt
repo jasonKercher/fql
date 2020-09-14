@@ -1,0 +1,184 @@
+==1945== Memcheck, a memory error detector
+==1945== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==1945== Using Valgrind-3.14.0-353a3587bb-20181007X and LibVEX; rerun with -h for copyright info
+==1945== Command: fql -v
+==1945== 
+--1945-- Valgrind options:
+--1945--    -v
+--1945--    --track-origins=yes
+--1945--    --leak-check=full
+--1945-- Contents of /proc/version:
+--1945--   Linux version 5.4.40-04224-g891a6cce2d44 (chrome-bot@chromeos-ci-pre-try-us-east1-d-x32-2-ukvn) (Chromium OS 11.0_pre387436_p20200403-r4 clang version 11.0.0 (/var/cache/chromeos-cache/distfiles/host/egit-src/llvm-project c47f971694be0159ffddfee8a75ae515eba91439)) #1 SMP PREEMPT Tue Jun 23 20:21:29 PDT 2020
+--1945-- 
+--1945-- Arch and hwcaps: AMD64, LittleEndian, amd64-cx16-lzcnt-rdtscp-sse3-avx-avx2-bmi
+--1945-- Page sizes: currently 4096, max supported 4096
+--1945-- Valgrind library directory: /usr/lib/x86_64-linux-gnu/valgrind
+--1945-- Reading syms from /usr/local/bin/fql
+--1945-- Reading syms from /lib/x86_64-linux-gnu/ld-2.28.so
+--1945--   Considering /usr/lib/debug/.build-id/f2/5dfd7b95be4ba386fd71080accae8c0732b711.debug ..
+--1945--   .. build-id is valid
+--1945-- Reading syms from /usr/lib/x86_64-linux-gnu/valgrind/memcheck-amd64-linux
+--1945--   Considering /usr/lib/debug/.build-id/32/2e77af97f403c3d34ff09edf60b089e72ec889.debug ..
+--1945--   .. build-id is valid
+--1945--    object doesn't have a dynamic symbol table
+--1945-- Scheduler: using generic scheduler lock implementation.
+--1945-- Reading suppressions file: /usr/lib/x86_64-linux-gnu/valgrind/default.supp
+==1945== embedded gdbserver: reading from /tmp/vgdb-pipe-from-vgdb-to-1945-by-akercher0105d-on-???
+==1945== embedded gdbserver: writing to   /tmp/vgdb-pipe-to-vgdb-from-1945-by-akercher0105d-on-???
+==1945== embedded gdbserver: shared mem   /tmp/vgdb-pipe-shared-mem-vgdb-1945-by-akercher0105d-on-???
+==1945== 
+==1945== TO CONTROL THIS PROCESS USING vgdb (which you probably
+==1945== don't want to do, unless you know exactly what you're doing,
+==1945== or are doing some strange experiment):
+==1945==   /usr/lib/x86_64-linux-gnu/valgrind/../../bin/vgdb --pid=1945 ...command...
+==1945== 
+==1945== TO DEBUG THIS PROCESS USING GDB: start GDB like this
+==1945==   /path/to/gdb fql
+==1945== and then give GDB the following command
+==1945==   target remote | /usr/lib/x86_64-linux-gnu/valgrind/../../bin/vgdb --pid=1945
+==1945== --pid is optional if only one valgrind process is running
+==1945== 
+--1945-- REDIR: 0x401e2f0 (ld-linux-x86-64.so.2:strlen) redirected to 0x580c9ce2 (vgPlain_amd64_linux_REDIR_FOR_strlen)
+--1945-- REDIR: 0x401e0d0 (ld-linux-x86-64.so.2:index) redirected to 0x580c9cfc (vgPlain_amd64_linux_REDIR_FOR_index)
+--1945-- Reading syms from /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_core-amd64-linux.so
+--1945--   Considering /usr/lib/debug/.build-id/34/fbc4cdfbfce1bfc3d2e522a01a050bf724c930.debug ..
+--1945--   .. build-id is valid
+--1945-- Reading syms from /usr/lib/x86_64-linux-gnu/valgrind/vgpreload_memcheck-amd64-linux.so
+--1945--   Considering /usr/lib/debug/.build-id/ca/bb7898ea982d936cbfadd70ae831c6eb63623f.debug ..
+--1945--   .. build-id is valid
+==1945== WARNING: new redirection conflicts with existing -- ignoring it
+--1945--     old: 0x0401e2f0 (strlen              ) R-> (0000.0) 0x580c9ce2 vgPlain_amd64_linux_REDIR_FOR_strlen
+--1945--     new: 0x0401e2f0 (strlen              ) R-> (2007.0) 0x04838d80 strlen
+--1945-- REDIR: 0x401ab10 (ld-linux-x86-64.so.2:strcmp) redirected to 0x4839e40 (strcmp)
+--1945-- REDIR: 0x401e830 (ld-linux-x86-64.so.2:mempcpy) redirected to 0x483d860 (mempcpy)
+--1945-- Reading syms from /usr/local/lib/libfql.so.0.0.0
+--1945-- Reading syms from /lib/x86_64-linux-gnu/libreadline.so.7.0
+--1945--    object doesn't have a symbol table
+--1945-- Reading syms from /usr/local/lib/libantlr4-runtime.so.4.8
+--1945-- Reading syms from /lib/x86_64-linux-gnu/libc-2.28.so
+--1945--   Considering /usr/lib/debug/.build-id/18/b9a9a8c523e5cfe5b5d946d605d09242f09798.debug ..
+--1945--   .. build-id is valid
+--1945-- Reading syms from /lib/x86_64-linux-gnu/libgcc_s.so.1
+--1945--    object doesn't have a symbol table
+--1945-- Reading syms from /lib/x86_64-linux-gnu/libtinfo.so.6.1
+--1945--    object doesn't have a symbol table
+--1945-- Reading syms from /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.25
+--1945--    object doesn't have a symbol table
+--1945-- Reading syms from /lib/x86_64-linux-gnu/libm-2.28.so
+--1945--   Considering /usr/lib/debug/.build-id/88/5dda4b4a5cea600e7b5b98c1ad86996c8d2299.debug ..
+--1945--   .. build-id is valid
+--1945-- REDIR: 0x53aef70 (libc.so.6:memmove) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53ae160 (libc.so.6:strncpy) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53af250 (libc.so.6:strcasecmp) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53adb70 (libc.so.6:strcat) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53ae190 (libc.so.6:rindex) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53b0890 (libc.so.6:rawmemchr) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53c9230 (libc.so.6:wmemchr) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53c8cd0 (libc.so.6:wcscmp) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53af0e0 (libc.so.6:mempcpy) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53aef10 (libc.so.6:bcmp) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53ae100 (libc.so.6:strncmp) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53adbe0 (libc.so.6:strcmp) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53af040 (libc.so.6:memset) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53c8ca0 (libc.so.6:wcschr) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53ae0a0 (libc.so.6:strnlen) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53adc70 (libc.so.6:strcspn) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53af2a0 (libc.so.6:strncasecmp) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53adc40 (libc.so.6:strcpy) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53af3e0 (libc.so.6:memcpy@@GLIBC_2.14) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53ca4d0 (libc.so.6:wcsnlen) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53ae1c0 (libc.so.6:strpbrk) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53adba0 (libc.so.6:index) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53ae070 (libc.so.6:strlen) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53b5280 (libc.so.6:memrchr) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53af2f0 (libc.so.6:strcasecmp_l) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53aeee0 (libc.so.6:memchr) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53c8db0 (libc.so.6:wcslen) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53ae460 (libc.so.6:strspn) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53af220 (libc.so.6:stpncpy) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53af1f0 (libc.so.6:stpcpy) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53b08c0 (libc.so.6:strchrnul) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53af340 (libc.so.6:strncasecmp_l) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53ae0d0 (libc.so.6:strncat) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x542d950 (libc.so.6:__memcpy_chk) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x53aee20 (libc.so.6:strstr) redirected to 0x482b1b0 (_vgnU_ifunc_wrapper)
+--1945-- REDIR: 0x5481fa0 (libc.so.6:__strrchr_avx2) redirected to 0x4838790 (rindex)
+--1945-- REDIR: 0x53aa350 (libc.so.6:malloc) redirected to 0x4835710 (malloc)
+--1945-- REDIR: 0x5482170 (libc.so.6:__strlen_avx2) redirected to 0x4838c60 (strlen)
+--1945-- REDIR: 0x547e780 (libc.so.6:__memcmp_avx2_movbe) redirected to 0x483c060 (bcmp)
+--1945-- REDIR: 0x547d6b0 (libc.so.6:__strcmp_avx2) redirected to 0x4839d00 (strcmp)
+--1945-- REDIR: 0x55c3fc0 (libstdc++.so.6:operator new(unsigned long)) redirected to 0x4835d80 (operator new(unsigned long))
+--1945-- REDIR: 0x53ab120 (libc.so.6:calloc) redirected to 0x4837ab0 (calloc)
+--1945-- REDIR: 0x54826b0 (libc.so.6:__memcpy_avx_unaligned_erms) redirected to 0x483c8a0 (memmove)
+--1945-- REDIR: 0x55c2260 (libstdc++.so.6:operator delete(void*)) redirected to 0x4836e40 (operator delete(void*))
+--1945-- REDIR: 0x5482b30 (libc.so.6:__memset_avx2_unaligned_erms) redirected to 0x483c790 (memset)
+--1945-- REDIR: 0x5481b80 (libc.so.6:__strchr_avx2) redirected to 0x4838910 (index)
+--1945-- REDIR: 0x547e000 (libc.so.6:__memchr_avx2) redirected to 0x4839ee0 (memchr)
+--1945-- REDIR: 0x53c60f0 (libc.so.6:__strcat_sse2_unaligned) redirected to 0x4838940 (strcat)
+ENTER: tsql_file : select*fromfuck<EOF>
+ENTER: batch : select*fromfuck
+ENTER: sql_clauses : select*fromfuck
+ENTER: sql_clause : select*fromfuck
+ENTER: dml_clause : select*fromfuck
+ENTER: select_statement : select*fromfuck
+ENTER: query_expression : select*fromfuck
+ENTER: query_specification : select*fromfuck
+ENTER: select_list : *
+ENTER: select_list_elem : *
+ENTER: asterisk : *
+EXIT:  asterisk : *
+EXIT:  select_list_elem : *
+EXIT:  select_list : *
+ENTER: table_sources : fuck
+ENTER: table_source : fuck
+ENTER: table_source_item_joined : fuck
+ENTER: table_source_item : fuck
+ENTER: table_name_with_hint : fuck
+ENTER: table_name : fuck
+ENTER: id : fuck
+ENTER: simple_id : fuck
+EXIT:  simple_id : fuck
+EXIT:  id : fuck
+EXIT:  table_name : fuck
+EXIT:  table_name_with_hint : fuck
+EXIT:  table_source_item : fuck
+EXIT:  table_source_item_joined : fuck
+EXIT:  table_source : fuck
+EXIT:  table_sources : fuck
+EXIT:  query_specification : select*fromfuck
+EXIT:  query_expression : select*fromfuck
+EXIT:  select_statement : select*fromfuck
+EXIT:  dml_clause : select*fromfuck
+--1945-- REDIR: 0x53aa9a0 (libc.so.6:free) redirected to 0x4836940 (free)
+EXIT:  sql_clause : select*fromfuck
+EXIT:  sql_clauses : select*fromfuck
+EXIT:  batch : select*fromfuck
+EXIT:  tsql_file : select*fromfuck<EOF>
+--1945-- REDIR: 0x55c2270 (libstdc++.so.6:operator delete(void*, unsigned long)) redirected to 0x4837020 (operator delete(void*, unsigned long))
+==1945== 
+==1945== HEAP SUMMARY:
+==1945==     in use at exit: 808 bytes in 5 blocks
+==1945==   total heap usage: 527,922 allocs, 527,917 frees, 37,690,111 bytes allocated
+==1945== 
+==1945== Searching for pointers to 5 not-freed blocks
+==1945== Checked 601,976 bytes
+==1945== 
+==1945== 808 (72 direct, 736 indirect) bytes in 1 blocks are definitely lost in loss record 5 of 5
+==1945==    at 0x483577F: malloc (vg_replace_malloc.c:299)
+==1945==    by 0x4B1D9CA: query_new (query.c:8)
+==1945==    by 0x4B1EA88: ListenerInterface::enterSql_clause(TSqlParser::Sql_clauseContext*) (listenerinterface.cpp:127)
+==1945==    by 0x4B7818F: TSqlParser::Sql_clauseContext::enterRule(antlr4::tree::ParseTreeListener*) (TSqlParser.cpp:870)
+==1945==    by 0x52E2CEF: antlr4::tree::IterativeParseTreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (in /usr/local/lib/libantlr4-runtime.so.4.8)
+==1945==    by 0x4B39092: analyze_query (antlr.cpp:40)
+==1945==    by 0x4B1D99D: fql_exec (lib.c:60)
+==1945==    by 0x109354: main (fql.c:104)
+==1945== 
+==1945== LEAK SUMMARY:
+==1945==    definitely lost: 72 bytes in 1 blocks
+==1945==    indirectly lost: 736 bytes in 4 blocks
+==1945==      possibly lost: 0 bytes in 0 blocks
+==1945==    still reachable: 0 bytes in 0 blocks
+==1945==         suppressed: 0 bytes in 0 blocks
+==1945== 
+==1945== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+==1945== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)

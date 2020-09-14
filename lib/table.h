@@ -23,6 +23,7 @@ struct table_t {
 typedef struct table_t table_t;
 
 table_t* table_new();
+void table_free(table_t*);
 void table_add_column(table_t*, expression_t*, const char*);
 
 
@@ -50,6 +51,7 @@ struct source_t {
 typedef struct source_t source_t;
 
 source_t* source_new(table_t*, enum source);
+void source_free(source_t*);
 
 
 /** Column **/
@@ -66,6 +68,7 @@ struct column_t {
 typedef struct column_t column_t;
 
 column_t* column_new(expression_t*, const char*);
+void column_free(column_t*);
 
 
 #ifdef __cplusplus
