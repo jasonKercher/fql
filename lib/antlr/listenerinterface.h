@@ -8,11 +8,12 @@
 
 class ListenerInterface : public TSqlParserBaseListener {
 private:
-        static const int TOK_COLUMN_NAME  = 0;
-        static const int TOK_COLUMN_ALIAS = 1;
-        static const int TOK_TABLE_NAME   = 2;
-        static const int TOK_TABLE_SOURCE = 3;
-        static const int TOK_TABLE_ALIAS  = 4;
+        static const int TOK_UNDEFINED    = 0;
+        static const int TOK_COLUMN_NAME  = 1;
+        static const int TOK_COLUMN_ALIAS = 2;
+        static const int TOK_TABLE_NAME   = 3;
+        static const int TOK_TABLE_SOURCE = 4;
+        static const int TOK_TABLE_ALIAS  = 5;
 
         std::vector<std::string> _error_tokens;
         std::vector<std::string> _rule_names;

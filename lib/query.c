@@ -73,3 +73,9 @@ void query_add_source(query_t* query, stack_t* source_stack)
 
         stack_push(&query->sources, source_new(new_table, type));
 }
+
+void query_apply_table_alias(query_t * query, const char * alias)
+{
+        source_t* source = query->sources->data;
+        strncpy_(source->alias, alias, TABLE_NAME_MAX);
+}

@@ -24,7 +24,8 @@ typedef struct table_t table_t;
 
 table_t* table_new();
 void table_free(table_t*);
-void table_add_column(table_t*, expression_t*, const char*);
+void table_add_column(table_t*, expression_t*, const char* table_name);
+void table_apply_column_alias(table_t*, const char*);
 
 
 /** Source **/

@@ -40,6 +40,7 @@ typedef struct query_t query_t;
 query_t* query_new();
 void query_free();
 void query_add_source(query_t*, stack_t*);
+void query_apply_table_alias(query_t*, const char*);
 
 
 

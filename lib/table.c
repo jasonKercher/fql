@@ -36,6 +36,12 @@ void table_add_column(table_t* table,
                    column_new(expr, table_name));
 }
 
+void table_apply_column_alias(table_t* table, const char* alias)
+{
+        column_t* col = table->columns->data;
+        strncpy_(col->alias, alias, COLUMN_NAME_MAX);
+}
+
 
 
 

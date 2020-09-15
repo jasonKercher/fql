@@ -17,5 +17,16 @@ expression_t* expression_new(int type, void* expr)
 
 void expression_free(expression_t* expr)
 {
+        /**
+         * Expressions own their data.  Because an expression
+         * can contain many different types, how we free expr
+         * varies based on type
+         */
+
+        switch (expr->type) {
+        default:
+                free_(expr->expr);
+        }
+
         free_(expr);
 }

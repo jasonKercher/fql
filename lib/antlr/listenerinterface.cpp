@@ -1,12 +1,19 @@
 #include "listenerinterface.h"
 
+#include <cstring>
+
 #include "prop.h"
 #include "query.h"
+#include "util/util.h"
 
 ListenerInterface::ListenerInterface(queue_t** query_list, const std::vector<std::string>& rules)
 {
+        _table_name[0] = '\0';
         _rule_names = rules;
         _query_list = query_list;
+
+        _next_list = TOK_UNDEFINED;
+        _current_list = TOK_UNDEFINED;
 }
 
 void ListenerInterface::enterSelect_list(TSqlParser::Select_listContext * ctx) 
@@ -44,7 +51,10 @@ void ListenerInterface::enterTable_sources(TSqlParser::Table_sourcesContext * ct
 {
         _query->mode = MODE_SOURCES;
 }
-void ListenerInterface::exitTable_sources(TSqlParser::Table_sourcesContext * ctx) { }
+void ListenerInterface::exitTable_sources(TSqlParser::Table_sourcesContext * ctx) 
+{ 
+        _query->mode = MODE_UNDEFINED;
+}
 
 void ListenerInterface::enterTable_source(TSqlParser::Table_sourceContext * ctx) { }
 void ListenerInterface::exitTable_source(TSqlParser::Table_sourceContext * ctx) { }
@@ -52,11 +62,11 @@ void ListenerInterface::exitTable_source(TSqlParser::Table_sourceContext * ctx) 
 void ListenerInterface::enterTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
 void ListenerInterface::exitTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
 
-void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemContext * ctx) 
+void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemContext * ctx) { }
+void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx) 
 { 
         query_add_source(_query, _source_stack);
 }
-void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx) { }
 
 void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx) 
 { 
@@ -95,8 +105,16 @@ void ListenerInterface::exitTable_alias(TSqlParser::Table_aliasContext * ctx) { 
 void ListenerInterface::enterExpression_list(TSqlParser::Expression_listContext * ctx) { }
 void ListenerInterface::exitExpression_list(TSqlParser::Expression_listContext * ctx) { }
 
-void ListenerInterface::enterTable_name(TSqlParser::Table_nameContext * ctx) { }
-void ListenerInterface::exitTable_name(TSqlParser::Table_nameContext * ctx) { }
+void ListenerInterface::enterTable_name(TSqlParser::Table_nameContext * ctx) 
+{ 
+        _current_list = _next_list;
+}
+void ListenerInterface::exitTable_name(TSqlParser::Table_nameContext * ctx) 
+{ 
+        if (_current_list == TOK_TABLE_NAME) {
+                _current_list = TOK_COLUMN_NAME;
+        }
+}
 
 void ListenerInterface::enterFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * ctx) { }
 void ListenerInterface::exitFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * ctx) { }
@@ -107,7 +125,11 @@ void ListenerInterface::exitFunc_proc_name_database_schema(TSqlParser::Func_proc
 void ListenerInterface::enterFunc_proc_name_server_database_schema(TSqlParser::Func_proc_name_server_database_schemaContext * ctx) { }
 void ListenerInterface::exitFunc_proc_name_server_database_schema(TSqlParser::Func_proc_name_server_database_schemaContext * ctx) { }
 
-void ListenerInterface::enterFull_column_name(TSqlParser::Full_column_nameContext * ctx) { }
+void ListenerInterface::enterFull_column_name(TSqlParser::Full_column_nameContext * ctx) 
+{ 
+        _current_list = TOK_COLUMN_NAME;
+        _next_list = TOK_TABLE_NAME;
+}
 void ListenerInterface::exitFull_column_name(TSqlParser::Full_column_nameContext * ctx) { }
 
 void ListenerInterface::enterNull_notnull(TSqlParser::Null_notnullContext * ctx) { }
@@ -142,7 +164,52 @@ void ListenerInterface::exitConstant(TSqlParser::ConstantContext * ctx) { }
 void ListenerInterface::enterSign(TSqlParser::SignContext * ctx) { }
 void ListenerInterface::exitSign(TSqlParser::SignContext * ctx) { }
 
-void ListenerInterface::enterId(TSqlParser::IdContext * ctx) { }
+void ListenerInterface::enterId(TSqlParser::IdContext * ctx) 
+{
+        int len = ctx->getText().length(); 
+        char* token = NULL;
+
+        char first_char = ctx->getText()[0];
+
+        if (first_char == '\'' || first_char == '[') {
+                token = strdup(ctx->getText().c_str() + 1);
+                token[len - 2] = '\0';
+        } else {
+                token = strdup(ctx->getText().c_str());
+        }
+
+
+        switch (_current_list) {
+        case TOK_COLUMN_NAME:
+                if (_query->mode == MODE_SELECT) {
+                        table_add_column(_query->table,
+                                         expression_new(EXPR_COLUMN_NAME, token),
+                                         _table_name);
+                } else {
+                        std::cerr << "Unhandled COLUMN_NAME: " << token << '\n';
+                        free_(token);
+                }
+                break;
+        case TOK_COLUMN_ALIAS:
+                table_apply_column_alias(_query->table, token);
+                free_(token);
+                break;
+        case TOK_TABLE_NAME:
+                strncpy_(_table_name, token, TABLE_NAME_MAX);
+                free_(token);
+                break;
+        case TOK_TABLE_SOURCE:
+                stack_push(&_source_stack, token);
+                break;
+        case TOK_TABLE_ALIAS:
+                query_apply_table_alias(_query, token);
+                free_(token);
+                break;
+        default:
+                std::cerr << "Undefined list: " << _current_list << '\n';
+                free_(token);
+        }
+}
 void ListenerInterface::exitId(TSqlParser::IdContext * ctx) { }
 
 void ListenerInterface::enterSimple_id(TSqlParser::Simple_idContext * ctx) { }
