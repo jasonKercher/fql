@@ -10,6 +10,7 @@
 #include "expression.h"
 #include "table.h"
 #include "query.h"
+#include "schema.h"
 
 void fql_init()
 {
@@ -58,11 +59,17 @@ int fql_exec(const char* query_str)
         queue_t* query_list = NULL;
         analyze_query(&query_list, query_str);
 
+        schema_resolve(query_list);
+
         queue_t* plans = NULL;
         build_plans(&plans, query_list);
 
-        /* Release resources */
         queue_free_func(&query_list, &query_free);
+
+        /* EXECUTE PLANS HERE */
+        queue_free_func(&plans, &plan_free);
+
+
 
         return 0;
 }

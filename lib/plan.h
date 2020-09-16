@@ -16,6 +16,8 @@ struct plan_t {
 };
 typedef struct plan_t plan_t;
 
+//plan_t* plan_new(query_t*) 
+void plan_free(void*);
 int build_plans(queue_t**, queue_t*);
 
 #endif /* PLAN_H */

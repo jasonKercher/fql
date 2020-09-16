@@ -51,7 +51,6 @@ void query_free(void* generic_query)
  * object->schema->database->server
  * We ignore database and server for now.
  */
-
 void query_add_source(query_t* query, stack_t* source_stack)
 {
         table_t* new_table = table_new();
@@ -65,7 +64,9 @@ void query_add_source(query_t* query, stack_t* source_stack)
 
                 source = stack_pop(&source_stack);
                 if (source != NULL) {
-                        strncpy_(new_table->schema, source, TABLE_NAME_MAX);
+                        strncpy_(new_table->schema->name,
+                                 source,
+                                 TABLE_NAME_MAX);
                         free_(source);
                 }
         }

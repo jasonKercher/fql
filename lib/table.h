@@ -8,16 +8,16 @@ extern "C" {
 
 #include "util/stack.h"
 #include "expression.h"
+#include "schema.h"
 #include "reader.h"
+#include "fqlimits.h"
 
 
 /** Table **/
-#define TABLE_NAME_MAX 129
 
 struct table_t {
         reader_t* source;
-        stack_t* columns;
-        char schema[TABLE_NAME_MAX];
+        schema_t* schema;
         char name[TABLE_NAME_MAX];
 };
 typedef struct table_t table_t;
@@ -54,22 +54,6 @@ typedef struct source_t source_t;
 source_t* source_new(table_t*, enum source);
 void source_free(source_t*);
 
-
-/** Column **/
-#define COLUMN_NAME_MAX 129
-
-struct column_t {
-        table_t* table;
-        expression_t* expr;
-        char alias[COLUMN_NAME_MAX];
-        char table_name[TABLE_NAME_MAX];
-        unsigned location;
-        unsigned width;
-};
-typedef struct column_t column_t;
-
-column_t* column_new(expression_t*, const char*);
-void column_free(void*);
 
 
 #ifdef __cplusplus

@@ -1,5 +1,5 @@
+#include "column.h"
 #include "query.h"
-
 #include "util/util.h"
 
 column_t* column_new(expression_t* expr, const char* table_name)
