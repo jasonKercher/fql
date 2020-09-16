@@ -21,8 +21,9 @@ column_t* column_new(expression_t* expr, const char* table_name)
         return new_column;
 }
 
-void column_free(column_t* col)
+void column_free(void* generic_col)
 {
+        column_t* col = generic_col;       
         expression_free(col->expr);
         free_(col);
 }

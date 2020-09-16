@@ -22,9 +22,7 @@ void table_free(table_t* table)
         if (table == NULL)
                 return;
 
-        stack_t* item = table->columns;
-        for (; item; item = item->next)
-                column_free(item->data);
+        stack_free_func(&table->columns, &column_free);
         free_(table);
 }
 

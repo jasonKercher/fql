@@ -2,7 +2,7 @@
 
 #include "util/util.h"
 
-expression_t* expression_new(int type, void* expr)
+expression_t* expression_new(enum expr_e type, void* expr)
 {
         expression_t* new_expression = NULL;
         malloc_(new_expression, sizeof(*new_expression));

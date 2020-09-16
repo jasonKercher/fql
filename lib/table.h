@@ -69,7 +69,7 @@ struct column_t {
 typedef struct column_t column_t;
 
 column_t* column_new(expression_t*, const char*);
-void column_free(column_t*);
+void column_free(void*);
 
 
 #ifdef __cplusplus

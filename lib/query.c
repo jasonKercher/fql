@@ -36,7 +36,7 @@ void query_free(query_t* query)
         queue_free_data(&query->groups);
         queue_free_data(&query->having);
 
-        free_(query->table);
+        table_free(query->table);
         free_(query->limit);
         free_(query->expr);
         free_(query);

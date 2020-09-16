@@ -1,5 +1,4 @@
 #include "stack.h"
-#include "util.h"
 
 stack_t* stack_push(stack_t** head, void* data)
 {
@@ -11,8 +10,9 @@ stack_t* stack_push(stack_t** head, void* data)
                 ,*head
         };
 
-        if (!*head)
-                *head = newnode;
+        if (*head)
+                (*head)->prev = newnode;
+        *head = newnode;
 
         return newnode;
 }
@@ -84,6 +84,12 @@ int stack_count(stack_t* head)
                 ++count;
 
         return count;
+}
+
+void stack_free_func(stack_t** head, generic_data_func free_func)
+{
+        for (; *head; stack_pop(head))
+                free_func((*head)->data);
 }
 
 void stack_free_data(stack_t** head)
