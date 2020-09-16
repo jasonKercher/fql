@@ -24,8 +24,9 @@ query_t* query_new()
         return new_query;
 }
 
-void query_free(query_t* query)
+void query_free(void* generic_query)
 {
+        query_t* query = generic_query;
         stack_t* s_item = query->sources;
         for (; s_item; s_item = s_item->next) {
                 source_free(s_item->data);

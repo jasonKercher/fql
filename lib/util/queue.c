@@ -94,9 +94,8 @@ int queue_count(queue_t* head)
 
 void queue_free_func(queue_t** head, generic_data_func free_func)
 {
-        void* data = NULL;
-        for (; *head; data = queue_dequeue(head))
-                free_func(data);
+        for (; *head; queue_dequeue(head))
+                free_func((*head)->data);
 }
 
 void queue_free_data(queue_t** head)

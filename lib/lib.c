@@ -60,11 +60,7 @@ int fql_exec(const char* query_str)
         analyze_query(&query_list, query_str);
 
         /* Release resources */
-        queue_t* item = query_list;
-        for (; item; item = item->next)
-                query_free(item->data);
-
-        queue_free(&query_list);
+        queue_free_func(&query_list, &query_free);
 
         return 0;
 }
