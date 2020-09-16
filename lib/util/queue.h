@@ -6,7 +6,6 @@ extern "C" {
 #endif
 
 #include <stdlib.h>
-#include "util.h"
 
 /**
  * Doubly-linked list treated as a queue
@@ -26,7 +25,7 @@ void* queue_dequeue(queue_t** head);
 queue_t* queue_front(queue_t* node);
 queue_t* queue_back(queue_t* node);
 int queue_count(queue_t* head);
-void queue_free_func(queue_t**, generic_data_func);
+void queue_free_func(queue_t**, void(*)(void*));
 void queue_free_data(queue_t** head);
 void queue_free(queue_t** head);
 

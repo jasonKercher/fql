@@ -9,7 +9,7 @@ table_t* table_new()
         malloc_(new_table, sizeof(*new_table));
 
         *new_table = (table_t) {
-                 NULL         /* source */
+                 reader_new() /* reader */
                 ,schema_new() /* schema */
                 ,""           /* name */
         };

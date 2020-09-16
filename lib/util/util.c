@@ -1,5 +1,9 @@
 #include "util.h"
 
+#include <dirent.h>
+
+#include "queue.h"
+
 long stringtolong10(const char* s)
 {
         return stringtolong(s, 10);
@@ -67,21 +71,23 @@ char* randstr(char* s, const int len)
         return s;
 }
 
-/* https://stackoverflow.com/questions/2736753/how-to-remove-extension-from-file-name */
-char* getnoext(const char* filename)
+/* https://stackoverflow.com/questions/2736753/how-to-remove-extension-from-file-name
+ * converted to leave user in control of allocation
+ * Assumption: dest space >= filename space
+ */
+void getnoext(char* dest, const char* filename)
 {
-        char* retstr = NULL;
         char* lastdot = NULL;
         char* lastsep = NULL;
 
-        if (!filename)
-                return NULL;
-        if (!(retstr = malloc(strlen(filename) + 1)))
-                return NULL;
+        if (!filename) {
+                dest[0] = '\0';
+                return;
+        }
 
-        strncpy(retstr, filename, PATH_MAX);
-        lastdot = strrchr(retstr, '.');
-        lastsep = ('/' == 0) ? NULL : strrchr(retstr, '/');
+        strcpy(dest, filename);
+        lastdot = strrchr(dest, '.');
+        lastsep = ('/' == 0) ? NULL : strrchr(dest, '/');
 
         if (lastdot != NULL) {
                 if (lastsep != NULL) {
@@ -91,8 +97,6 @@ char* getnoext(const char* filename)
                         *lastdot = '\0';
                 }
         }
-
-        return retstr;
 }
 
 
@@ -144,3 +148,25 @@ char * strnstr(const char *s, const char *find, size_t slen)
 	}
 	return ((char *)s);
 }
+
+queue_t* dir_list_files(const char* dir)
+{
+        /* Read file names into queue */
+        queue_t* files = NULL;
+        DIR *dr;
+        struct dirent *en;
+
+        dr = opendir(dir); //open all or present directory
+        if (!dr) {
+                perror(dir);
+                exit(EXIT_FAILURE);
+        }
+
+        while ((en = readdir(dr)) != NULL) {
+                queue_enqueue(&files, strdup(en->d_name));
+        }
+        closedir(dr);
+
+        return files;
+}
+

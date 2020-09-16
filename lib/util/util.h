@@ -13,6 +13,8 @@ extern "C" {
 #include <string.h>
 #include <ctype.h>
 
+#include "queue.h"
+
 #define TRUE  1
 #define FALSE 0
 
@@ -132,11 +134,9 @@ char* randstr(char* s, const int n);
 
 
 /**
- * getnoext returns a filename with no extension
- * The returned char* will be allocated on heap
- * and must be free'd!
+ * getnoext assigns a filename with no extension
  */
-char* getnoext(const char* filename);
+void getnoext(char* dest, const char* filename);
 
 /**
  * getext returns the extension from a provided filename
@@ -168,6 +168,8 @@ void string_to_lower(char* s);
  * Copy BSD's strnstr
  */
 char* strnstr(const char *s, const char *find, size_t slen);
+
+queue_t* dir_list_files(const char* dir);
 
 #ifdef __cplusplus
 }

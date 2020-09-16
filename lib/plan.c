@@ -1,5 +1,7 @@
 #include "plan.h"
+
 #include "query.h"
+#include "util/util.h"
 
 plan_t* plan_new(query_t* query) 
 {

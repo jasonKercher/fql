@@ -69,7 +69,5 @@ int fql_exec(const char* query_str)
         /* EXECUTE PLANS HERE */
         queue_free_func(&plans, &plan_free);
 
-
-
         return 0;
 }

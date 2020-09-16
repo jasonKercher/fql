@@ -1,4 +1,5 @@
 #include "stack.h"
+#include "util.h"
 
 stack_t* stack_push(stack_t** head, void* data)
 {

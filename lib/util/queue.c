@@ -1,4 +1,5 @@
 #include "queue.h"
+#include "util.h"
 
 queue_t* queue_enqueue(queue_t** head, void* data)
 {

@@ -7,8 +7,6 @@ extern "C" {
 
 #include <stdlib.h>
 
-#include "util.h"
-
 /**
  * Doubly-linked list treated as a stack.
  */
@@ -27,7 +25,7 @@ void* stack_pop(stack_t** head);
 stack_t* stack_top(stack_t* node);
 stack_t* stack_bottom(stack_t* node);
 int stack_count(stack_t* head);
-void stack_free_func(stack_t**, generic_data_func);
+void stack_free_func(stack_t**, void(*)(void*));
 void stack_free_data(stack_t** head);
 void stack_free(stack_t** head);
 

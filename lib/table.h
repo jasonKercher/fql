@@ -16,7 +16,7 @@ extern "C" {
 /** Table **/
 
 struct table_t {
-        reader_t* source;
+        reader_t* reader;
         schema_t* schema;
         char name[TABLE_NAME_MAX];
 };
