@@ -1,6 +1,11 @@
 #ifndef HMAP_H
 #define HMAP_H
 
+/**
+ * Case insensitive hash map
+ * Too lazy to make my own, so just wrapped hsearch_r
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

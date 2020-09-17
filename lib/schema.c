@@ -13,8 +13,9 @@ schema_t* schema_new()
         malloc_(new_schema, sizeof(*new_schema));
 
         *new_schema = (schema_t) {
-                 NULL    /* columns */
-                ,""      /* name */
+                 NULL   /* columns */
+                ,NULL   /* col_map */
+                ,""     /* name */
         };
 
         return new_schema;
@@ -77,7 +78,7 @@ void schema_resolve_file(table_t* table)
                 getnoext(file_noext, node->data);
                 if (string_eq(file_noext, base)) {
                         ++matches;
-                        strcpy(table->reader->file_name, file_noext);
+                        strcpy(table->reader->file_name, node->data);
                 }
         }
         
@@ -93,7 +94,7 @@ void schema_resolve_file(table_t* table)
                 getnoext(file_noext, node->data);
                 if (istring_eq(file_noext, base)) {
                         ++matches;
-                        strcpy(table->reader->file_name, file_noext);
+                        strcpy(table->reader->file_name, node->data);
                 }
         }
         
@@ -111,6 +112,9 @@ void schema_resolve_file(table_t* table)
 void schema_assign_header(table_t* table, csv_record* rec)
 {
         int i = 0;
+
+        table->schema->col_map = hmap_new(rec->size * 2);
+
         for (; i < rec->size; ++i) {
                 char* column_name = strdup(rec->fields[i]);
                 table_add_column(table,
@@ -120,6 +124,9 @@ void schema_assign_header(table_t* table, csv_record* rec)
                 column_t* col = table->schema->columns->data;
                 col->location = i;
                 col->table = table;
+
+                /* add to hash map for easy searching */
+                hmap_set(table->schema->col_map, column_name, col);
         }
 }
 
@@ -146,20 +153,49 @@ void schema_resolve_source(source_t* source)
         reader_assign(table->reader, READ_LIBCSV);
 
         csv_record* rec = csv_record_new();
-        table->reader->get_f(table->reader->handle, rec);
+        table->reader->get_record_f(table->reader->handle, rec);
 
         schema_assign_header(table, rec);
+}
+
+void schema_validate(query_t* query)
+{
+        schema_t* output_schema = query->table->schema;
+        stack_t* col_node = output_schema->columns;
+
+        for (; col_node; col_node = col_node->next) {
+                int matches = 0;
+                column_t* col = col_node->data;
+
+                stack_t* src_node = query->sources;
+                for (; src_node; src_node = src_node->next) {
+                        source_t* src = src_node->data;
+                        matches += column_try_assign_source(col, src);
+                }                
+
+                if (matches > 1) {
+                        fprintf(stderr, "%s: ambiguous column\n", col->alias);
+                        exit(EXIT_FAILURE);
+                }
+
+                if (matches == 0) {
+                        fprintf(stderr, "%s: cannot find column\n", col->alias);
+                        exit(EXIT_FAILURE);
+                }
+        }
 }
 
 void schema_resolve(queue_t* query_node)
 {
         for (; query_node; query_node = query_node->next) {
                 query_t* query = query_node->data;
-                stack_t* source_node = query->sources;
+                stack_t* src_node = query->sources;
 
-                for (; source_node; source_node = source_node->next) {
-                        schema_resolve_source(source_node->data);
+                for (; src_node; src_node = src_node->next) {
+                        schema_resolve_source(src_node->data);
                 }
+
+                schema_validate(query);
         }
 }
 

@@ -9,6 +9,7 @@ column_t* column_new(expression_t* expr, const char* table_name)
 
         *new_column = (column_t) {
                  NULL   /* table */
+                ,NULL   /* data_source */
                 ,expr   /* expression */
                 ,""     /* alias */
                 ,""     /* table_name */
@@ -27,3 +28,14 @@ void column_free(void* generic_col)
         expression_free(col->expr);
         free_(col);
 }
+
+int column_try_assign_source(column_t* col, source_t* src)
+{
+        col->data_source = hmap_get(src->table->schema->col_map, col->alias);
+        if (col->data_source) {
+                return 1;
+        }
+
+        return 0;
+}
+

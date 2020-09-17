@@ -2,6 +2,10 @@ fql
 .gdb_history
 .clangd/
 
+
+# temp files
+*.temp
+
 # doc files
 Doxyfile
 *.stamp

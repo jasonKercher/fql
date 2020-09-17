@@ -30,8 +30,11 @@ void table_add_column(table_t* table,
                       expression_t* expr,
                       const char* table_name)
 {
-        stack_push(&table->schema->columns,
-                   column_new(expr, table_name));
+        column_t* new_col = column_new(expr, table_name);
+        if (expr->type == EXPR_COLUMN_NAME) {
+                strncpy_(new_col->alias, expr->expr, COLUMN_NAME_MAX);
+        }
+        stack_push(&table->schema->columns, new_col);
 }
 
 void table_apply_column_alias(table_t* table, const char* alias)

@@ -30,20 +30,21 @@ hmap_t* hmap_new(size_t limit)
 
 int _hmap_insert(hmap_t* m, char* key, void* data)
 {
-        //hmap_t_item* item = _hmap_item_new(key, data);
-
         ENTRY new_entry;
         ENTRY* ret = NULL;
 
-        new_entry.key = key;
+        char key_cpy[MAX_KEY_LEN] = "";
+        strncpy_(key_cpy, key, MAX_KEY_LEN);
+
+        string_to_lower(key_cpy);
+
+        new_entry.key = key_cpy;
         new_entry.data = data;
 
         if (!hsearch_r(new_entry, ENTER, &ret, m->tab)) {
                 perror("hsearch_r");
                 return 0;
         }
-
-        //item->_node = queue_enqueue(&m->items, item);
 
         return 1;
 }
@@ -53,8 +54,6 @@ void* _hmap_update(hmap_t* m, const char* key, void* data)
         ENTRY* ent = _hmap_get(m, key);
         if (!ent)
                 return NULL;
-
-        //hmap_t_item* item = ent->data;
 
         if (ent->data == NONE) {
                 ent->data = data;
@@ -74,6 +73,8 @@ ENTRY* _hmap_get(hmap_t* m, const char* key)
 
         char key_cpy[MAX_KEY_LEN] = "";
         strncpy_(key_cpy, key, MAX_KEY_LEN);
+
+        string_to_lower(key_cpy);
 
         search_entry.key = key_cpy;
 
@@ -112,6 +113,8 @@ int hmap_haskey(hmap_t* m, const char* key)
         char key_cpy[MAX_KEY_LEN] = "";
         strncpy_(key_cpy, key, MAX_KEY_LEN);
 
+        string_to_lower(key_cpy);
+
         search_entry.key = key_cpy;
 
         int ret_val = hsearch_r(search_entry, FIND, &ret, m->tab);
@@ -146,7 +149,7 @@ void* hmap_remove(hmap_t* m, const char* key)
 
 void hmap_free(hmap_t* m)
 {
-        queue_free_data(&m->items);
+        //queue_free_data(&m->items);
         hdestroy_r(m->tab);
         free_(m->tab);
         free_(m);

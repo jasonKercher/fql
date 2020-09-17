@@ -11,7 +11,7 @@ reader_t* reader_new()
 
         *new_reader = (reader_t) {
                  NULL   /* handle */
-                ,NULL   /* get_f */
+                ,NULL   /* get_record_f */
                 ,NULL   /* free_f */
                 ,""     /* file_name */
         };
@@ -37,7 +37,7 @@ void reader_assign(reader_t* reader, enum read_type type)
         switch (type) {
         case READ_LIBCSV:
                 reader->handle = csv_reader_new();
-                reader->get_f = &csv_get_record_i;
+                reader->get_record_f = &csv_get_record_i;
                 reader->free_f = &csv_reader_free_i;
                 ret = csv_reader_open(reader->handle, reader->file_name);
                 break;

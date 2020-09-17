@@ -3,10 +3,12 @@
 
 #include "util/stack.h"
 #include "util/queue.h"
+#include "util/hmap.h"
 #include "fqlimits.h"
 
 struct schema_t {
         stack_t* columns;
+        hmap_t* col_map;
         char name[TABLE_NAME_MAX];
 };
 typedef struct schema_t schema_t;

@@ -7,6 +7,7 @@ extern "C" {
 #endif
 
 #include "util/stack.h"
+#include "util/hmap.h"
 #include "expression.h"
 #include "schema.h"
 #include "reader.h"

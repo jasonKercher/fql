@@ -293,6 +293,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -303,7 +304,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AM_CPPFLAGS = -I$(srcdir)/../lib/include -I$(srcdir)/../lib/util/
 fql_SOURCES = fql.c
-fql_LDADD = ../lib/libfql.la -lreadline 
+fql_LDADD = ../lib/libfql.la -lreadline -lcsv
 all: all-am
 
 .SUFFIXES:
