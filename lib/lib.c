@@ -65,9 +65,9 @@ int fql_exec(const char* query_str)
         build_plans(&plans, query_list);
 
         queue_free_func(&query_list, &query_free);
-
-        /* EXECUTE PLANS HERE */
         queue_free_func(&plans, &plan_free);
 
         return 0;
 }
+
+
