@@ -25,6 +25,9 @@ void schema_free(void* generic_schema)
 {
         schema_t* schema = generic_schema;
         stack_free_func(&schema->columns, &column_free);
+        if (schema->col_map != NULL) {
+                hmap_free(schema->col_map);
+        }
         free_(schema);
 }
 
@@ -54,7 +57,9 @@ void schema_resolve_file(table_t* table)
                 }
         }
         
-        if (matches) return;
+        if (matches) {
+                goto success_return;
+        }
 
         /* Match exact ignoring case */
         for (node = files; node; node = node->next) {
@@ -68,7 +73,7 @@ void schema_resolve_file(table_t* table)
                 fprintf(stderr, "%s: ambiguous file name\n", table->name);
                 exit(EXIT_FAILURE);
         } else if (matches) {
-                return;
+                goto success_return;
         }
 
         char file_noext[PATH_MAX] = "";
@@ -86,7 +91,7 @@ void schema_resolve_file(table_t* table)
                 fprintf(stderr, "%s: ambiguous file name\n", table->name);
                 exit(EXIT_FAILURE);
         } else if (matches) {
-                return;
+                goto success_return;
         }
 
         /* Match file without extension ignoring case */
@@ -102,11 +107,14 @@ void schema_resolve_file(table_t* table)
                 fprintf(stderr, "%s: ambiguous file name\n", table->name);
                 exit(EXIT_FAILURE);
         } else if (matches) {
-                return;
+                goto success_return;
         }
 
         fprintf(stderr, "%s: unable to find matching file\n", table->name);
         exit(EXIT_FAILURE);
+
+success_return:
+        queue_free_data(&files);
 }
 
 void schema_assign_header(table_t* table, csv_record* rec)
@@ -156,6 +164,8 @@ void schema_resolve_source(source_t* source)
         table->reader->get_record_f(table->reader->handle, rec);
 
         schema_assign_header(table, rec);
+
+        csv_record_free(rec);
 }
 
 void schema_validate(query_t* query)

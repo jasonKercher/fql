@@ -22,6 +22,7 @@ void table_free(table_t* table)
         if (table == NULL)
                 return;
 
+        reader_free(table->reader);
         schema_free(table->schema);
         free_(table);
 }

@@ -21,6 +21,9 @@ reader_t* reader_new()
 
 void reader_free(reader_t* reader)
 {
+        if (reader == NULL) {
+                return;
+        }
         if (reader->free_f) {
                 reader->free_f(reader->handle);
         }
