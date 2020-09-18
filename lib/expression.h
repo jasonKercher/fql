@@ -16,14 +16,13 @@ enum expr_e {
         EXPR_SUBQUERY_CONST,
 };
 
-struct expression_t {
+struct expression {
         void* expr;
         enum expr_e type;
 };
-typedef struct expression_t expression_t;
 
-expression_t* expression_new(enum expr_e type, void*);
-void expression_free(expression_t*);
+struct expression* expression_new(enum expr_e type, void*);
+void expression_free(struct expression*);
 
 #ifdef __cplusplus
 }

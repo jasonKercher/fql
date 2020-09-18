@@ -3,12 +3,12 @@
 #include "query.h"
 #include "util/util.h"
 
-plan_t* plan_new(query_t* query) 
+struct plan* plan_new(struct query* query) 
 {
-        plan_t* new_plan = NULL;
+        struct plan* new_plan = NULL;
         malloc_(new_plan, sizeof(*new_plan));
 
-        *new_plan = (plan_t) {
+        *new_plan = (struct plan) {
                 NULL
         };
 
@@ -17,17 +17,17 @@ plan_t* plan_new(query_t* query)
 
 void plan_free(void* generic_plan)
 {
-        plan_t* plan = generic_plan;
+        struct plan* plan = generic_plan;
         queue_free_data(&plan->process_queue);
         free_(plan);
 }
 
-int build_plans(queue_t** plans, queue_t* query_list)
+int build_plans(struct queue** plans, struct queue* query_list)
 {
-        queue_t* query_node = query_list;
+        struct queue* query_node = query_list;
         
         for (; query_node; query_node = query_node->next) {
-                query_t* query = query_node->data;
+                struct query* query = query_node->data;
                 queue_enqueue(plans, plan_new(query));
         }
         return 0;

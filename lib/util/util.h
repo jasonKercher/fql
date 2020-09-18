@@ -169,7 +169,7 @@ void string_to_lower(char* s);
  */
 char* strnstr(const char *s, const char *find, size_t slen);
 
-queue_t* dir_list_files(const char* dir);
+struct queue* dir_list_files(const char* dir);
 
 #ifdef __cplusplus
 }

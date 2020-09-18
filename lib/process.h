@@ -5,14 +5,13 @@
 
 #include "util/vec.h"
 
-struct process_t {
+struct process {
         void* input;
         void* output;
         char action[ACTION_MAX];
 };
-typedef struct process_t process_t;
 
-process_t* process_new(unsigned, unsigned, const char*);
-void process_free(process_t*);
+struct process* process_new(unsigned, unsigned, const char*);
+void process_free(struct process*);
 
 #endif /* PROCESS_H */

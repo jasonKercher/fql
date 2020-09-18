@@ -1,11 +1,11 @@
 #include "stack.h"
 #include "util.h"
 
-stack_t* stack_push(stack_t** head, void* data)
+struct stack* stack_push(struct stack** head, void* data)
 {
-        stack_t* newnode = NULL;
+        struct stack* newnode = NULL;
         malloc_(newnode, sizeof(*newnode));
-        *newnode = (stack_t) {
+        *newnode = (struct stack) {
                  data 
                 ,NULL
                 ,*head
@@ -18,7 +18,7 @@ stack_t* stack_push(stack_t** head, void* data)
         return newnode;
 }
 
-void stack_delete(stack_t** head, stack_t* node)
+void stack_delete(struct stack** head, struct stack* node)
 {
         if (!node)
                 return;
@@ -27,7 +27,7 @@ void stack_delete(stack_t** head, stack_t* node)
         free_(data);
 }
 
-void* stack_remove(stack_t** head, stack_t* node)
+void* stack_remove(struct stack** head, struct stack* node)
 {
         if (!node)
                 return NULL;
@@ -45,60 +45,60 @@ void* stack_remove(stack_t** head, stack_t* node)
         return data;
 }
 
-void* stack_pop(stack_t** head)
+void* stack_pop(struct stack** head)
 {
         return stack_remove(head, *head);
 }
 
-stack_t* stack_top(stack_t* node)
+struct stack* stack_top(struct stack* node)
 {
         if (!node)
                 return NULL;
 
-        stack_t* head = node;
+        struct stack* head = node;
         while (head && head->prev)
                 head = head->prev;
 
         return head;
 }
 
-stack_t* stack_bottom(stack_t* node)
+struct stack* stack_bottom(struct stack* node)
 {
         if (!node)
                 return NULL;
 
-        stack_t* last = node;
+        struct stack* last = node;
         while (last && last->next)
                 last = last->next;
 
         return last;
 }
 
-int stack_count(stack_t* head)
+int stack_count(struct stack* head)
 {
         if (!head)
                 return 0;
 
         int count = 1;
-        stack_t* last = head;
+        struct stack* last = head;
         while ((last = last->next))
                 ++count;
 
         return count;
 }
 
-void stack_free_func(stack_t** head, generic_data_func free_func)
+void stack_free_func(struct stack** head, generic_data_func free_func)
 {
         for (; *head; stack_pop(head))
                 free_func((*head)->data);
 }
 
-void stack_free_data(stack_t** head)
+void stack_free_data(struct stack** head)
 {
         for (; *head; stack_delete(head, *head));
 }
 
-void stack_free(stack_t** head)
+void stack_free(struct stack** head)
 {
         for (; *head; stack_pop(head));
 }

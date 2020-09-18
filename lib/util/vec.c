@@ -1,12 +1,12 @@
 #include "vec.h"
 #include "util.h"
 
-vec_t* vec_new_()
+struct vec* vec_new_()
 {
-        vec_t* new_vec = NULL;
+        struct vec* new_vec = NULL;
         malloc_(new_vec, sizeof(*new_vec));
 
-        *new_vec = (vec_t) {
+        *new_vec = (struct vec) {
                  NULL
                 ,0
                 ,0
@@ -15,20 +15,20 @@ vec_t* vec_new_()
         return new_vec;
 }
 
-vec_t* vec_new_s(size_t size)
+struct vec* vec_new_s(size_t size)
 {
-        vec_t* new_vec = vec_new_();
+        struct vec* new_vec = vec_new_();
         vec_reserve(new_vec, size);
         return new_vec;
 }
 
-void vec_free(vec_t* vec)
+void vec_free(struct vec* vec)
 {
         free_(vec->data);
         free_(vec);
 }
 
-void vec_reserve(vec_t* vec, size_t size)
+void vec_reserve(struct vec* vec, size_t size)
 {
         if (vec->_alloc > ++size) {
                 return;
@@ -43,7 +43,7 @@ void vec_reserve(vec_t* vec, size_t size)
         vec->_alloc = size;
 }
 
-void vec_resize(vec_t* vec, size_t size)
+void vec_resize(struct vec* vec, size_t size)
 {
         if (size == vec->size) {
                 return;
@@ -64,7 +64,7 @@ void vec_resize(vec_t* vec, size_t size)
         vec->size = size;
 }
 
-void vec_push_back(vec_t* vec, void* item) 
+void vec_push_back(struct vec* vec, void* item) 
 {
         if (vec->_alloc <= ++vec->size)        
                 vec_reserve(vec, vec->_alloc + VEC_BLOCK_SIZE);

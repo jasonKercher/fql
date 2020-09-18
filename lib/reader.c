@@ -4,12 +4,12 @@
 
 #include "util/util.h"
 
-reader_t* reader_new()
+struct reader* reader_new()
 {
-        reader_t* new_reader = NULL;
+        struct reader* new_reader = NULL;
         malloc_(new_reader, sizeof(*new_reader));
 
-        *new_reader = (reader_t) {
+        *new_reader = (struct reader) {
                  NULL   /* handle */
                 ,NULL   /* get_record_f */
                 ,NULL   /* free_f */
@@ -19,7 +19,7 @@ reader_t* reader_new()
         return new_reader;
 }
 
-void reader_free(reader_t* reader)
+void reader_free(struct reader* reader)
 {
         if (reader == NULL) {
                 return;
@@ -34,7 +34,7 @@ void reader_free(reader_t* reader)
 int csv_get_record_i(void* handle, csv_record* rec);
 void csv_reader_free_i(void* handle);
 
-void reader_assign(reader_t* reader, enum read_type type)
+void reader_assign(struct reader* reader, enum read_type type)
 {
         int ret = 0;
         switch (type) {

@@ -1,12 +1,12 @@
 #include "process.h"
 #include "util/util.h"
 
-process_t* process_new(unsigned in, unsigned out, const char* action)
+struct process* process_new(unsigned in, unsigned out, const char* action)
 {
-        process_t* new_proc = NULL;
+        struct process* new_proc = NULL;
         malloc_(new_proc, sizeof(*new_proc));
 
-        *new_proc = (process_t) {
+        *new_proc = (struct process) {
                  vec_new(in)    /* Input */
                 ,vec_new(out)   /* Output */
                 ,""             /* action */
@@ -17,7 +17,7 @@ process_t* process_new(unsigned in, unsigned out, const char* action)
         return new_proc;
 }
 
-void process_free(process_t* proc)
+void process_free(struct process* proc)
 {
         free_(proc);
 }

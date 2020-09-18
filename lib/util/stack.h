@@ -10,24 +10,22 @@ extern "C" {
 /**
  * Doubly-linked list treated as a stack.
  */
-struct stack_t {
+struct stack {
         void* data;
-        struct stack_t* prev;
-        struct stack_t* next;
+        struct stack* prev;
+        struct stack* next;
 };
 
-typedef struct stack_t stack_t;
-
-stack_t* stack_push(stack_t** head, void*);
-void* stack_remove(stack_t** head, stack_t*);
-void stack_delete(stack_t** head, stack_t*);
-void* stack_pop(stack_t** head);
-stack_t* stack_top(stack_t* node);
-stack_t* stack_bottom(stack_t* node);
-int stack_count(stack_t* head);
-void stack_free_func(stack_t**, void(*)(void*));
-void stack_free_data(stack_t** head);
-void stack_free(stack_t** head);
+struct stack* stack_push(struct stack** head, void*);
+void* stack_remove(struct stack** head, struct stack*);
+void stack_delete(struct stack** head, struct stack*);
+void* stack_pop(struct stack** head);
+struct stack* stack_top(struct stack* node);
+struct stack* stack_bottom(struct stack* node);
+int stack_count(struct stack* head);
+void stack_free_func(struct stack**, void(*)(void*));
+void stack_free_data(struct stack** head);
+void stack_free(struct stack** head);
 
 #ifdef __cplusplus
 }

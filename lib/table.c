@@ -3,12 +3,12 @@
 
 #include "util/util.h"
 
-table_t* table_new()
+struct table* table_new()
 {
-        table_t* new_table = NULL;
+        struct table* new_table = NULL;
         malloc_(new_table, sizeof(*new_table));
 
-        *new_table = (table_t) {
+        *new_table = (struct table) {
                  reader_new() /* reader */
                 ,schema_new() /* schema */
                 ,""           /* name */
@@ -17,7 +17,7 @@ table_t* table_new()
         return new_table;
 }
 
-void table_free(table_t* table)
+void table_free(struct table* table)
 {
         if (table == NULL)
                 return;
@@ -27,32 +27,32 @@ void table_free(table_t* table)
         free_(table);
 }
 
-void table_add_column(table_t* table,
-                      expression_t* expr,
+void table_add_column(struct table* table,
+                      struct expression* expr,
                       const char* table_name)
 {
-        column_t* new_col = column_new(expr, table_name);
+        struct column* new_col = column_new(expr, table_name);
         if (expr->type == EXPR_COLUMN_NAME) {
                 strncpy_(new_col->alias, expr->expr, COLUMN_NAME_MAX);
         }
         stack_push(&table->schema->columns, new_col);
 }
 
-void table_apply_column_alias(table_t* table, const char* alias)
+void table_apply_column_alias(struct table* table, const char* alias)
 {
-        column_t* col = table->schema->columns->data;
+        struct column* col = table->schema->columns->data;
         strncpy_(col->alias, alias, COLUMN_NAME_MAX);
 }
 
 
 
 
-source_t* source_new(table_t* table, enum source type)
+struct source* source_new(struct table* table, enum source_type type)
 {
-        source_t* new_source = NULL;
+        struct source* new_source = NULL;
         malloc_(new_source, sizeof(*new_source));
 
-        *new_source = (source_t) {
+        *new_source = (struct source) {
                  table          /* table */
                 ,type           /* source_type */
                 ,JOIN_FROM      /* join_type */
@@ -62,7 +62,7 @@ source_t* source_new(table_t* table, enum source type)
         return new_source;
 }
 
-void source_free(source_t* source)
+void source_free(struct source* source)
 {
         if (source == NULL)
                 return;

@@ -16,21 +16,20 @@ extern "C" {
 
 /** Table **/
 
-struct table_t {
-        reader_t* reader;
-        schema_t* schema;
+struct table {
+        struct reader* reader;
+        struct schema* schema;
         char name[TABLE_NAME_MAX];
 };
-typedef struct table_t table_t;
 
-table_t* table_new();
-void table_free(table_t*);
-void table_add_column(table_t*, expression_t*, const char* table_name);
-void table_apply_column_alias(table_t*, const char*);
+struct table* table_new();
+void table_free(struct table*);
+void table_add_column(struct table*, struct expression*, const char* table_name);
+void table_apply_column_alias(struct table*, const char*);
 
 
 /** Source **/
-enum source {
+enum source_type {
         SOURCE_TABLE,
         SOURCE_SUBQUERY,
 };
@@ -44,16 +43,15 @@ enum join {
         JOIN_CROSS,
 };
 
-struct source_t {
-        table_t* table;
-        enum source source_type;
+struct source {
+        struct table* table;
+        enum source_type source_type;
         enum join join_type;
         char alias[TABLE_NAME_MAX];
 };
-typedef struct source_t source_t;
 
-source_t* source_new(table_t*, enum source);
-void source_free(source_t*);
+struct source* source_new(struct table*, enum source_type);
+void source_free(struct source*);
 
 
 

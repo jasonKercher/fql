@@ -3,13 +3,12 @@
 
 #include "util/queue.h"
 
-struct plan_t {
-        queue_t* process_queue;
+struct plan {
+        struct queue* process_queue;
 };
-typedef struct plan_t plan_t;
 
-//plan_t* plan_new(query_t*)
+//struct plan* plan_new(struct query*)
 void plan_free(void*);
-int build_plans(queue_t**, queue_t*);
+int build_plans(struct queue**, struct queue*);
 
 #endif /* PLAN_H */

@@ -7,12 +7,12 @@
 #include "query.h"
 #include "util/util.h"
 
-schema_t* schema_new()
+struct schema* schema_new()
 {
-        schema_t* new_schema = NULL;
+        struct schema* new_schema = NULL;
         malloc_(new_schema, sizeof(*new_schema));
 
-        *new_schema = (schema_t) {
+        *new_schema = (struct schema) {
                  NULL   /* columns */
                 ,NULL   /* col_map */
                 ,""     /* name */
@@ -23,7 +23,7 @@ schema_t* schema_new()
 
 void schema_free(void* generic_schema)
 {
-        schema_t* schema = generic_schema;
+        struct schema* schema = generic_schema;
         stack_free_func(&schema->columns, &column_free);
         if (schema->col_map != NULL) {
                 hmap_free(schema->col_map);
@@ -31,7 +31,7 @@ void schema_free(void* generic_schema)
         free_(schema);
 }
 
-void schema_resolve_file(table_t* table)
+void schema_resolve_file(struct table* table)
 {
         /* Usage of PATH_MAX here is kind of silly,
          * but I'm too lazy to allocate these correctly.
@@ -45,8 +45,8 @@ void schema_resolve_file(table_t* table)
         char* dir = dirname(table_name_dir);
         char* base = basename(table_name_base);
 
-        queue_t* files = dir_list_files(dir);
-        queue_t* node = files;
+        struct queue* files = dir_list_files(dir);
+        struct queue* node = files;
 
         int matches = 0;
         /* Match exact */
@@ -117,7 +117,7 @@ success_return:
         queue_free_data(&files);
 }
 
-void schema_assign_header(table_t* table, csv_record* rec)
+void schema_assign_header(struct table* table, csv_record* rec)
 {
         int i = 0;
 
@@ -129,7 +129,7 @@ void schema_assign_header(table_t* table, csv_record* rec)
                                  expression_new(EXPR_COLUMN_NAME, column_name),
                                  "");
 
-                column_t* col = table->schema->columns->data;
+                struct column* col = table->schema->columns->data;
                 col->location = i;
                 col->table = table;
 
@@ -138,7 +138,7 @@ void schema_assign_header(table_t* table, csv_record* rec)
         }
 }
 
-void schema_resolve_source(source_t* source)
+void schema_resolve_source(struct source* source)
 {
         if (source->source_type == SOURCE_SUBQUERY) {
                 fputs("Not supporting subquery schema yet\n", stderr);
@@ -147,7 +147,7 @@ void schema_resolve_source(source_t* source)
 
         schema_resolve_file(source->table);
 
-        table_t* table = source->table;
+        struct table* table = source->table;
         if (table->schema->columns) {
                 return;  /* Schema already set */
         }
@@ -168,18 +168,18 @@ void schema_resolve_source(source_t* source)
         csv_record_free(rec);
 }
 
-void schema_validate(query_t* query)
+void schema_validate(struct query* query)
 {
-        schema_t* output_schema = query->table->schema;
-        stack_t* col_node = output_schema->columns;
+        struct schema* output_schema = query->table->schema;
+        struct stack* col_node = output_schema->columns;
 
         for (; col_node; col_node = col_node->next) {
                 int matches = 0;
-                column_t* col = col_node->data;
+                struct column* col = col_node->data;
 
-                stack_t* src_node = query->sources;
+                struct stack* src_node = query->sources;
                 for (; src_node; src_node = src_node->next) {
-                        source_t* src = src_node->data;
+                        struct source* src = src_node->data;
                         matches += column_try_assign_source(col, src);
                 }                
 
@@ -195,11 +195,11 @@ void schema_validate(query_t* query)
         }
 }
 
-void schema_resolve(queue_t* query_node)
+void schema_resolve(struct queue* query_node)
 {
         for (; query_node; query_node = query_node->next) {
-                query_t* query = query_node->data;
-                stack_t* src_node = query->sources;
+                struct query* query = query_node->data;
+                struct stack* src_node = query->sources;
 
                 for (; src_node; src_node = src_node->next) {
                         schema_resolve_source(src_node->data);

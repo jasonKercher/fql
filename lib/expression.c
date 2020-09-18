@@ -2,12 +2,12 @@
 
 #include "util/util.h"
 
-expression_t* expression_new(enum expr_e type, void* expr)
+struct expression* expression_new(enum expr_e type, void* expr)
 {
-        expression_t* new_expression = NULL;
+        struct expression* new_expression = NULL;
         malloc_(new_expression, sizeof(*new_expression));
 
-        *new_expression = (expression_t) {
+        *new_expression = (struct expression) {
                  expr   /* expression */
                 ,type   /* type */
         };
@@ -15,7 +15,7 @@ expression_t* expression_new(enum expr_e type, void* expr)
         return new_expression;
 }
 
-void expression_free(expression_t* expr)
+void expression_free(struct expression* expr)
 {
         /**
          * Expressions own their data.  Because an expression

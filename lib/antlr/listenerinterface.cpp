@@ -6,7 +6,7 @@
 #include "query.h"
 #include "util/util.h"
 
-ListenerInterface::ListenerInterface(queue_t** query_list, const std::vector<std::string>& rules)
+ListenerInterface::ListenerInterface(struct queue** query_list, const std::vector<std::string>& rules)
 {
         _table_name[0] = '\0';
         _rule_names = rules;
@@ -255,8 +255,8 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 }
 void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 {
-        expression_t* new_expr = expression_new(EXPR_NONE, stack_pop(&_query_stack));
-        _query = (query_t*) _query_stack->data;
+        struct expression* new_expr = expression_new(EXPR_NONE, stack_pop(&_query_stack));
+        _query = (struct query*) _query_stack->data;
 
 
         switch(_query->mode) {

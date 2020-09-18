@@ -19,18 +19,17 @@ enum read_type {
         READ_SUBQUERY,
 };
 
-struct reader_t {
+struct reader {
         void* handle;
         read_next_func get_record_f;
         generic_data_func free_f;
         char file_name[PATH_MAX];
 };
-typedef struct reader_t reader_t;
 
-reader_t* reader_new();
-void reader_free(reader_t*);
+struct reader* reader_new();
+void reader_free(struct reader*);
 
-void reader_assign(reader_t*, enum read_type);
+void reader_assign(struct reader*, enum read_type);
 
 #ifdef __cplusplus
 }

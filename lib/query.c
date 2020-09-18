@@ -2,12 +2,12 @@
 
 #include "util/util.h"
 
-query_t* query_new()
+struct query* query_new()
 {
-        query_t* new_query = NULL;
+        struct query* new_query = NULL;
         malloc_(new_query, sizeof(*new_query));
 
-        *new_query = (query_t) {
+        *new_query = (struct query) {
                  table_new()            /* table */
                 ,NULL                   /* sources */
                 ,NULL                   /* conditions */
@@ -26,8 +26,8 @@ query_t* query_new()
 
 void query_free(void* generic_query)
 {
-        query_t* query = generic_query;
-        stack_t* s_item = query->sources;
+        struct query* query = generic_query;
+        struct stack* s_item = query->sources;
         for (; s_item; s_item = s_item->next) {
                 source_free(s_item->data);
         }
@@ -51,10 +51,10 @@ void query_free(void* generic_query)
  * object->schema->database->server
  * We ignore database and server for now.
  */
-void query_add_source(query_t* query, stack_t* source_stack)
+void query_add_source(struct query* query, struct stack* source_stack)
 {
-        table_t* new_table = table_new();
-        enum source type = SOURCE_SUBQUERY;
+        struct table* new_table = table_new();
+        enum source_type type = SOURCE_SUBQUERY;
 
         char* source = stack_pop(&source_stack);
         if (source != NULL) {
@@ -76,8 +76,8 @@ void query_add_source(query_t* query, stack_t* source_stack)
         stack_push(&query->sources, source_new(new_table, type));
 }
 
-void query_apply_table_alias(query_t * query, const char * alias)
+void query_apply_table_alias(struct query * query, const char * alias)
 {
-        source_t* source = query->sources->data;
+        struct source* source = query->sources->data;
         strncpy_(source->alias, alias, TABLE_NAME_MAX);
 }

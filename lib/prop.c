@@ -3,7 +3,7 @@
 
 void prop_init()
 {
-        props_t g_props = {
+        struct props g_props = {
                  ","    /* in_delim */
                 ,","    /* out_delim */
                 ,FALSE  /* verbose */

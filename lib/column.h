@@ -6,21 +6,20 @@
 #include "expression.h"
 
 /** Column **/
-struct column_t {
-        table_t* table;
-        struct column_t* data_source;
-        expression_t* expr;
+struct column {
+        struct table* table;
+        struct column* data_source;
+        struct expression* expr;
         char alias[COLUMN_NAME_MAX];
         char table_name[TABLE_NAME_MAX];
         unsigned location;
         unsigned width;
 };
-typedef struct column_t column_t;
 
-column_t* column_new(expression_t*, const char*);
+struct column* column_new(struct expression*, const char*);
 void column_free(void*);
 
-int column_try_assign_source(column_t*, source_t*);
+int column_try_assign_source(struct column*, struct source*);
 
 
 

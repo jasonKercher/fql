@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-int analyze_query(queue_t**, const char*);
+int analyze_query(struct queue**, const char*);
 
 #ifdef __cplusplus
 }

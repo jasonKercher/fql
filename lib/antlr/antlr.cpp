@@ -5,7 +5,7 @@
 
 #include "plan.h"
 
-int analyze_query(queue_t** query_list, const char* query_str)
+int analyze_query(struct queue** query_list, const char* query_str)
 {
 
         UpperStream input(query_str);

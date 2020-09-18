@@ -6,15 +6,14 @@
 #include "util/hmap.h"
 #include "fqlimits.h"
 
-struct schema_t {
-        stack_t* columns;
-        hmap_t* col_map;
+struct schema {
+        struct stack* columns;
+        struct hmap* col_map;
         char name[TABLE_NAME_MAX];
 };
-typedef struct schema_t schema_t;
 
-schema_t* schema_new();
+struct schema* schema_new();
 void schema_free(void*);
-void schema_resolve(queue_t* query_list);
+void schema_resolve(struct queue* query_list);
 
 #endif /* SCHEMA_H */

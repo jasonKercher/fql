@@ -21,26 +21,25 @@ enum mode {
 };
 
 /** Query **/
-struct query_t {
-        table_t* table;         /* output table */
-        stack_t* sources;       /* source_t */
-        queue_t* conditions;    /* expression_t */
-        queue_t* groups;        /* expression_t */
-        queue_t* having;        /* expression_t */
-        expression_t* limit;    /* TOP */
+struct query {
+        struct table* table;         /* output table */
+        struct stack* sources;       /* struct source */
+        struct queue* conditions;    /* struct expression */
+        struct queue* groups;        /* struct expression */
+        struct queue* having;        /* struct expression */
+        struct expression* limit;    /* TOP */
         enum oper oper;         /* type of operation */
 
         /* temps used when traversing */
-        expression_t* expr;
+        struct expression* expr;
         enum mode mode;
         enum join join;
 };
-typedef struct query_t query_t;
 
-query_t* query_new();
+struct query* query_new();
 void query_free(void*);
-void query_add_source(query_t*, stack_t*);
-void query_apply_table_alias(query_t*, const char*);
+void query_add_source(struct query*, struct stack*);
+void query_apply_table_alias(struct query*, const char*);
 
 
 

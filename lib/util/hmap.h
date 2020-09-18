@@ -18,20 +18,18 @@
 #define MAX_KEY_LEN 128
 
 
-struct hmap_t {
+struct hmap {
     struct hsearch_data* tab;
-    queue_t* items;
+    struct queue* items;
 };
 
-typedef struct hmap_t hmap_t;
-
-hmap_t* hmap_new(size_t limit);
-void* hmap_set(hmap_t* m, char* key, void* val);
-void* hmap_get(hmap_t* m, const char* key);
-void* hmap_remove(hmap_t* m, const char* key);
-void hmap_free(hmap_t* m);
-int hmap_haskey(hmap_t* m, const char* key);
-int hmap_is_empty(hmap_t* m);
+struct hmap* hmap_new(size_t limit);
+void* hmap_set(struct hmap* m, char* key, void* val);
+void* hmap_get(struct hmap* m, const char* key);
+void* hmap_remove(struct hmap* m, const char* key);
+void hmap_free(struct hmap* m);
+int hmap_haskey(struct hmap* m, const char* key);
+int hmap_is_empty(struct hmap* m);
 
 
 #endif
