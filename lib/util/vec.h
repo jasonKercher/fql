@@ -7,26 +7,26 @@
 
 #define VEC_BLOCK_SIZE 128
 
-struct vec {
-        void** data;
+struct vector {
+        void** data_vec;
         size_t size;
         size_t _alloc;
 };
 
-#define vec_new(X) _Generic((X),                        \
-                            int: vec_new_s,             \
-                            unsigned: vec_new_s,        \
-                            long: vec_new_s,            \
-                            size_t: vec_new_s,          \
-                            default: vec_new_           \
+#define vector_new(X) _Generic((X),                        \
+                            int: vector_new_s,             \
+                            unsigned: vector_new_s,        \
+                            long: vector_new_s,            \
+                            size_t: vector_new_s,          \
+                            default: vector_new_           \
                             ) (X)
 
-struct vec* vec_new_();
-struct vec* vec_new_s(size_t);
-void vec_free(struct vec*);
+struct vector* vector_new_();
+struct vector* vector_new_s(size_t);
+void vector_free(struct vector*);
 
-void vec_reserve(struct vec*, size_t);
-void vec_resize(struct vec*, size_t);
-void vec_push_back(struct vec*, void*);
+void vector_reserve(struct vector*, size_t);
+void vector_resize(struct vector*, size_t);
+void vector_push_back(struct vector*, void*);
 
 #endif  /* VEC_H */

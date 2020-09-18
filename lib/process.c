@@ -7,9 +7,9 @@ struct process* process_new(unsigned in, unsigned out, const char* action)
         malloc_(new_proc, sizeof(*new_proc));
 
         *new_proc = (struct process) {
-                 vec_new(in)    /* Input */
-                ,vec_new(out)   /* Output */
-                ,""             /* action */
+                 vector_new(in)         /* Input */
+                ,vector_new(out)        /* Output */
+                ,""                     /* action */
         };
 
         strncpy_(new_proc->action, action, ACTION_MAX);
@@ -19,5 +19,8 @@ struct process* process_new(unsigned in, unsigned out, const char* action)
 
 void process_free(struct process* proc)
 {
+        /* TODO - Free elements */
+        vector_free(proc->input);
+        vector_free(proc->output);
         free_(proc);
 }

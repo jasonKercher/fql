@@ -6,8 +6,8 @@
 #include "util/vec.h"
 
 struct process {
-        void* input;
-        void* output;
+        struct vector* input;
+        struct vector* output;
         char action[ACTION_MAX];
 };
 
