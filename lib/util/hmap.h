@@ -1,16 +1,21 @@
 #ifndef HMAP_H
 #define HMAP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Case insensitive hash map
  * Too lazy to make my own, so just wrapped hsearch_r
  */
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-#define __USE_GNU
 #include <search.h>
 
 #include "util.h"
@@ -31,6 +36,9 @@ void hmap_free(struct hmap* m);
 int hmap_haskey(struct hmap* m, const char* key);
 int hmap_is_empty(struct hmap* m);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

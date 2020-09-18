@@ -3,7 +3,7 @@
 #include "query.h"
 #include "util/util.h"
 
-struct plan* plan_new(struct query* query) 
+struct plan* plan_new_() 
 {
         struct plan* new_plan = NULL;
         malloc_(new_plan, sizeof(*new_plan));
@@ -11,6 +11,15 @@ struct plan* plan_new(struct query* query)
         *new_plan = (struct plan) {
                 NULL
         };
+
+        return new_plan;
+}
+
+struct plan* plan_new(struct query* query)
+{
+        struct plan* new_plan = plan_new_();
+
+        /** TODO **/
 
         return new_plan;
 }

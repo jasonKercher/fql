@@ -4,6 +4,7 @@
 #include "util/queue.h"
 
 struct plan {
+        /** TODO - this needs to be a graph **/
         struct queue* process_queue;
 };
 

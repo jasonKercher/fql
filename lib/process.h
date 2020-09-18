@@ -3,11 +3,13 @@
 
 #define ACTION_MAX 512
 
-#include "util/vec.h"
+/* This is essentially a graph structure
+ * with only 2 inputs and outputs per node
+ */
 
 struct process {
-        struct vector* input;
-        struct vector* output;
+        void* input[2];
+        void* output[2];
         char action[ACTION_MAX];
 };
 
