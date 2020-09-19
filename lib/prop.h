@@ -13,9 +13,9 @@ struct props {
         int override_warnings;
 };
 
-struct props g_props;
 
 #ifdef __cplusplus
+struct props g_props;
 }
 #else 
 extern struct props g_props;
