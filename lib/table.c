@@ -62,7 +62,11 @@ struct source* source_new(struct table* table,
                 ,join_type      /* join_type */
         };
 
-        strncpy_(new_source->alias, alias, TABLE_NAME_MAX);
+        if (alias[0] == '\0') {
+                strncpy_(new_source->alias, table->name, TABLE_NAME_MAX);
+        } else {
+                strncpy_(new_source->alias, alias, TABLE_NAME_MAX);
+        }
 
         return new_source;
 }
