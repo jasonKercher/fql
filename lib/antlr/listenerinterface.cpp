@@ -60,7 +60,7 @@ void ListenerInterface::enterTable_source(TSqlParser::Table_sourceContext * ctx)
 void ListenerInterface::exitTable_source(TSqlParser::Table_sourceContext * ctx) 
 {
         /* Can this be combined with exittable_source_item? */
-        query_apply_table_alias(_query, _table_alias);
+        //query_apply_table_alias(_query, _table_alias);
 }
 
 void ListenerInterface::enterTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
@@ -69,7 +69,7 @@ void ListenerInterface::exitTable_source_item_joined(TSqlParser::Table_source_it
 void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemContext * ctx) { }
 void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx) 
 { 
-        query_add_source(_query, &_source_stack);
+        query_add_source(_query, &_source_stack, _table_alias);
 }
 
 void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx) 

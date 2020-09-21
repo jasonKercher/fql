@@ -51,7 +51,9 @@ void query_free(void* generic_query)
  * object->schema->database->server
  * We ignore database and server for now.
  */
-void query_add_source(struct query* query, struct stack** source_stack)
+void query_add_source(struct query* query,
+                      struct stack** source_stack,
+                      const char* alias)
 {
         struct table* new_table = table_new();
         enum source_type type = SOURCE_SUBQUERY;
@@ -74,6 +76,7 @@ void query_add_source(struct query* query, struct stack** source_stack)
         stack_free_data(source_stack);
 
         vector_push_back(query->sources, source_new(new_table,
+                                                    alias,
                                                     type,
                                                     query->join));
 }

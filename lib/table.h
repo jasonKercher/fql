@@ -45,12 +45,15 @@ enum join_type {
 
 struct source {
         struct table* table;
+        char alias[TABLE_NAME_MAX];
         enum source_type source_type;
         enum join_type join_type;
-        char alias[TABLE_NAME_MAX];
 };
 
-struct source* source_new(struct table*, enum source_type, enum join_type);
+struct source* source_new(struct table*,
+                          const char* alias,
+                          enum source_type,
+                          enum join_type);
 void source_free(struct source*);
 
 

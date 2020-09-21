@@ -48,6 +48,7 @@ void table_apply_column_alias(struct table* table, const char* alias)
 
 
 struct source* source_new(struct table* table,
+                          const char* alias,
                           enum source_type source_type,
                           enum join_type join_type)
 {
@@ -56,10 +57,12 @@ struct source* source_new(struct table* table,
 
         *new_source = (struct source) {
                  table          /* table */
+                ,""             /* alias */
                 ,source_type    /* source_type */
                 ,join_type      /* join_type */
-                ,""             /* alias */
         };
+
+        strncpy_(new_source->alias, alias, TABLE_NAME_MAX);
 
         return new_source;
 }

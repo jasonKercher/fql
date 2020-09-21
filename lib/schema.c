@@ -178,9 +178,13 @@ void schema_validate(struct query* query)
                 struct column* col = col_node->data;
 
                 int i = 0;
+                
                 for (; i < query->sources->size; ++i) {
                         struct source* src = query->sources->data_vec[i];
-                        matches += column_try_assign_source(col, src);
+                        if (col->table_name[0] == '\0' || 
+                            istring_eq(col->table_name, src->alias)) {
+                                matches += column_try_assign_source(col, src);
+                        }
                 }                
 
                 if (matches > 1) {

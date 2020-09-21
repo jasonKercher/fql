@@ -39,7 +39,7 @@ struct query {
 
 struct query* query_new();
 void query_free(void*);
-void query_add_source(struct query*, struct stack**);
+void query_add_source(struct query*, struct stack**, const char*);
 void query_apply_table_alias(struct query*, const char*);
 
 
