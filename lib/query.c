@@ -9,7 +9,7 @@ struct query* query_new()
 
         *new_query = (struct query) {
                  table_new()            /* table */
-                ,NULL                   /* sources */
+                ,vector_new(NULL)       /* sources */
                 ,NULL                   /* conditions */
                 ,NULL                   /* groups */
                 ,NULL                   /* having */
@@ -27,9 +27,9 @@ struct query* query_new()
 void query_free(void* generic_query)
 {
         struct query* query = generic_query;
-        struct stack* s_item = query->sources;
-        for (; s_item; s_item = s_item->next) {
-                source_free(s_item->data);
+        int i = 0;
+        for (; i < query->sources->size; ++i) {
+                source_free(query->sources->data_vec[i]);
         }
         free_(query->sources);
 
@@ -51,33 +51,35 @@ void query_free(void* generic_query)
  * object->schema->database->server
  * We ignore database and server for now.
  */
-void query_add_source(struct query* query, struct stack* source_stack)
+void query_add_source(struct query* query, struct stack** source_stack)
 {
         struct table* new_table = table_new();
         enum source_type type = SOURCE_SUBQUERY;
 
-        char* source = stack_pop(&source_stack);
-        if (source != NULL) {
+        char* table_name = stack_pop(source_stack);
+        if (table_name != NULL) {
                 type = SOURCE_TABLE;
-                strncpy_(new_table->name, source, TABLE_NAME_MAX);
-                free_(source);
+                strncpy_(new_table->name, table_name, TABLE_NAME_MAX);
+                free_(table_name);
 
-                source = stack_pop(&source_stack);
-                if (source != NULL) {
+                char* schema_name = stack_pop(source_stack);
+                if (schema_name != NULL) {
                         strncpy_(new_table->schema->name,
-                                 source,
+                                 schema_name,
                                  TABLE_NAME_MAX);
-                        free_(source);
+                        free_(schema_name);
                 }
         }
 
-        stack_free_data(&source_stack);
+        stack_free_data(source_stack);
 
-        stack_push(&query->sources, source_new(new_table, type));
+        vector_push_back(query->sources, source_new(new_table,
+                                                    type,
+                                                    query->join));
 }
 
 void query_apply_table_alias(struct query * query, const char * alias)
 {
-        struct source* source = query->sources->data;
+        struct source* source = vector_end(query->sources);
         strncpy_(source->alias, alias, TABLE_NAME_MAX);
 }

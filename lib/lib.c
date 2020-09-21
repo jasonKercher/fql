@@ -64,6 +64,8 @@ int fql_exec(const char* query_str)
         struct queue* plans = NULL;
         build_plans(&plans, query_list);
 
+        print_plans(plans);
+
         queue_free_func(&query_list, &query_free);
         queue_free_func(&plans, &plan_free);
 

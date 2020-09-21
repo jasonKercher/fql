@@ -57,7 +57,11 @@ void ListenerInterface::exitTable_sources(TSqlParser::Table_sourcesContext * ctx
 }
 
 void ListenerInterface::enterTable_source(TSqlParser::Table_sourceContext * ctx) { }
-void ListenerInterface::exitTable_source(TSqlParser::Table_sourceContext * ctx) { }
+void ListenerInterface::exitTable_source(TSqlParser::Table_sourceContext * ctx) 
+{
+        /* Can this be combined with exittable_source_item? */
+        query_apply_table_alias(_query, _table_alias);
+}
 
 void ListenerInterface::enterTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
 void ListenerInterface::exitTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
@@ -65,7 +69,7 @@ void ListenerInterface::exitTable_source_item_joined(TSqlParser::Table_source_it
 void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemContext * ctx) { }
 void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx) 
 { 
-        query_add_source(_query, _source_stack);
+        query_add_source(_query, &_source_stack);
 }
 
 void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx) 
@@ -99,7 +103,10 @@ void ListenerInterface::exitAs_column_alias(TSqlParser::As_column_aliasContext *
 void ListenerInterface::enterAs_table_alias(TSqlParser::As_table_aliasContext * ctx) { }
 void ListenerInterface::exitAs_table_alias(TSqlParser::As_table_aliasContext * ctx) { }
 
-void ListenerInterface::enterTable_alias(TSqlParser::Table_aliasContext * ctx) { }
+void ListenerInterface::enterTable_alias(TSqlParser::Table_aliasContext * ctx) 
+{
+        _current_list = TOK_TABLE_ALIAS;
+}
 void ListenerInterface::exitTable_alias(TSqlParser::Table_aliasContext * ctx) { }
 
 void ListenerInterface::enterExpression_list(TSqlParser::Expression_listContext * ctx) { }
@@ -202,7 +209,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
                 stack_push(&_source_stack, token);
                 break;
         case TOK_TABLE_ALIAS:
-                query_apply_table_alias(_query, token);
+                strncpy_(_table_alias, token, TABLE_NAME_MAX);
                 free_(token);
                 break;
         default:

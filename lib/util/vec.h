@@ -5,8 +5,6 @@
 
 #include <stdlib.h>
 
-#define VEC_BLOCK_SIZE 128
-
 struct vector {
         void** data_vec;
         size_t size;
@@ -25,6 +23,7 @@ struct vector* vector_new_();
 struct vector* vector_new_s(size_t);
 void vector_free(struct vector*);
 
+void* vector_end(struct vector*);
 void vector_reserve(struct vector*, size_t);
 void vector_resize(struct vector*, size_t);
 void vector_push_back(struct vector*, void*);

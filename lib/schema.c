@@ -177,9 +177,9 @@ void schema_validate(struct query* query)
                 int matches = 0;
                 struct column* col = col_node->data;
 
-                struct stack* src_node = query->sources;
-                for (; src_node; src_node = src_node->next) {
-                        struct source* src = src_node->data;
+                int i = 0;
+                for (; i < query->sources->size; ++i) {
+                        struct source* src = query->sources->data_vec[i];
                         matches += column_try_assign_source(col, src);
                 }                
 
@@ -199,10 +199,10 @@ void schema_resolve(struct queue* query_node)
 {
         for (; query_node; query_node = query_node->next) {
                 struct query* query = query_node->data;
-                struct stack* src_node = query->sources;
 
-                for (; src_node; src_node = src_node->next) {
-                        schema_resolve_source(src_node->data);
+                int i = 0;
+                for (; i < query->sources->size; ++i) {
+                        schema_resolve_source(query->sources->data_vec[i]);
                 }
 
                 schema_validate(query);

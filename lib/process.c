@@ -1,7 +1,7 @@
 #include "process.h"
 #include "util/util.h"
 
-struct process* process_new(unsigned in, unsigned out, const char* action)
+struct process* process_new(const char* action)
 {
         struct process* new_proc = NULL;
         malloc_(new_proc, sizeof(*new_proc));

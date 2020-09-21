@@ -7,6 +7,7 @@ extern "C" {
 #endif
 
 #include "util/queue.h"
+#include "util/vec.h"
 #include "table.h"
 #include "expression.h"
 #include "operation.h"
@@ -23,22 +24,22 @@ enum mode {
 /** Query **/
 struct query {
         struct table* table;         /* output table */
-        struct stack* sources;       /* struct source */
+        struct vector* sources;      /* struct source */
         struct queue* conditions;    /* struct expression */
         struct queue* groups;        /* struct expression */
         struct queue* having;        /* struct expression */
         struct expression* limit;    /* TOP */
-        enum oper oper;         /* type of operation */
+        enum oper oper;              /* type of operation */
 
         /* temps used when traversing */
         struct expression* expr;
         enum mode mode;
-        enum join join;
+        enum join_type join;
 };
 
 struct query* query_new();
 void query_free(void*);
-void query_add_source(struct query*, struct stack*);
+void query_add_source(struct query*, struct stack**);
 void query_apply_table_alias(struct query*, const char*);
 
 

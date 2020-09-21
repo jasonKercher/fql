@@ -7,9 +7,9 @@ struct vector* vector_new_()
         malloc_(new_vec, sizeof(*new_vec));
 
         *new_vec = (struct vector) {
-                 NULL
-                ,0
-                ,0
+                 NULL /* data_vec */
+                ,0    /* size */
+                ,0    /* _alloc */
         };
 
         return new_vec;
@@ -26,6 +26,14 @@ void vector_free(struct vector* vec)
 {
         free_(vec->data_vec);
         free_(vec);
+}
+
+void* vector_end(struct vector* vec)
+{
+        if (vec->size == 0)
+                return NULL;
+
+        return vec->data_vec[vec->size-1];
 }
 
 void vector_reserve(struct vector* vec, size_t size)
@@ -67,7 +75,7 @@ void vector_resize(struct vector* vec, size_t size)
 void vector_push_back(struct vector* vec, void* item) 
 {
         if (vec->_alloc <= ++vec->size)        
-                vector_reserve(vec, vec->_alloc + VEC_BLOCK_SIZE);
+                vector_reserve(vec, vec->_alloc * 2);
 
         vec->data_vec[vec->size-1] = item;
 }

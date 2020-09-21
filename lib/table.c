@@ -47,15 +47,17 @@ void table_apply_column_alias(struct table* table, const char* alias)
 
 
 
-struct source* source_new(struct table* table, enum source_type type)
+struct source* source_new(struct table* table,
+                          enum source_type source_type,
+                          enum join_type join_type)
 {
         struct source* new_source = NULL;
         malloc_(new_source, sizeof(*new_source));
 
         *new_source = (struct source) {
                  table          /* table */
-                ,type           /* source_type */
-                ,JOIN_FROM      /* join_type */
+                ,source_type    /* source_type */
+                ,join_type      /* join_type */
                 ,""             /* alias */
         };
 

@@ -34,7 +34,7 @@ enum source_type {
         SOURCE_SUBQUERY,
 };
 
-enum join {
+enum join_type {
         JOIN_FROM,
         JOIN_INNER,
         JOIN_LEFT,
@@ -46,11 +46,11 @@ enum join {
 struct source {
         struct table* table;
         enum source_type source_type;
-        enum join join_type;
+        enum join_type join_type;
         char alias[TABLE_NAME_MAX];
 };
 
-struct source* source_new(struct table*, enum source_type);
+struct source* source_new(struct table*, enum source_type, enum join_type);
 void source_free(struct source*);
 
 
