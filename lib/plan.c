@@ -3,13 +3,16 @@
 #include "query.h"
 #include "util/util.h"
 
-struct plan* _plan_new() 
+struct plan* _plan_new()
 {
         struct plan* new_plan = NULL;
         malloc_(new_plan, sizeof(*new_plan));
 
         *new_plan = (struct plan) {
-                process_new("start")
+                 process_new("start")
+                ,process_new("OP_TRUE")
+                ,process_new("OP_FALSE")
+                ,NULL
         };
 
         return new_plan;
@@ -17,17 +20,17 @@ struct plan* _plan_new()
 
 void _plan_from(struct plan* plan, struct query* query)
 {
-        char action[ACTION_MAX] = "";
-        struct process* current = plan->processes;
+        char action_msg[ACTION_MAX] = "";
+        plan->current = plan->processes;
 
         if (query->sources->size) {
                 struct source* src = query->sources->data_vec[0];
-                sprintf(action, "%s: %s", src->table->reader->file_name,
+                sprintf(action_msg, "%s: %s", src->table->reader->file_name,
                                           "stream read");
-                struct process* from_proc = process_new(action);
-                current->output[0] = from_proc;
-                from_proc->input[0] = current;
-                current = from_proc;
+                struct process* from_proc = process_new(action_msg);
+                plan->current->output[0] = from_proc;
+                from_proc->input[0] = plan->current;
+                plan->current = from_proc;
         }
 
         int i = 1;
@@ -57,22 +60,26 @@ void _plan_from(struct plan* plan, struct query* query)
                         break;
                 }
 
-                current->output[0] = join_proc;
-                join_proc->input[0] = current;
+                plan->current->output[0] = join_proc;
+                join_proc->input[0] = plan->current;
 
-                sprintf(action, "%s: %s", src->table->reader->file_name, 
+                sprintf(action_msg, "%s: %s", src->table->reader->file_name,
                                 "mmap read");
-                struct process* new_table = process_new(action);
+                struct process* new_table = process_new(action_msg);
 
                 join_proc->input[1] = new_table;
-                current = join_proc;
+                plan->current = join_proc;
         }
 }
 
 void _plan_where(struct plan* plan, struct query* query) { }
 void _plan_group(struct plan* plan, struct query* query) { }
 void _plan_having(struct plan* plan, struct query* query) { }
-void _plan_operation(struct plan* plan, struct query* query) { }
+void _plan_operation(struct plan* plan, struct query* query) 
+{ 
+        plan->current->output[0] = plan->op_true;
+        /* TODO - Replace and free with actual operation */
+}
 void _plan_limit(struct plan* plan, struct query* query) { }
 
 struct plan* _build_plan(struct query* query)
@@ -99,7 +106,7 @@ void plan_free(void* generic_plan)
 int build_plans(struct queue** plans, struct queue* query_list)
 {
         struct queue* query_node = query_list;
-        
+
         for (; query_node; query_node = query_node->next) {
                 struct query* query = query_node->data;
                 queue_enqueue(plans, _build_plan(query));
@@ -116,13 +123,13 @@ void _print_plan(struct plan* plan)
                 if (i) {
                         fputs("  V\n", stderr);
                 }
-                fputs(proc->action, stderr);
+                fputs(proc->action_msg, stderr);
                 if (proc->input[1]) {
                         struct process* in1 = proc->input[1];
-                        fprintf(stderr, " <-- %s", in1->action);
+                        fprintf(stderr, " <-- %s", in1->action_msg);
                         if (in1->output[1]) {
                                 struct process* out1 = in1->output[1];
-                                fprintf(stderr, " --> %s", out1->action);
+                                fprintf(stderr, " --> %s", out1->action_msg);
                         }
                 }
                 fputs("\n", stderr);

@@ -6,6 +6,10 @@
 
 struct plan {
         struct process* processes;
+        struct process* op_true;
+        struct process* op_false;
+        /* temp */
+        struct process* current;
 };
 
 //struct plan* plan_new(struct query*)

@@ -7,12 +7,13 @@ struct process* process_new(const char* action)
         malloc_(new_proc, sizeof(*new_proc));
 
         *new_proc = (struct process) {
-                 {NULL, NULL}         /* Input */
-                ,{NULL, NULL}         /* Output */
-                ,""                   /* action */
+                 {NULL, NULL}   /* Input */
+                ,{NULL, NULL}   /* Output */
+                ,NULL           /* action */
+                ,""             /* action_msg */
         };
 
-        strncpy_(new_proc->action, action, ACTION_MAX);
+        strncpy_(new_proc->action_msg, action, ACTION_MAX);
 
         return new_proc;
 }
