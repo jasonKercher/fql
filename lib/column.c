@@ -18,6 +18,9 @@ struct column* column_new(struct expression* expr, const char* table_name)
         };
 
         strncpy_(new_column->table_name, table_name, TABLE_NAME_MAX);
+        if (expr->type == EXPR_COLUMN_NAME) {
+                strncpy_(new_column->alias, expr->expr, COLUMN_NAME_MAX);
+        }
 
         return new_column;
 }

@@ -32,9 +32,6 @@ void table_add_column(struct table* table,
                       const char* table_name)
 {
         struct column* new_col = column_new(expr, table_name);
-        if (expr->type == EXPR_COLUMN_NAME) {
-                strncpy_(new_col->alias, expr->expr, COLUMN_NAME_MAX);
-        }
         stack_push(&table->schema->columns, new_col);
 }
 

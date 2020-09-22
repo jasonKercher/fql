@@ -26,6 +26,7 @@ private:
         char _table_name[TABLE_NAME_MAX];
         char _table_alias[TABLE_NAME_MAX];
         struct stack* _source_stack = NULL;
+        struct stack* _search_stack = NULL;
 
         void _no_impl(const std::string&, int);
 public:

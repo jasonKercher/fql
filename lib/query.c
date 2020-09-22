@@ -10,7 +10,7 @@ struct query* query_new()
         *new_query = (struct query) {
                  table_new()            /* table */
                 ,vector_new(NULL)       /* sources */
-                ,NULL                   /* conditions */
+                ,NULL                   /* searches */
                 ,NULL                   /* groups */
                 ,NULL                   /* having */
                 ,NULL                   /* limit */
@@ -33,7 +33,8 @@ void query_free(void* generic_query)
         }
         free_(query->sources);
 
-        queue_free_data(&query->conditions);
+        vector_free(query->searches);
+
         queue_free_data(&query->groups);
         queue_free_data(&query->having);
 
@@ -81,8 +82,20 @@ void query_add_source(struct query* query,
                                                     query->join));
 }
 
-void query_apply_table_alias(struct query * query, const char * alias)
+void query_apply_table_alias(struct query* query, const char* alias)
 {
         struct source* source = vector_end(query->sources);
         strncpy_(source->alias, alias, TABLE_NAME_MAX);
+}
+
+void query_add_search_column(struct query* query,
+                             struct expression* expr,
+                             const char* table_name)
+{
+        search_add_column(vector_end(query->searches), expr, table_name);
+}
+
+void query_set_search_comparison(struct query* query, const char* op)
+{
+        search_set_comparison(vector_end(query->searches), op);
 }

@@ -12,6 +12,7 @@ extern "C" {
 #include "expression.h"
 #include "operation.h"
 #include "reader.h"
+//#include "search.h"
 
 enum mode {
         MODE_UNDEFINED,
@@ -25,7 +26,7 @@ enum mode {
 struct query {
         struct table* table;         /* output table */
         struct vector* sources;      /* struct source */
-        struct queue* conditions;    /* struct expression */
+        struct vector* searches;     /* struct search */
         struct queue* groups;        /* struct expression */
         struct queue* having;        /* struct expression */
         struct expression* limit;    /* TOP */
@@ -39,8 +40,12 @@ struct query {
 
 struct query* query_new();
 void query_free(void*);
+
 void query_add_source(struct query*, struct stack**, const char*);
 void query_apply_table_alias(struct query*, const char*);
+
+void query_add_search_column(struct query*, struct expression*, const char*);
+void query_set_search_comparison(struct query*, const char*);
 
 
 
