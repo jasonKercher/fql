@@ -44,8 +44,8 @@ void query_free(void*);
 void query_add_source(struct query*, struct stack**, const char*);
 void query_apply_table_alias(struct query*, const char*);
 
-void query_add_search_column(struct query*, struct expression*, const char*);
-void query_set_search_comparison(struct query*, const char*);
+//void query_add_search_column(struct query*, struct expression*, const char*);
+//void query_set_search_comparison(struct query*, const char*);
 
 
 

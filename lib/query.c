@@ -88,14 +88,14 @@ void query_apply_table_alias(struct query* query, const char* alias)
         strncpy_(source->alias, alias, TABLE_NAME_MAX);
 }
 
-void query_add_search_column(struct query* query,
-                             struct expression* expr,
-                             const char* table_name)
-{
-        search_add_column(vector_end(query->searches), expr, table_name);
-}
-
-void query_set_search_comparison(struct query* query, const char* op)
-{
-        search_set_comparison(vector_end(query->searches), op);
-}
+//void query_add_search_column(struct query* query,
+//                             struct expression* expr,
+//                             const char* table_name)
+//{
+//        search_add_column(vector_end(query->searches), expr, table_name);
+//}
+//
+//void query_set_search_comparison(struct query* query, const char* op)
+//{
+//        search_set_comparison(vector_end(query->searches), op);
+//}

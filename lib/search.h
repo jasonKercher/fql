@@ -8,7 +8,7 @@ extern "C" {
 #include "expression.h"
 
 enum comparison {
-         COMP_NOT_SET
+         COMP_NOT_SET = -1
         ,COMP_EQ
         ,COMP_NE
         ,COMP_GT

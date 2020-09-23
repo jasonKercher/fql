@@ -3,6 +3,7 @@
 
 #include "gen/TSqlParserBaseListener.h"
 #include "query.h"
+#include "search.h"
 #include "util/queue.h"
 #include "util/stack.h"
 
@@ -21,12 +22,12 @@ private:
         struct stack* _query_stack = NULL;
         struct query* _query = NULL;
 
-        int _next_list;
-        int _current_list;
-        char _table_name[TABLE_NAME_MAX];
-        char _table_alias[TABLE_NAME_MAX];
         struct stack* _source_stack = NULL;
         struct stack* _search_stack = NULL;
+        char _table_name[TABLE_NAME_MAX];
+        char _table_alias[TABLE_NAME_MAX];
+        int _next_list;
+        int _current_list;
 
         void _no_impl(const std::string&, int);
 public:

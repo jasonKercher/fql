@@ -37,24 +37,24 @@ void search_add_column(struct search* search,
 
 void search_set_comparison(struct search* search, const char* op)
 {
-    //if(comp == "=")
-    //    set_comparison(COMP_TYPE_EQ);
-    //else if(comp == "<>" || comp == "!=")
-    //    set_comparison(COMP_TYPE_NE);
-    //else if(comp == ">")
-    //    set_comparison(COMP_TYPE_GT);
-    //else if(comp == ">=")
-    //    set_comparison(COMP_TYPE_GE);
-    //else if(comp == "<")
-    //    set_comparison(COMP_TYPE_LT);
-    //else if(comp == "<=")
-    //    set_comparison(COMP_TYPE_LE);
-    //else if(comp == "LIKE")
-    //    set_comparison(COMP_TYPE_LIKE);
-    //else if(comp == "NOT_LIKE")
-    //    set_comparison(COMP_TYPE_NOT_LIKE);
-    //else if(comp == "NULL")
-    //    set_comparison(COMP_TYPE_NULL);
-    //else if(comp == "NOT_NULL")
-    //    set_comparison(COMP_TYPE_NOT_NULL);
+        if(string_eq(op, "="))
+                search->comp_type = COMP_EQ;
+        else if(string_eq(op, "<>") || string_eq(op, "!="))
+                search->comp_type = COMP_NE;
+        else if(string_eq(op, ">"))
+                search->comp_type = COMP_GT;
+        else if(string_eq(op, ">="))
+                search->comp_type = COMP_GE;
+        else if(string_eq(op, "<"))
+                search->comp_type = COMP_LT;
+        else if(string_eq(op, "<="))
+                search->comp_type = COMP_LE;
+        else if(istring_eq(op, "LIKE"))
+                search->comp_type = COMP_LIKE;
+        else if(istring_eq(op, "NOT_LIKE"))
+                search->comp_type = COMP_NOT_LIKE;
+        else if(istring_eq(op, "NULL"))
+                search->comp_type = COMP_NULL;
+        else if(istring_eq(op, "NOT_NULL"))
+                search->comp_type = COMP_NOT_NULL;
 }

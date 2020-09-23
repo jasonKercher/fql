@@ -3,10 +3,7 @@
 #include <cstring>
 
 #include "prop.h"
-#include "query.h"
-#include "search.h"
 #include "util/util.h"
-#include "util/stack.h"
 
 ListenerInterface::ListenerInterface(struct queue** query_list, const std::vector<std::string>& rules)
 {
@@ -195,7 +192,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
                                          expression_new(EXPR_COLUMN_NAME, token),
                                          _table_name);
                 } else if (_query->mode == MODE_SEARCH) {
-                        query_add_search_column(_query,
+                        search_add_column((struct search*) _search_stack->data,
                                           expression_new(EXPR_COLUMN_NAME, token),
                                           _table_name);
                 } else {
@@ -305,7 +302,7 @@ void ListenerInterface::enterSearch_condition_and(TSqlParser::Search_condition_a
 }
 void ListenerInterface::exitSearch_condition_and(TSqlParser::Search_condition_andContext * ctx)
 {
-
+        
 }
 
 void ListenerInterface::enterSearch_condition_not(TSqlParser::Search_condition_notContext * ctx)
