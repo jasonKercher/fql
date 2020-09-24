@@ -12,8 +12,8 @@ typedef int (*process_func)(void**, void*);
  */
 
 struct process {
-        struct process* input[2];
-        struct process* output[2];
+        struct process* in[2];
+        struct process* out[2];
         process_func* action;
         char action_msg[ACTION_MAX];
 };

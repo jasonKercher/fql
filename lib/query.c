@@ -11,7 +11,7 @@ struct query* query_new()
 
         *new_query = (struct query) {
                  table_new()            /* table */
-                ,vector_new(NULL)       /* sources */
+                ,vector_new()           /* sources */
                 ,NULL                   /* where */
                 ,NULL                   /* groups */
                 ,NULL                   /* having */

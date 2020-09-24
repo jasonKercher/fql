@@ -11,15 +11,7 @@ struct vector {
         size_t _alloc;
 };
 
-#define vector_new(X) _Generic((X),                        \
-                            int: vector_new_s,             \
-                            unsigned: vector_new_s,        \
-                            long: vector_new_s,            \
-                            size_t: vector_new_s,          \
-                            default: vector_new_           \
-                            ) (X)
-
-struct vector* vector_new_();
+struct vector* vector_new();
 struct vector* vector_new_s(size_t);
 void vector_free(struct vector*);
 

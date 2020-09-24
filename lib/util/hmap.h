@@ -6,8 +6,8 @@ extern "C" {
 #endif
 
 /**
- * Case insensitive hash map
- * Too lazy to make my own, so just wrapped hsearch_r
+ * Too lazy to make my own hash map, 
+ * so just wrapped hsearch_r
  */
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
@@ -22,19 +22,19 @@ extern "C" {
 
 #define MAX_KEY_LEN 128
 
+#define HMAP_NOCASE 0x01
 
 struct hmap {
     struct hsearch_data* tab;
-    struct queue* items;
+    unsigned props;
 };
 
-struct hmap* hmap_new(size_t limit);
+struct hmap* hmap_new(size_t limit, unsigned);
 void* hmap_set(struct hmap* m, char* key, void* val);
 void* hmap_get(struct hmap* m, const char* key);
 void* hmap_remove(struct hmap* m, const char* key);
 void hmap_free(struct hmap* m);
 int hmap_haskey(struct hmap* m, const char* key);
-int hmap_is_empty(struct hmap* m);
 
 #ifdef __cplusplus
 }

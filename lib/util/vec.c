@@ -1,7 +1,7 @@
 #include "vec.h"
 #include "util.h"
 
-struct vector* vector_new_()
+struct vector* vector_new()
 {
         struct vector* new_vec = NULL;
         malloc_(new_vec, sizeof(*new_vec));
@@ -17,7 +17,7 @@ struct vector* vector_new_()
 
 struct vector* vector_new_s(size_t size)
 {
-        struct vector* new_vec = vector_new_();
+        struct vector* new_vec = vector_new();
         vector_reserve(new_vec, size);
         return new_vec;
 }

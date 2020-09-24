@@ -6,6 +6,7 @@
 #include "column.h"
 #include "query.h"
 #include "util/util.h"
+#include "util/vec.h"
 
 struct schema* schema_new()
 {
@@ -121,7 +122,7 @@ void schema_assign_header(struct table* table, csv_record* rec)
 {
         int i = 0;
 
-        table->schema->col_map = hmap_new(rec->size * 2);
+        table->schema->col_map = hmap_new(rec->size * 2, HMAP_NOCASE);
 
         for (; i < rec->size; ++i) {
                 char* column_name = strdup(rec->fields[i]);
