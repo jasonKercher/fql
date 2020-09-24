@@ -30,8 +30,10 @@ struct hmap {
 };
 
 struct hmap* hmap_new(size_t limit, unsigned);
-void* hmap_set(struct hmap* m, char* key, void* val);
+void* hmap_set(struct hmap* m, char* key, void* data);
 void* hmap_get(struct hmap* m, const char* key);
+void* hmap_set_a(struct hmap* m, void* key, void* data);
+void* hmap_get_a(struct hmap* m, void* key);
 void* hmap_remove(struct hmap* m, const char* key);
 void hmap_free(struct hmap* m);
 int hmap_haskey(struct hmap* m, const char* key);

@@ -1,5 +1,6 @@
 #include "hmap.h"
 #include <limits.h>
+#include <stdint.h>
 
 #define NONE (void*) ULONG_MAX
 
@@ -104,6 +105,37 @@ void* hmap_get(struct hmap* m, const char* key)
                return NULL;
 
        return ent->data;
+}
+
+/* lol */
+void* hmap_get_a(struct hmap* m, void* key)
+{
+        char addr[5];
+
+        uintptr_t k = (uintptr_t) key;
+
+        addr[0] = k & 0xFF;
+        addr[1] = (k & 0xFF00) >> 8;
+        addr[2] = (k & 0xFF0000) >> 16;
+        addr[3] = (k & 0xFF000000) >> 24;
+        addr[4] = '\0';
+        
+        return hmap_get(m, addr);
+}
+
+void* hmap_set_a(struct hmap* m, void* key, void* data)
+{
+        char addr[5];
+
+        uintptr_t k = (uintptr_t) key;
+
+        addr[0] = k & 0xFF;
+        addr[1] = (k & 0xFF00) >> 8;
+        addr[2] = (k & 0xFF0000) >> 16;
+        addr[3] = (k & 0xFF000000) >> 24;
+        addr[4] = '\0';
+        
+        return hmap_set(m, addr, data);
 }
 
 int hmap_haskey(struct hmap* m, const char* key)
