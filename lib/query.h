@@ -32,7 +32,7 @@ enum search_mode {
 struct query {
         struct table* table;         /* output table */
         struct vector* sources;      /* struct source */
-        struct search* where;        /* struct search */
+        struct search_tree* where;        /* struct search */
         struct queue* groups;        /* struct expression */
         struct queue* having;        /* struct expression */
         struct expression* limit;    /* TOP */

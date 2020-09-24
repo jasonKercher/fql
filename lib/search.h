@@ -1,10 +1,6 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "expression.h"
 
 enum comparison {
@@ -22,7 +18,7 @@ enum comparison {
 };
 
 struct search {
-        struct column* expr[2];
+        struct column* col[2];
         struct search* out[2];
         int data_type;
         enum comparison comp_type;
@@ -30,13 +26,18 @@ struct search {
 
 struct search* search_new();
 void search_free(struct search*);
-void search_free_tree(struct search*);
+
+void search_get_description(struct search* search, char* msg);
 
 void search_add_column(struct search*, struct expression*, const char* table_name);
 void search_set_comparison(struct search* search, const char* op);
 
-#ifdef __cplusplus
-}
-#endif
+struct search_tree {
+        struct search* begin;
+        struct search* end_true;
+        struct search* end_false;
+};
+struct search_tree* search_tree_new();
+void search_free_tree(struct search_tree*);
 
 #endif /* SEARCH_H */

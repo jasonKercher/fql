@@ -1,5 +1,8 @@
 #include "plan.h"
 
+#include <stdbool.h>
+
+#include "column.h"
 #include "query.h"
 #include "util/util.h"
 
@@ -18,12 +21,62 @@ struct plan* _plan_new()
         return new_plan;
 }
 
-
-
-struct process* _search_to_process(struct search* search)
+void _traverse_searches(struct process* prev_proc,
+                        struct hmap* map,
+                        struct search* search,
+                        struct process** proc_end,
+                        _Bool branch)
 {
-        /* TODO */
-        return NULL;
+        struct process* proc = hmap_get_a(map, search);
+        if (proc != NULL) {
+                return;
+        }
+
+        proc = process_new("");
+        prev_proc->out[branch] = proc;
+
+
+        if (search->out[true] == NULL) {
+                *proc_end = proc;
+                return;
+        }
+
+        search_get_description(search, proc->action_msg);
+        hmap_set_a(map, search, proc); 
+
+        if (search->out[false]) {
+                _traverse_searches(proc, 
+                                   map, 
+                                   search->out[false], 
+                                   proc_end, 
+                                   false);
+        }
+        _traverse_searches(proc, 
+                           map, 
+                           search->out[true], 
+                           proc_end, 
+                           true);
+}
+
+/* Returns search beginning process
+ * Assigns search ending process
+ */
+struct process* _search_to_process(struct process** proc_end,
+                                   struct search* search)
+{
+        /* We are traversing the whole map and may
+         * reach the same node more than once so
+         * hash the address of each node so it isn't 
+         * allocated twice.
+         */
+        struct hmap* proc_map = hmap_new(100, 0); /* TODO - keep a count */
+        struct process* proc_begin = process_new("Begin join condition");
+
+        _traverse_searches(proc_begin, proc_map, search, proc_end, 0);
+
+        /* search_procs now points to the end of the search.
+         */
+        return proc_begin;
 }
 
 void _plan_from(struct plan* plan, struct query* query)
@@ -78,8 +131,10 @@ void _plan_from(struct plan* plan, struct query* query)
                 join_proc->in[1] = new_table;
 
                 if (src->condition != NULL) {
-                        plan->current = _search_to_process(src->condition);
-                        join_proc->out[0] = plan->current;
+                        struct process* proc_end = NULL;
+                        join_proc->out[0] = _search_to_process(&proc_end, 
+                                                               src->condition->begin);
+                        plan->current = proc_end;
                 } else { 
                         plan->current = join_proc;
                 }

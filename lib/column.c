@@ -32,6 +32,30 @@ void column_free(void* generic_col)
         free_(col);
 }
 
+void column_cat_description(struct column* col, char* msg)
+{
+        switch (col->expr->type) {
+        case EXPR_COLUMN_NAME:
+                strcat(msg, col->expr->expr);
+                break;
+        case EXPR_CONST:
+                strcat(msg, "CONST EXPRESSION");
+                break;
+        case EXPR_SOURCE:
+                strcat(msg, "TABLE SOURCE");
+                break;
+        case EXPR_SUBQUERY:
+                strcat(msg, "SUBQUERY");
+                break;
+        case EXPR_SUBQUERY_CONST:
+                strcat(msg, "SUBQUERY CONST");
+                break;
+        case EXPR_NONE:
+                strcat(msg, "No expression");
+                break;
+        }
+}
+
 int column_try_assign_source(struct column* col, struct source* src)
 {
         col->data_source = hmap_get(src->table->schema->col_map, col->alias);

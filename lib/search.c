@@ -23,11 +23,45 @@ void search_free(struct search* search)
         free_(search);
 }
 
-void search_free_tree(struct search* search)
+void search_get_description(struct search* search, char* msg)
 {
-        /* TODO - recursively free search tree */
-
-        free_(search);
+        column_cat_description(search->col[0], msg);
+        switch (search->comp_type) {
+        case COMP_EQ:
+                strcat(msg, " = ");
+                break;
+        case COMP_NE:
+                strcat(msg, " != ");
+                break;
+        case COMP_GT:
+                strcat(msg, " > ");
+                break;
+        case COMP_GE:
+                strcat(msg, " >= ");
+                break;
+        case COMP_LT:
+                strcat(msg, " < ");
+                break;
+        case COMP_LE:
+                strcat(msg, " <= ");
+                break;
+        case COMP_LIKE:
+                strcat(msg, " LIKE ");
+                break;
+        case COMP_NOT_LIKE:
+                strcat(msg, " NOT LIKE ");
+                break;
+        case COMP_NULL:
+                strcat(msg, " NULL ");
+                break;
+        case COMP_NOT_NULL:
+                strcat(msg, " NOT NULL ");
+                break;
+        case COMP_NOT_SET:
+                strcat(msg, " <no comparison> ");
+                break;
+        }
+        column_cat_description(search->col[1], msg);
 }
 
 void search_add_column(struct search* search,
@@ -35,10 +69,10 @@ void search_add_column(struct search* search,
                        const char* table_name)
 {
         struct column* new_col = column_new(expr, table_name);
-        if (search->expr[0] == NULL) {
-                search->expr[0] = new_col;
+        if (search->col[0] == NULL) {
+                search->col[0] = new_col;
         } else {
-                search->expr[1] = new_col;
+                search->col[1] = new_col;
         }
 }
 
@@ -65,3 +99,25 @@ void search_set_comparison(struct search* search, const char* op)
         else if(istring_eq(op, "NOT_NULL"))
                 search->comp_type = COMP_NOT_NULL;
 }
+
+struct search_tree* search_tree_new()
+{
+        struct search_tree* new_tree = NULL;
+        malloc_(new_tree, sizeof(*new_tree));
+
+        *new_tree = (struct search_tree) {
+                 NULL
+                ,NULL
+                ,NULL
+        };
+
+        return new_tree;
+}
+
+void search_free_tree(struct search_tree* tree)
+{
+        /* TODO - recursively free search tree */
+
+        free_(tree);
+}
+

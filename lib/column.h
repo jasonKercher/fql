@@ -19,6 +19,7 @@ struct column {
 struct column* column_new(struct expression*, const char*);
 void column_free(void*);
 
+void column_cat_description(struct column* col, char* msg);
 int column_try_assign_source(struct column*, struct source*);
 
 

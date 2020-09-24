@@ -103,32 +103,51 @@ void enter_search(struct query* query)
         stack_push(&query->next_search_and, search_new());
         stack_push(&query->next_search_not, search_new());
 
-        struct search* new_search = search_new();
-
         if (query->current_search == NULL) {
                 switch (query->search_mode) {
                 case SEARCH_JOIN: {
                         struct source* src = vector_end(query->sources);
-                        src->condition = new_search;
+                        src->condition = search_tree_new();
                         break;
                 }
                 case SEARCH_WHERE:
-                        query->where = new_search;
+                        query->where = search_tree_new();
                         break;
                 case SEARCH_UNDEFINED:
                         /* TODO - report error */;
                 }
         }
 
-        stack_push(&query->current_search, new_search);
+        stack_push(&query->current_search, NULL);
 }
 
 void exit_search(struct query* query)
 {
-        search_free(stack_pop(&query->next_search_not));
-        search_free(stack_pop(&query->next_search_and));
+        struct search* next_not = stack_pop(&query->next_search_not);
+        struct search* next_and = stack_pop(&query->next_search_and);
+        struct search* current = stack_pop(&query->current_search);
 
-        stack_pop(&query->current_search);
+        /* may need to set current outs to next_not and next_and here */
+
+        if (query->next_search_not == NULL) {
+                switch (query->search_mode) {
+                case SEARCH_JOIN: {
+                        struct source* src = vector_end(query->sources);
+                        src->condition->end_true = next_not;
+                        src->condition->end_false = next_and;
+                        break;
+                }
+                case SEARCH_WHERE:
+                        query->where->end_true = next_not;
+                        query->where->end_false = next_and;
+                        break;
+                case SEARCH_UNDEFINED:
+                        /* TODO - report error */;
+                }
+                return;
+        }
+        search_free(next_not);
+        search_free(next_and);
 }
 
 void enter_search_and(struct query* query)
@@ -142,7 +161,6 @@ void exit_search_and(struct query* query)
 {
         struct search* current = query->current_search->data;
         if (query->next_search_not->next == NULL) {
-                /* TODO - TRUTHY !! */;
                 return;
         }
         current->out[true] = query->next_search_not->next->data;
@@ -150,6 +168,23 @@ void exit_search_and(struct query* query)
 
 void enter_search_not(struct query* query)
 {
+        /* If our stack count == 1 and data not set yet */
+        if (query->current_search->next == NULL && 
+            query->current_search->data == NULL) {
+                switch (query->search_mode) {
+                case SEARCH_JOIN: {
+                        struct source* src = vector_end(query->sources);
+                        src->condition->begin = query->next_search_not->data;
+                        break;
+                }
+                case SEARCH_WHERE:
+                        query->where->begin = query->next_search_not->data;
+                        break;
+                case SEARCH_UNDEFINED:
+                        /* TODO - report error */;
+                }
+        }
+
         query->current_search->data = query->next_search_not->data;
         query->next_search_not->data = search_new();
 }
