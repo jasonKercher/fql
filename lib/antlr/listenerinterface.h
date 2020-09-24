@@ -22,10 +22,15 @@ private:
         struct stack* _query_stack = NULL;
         struct query* _query = NULL;
 
+        /* Likely these remaining variables
+         * need to move to struct query in
+         * order to handle subqueries
+         */
         struct stack* _source_stack = NULL;
-        struct stack* _search_stack = NULL;
+
         char _table_name[TABLE_NAME_MAX];
         char _table_alias[TABLE_NAME_MAX];
+
         int _next_list;
         int _current_list;
 

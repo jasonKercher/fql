@@ -75,7 +75,7 @@ void vector_resize(struct vector* vec, size_t size)
 void vector_push_back(struct vector* vec, void* item) 
 {
         if (vec->_alloc <= ++vec->size)        
-                vector_reserve(vec, vec->_alloc * 2);
+                vector_reserve(vec, vec->_alloc * 2 + 1);
 
         vec->data_vec[vec->size-1] = item;
 }

@@ -23,6 +23,13 @@ void search_free(struct search* search)
         free_(search);
 }
 
+void search_free_tree(struct search* search)
+{
+        /* TODO - recursively free search tree */
+
+        free_(search);
+}
+
 void search_add_column(struct search* search,
                        struct expression* expr,
                        const char* table_name)

@@ -84,8 +84,13 @@ void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx)
         } else {
                 _query->join = JOIN_INNER;
         }
+
+        _query->search_mode = SEARCH_JOIN;
 }
-void ListenerInterface::exitJoin_part(TSqlParser::Join_partContext * ctx) { }
+void ListenerInterface::exitJoin_part(TSqlParser::Join_partContext * ctx) 
+{ 
+        _query->search_mode = SEARCH_WHERE;
+}
 
 void ListenerInterface::enterTable_name_with_hint(TSqlParser::Table_name_with_hintContext * ctx)
 {
@@ -192,9 +197,9 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
                                          expression_new(EXPR_COLUMN_NAME, token),
                                          _table_name);
                 } else if (_query->mode == MODE_SEARCH) {
-                        search_add_column((struct search*) _search_stack->data,
-                                          expression_new(EXPR_COLUMN_NAME, token),
-                                          _table_name);
+                        query_add_search_column(_query,
+                                                expression_new(EXPR_COLUMN_NAME, token),
+                                                _table_name);
                 } else {
                         std::cerr << "Unhandled COLUMN_NAME: " << token << '\n';
                         free_(token);
@@ -225,7 +230,10 @@ void ListenerInterface::exitId(TSqlParser::IdContext * ctx) { }
 void ListenerInterface::enterSimple_id(TSqlParser::Simple_idContext * ctx) { }
 void ListenerInterface::exitSimple_id(TSqlParser::Simple_idContext * ctx) { }
 
-void ListenerInterface::enterComparison_operator(TSqlParser::Comparison_operatorContext * ctx) { }
+void ListenerInterface::enterComparison_operator(TSqlParser::Comparison_operatorContext * ctx) 
+{ 
+        query_set_search_comparison(_query, ctx->getText().c_str());
+}
 void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorContext * ctx) { }
 
 void ListenerInterface::enterSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) { }
@@ -292,26 +300,29 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 
 void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContext * ctx)
 {
-        _query->mode = MODE_SEARCH;
+        enter_search(_query);
 }
-void ListenerInterface::exitSearch_condition(TSqlParser::Search_conditionContext * ctx) { }
+void ListenerInterface::exitSearch_condition(TSqlParser::Search_conditionContext * ctx) 
+{
+        exit_search(_query);
+}
 
 void ListenerInterface::enterSearch_condition_and(TSqlParser::Search_condition_andContext * ctx)
 {
-        stack_push(&_search_stack, search_new());
+        enter_search_and(_query);
 }
 void ListenerInterface::exitSearch_condition_and(TSqlParser::Search_condition_andContext * ctx)
 {
-        
+        exit_search_and(_query);
 }
 
 void ListenerInterface::enterSearch_condition_not(TSqlParser::Search_condition_notContext * ctx)
 {
-
+        enter_search_not(_query);
 }
 void ListenerInterface::exitSearch_condition_not(TSqlParser::Search_condition_notContext * ctx)
 {
-
+        exit_search_not(_query);
 }
 
 void ListenerInterface::enterPredicate(TSqlParser::PredicateContext * ctx) { }

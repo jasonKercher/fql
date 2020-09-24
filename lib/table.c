@@ -54,6 +54,7 @@ struct source* source_new(struct table* table,
 
         *new_source = (struct source) {
                  table          /* table */
+                ,NULL           /* condition */
                 ,""             /* alias */
                 ,source_type    /* source_type */
                 ,join_type      /* join_type */

@@ -30,6 +30,7 @@ struct search {
 
 struct search* search_new();
 void search_free(struct search*);
+void search_free_tree(struct search*);
 
 void search_add_column(struct search*, struct expression*, const char* table_name);
 void search_set_comparison(struct search* search, const char* op);

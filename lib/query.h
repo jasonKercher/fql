@@ -12,7 +12,7 @@ extern "C" {
 #include "expression.h"
 #include "operation.h"
 #include "reader.h"
-//#include "search.h"
+#include "search.h"
 
 enum mode {
         MODE_UNDEFINED,
@@ -22,19 +22,30 @@ enum mode {
         MODE_SEARCH,
 };
 
+enum search_mode {
+        SEARCH_UNDEFINED,
+        SEARCH_WHERE,
+        SEARCH_JOIN
+};
+
 /** Query **/
 struct query {
         struct table* table;         /* output table */
         struct vector* sources;      /* struct source */
-        struct vector* searches;     /* struct search */
+        struct search* where;        /* struct search */
         struct queue* groups;        /* struct expression */
         struct queue* having;        /* struct expression */
         struct expression* limit;    /* TOP */
         enum oper oper;              /* type of operation */
 
         /* temps used when traversing */
+        struct stack* current_search;
+        struct stack* next_search_not;
+        struct stack* next_search_and;
+
         struct expression* expr;
         enum mode mode;
+        enum search_mode search_mode;
         enum join_type join;
 };
 
@@ -44,8 +55,17 @@ void query_free(void*);
 void query_add_source(struct query*, struct stack**, const char*);
 void query_apply_table_alias(struct query*, const char*);
 
-//void query_add_search_column(struct query*, struct expression*, const char*);
-//void query_set_search_comparison(struct query*, const char*);
+/* Search building functions */
+
+void enter_search(struct query*);
+void exit_search(struct query*);
+void enter_search_and(struct query*);
+void exit_search_and(struct query*);
+void enter_search_not(struct query*);
+void exit_search_not(struct query*);
+
+void query_add_search_column(struct query*, struct expression*, const char*);
+void query_set_search_comparison(struct query*, const char*);
 
 
 
