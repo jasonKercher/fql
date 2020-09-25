@@ -25,6 +25,10 @@ void search_free(struct search* search)
 
 void search_get_description(struct search* search, char* msg)
 {
+        if (search->col[0] == NULL) {
+                return;
+        }
+
         column_cat_description(search->col[0], msg);
         switch (search->comp_type) {
         case COMP_EQ:

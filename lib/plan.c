@@ -21,47 +21,39 @@ struct plan* _plan_new()
         return new_plan;
 }
 
-void _traverse_searches(struct process* prev_proc,
+void _traverse_searches(struct process* proc,
                         struct hmap* map,
                         struct search* search,
-                        struct process** proc_end,
-                        _Bool branch)
+                        struct process* proc_true,
+                        struct process* proc_false)
 {
-        struct process* proc = hmap_get_a(map, search);
-        if (proc != NULL) {
-                return;
-        }
-
-        proc = process_new("");
-        prev_proc->out[branch] = proc;
-
-
-        if (search->out[true] == NULL) {
-                *proc_end = proc;
+        if (hmap_get_a(map, search) != NULL) {
                 return;
         }
 
         search_get_description(search, proc->action_msg);
         hmap_set_a(map, search, proc); 
 
-        if (search->out[false]) {
-                _traverse_searches(proc, 
-                                   map, 
-                                   search->out[false], 
-                                   proc_end, 
-                                   false);
+        int branch = 0;
+        for (; branch < 2; ++branch) {
+                if (search->out[branch] == NULL) {
+                        proc->out[branch] = proc_true;
+                } else {
+                        proc->out[branch] = process_new("");
+                        _traverse_searches(proc->out[branch], 
+                                           map, 
+                                           search->out[branch], 
+                                           proc_true,
+                                           proc_false);
+                }
         }
-        _traverse_searches(proc, 
-                           map, 
-                           search->out[true], 
-                           proc_end, 
-                           true);
 }
 
 /* Returns search beginning process
  * Assigns search ending process
  */
-struct process* _search_to_process(struct process** proc_end,
+struct process* _search_to_process(struct process** proc_true,
+                                   struct process** proc_false,
                                    struct search* search)
 {
         /* We are traversing the whole map and may
@@ -70,9 +62,13 @@ struct process* _search_to_process(struct process** proc_end,
          * allocated twice.
          */
         struct hmap* proc_map = hmap_new(100, 0); /* TODO - keep a count */
-        struct process* proc_begin = process_new("Begin join condition");
 
-        _traverse_searches(proc_begin, proc_map, search, proc_end, 0);
+        struct process* proc_begin = process_new("");
+        
+        *proc_true = process_new("End search: TRUE");
+        *proc_false = process_new("End search: FALSE");
+
+        _traverse_searches(proc_begin, proc_map, search, *proc_true, *proc_false);
 
         /* search_procs now points to the end of the search.
          */
@@ -131,10 +127,13 @@ void _plan_from(struct plan* plan, struct query* query)
                 join_proc->in[1] = new_table;
 
                 if (src->condition != NULL) {
-                        struct process* proc_end = NULL;
-                        join_proc->out[0] = _search_to_process(&proc_end, 
+                        struct process* proc_true = NULL;
+                        struct process* proc_false = NULL;
+                        join_proc->out[0] = _search_to_process(&proc_true,
+                                                               &proc_false,
                                                                src->condition->begin);
-                        plan->current = proc_end;
+                        plan->current = proc_true;
+                        /** TODO - Handle proc_false for non-inner joins **/
                 } else { 
                         plan->current = join_proc;
                 }

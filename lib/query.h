@@ -39,9 +39,10 @@ struct query {
         enum oper oper;              /* type of operation */
 
         /* temps used when traversing */
+        struct search_tree* search_tree;
         struct stack* current_search;
-        struct stack* next_search_not;
-        struct stack* next_search_and;
+        struct stack* not_stack;
+        struct stack* and_stack;
 
         struct expression* expr;
         enum mode mode;

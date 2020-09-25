@@ -18,9 +18,10 @@ struct query* query_new()
                 ,NULL                   /* limit */
                 ,OP_NONE                /* operation */
 
+                ,NULL                   /* begin search */
                 ,NULL                   /* current_search */
-                ,NULL                   /* next_search_not */
-                ,NULL                   /* next_search_and */
+                ,NULL                   /* not_stack */
+                ,NULL                   /* and_stack */
 
                 ,NULL                   /* expr */
                 ,MODE_UNDEFINED         /* mode */
@@ -95,27 +96,27 @@ void query_apply_table_alias(struct query* query, const char* alias)
         strncpy_(source->alias, alias, TABLE_NAME_MAX);
 }
 
+void query_add_search_column(struct query* query,
+                             struct expression* expr,
+                             const char* table_name)
+{
+        search_add_column(query->current_search->data, expr, table_name);
+}
+
+void query_set_search_comparison(struct query* query, const char* op)
+{
+        search_set_comparison(query->current_search->data, op);
+}
 
 /** Search building **/
 void enter_search(struct query* query)
 {
         query->mode = MODE_SEARCH;
-        stack_push(&query->next_search_and, search_new());
-        stack_push(&query->next_search_not, search_new());
+        stack_push(&query->and_stack, search_new());
+        stack_push(&query->not_stack, search_new());
 
         if (query->current_search == NULL) {
-                switch (query->search_mode) {
-                case SEARCH_JOIN: {
-                        struct source* src = vector_end(query->sources);
-                        src->condition = search_tree_new();
-                        break;
-                }
-                case SEARCH_WHERE:
-                        query->where = search_tree_new();
-                        break;
-                case SEARCH_UNDEFINED:
-                        /* TODO - report error */;
-                }
+                query->search_tree = search_tree_new();
         }
 
         stack_push(&query->current_search, NULL);
@@ -123,23 +124,26 @@ void enter_search(struct query* query)
 
 void exit_search(struct query* query)
 {
-        struct search* next_not = stack_pop(&query->next_search_not);
-        struct search* next_and = stack_pop(&query->next_search_and);
+        struct search* next_not = stack_pop(&query->not_stack);
+        struct search* next_and = stack_pop(&query->and_stack);
         struct search* current = stack_pop(&query->current_search);
 
-        /* may need to set current outs to next_not and next_and here */
+        if (query->not_stack == NULL) {
+                /* redundant? */
+                current->out[true] = next_not;
+                current->out[false] = next_and;
 
-        if (query->next_search_not == NULL) {
+                query->search_tree->end_true = next_not;
+                query->search_tree->end_false = next_and;
+
                 switch (query->search_mode) {
                 case SEARCH_JOIN: {
                         struct source* src = vector_end(query->sources);
-                        src->condition->end_true = next_not;
-                        src->condition->end_false = next_and;
+                        src->condition = query->search_tree;
                         break;
                 }
                 case SEARCH_WHERE:
-                        query->where->end_true = next_not;
-                        query->where->end_false = next_and;
+                        query->where = query->search_tree;
                         break;
                 case SEARCH_UNDEFINED:
                         /* TODO - report error */;
@@ -152,18 +156,18 @@ void exit_search(struct query* query)
 
 void enter_search_and(struct query* query)
 {
-        struct search* next_and = query->next_search_and->data;
-        struct search* next_not = query->next_search_not->data;
+        struct search* next_and = query->and_stack->data;
+        struct search* next_not = query->not_stack->data;
         next_not->out[false] = next_and;
 }
 
 void exit_search_and(struct query* query)
 {
         struct search* current = query->current_search->data;
-        if (query->next_search_not->next == NULL) {
+        if (query->not_stack->next == NULL) {
                 return;
         }
-        current->out[true] = query->next_search_not->next->data;
+        current->out[true] = query->not_stack->next->data;
 }
 
 void enter_search_not(struct query* query)
@@ -171,40 +175,15 @@ void enter_search_not(struct query* query)
         /* If our stack count == 1 and data not set yet */
         if (query->current_search->next == NULL && 
             query->current_search->data == NULL) {
-                switch (query->search_mode) {
-                case SEARCH_JOIN: {
-                        struct source* src = vector_end(query->sources);
-                        src->condition->begin = query->next_search_not->data;
-                        break;
-                }
-                case SEARCH_WHERE:
-                        query->where->begin = query->next_search_not->data;
-                        break;
-                case SEARCH_UNDEFINED:
-                        /* TODO - report error */;
-                }
+                query->search_tree->begin = query->not_stack->data;
         }
 
-        query->current_search->data = query->next_search_not->data;
-        query->next_search_not->data = search_new();
+        query->current_search->data = query->not_stack->data;
+        query->not_stack->data = search_new();
 }
 
 void exit_search_not(struct query* query)
 {
         struct search* current = query->current_search->data;
-        current->out[true] = query->next_search_not->data;
-}
-
-
-
-void query_add_search_column(struct query* query,
-                             struct expression* expr,
-                             const char* table_name)
-{
-        search_add_column(query->current_search->data, expr, table_name);
-}
-
-void query_set_search_comparison(struct query* query, const char* op)
-{
-        search_set_comparison(query->current_search->data, op);
+        current->out[true] = query->not_stack->data;
 }
