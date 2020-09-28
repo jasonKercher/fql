@@ -36,8 +36,10 @@ void _traverse_searches(struct process* proc,
 
         int branch = 0;
         for (; branch < 2; ++branch) {
-                if (search->out[branch] == NULL) {
+                if (search->out[branch]->comp_type == COMP_TRUE) {
                         proc->out[branch] = proc_true;
+                } else if (search->out[branch]->comp_type == COMP_FALSE) {
+                        proc->out[branch] = proc_false;
                 } else {
                         proc->out[branch] = process_new("");
                         _traverse_searches(proc->out[branch], 

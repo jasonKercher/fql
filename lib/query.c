@@ -136,6 +136,9 @@ void exit_search(struct query* query)
                 query->search_tree->end_true = next_not;
                 query->search_tree->end_false = next_and;
 
+                next_not->comp_type = COMP_TRUE;
+                next_and->comp_type = COMP_FALSE;
+
                 switch (query->search_mode) {
                 case SEARCH_JOIN: {
                         struct source* src = vector_end(query->sources);

@@ -5,6 +5,8 @@
 
 enum comparison {
          COMP_NOT_SET = -1
+        ,COMP_FALSE
+        ,COMP_TRUE
         ,COMP_EQ
         ,COMP_NE
         ,COMP_GT
