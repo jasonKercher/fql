@@ -1,6 +1,7 @@
 #include "plan.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "column.h"
 #include "query.h"
@@ -88,7 +89,6 @@ void _plan_from(struct plan* plan, struct query* query)
                                           "stream read");
                 struct process* from_proc = process_new(action_msg);
                 plan->current->out[0] = from_proc;
-                from_proc->in[0] = plan->current;
                 plan->current = from_proc;
         }
 
@@ -120,13 +120,10 @@ void _plan_from(struct plan* plan, struct query* query)
                 }
 
                 plan->current->out[0] = join_proc;
-                join_proc->in[0] = plan->current;
 
                 sprintf(action_msg, "%s: %s", src->table->reader->file_name,
                                 "mmap read");
                 struct process* new_table = process_new(action_msg);
-
-                join_proc->in[1] = new_table;
 
                 if (src->condition != NULL) {
                         struct process* proc_true = NULL;
@@ -185,33 +182,55 @@ int build_plans(struct queue** plans, struct queue* query_list)
         return 0;
 }
 
-void _print_plan(struct plan* plan)
+void _print_indent(struct stack* indents)
 {
-        struct process* proc = plan->processes;
+        fputs("\n", stderr);
+        struct stack* btm = stack_bottom(indents);
+        int first_column = 0;
+        for (; btm; btm = btm->prev) {
+                int i = 0;
+                uintptr_t width = (uintptr_t) indents->data;
+                for (; i < width - first_column; ++i) {
+                        fputc(' ', stderr);
+                }
+                first_column = 1;
+                if (btm->prev) {
+                        fputc('|', stderr);
+                }
+        }
+}
 
-        int i = 0;
-        for (; proc; proc = proc->out[0]) {
-                if (i) {
-                        fputs("  V\n", stderr);
-                }
-                fputs(proc->action_msg, stderr);
-                if (proc->in[1]) {
-                        struct process* in1 = proc->in[1];
-                        fprintf(stderr, " <-- %s", in1->action_msg);
-                        if (in1->out[1]) {
-                                struct process* out1 = in1->out[1];
-                                fprintf(stderr, " --> %s", out1->action_msg);
-                        }
-                }
-                fputs("\n", stderr);
-                ++i;
+void _print_plan(struct process* proc, struct stack** indents, int branch)
+{
+        if (branch == 0) {
+                _print_indent(*indents);
+        }
+
+        fputs(proc->action_msg, stderr);
+
+        if (proc->out[1] != NULL) {
+                fputs(" --> ", stderr);
+                stack_push(indents, (void*) 5 + strlen(proc->action_msg));
+                _print_plan(proc->out[1], indents, 1);
+                stack_pop(indents);
+        }
+
+        if (proc->out[0] != NULL) {
+                _print_indent(*indents);
+                fputc('|', stderr);
+                _print_plan(proc->out[0], indents, 0);
         }
 }
 
 void print_plans(struct queue* plans)
 {
+        int i = 0;
         for (; plans; plans = plans->next) {
-                _print_plan(plans->data);
+                fprintf(stderr, "QUERY %d\n", i++);
+                struct plan* plan = plans->data;
+                struct stack* indents = NULL;
+                _print_plan(plan->processes, &indents, 0);
+                fputs("\n", stderr);
         }
 }
 

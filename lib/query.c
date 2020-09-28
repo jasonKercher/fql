@@ -112,7 +112,7 @@ void query_set_search_comparison(struct query* query, const char* op)
 void enter_search(struct query* query)
 {
         query->mode = MODE_SEARCH;
-        stack_push(&query->and_stack, search_new());
+        stack_push(&query->and_stack, NULL);
         stack_push(&query->not_stack, search_new());
 
         if (query->current_search == NULL) {
@@ -130,14 +130,20 @@ void exit_search(struct query* query)
 
         if (query->not_stack == NULL) {
                 /* redundant? */
-                current->out[true] = next_not;
-                current->out[false] = next_and;
+                //current->out[true] = next_not;
+                //current->out[false] = next_and;
 
-                query->search_tree->end_true = next_not;
+                next_and->comp_type = COMP_FALSE;
                 query->search_tree->end_false = next_and;
 
-                next_not->comp_type = COMP_TRUE;
-                next_and->comp_type = COMP_FALSE;
+                next_not->out[true] = query->search_tree->end_true;
+                next_not->out[false] = next_and;
+
+                //query->search_tree->end_true = next_not;
+                //query->search_tree->end_false = next_and;
+
+                //next_not->comp_type = COMP_TRUE;
+
 
                 switch (query->search_mode) {
                 case SEARCH_JOIN: {
@@ -159,6 +165,10 @@ void exit_search(struct query* query)
 
 void enter_search_and(struct query* query)
 {
+        //if (query->and_stack->data != NULL) {
+        //        query->current_search->data = query->and_stack->data;
+        //}
+        query->and_stack->data = search_new();
         struct search* next_and = query->and_stack->data;
         struct search* next_not = query->not_stack->data;
         next_not->out[false] = next_and;
@@ -168,6 +178,8 @@ void exit_search_and(struct query* query)
 {
         struct search* current = query->current_search->data;
         if (query->not_stack->next == NULL) {
+                current->out[true] = query->search_tree->end_true;
+                current->out[false] = query->and_stack->data;
                 return;
         }
         current->out[true] = query->not_stack->next->data;

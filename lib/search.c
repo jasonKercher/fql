@@ -64,6 +64,8 @@ void search_get_description(struct search* search, char* msg)
         case COMP_NOT_SET:
                 strcat(msg, " <no comparison> ");
                 break;
+        default:
+                break;
         }
         column_cat_description(search->col[1], msg);
 }
@@ -111,9 +113,11 @@ struct search_tree* search_tree_new()
 
         *new_tree = (struct search_tree) {
                  NULL
-                ,NULL
+                ,search_new()
                 ,NULL
         };
+
+        new_tree->end_true->comp_type = COMP_TRUE;
 
         return new_tree;
 }
