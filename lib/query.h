@@ -6,13 +6,15 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
+
 #include "util/queue.h"
 #include "util/vec.h"
 #include "table.h"
 #include "expression.h"
 #include "operation.h"
 #include "reader.h"
-#include "search.h"
+#include "logic.h"
 
 enum mode {
         MODE_UNDEFINED,
@@ -22,31 +24,31 @@ enum mode {
         MODE_SEARCH,
 };
 
-enum search_mode {
-        SEARCH_UNDEFINED,
-        SEARCH_WHERE,
-        SEARCH_JOIN
+enum logic_mode {
+        LOGIC_UNDEFINED,
+        LOGIC_WHERE,
+        LOGIC_JOIN
 };
 
 /** Query **/
 struct query {
-        struct table* table;         /* output table */
-        struct vector* sources;      /* struct source */
-        struct search_tree* where;        /* struct search */
-        struct queue* groups;        /* struct expression */
-        struct queue* having;        /* struct expression */
-        struct expression* limit;    /* TOP */
-        enum oper oper;              /* type of operation */
+        struct table* table;            /* output table */
+        struct vector* sources;         /* struct source */
+        struct logic_tree* where;       /* struct logic */
+        struct queue* groups;           /* struct expression */
+        struct queue* having;           /* struct expression */
+        struct expression* limit;       /* TOP */
+        enum oper oper;                 /* type of operation */
 
-        /* temps used when traversing */
-        struct search_tree* search_tree;
-        struct stack* current_search;
-        struct stack* not_stack;
-        struct stack* and_stack;
+
+        /* All the variables below are temporaries for
+         * tracking the query as antlr traverses it
+         */
+        struct stack* logic_stack;            /* stack used to build logic trees */
 
         struct expression* expr;
         enum mode mode;
-        enum search_mode search_mode;
+        enum logic_mode logic_mode;
         enum join_type join;
 };
 

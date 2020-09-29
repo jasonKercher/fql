@@ -85,11 +85,11 @@ void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx)
                 _query->join = JOIN_INNER;
         }
 
-        _query->search_mode = SEARCH_JOIN;
+        _query->logic_mode = LOGIC_JOIN;
 }
 void ListenerInterface::exitJoin_part(TSqlParser::Join_partContext * ctx) 
 { 
-        _query->search_mode = SEARCH_WHERE;
+        _query->logic_mode = LOGIC_WHERE;
 }
 
 void ListenerInterface::enterTable_name_with_hint(TSqlParser::Table_name_with_hintContext * ctx)

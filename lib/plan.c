@@ -22,42 +22,42 @@ struct plan* _plan_new()
         return new_plan;
 }
 
-void _traverse_searches(struct process* proc,
+void _traverse_logices(struct process* proc,
                         struct hmap* map,
-                        struct search* search,
+                        struct logic* logic,
                         struct process* proc_true,
                         struct process* proc_false)
 {
-        if (hmap_get_a(map, search) != NULL) {
+        if (hmap_get_a(map, logic) != NULL) {
                 return;
         }
 
-        search_get_description(search, proc->action_msg);
-        hmap_set_a(map, search, proc); 
+        logic_get_description(logic, proc->action_msg);
+        hmap_set_a(map, logic, proc); 
 
         int branch = 0;
         for (; branch < 2; ++branch) {
-                if (search->out[branch]->comp_type == COMP_TRUE) {
+                if (logic->out[branch]->comp_type == COMP_TRUE) {
                         proc->out[branch] = proc_true;
-                } else if (search->out[branch]->comp_type == COMP_FALSE) {
+                } else if (logic->out[branch]->comp_type == COMP_FALSE) {
                         proc->out[branch] = proc_false;
                 } else {
                         proc->out[branch] = process_new("");
-                        _traverse_searches(proc->out[branch], 
+                        _traverse_logices(proc->out[branch], 
                                            map, 
-                                           search->out[branch], 
+                                           logic->out[branch], 
                                            proc_true,
                                            proc_false);
                 }
         }
 }
 
-/* Returns search beginning process
- * Assigns search ending process
+/* Returns logic beginning process
+ * Assigns logic ending process
  */
-struct process* _search_to_process(struct process** proc_true,
+struct process* _logic_to_process(struct process** proc_true,
                                    struct process** proc_false,
-                                   struct search* search)
+                                   struct logic* logic)
 {
         /* We are traversing the whole map and may
          * reach the same node more than once so
@@ -68,12 +68,12 @@ struct process* _search_to_process(struct process** proc_true,
 
         struct process* proc_begin = process_new("");
         
-        *proc_true = process_new("End search: TRUE");
-        *proc_false = process_new("End search: FALSE");
+        *proc_true = process_new("End logic: TRUE");
+        *proc_false = process_new("End logic: FALSE");
 
-        _traverse_searches(proc_begin, proc_map, search, *proc_true, *proc_false);
+        _traverse_logices(proc_begin, proc_map, logic, *proc_true, *proc_false);
 
-        /* search_procs now points to the end of the search.
+        /* logic_procs now points to the end of the logic.
          */
         return proc_begin;
 }
@@ -128,7 +128,7 @@ void _plan_from(struct plan* plan, struct query* query)
                 if (src->condition != NULL) {
                         struct process* proc_true = NULL;
                         struct process* proc_false = NULL;
-                        join_proc->out[0] = _search_to_process(&proc_true,
+                        join_proc->out[0] = _logic_to_process(&proc_true,
                                                                &proc_false,
                                                                src->condition->begin);
                         plan->current = proc_true;

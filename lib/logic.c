@@ -1,36 +1,36 @@
-#include "search.h"
+#include "logic.h"
 
 #include "column.h"
 #include "util/util.h"
 
-struct search* search_new()
+struct logic* logic_new()
 {
-        struct search* new_search = NULL;
-        malloc_(new_search, sizeof(*new_search));
+        struct logic* new_logic = NULL;
+        malloc_(new_logic, sizeof(*new_logic));
 
-        *new_search = (struct search) {
+        *new_logic = (struct logic) {
                  {NULL, NULL}
                 ,{NULL, NULL}
                 ,0
                 ,COMP_NOT_SET
         };
 
-        return new_search;
+        return new_logic;
 }
 
-void search_free(struct search* search)
+void logic_free(struct logic* logic)
 {
-        free_(search);
+        free_(logic);
 }
 
-void search_get_description(struct search* search, char* msg)
+void logic_get_description(struct logic* logic, char* msg)
 {
-        if (search->col[0] == NULL) {
+        if (logic->col[0] == NULL) {
                 return;
         }
 
-        column_cat_description(search->col[0], msg);
-        switch (search->comp_type) {
+        column_cat_description(logic->col[0], msg);
+        switch (logic->comp_type) {
         case COMP_EQ:
                 strcat(msg, " = ");
                 break;
@@ -67,53 +67,53 @@ void search_get_description(struct search* search, char* msg)
         default:
                 break;
         }
-        column_cat_description(search->col[1], msg);
+        column_cat_description(logic->col[1], msg);
 }
 
-void search_add_column(struct search* search,
+void logic_add_column(struct logic* logic,
                        struct expression* expr,
                        const char* table_name)
 {
         struct column* new_col = column_new(expr, table_name);
-        if (search->col[0] == NULL) {
-                search->col[0] = new_col;
+        if (logic->col[0] == NULL) {
+                logic->col[0] = new_col;
         } else {
-                search->col[1] = new_col;
+                logic->col[1] = new_col;
         }
 }
 
-void search_set_comparison(struct search* search, const char* op)
+void logic_set_comparison(struct logic* logic, const char* op)
 {
         if(string_eq(op, "="))
-                search->comp_type = COMP_EQ;
+                logic->comp_type = COMP_EQ;
         else if(string_eq(op, "<>") || string_eq(op, "!="))
-                search->comp_type = COMP_NE;
+                logic->comp_type = COMP_NE;
         else if(string_eq(op, ">"))
-                search->comp_type = COMP_GT;
+                logic->comp_type = COMP_GT;
         else if(string_eq(op, ">="))
-                search->comp_type = COMP_GE;
+                logic->comp_type = COMP_GE;
         else if(string_eq(op, "<"))
-                search->comp_type = COMP_LT;
+                logic->comp_type = COMP_LT;
         else if(string_eq(op, "<="))
-                search->comp_type = COMP_LE;
+                logic->comp_type = COMP_LE;
         else if(istring_eq(op, "LIKE"))
-                search->comp_type = COMP_LIKE;
+                logic->comp_type = COMP_LIKE;
         else if(istring_eq(op, "NOT_LIKE"))
-                search->comp_type = COMP_NOT_LIKE;
+                logic->comp_type = COMP_NOT_LIKE;
         else if(istring_eq(op, "NULL"))
-                search->comp_type = COMP_NULL;
+                logic->comp_type = COMP_NULL;
         else if(istring_eq(op, "NOT_NULL"))
-                search->comp_type = COMP_NOT_NULL;
+                logic->comp_type = COMP_NOT_NULL;
 }
 
-struct search_tree* search_tree_new()
+struct logic_tree* logic_tree_new()
 {
-        struct search_tree* new_tree = NULL;
+        struct logic_tree* new_tree = NULL;
         malloc_(new_tree, sizeof(*new_tree));
 
-        *new_tree = (struct search_tree) {
+        *new_tree = (struct logic_tree) {
                  NULL
-                ,search_new()
+                ,logic_new()
                 ,NULL
         };
 
@@ -122,9 +122,9 @@ struct search_tree* search_tree_new()
         return new_tree;
 }
 
-void search_free_tree(struct search_tree* tree)
+void logic_free_tree(struct logic_tree* tree)
 {
-        /* TODO - recursively free search tree */
+        /* TODO - recursively free logic tree */
 
         free_(tree);
 }

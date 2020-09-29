@@ -44,7 +44,7 @@ enum join_type {
 
 struct source {
         struct table* table;
-        struct search_tree* condition;
+        struct logic_tree* condition;
         char alias[TABLE_NAME_MAX];
         enum source_type source_type;
         enum join_type join_type;
