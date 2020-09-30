@@ -22,7 +22,7 @@ struct plan* _plan_new()
         return new_plan;
 }
 
-void _traverse_logices(struct process* proc,
+void _traverse_logic(struct process* proc,
                         struct hmap* map,
                         struct logic* logic,
                         struct process* proc_true,
@@ -43,7 +43,7 @@ void _traverse_logices(struct process* proc,
                         proc->out[branch] = proc_false;
                 } else {
                         proc->out[branch] = process_new("");
-                        _traverse_logices(proc->out[branch], 
+                        _traverse_logic(proc->out[branch], 
                                            map, 
                                            logic->out[branch], 
                                            proc_true,
@@ -71,7 +71,7 @@ struct process* _logic_to_process(struct process** proc_true,
         *proc_true = process_new("End logic: TRUE");
         *proc_false = process_new("End logic: FALSE");
 
-        _traverse_logices(proc_begin, proc_map, logic, *proc_true, *proc_false);
+        _traverse_logic(proc_begin, proc_map, logic, *proc_true, *proc_false);
 
         /* logic_procs now points to the end of the logic.
          */

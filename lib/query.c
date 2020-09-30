@@ -1,3 +1,5 @@
+/*** VERSION 1 ***/
+
 #include "query.h"
 
 #include <stdbool.h>
@@ -96,10 +98,10 @@ void query_apply_table_alias(struct query* query, const char* alias)
 
 struct logic_builder {
         struct logic_tree* tree;
-        struct logic* back_one;
         struct logic* current;
-        struct logic* next_and;
         struct logic* next_not;
+        struct vector* true_vec;
+        struct vector* false_vec;
 };
 
 struct logic_builder* logic_builder_new()
@@ -109,10 +111,10 @@ struct logic_builder* logic_builder_new()
 
         *builder = (struct logic_builder) {
                  logic_tree_new()       /* tree */
-                ,NULL                   /* back_one */
                 ,NULL                   /* current */
-                ,NULL                   /* next_and */
-                ,logic_new()            /* next_not */
+                ,NULL                   /* next_not */
+                ,vector_new()           /* true_vec */
+                ,vector_new()           /* false_vec */
         };
 
         return builder;
@@ -132,6 +134,22 @@ void query_set_search_comparison(struct query* query, const char* op)
         logic_set_comparison(builder->current, op);
 }
 
+void _assign_logic(struct query* query, struct logic_builder* builder)
+{
+        switch (query->logic_mode) {
+        case LOGIC_JOIN: {
+                struct source* src = vector_end(query->sources);
+                src->condition = builder->tree;
+                break;
+        }
+        case LOGIC_WHERE:
+                query->where = builder->tree;
+                break;
+        case LOGIC_UNDEFINED:
+                /* TODO - report error */;
+        }
+}
+
 void enter_search(struct query* query)
 {
         query->mode = MODE_SEARCH;
@@ -139,134 +157,86 @@ void enter_search(struct query* query)
         struct logic_builder* upper = logic_builder_new();
         stack_push(&query->logic_stack, upper);
 
-        upper->tree->begin = upper->next_not;
-
         if (query->logic_stack->next == NULL) {
-                return;
+                upper->next_not = logic_new();
+                upper->tree->begin = upper->next_not;
+                upper->tree->end_false = logic_new();
+                upper->tree->end_false->comp_type = COMP_FALSE;
+        } else {
+                struct logic_builder* lower = query->logic_stack->next->data;
+                upper->tree->begin = lower->current;
+                upper->next_not = lower->current;
+                upper->tree->end_true = lower->next_not;
         }
-        struct logic_builder* lower = query->logic_stack->next->data;
-
-        logic_free(lower->next_not);
-        //lower->next_not = lower->current;
-        lower->current = lower->back_one;
-
-        /* TODO: Is this better in exit_search? */
-        /* IF: a && (...) ELSE: a || (...) */
-
-        /* THIS WHOLE SECTION IS FUCKED */
-
-        //if (lower->current->out[true] == NULL) {
-        ////if (lower->in_and) {
-        //        lower->next_not = upper->tree->begin;
-        //        lower->current->out[true] = lower->next_not;
-        //} else {
-        //        lower->next_and = upper->tree->begin;
-        //        lower->current->out[false] = lower->next_and;
-        //}
-
-        //if (builder->current == NULL) {
-        //        query->logic_tree = logic_tree_new();
-        //} else {
-        //        struct logic* current = query->current_logic->data;
-        //        if (current->out[true] == NULL) {
-        //                current->out[true] = query->not_stack->data;
-        //        } else {
-        //                current->out[false] = query->not_stack->data;
-        //        }
-        //}
-
 }
 
 void exit_search(struct query* query)
 {
-        //struct logic* upper_not = stack_pop(&query->not_stack);
-        //struct logic* upper_and = stack_pop(&query->and_stack);
-        //struct logic* upper_current = stack_pop(&query->current_logic);
-
         struct logic_builder* upper = stack_pop(&query->logic_stack);
 
-        //if (query->logic_stack == NULL) {
-                //upper_current->out[true] = upper_not;
-        //upper->current->out[false] = upper->next_and;
 
+        if (query->logic_stack == NULL) {
+                int i = 0;
+                for (; i < upper->true_vec->size; ++i) {
+                        struct logic* truthy = upper->true_vec->data_vec[i];
+                        truthy->out[true] = upper->next_not;
+                }
 
-        //upper->next_not->out[false] = upper->next_and;
-        if (query->logic_stack != NULL) {
-                struct logic_builder* lower = query->logic_stack->data;
-                //upper->next_not->out[true] = lower->tree->end_true;
-                upper->current->out[false] = lower->next_and;
-                lower->current = upper->tree->begin;
+                upper->current->out[true] = upper->next_not;
+                upper->next_not->comp_type = COMP_TRUE;
+                upper->tree->end_true = upper->next_not;
+                //int i = 0;
+                for (i = 0; i < upper->false_vec->size; ++i) {
+                        struct logic* logic = upper->false_vec->data_vec[i];
+                        logic->out[false] = upper->tree->end_false;
+                }
+                vector_resize(upper->true_vec, 0);
+                _assign_logic(query, upper);
                 return;
         }
+        
+        struct logic_builder* lower = query->logic_stack->data;
+        lower->current = upper->current;
 
-        upper->current->out[false] = upper->next_and;
-        upper->next_and->comp_type = COMP_FALSE;
-        upper->tree->end_false = upper->next_and;
-
-        //query->logic_tree->end_true = upper_not;
-        //query->logic_tree->end_false = upper_and;
-
-        //upper_not->comp_type = COMP_TRUE;
-
-        switch (query->logic_mode) {
-        case LOGIC_JOIN: {
-                struct source* src = vector_end(query->sources);
-                src->condition = upper->tree;
-                break;
+        int i = 0;
+        for (; i < upper->true_vec->size; ++i) {
+                struct logic* truthy = upper->true_vec->data_vec[i];
+                truthy->out[true] = lower->next_not;
         }
-        case LOGIC_WHERE:
-                query->where = upper->tree;
-                break;
-        case LOGIC_UNDEFINED:
-                /* TODO - report error */;
+        vector_resize(upper->true_vec, 0);
+
+        for (i = 0; i < upper->false_vec->size; ++i) {
+                vector_push_back(lower->false_vec, upper->false_vec->data_vec[i]);
         }
-        return;
-        //}
-
-        //query->current_logic->data = query->not_stack->data;
-
-        //logic_free(upper_not);
-        //logic_free(upper_and);
 }
 
 void enter_search_and(struct query* query)
 {
-        //if (query->and_stack->data != NULL) {
-        //        query->current_logic->data = query->and_stack->data;
-        //}
         struct logic_builder* builder = query->logic_stack->data;
-        builder->next_and = logic_new();
-        //struct logic* next_and = query->and_stack->data;
-        //struct logic* next_not = query->not_stack->data;
-        //struct logic* current = query->current_logic->data;
-        //if (builder->current != NULL) {
-        //        builder->current->out[false] = builder->next_not;
-        //}
-        builder->next_not->out[false] = builder->next_and;
+        int i = 0;
+        for (; i < builder->false_vec->size; ++i) {
+                struct logic* logic = builder->false_vec->data_vec[i];
+                logic->out[false] = builder->next_not;
+        }
+
+        vector_resize(builder->false_vec, 0);
+
+        //builder->next_and = logic_new();
+        //builder->next_not->out[false] = builder->next_and;
 }
 
 void exit_search_and(struct query* query)
 {
+        /***** NOW ******/
         struct logic_builder* builder = query->logic_stack->data;
-        builder->current->out[false] = builder->next_not;
-        if (query->logic_stack->next == NULL) {
-                builder->current->out[true] = builder->tree->end_true;
-                return;
-        }
-        struct logic_builder* lower = query->logic_stack->next->data;
-        builder->current->out[true] = lower->next_not;
+        vector_push_back(builder->true_vec, builder->current);
+        //builder->current->out[true] = builder->tree->end_true;
 }
 
 void enter_search_not(struct query* query)
 {
         struct logic_builder* builder = query->logic_stack->data;
-        ///* If our stack count == 1 and data not set yet */
-        //if (query->logic_stack->next == NULL &&
-        //    builder->current == NULL) {
-        //        builder->tree->begin = builder->next_not;
-        //}
 
-        builder->back_one = builder->current;
         builder->current = builder->next_not;
         builder->next_not = logic_new();
 }
@@ -274,9 +244,9 @@ void enter_search_not(struct query* query)
 void exit_search_not(struct query* query)
 {
         struct logic_builder* builder = query->logic_stack->data;
-        if (builder->current->out[true] != NULL) {
-                return;
-        }
+        //if (builder->current->out[true] != NULL) {
+        //        return;
+        //}
         builder->current->out[true] = builder->next_not;
-        builder->current->out[false] = builder->next_and;
+        vector_push_back(builder->false_vec, builder->current);
 }

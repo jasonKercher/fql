@@ -113,11 +113,11 @@ struct logic_tree* logic_tree_new()
 
         *new_tree = (struct logic_tree) {
                  NULL
-                ,logic_new()
+                ,NULL
                 ,NULL
         };
 
-        new_tree->end_true->comp_type = COMP_TRUE;
+        //new_tree->end_true->comp_type = COMP_TRUE;
 
         return new_tree;
 }

@@ -1,7 +1,7 @@
 #ifndef VEC_H
 #define VEC_H
 
-/** Naive as fuck vector implmentation */
+/** Naive as fuck vector implementation */
 
 #include <stdlib.h>
 
