@@ -24,6 +24,7 @@ struct logic {
         struct logic* out[2];
         int data_type;
         enum comparison comp_type;
+        struct process* proc;
 };
 
 struct logic* logic_new();

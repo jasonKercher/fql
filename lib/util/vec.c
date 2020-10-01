@@ -79,3 +79,13 @@ void vector_push_back(struct vector* vec, void* item)
 
         vec->data_vec[vec->size-1] = item;
 }
+
+void vector_extend(struct vector* dest, struct vector* src)
+{
+        vector_reserve(dest, dest->size + src->size);
+
+        int i = 0;
+        for (; i < src->size; ++i) {
+                vector_push_back(dest, src->data_vec[i]);
+        }
+}

@@ -23,17 +23,15 @@ struct plan* _plan_new()
 }
 
 void _traverse_logic(struct process* proc,
-                        struct hmap* map,
-                        struct logic* logic,
-                        struct process* proc_true,
-                        struct process* proc_false)
+                     struct logic* logic,
+                     struct process* proc_true,
+                     struct process* proc_false)
 {
-        if (hmap_get_a(map, logic) != NULL) {
-                return;
+        if (logic->proc == NULL) {
+                logic_get_description(logic, proc->action_msg);
+        } else {
+                logic->proc = proc;
         }
-
-        logic_get_description(logic, proc->action_msg);
-        hmap_set_a(map, logic, proc); 
 
         int branch = 0;
         for (; branch < 2; ++branch) {
@@ -42,12 +40,15 @@ void _traverse_logic(struct process* proc,
                 } else if (logic->out[branch]->comp_type == COMP_FALSE) {
                         proc->out[branch] = proc_false;
                 } else {
-                        proc->out[branch] = process_new("");
+                        if (logic->out[branch]->proc == NULL) {
+                                proc->out[branch] = process_new("");
+                        } else {
+                                proc->out[branch] = logic->out[branch]->proc;
+                        }
                         _traverse_logic(proc->out[branch], 
-                                           map, 
-                                           logic->out[branch], 
-                                           proc_true,
-                                           proc_false);
+                                        logic->out[branch], 
+                                        proc_true,
+                                        proc_false);
                 }
         }
 }
@@ -56,22 +57,15 @@ void _traverse_logic(struct process* proc,
  * Assigns logic ending process
  */
 struct process* _logic_to_process(struct process** proc_true,
-                                   struct process** proc_false,
-                                   struct logic* logic)
+                                  struct process** proc_false,
+                                  struct logic* logic)
 {
-        /* We are traversing the whole map and may
-         * reach the same node more than once so
-         * hash the address of each node so it isn't 
-         * allocated twice.
-         */
-        struct hmap* proc_map = hmap_new(100, 0); /* TODO - keep a count */
-
         struct process* proc_begin = process_new("");
         
         *proc_true = process_new("End logic: TRUE");
         *proc_false = process_new("End logic: FALSE");
 
-        _traverse_logic(proc_begin, proc_map, logic, *proc_true, *proc_false);
+        _traverse_logic(proc_begin, logic, *proc_true, *proc_false);
 
         /* logic_procs now points to the end of the logic.
          */
@@ -129,8 +123,8 @@ void _plan_from(struct plan* plan, struct query* query)
                         struct process* proc_true = NULL;
                         struct process* proc_false = NULL;
                         join_proc->out[0] = _logic_to_process(&proc_true,
-                                                               &proc_false,
-                                                               src->condition->begin);
+                                                              &proc_false,
+                                                              src->condition->begin);
                         plan->current = proc_true;
                         /** TODO - Handle proc_false for non-inner joins **/
                 } else { 

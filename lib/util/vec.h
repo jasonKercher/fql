@@ -19,5 +19,6 @@ void* vector_end(struct vector*);
 void vector_reserve(struct vector*, size_t);
 void vector_resize(struct vector*, size_t);
 void vector_push_back(struct vector*, void*);
+void vector_extend(struct vector* dest, struct vector* src);
 
 #endif  /* VEC_H */

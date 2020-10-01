@@ -8,6 +8,7 @@
 ListenerInterface::ListenerInterface(struct queue** query_list, const std::vector<std::string>& rules)
 {
         _table_name[0] = '\0';
+        _table_alias[0] = '\0';
         _rule_names = rules;
         _query_list = query_list;
 

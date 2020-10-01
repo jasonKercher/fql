@@ -77,8 +77,11 @@ ENTRY* _hmap_get(struct hmap* m, const char* key)
         char key_cpy[MAX_KEY_LEN] = "";
         strncpy_(key_cpy, key, MAX_KEY_LEN);
 
-        string_to_lower(key_cpy);
+        if ((m->props & HMAP_NOCASE)) {
+                string_to_lower(key_cpy);
+        }
 
+        search_entry.data = NULL;
         search_entry.key = key_cpy;
 
         int ret_val = hsearch_r(search_entry, FIND, &ret, m->tab);
@@ -110,30 +113,16 @@ void* hmap_get(struct hmap* m, const char* key)
 /* lol */
 void* hmap_get_a(struct hmap* m, void* key)
 {
-        char addr[5];
+        char addr[sizeof(key) + 3];
+        sprintf(addr, "%p", key);
 
-        uintptr_t k = (uintptr_t) key;
-
-        addr[0] = k & 0xFF;
-        addr[1] = (k & 0xFF00) >> 8;
-        addr[2] = (k & 0xFF0000) >> 16;
-        addr[3] = (k & 0xFF000000) >> 24;
-        addr[4] = '\0';
-        
         return hmap_get(m, addr);
 }
 
 void* hmap_set_a(struct hmap* m, void* key, void* data)
 {
-        char addr[5];
-
-        uintptr_t k = (uintptr_t) key;
-
-        addr[0] = k & 0xFF;
-        addr[1] = (k & 0xFF00) >> 8;
-        addr[2] = (k & 0xFF0000) >> 16;
-        addr[3] = (k & 0xFF000000) >> 24;
-        addr[4] = '\0';
+        char addr[sizeof(key) + 3];
+        sprintf(addr, "%p", key);
         
         return hmap_set(m, addr, data);
 }

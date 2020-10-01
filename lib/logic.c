@@ -9,10 +9,11 @@ struct logic* logic_new()
         malloc_(new_logic, sizeof(*new_logic));
 
         *new_logic = (struct logic) {
-                 {NULL, NULL}
-                ,{NULL, NULL}
-                ,0
-                ,COMP_NOT_SET
+                 {NULL, NULL}   /* col */
+                ,{NULL, NULL}   /* out */
+                ,0              /* data_type */
+                ,COMP_NOT_SET   /* comp_type */
+                ,NULL           /* proc */
         };
 
         return new_logic;
