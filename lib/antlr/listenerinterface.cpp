@@ -90,7 +90,7 @@ void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx)
 }
 void ListenerInterface::exitJoin_part(TSqlParser::Join_partContext * ctx) 
 { 
-        _query->logic_mode = LOGIC_WHERE;
+        //_query->logic_mode = LOGIC_WHERE;
 }
 
 void ListenerInterface::enterTable_name_with_hint(TSqlParser::Table_name_with_hintContext * ctx)
@@ -301,6 +301,9 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 
 void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContext * ctx)
 {
+        if (_query->logic_mode == LOGIC_UNDEFINED) {
+                _query->logic_mode = LOGIC_WHERE;
+        }
         enter_search(_query);
 }
 void ListenerInterface::exitSearch_condition(TSqlParser::Search_conditionContext * ctx) 

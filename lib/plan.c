@@ -125,6 +125,7 @@ void _plan_from(struct plan* plan, struct query* query)
                         join_proc->out[0] = _logic_to_process(&proc_true,
                                                               &proc_false,
                                                               src->condition->begin);
+
                         plan->current = proc_true;
                         /** TODO - Handle proc_false for non-inner joins **/
                 } else { 
@@ -134,7 +135,21 @@ void _plan_from(struct plan* plan, struct query* query)
         }
 }
 
-void _plan_where(struct plan* plan, struct query* query) { }
+void _plan_where(struct plan* plan, struct query* query) 
+{ 
+        if (query->where == NULL) {
+                return;
+        }
+
+        struct process* proc_true = NULL;
+        struct process* proc_false = NULL;
+
+        plan->current->out[0] = _logic_to_process(&proc_true,
+                                                  &proc_false,
+                                                  query->where->begin);
+
+        plan->current = proc_true;
+}
 void _plan_group(struct plan* plan, struct query* query) { }
 void _plan_having(struct plan* plan, struct query* query) { }
 void _plan_operation(struct plan* plan, struct query* query) 
