@@ -194,7 +194,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
         switch (_current_list) {
         case TOK_COLUMN_NAME:
                 if (_query->mode == MODE_SELECT) {
-                        table_add_column(_query->table,
+                        schema_add_column(_query->schema,
                                          expression_new(EXPR_COLUMN_NAME, token),
                                          _table_name);
                 } else if (_query->mode == MODE_SEARCH) {
@@ -207,7 +207,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
                 }
                 break;
         case TOK_COLUMN_ALIAS:
-                table_apply_column_alias(_query->table, token);
+                schema_apply_column_alias(_query->schema, token);
                 free_(token);
                 break;
         case TOK_TABLE_NAME:
@@ -281,7 +281,7 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
         switch(_query->mode) {
         case MODE_SELECT:
                 new_expr->type = EXPR_SUBQUERY_CONST;
-                table_add_column(_query->table, new_expr, "");
+                schema_add_column(_query->schema, new_expr, "");
                 break;
         case MODE_UPDATE:
                 new_expr->type = EXPR_SUBQUERY;

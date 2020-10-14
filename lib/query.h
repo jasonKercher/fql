@@ -32,7 +32,7 @@ enum logic_mode {
 
 /** Query **/
 struct query {
-        struct table* table;            /* output table */
+        struct schema* schema;          /* output table */
         struct vector* sources;         /* struct source */
         struct logic_tree* where;       /* struct logic */
         struct queue* groups;           /* struct expression */

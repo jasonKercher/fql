@@ -27,21 +27,6 @@ void table_free(struct table* table)
         free_(table);
 }
 
-void table_add_column(struct table* table,
-                      struct expression* expr,
-                      const char* table_name)
-{
-        struct column* new_col = column_new(expr, table_name);
-        stack_push(&table->schema->columns, new_col);
-}
-
-void table_apply_column_alias(struct table* table, const char* alias)
-{
-        struct column* col = table->schema->columns->data;
-        strncpy_(col->alias, alias, COLUMN_NAME_MAX);
-}
-
-
 
 
 struct source* source_new(struct table* table,

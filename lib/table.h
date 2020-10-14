@@ -23,8 +23,6 @@ struct table {
 
 struct table* table_new();
 void table_free(struct table*);
-void table_add_column(struct table*, struct expression*, const char* table_name);
-void table_apply_column_alias(struct table*, const char*);
 
 
 /** Source **/

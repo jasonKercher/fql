@@ -32,6 +32,21 @@ void schema_free(void* generic_schema)
         free_(schema);
 }
 
+void schema_add_column(struct schema* schema,
+                      struct expression* expr,
+                      const char* table_name)
+{
+        struct column* new_col = column_new(expr, table_name);
+        stack_push(&schema->columns, new_col);
+}
+
+void schema_apply_column_alias(struct schema* schema, const char* alias)
+{
+        struct column* col = schema->columns->data;
+        strncpy_(col->alias, alias, COLUMN_NAME_MAX);
+}
+
+
 void schema_resolve_file(struct table* table)
 {
         /* Usage of PATH_MAX here is kind of silly,
@@ -57,7 +72,7 @@ void schema_resolve_file(struct table* table)
                         strcpy(table->reader->file_name, node->data);
                 }
         }
-        
+
         if (matches) {
                 goto success_return;
         }
@@ -69,7 +84,7 @@ void schema_resolve_file(struct table* table)
                         strcpy(table->reader->file_name, node->data);
                 }
         }
-        
+
         if (matches > 1) {
                 fprintf(stderr, "%s: ambiguous file name\n", table->name);
                 exit(EXIT_FAILURE);
@@ -87,7 +102,7 @@ void schema_resolve_file(struct table* table)
                         strcpy(table->reader->file_name, node->data);
                 }
         }
-        
+
         if (matches > 1) {
                 fprintf(stderr, "%s: ambiguous file name\n", table->name);
                 exit(EXIT_FAILURE);
@@ -103,7 +118,7 @@ void schema_resolve_file(struct table* table)
                         strcpy(table->reader->file_name, node->data);
                 }
         }
-        
+
         if (matches > 1) {
                 fprintf(stderr, "%s: ambiguous file name\n", table->name);
                 exit(EXIT_FAILURE);
@@ -126,7 +141,7 @@ void schema_assign_header(struct table* table, csv_record* rec)
 
         for (; i < rec->size; ++i) {
                 char* column_name = strdup(rec->fields[i]);
-                table_add_column(table,
+                schema_add_column(table->schema,
                                  expression_new(EXPR_COLUMN_NAME, column_name),
                                  "");
 
@@ -171,7 +186,7 @@ void schema_resolve_source(struct source* source)
 
 void schema_validate(struct query* query)
 {
-        struct schema* output_schema = query->table->schema;
+        struct schema* output_schema = query->schema;
         struct stack* col_node = output_schema->columns;
 
         for (; col_node; col_node = col_node->next) {
@@ -179,14 +194,14 @@ void schema_validate(struct query* query)
                 struct column* col = col_node->data;
 
                 int i = 0;
-                
+
                 for (; i < query->sources->size; ++i) {
                         struct source* src = query->sources->data_vec[i];
-                        if (col->table_name[0] == '\0' || 
+                        if (col->table_name[0] == '\0' ||
                             istring_eq(col->table_name, src->alias)) {
                                 matches += column_try_assign_source(col, src);
                         }
-                }                
+                }
 
                 if (matches > 1) {
                         fprintf(stderr, "%s: ambiguous column\n", col->alias);

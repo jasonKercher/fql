@@ -12,7 +12,7 @@ struct query* query_new()
         malloc_(new_query, sizeof(*new_query));
 
         *new_query = (struct query) {
-                 table_new()            /* table */
+                 schema_new()           /* table */
                 ,vector_new()           /* sources */
                 ,NULL                   /* where */
                 ,NULL                   /* groups */
@@ -44,7 +44,8 @@ void query_free(void* generic_query)
         queue_free_data(&query->groups);
         queue_free_data(&query->having);
 
-        table_free(query->table);
+        //table_free(query->table);
+        schema_free(query->schema);
         free_(query->limit);
         free_(query->expr);
         free_(query);
