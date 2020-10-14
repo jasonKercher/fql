@@ -135,7 +135,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libfql_la_DEPENDENCIES = antlr/libantlr.la util/libutil.la
 am_libfql_la_OBJECTS = lib.lo plan.lo process.lo prop.lo query.lo \
 	expression.lo table.lo schema.lo column.lo operation.lo \
-	reader.lo logic.lo
+	reader.lo logic.lo select.lo
 libfql_la_OBJECTS = $(am_libfql_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -162,7 +162,7 @@ am__depfiles_remade = ./$(DEPDIR)/column.Plo \
 	./$(DEPDIR)/plan.Plo ./$(DEPDIR)/process.Plo \
 	./$(DEPDIR)/prop.Plo ./$(DEPDIR)/query.Plo \
 	./$(DEPDIR)/reader.Plo ./$(DEPDIR)/schema.Plo \
-	./$(DEPDIR)/table.Plo
+	./$(DEPDIR)/select.Plo ./$(DEPDIR)/table.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -394,7 +394,8 @@ libfql_la_SOURCES = include/fql.h lib.c \
 					column.h column.c \
 					operation.h operation.c \
 					reader.h reader.c \
-					logic.h logic.c
+					logic.h logic.c \
+					select.h select.c
 
 libfql_la_LIBADD = antlr/libantlr.la util/libutil.la -lantlr4-runtime -lcsv
 all: all-recursive
@@ -486,6 +487,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/query.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reader.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/schema.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/select.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/table.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -754,6 +756,7 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/query.Plo
 	-rm -f ./$(DEPDIR)/reader.Plo
 	-rm -f ./$(DEPDIR)/schema.Plo
+	-rm -f ./$(DEPDIR)/select.Plo
 	-rm -f ./$(DEPDIR)/table.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -811,6 +814,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/query.Plo
 	-rm -f ./$(DEPDIR)/reader.Plo
 	-rm -f ./$(DEPDIR)/schema.Plo
+	-rm -f ./$(DEPDIR)/select.Plo
 	-rm -f ./$(DEPDIR)/table.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

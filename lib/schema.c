@@ -186,8 +186,7 @@ void schema_resolve_source(struct source* source)
 
 void schema_validate(struct query* query)
 {
-        struct schema* output_schema = query->schema;
-        struct stack* col_node = output_schema->columns;
+        struct stack* col_node = query->schema->columns;
 
         for (; col_node; col_node = col_node->next) {
                 int matches = 0;

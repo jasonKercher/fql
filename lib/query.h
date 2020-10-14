@@ -38,13 +38,13 @@ struct query {
         struct queue* groups;           /* struct expression */
         struct queue* having;           /* struct expression */
         struct expression* limit;       /* TOP */
-        enum oper oper;                 /* type of operation */
-
+        void* oper;                     /* Operation structure */
+        //enum oper oper;                 /* type of operation */
 
         /* All the variables below are temporaries for
          * tracking the query as antlr traverses it
          */
-        struct stack* logic_stack;            /* stack used to build logic trees */
+        struct stack* logic_stack;      /* stack used to build logic trees */
 
         struct expression* expr;
         enum mode mode;

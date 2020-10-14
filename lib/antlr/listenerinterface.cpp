@@ -2,8 +2,9 @@
 
 #include <cstring>
 
-#include "prop.h"
 #include "util/util.h"
+#include "prop.h"
+#include "select.h"
 
 ListenerInterface::ListenerInterface(struct queue** query_list, const std::vector<std::string>& rules)
 {
@@ -194,7 +195,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
         switch (_current_list) {
         case TOK_COLUMN_NAME:
                 if (_query->mode == MODE_SELECT) {
-                        schema_add_column(_query->schema,
+                        select_add_column((struct select*) _query->oper,
                                          expression_new(EXPR_COLUMN_NAME, token),
                                          _table_name);
                 } else if (_query->mode == MODE_SEARCH) {
@@ -207,7 +208,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
                 }
                 break;
         case TOK_COLUMN_ALIAS:
-                schema_apply_column_alias(_query->schema, token);
+                select_apply_column_alias((struct select*)_query->oper, token);
                 free_(token);
                 break;
         case TOK_TABLE_NAME:
@@ -246,8 +247,10 @@ void ListenerInterface::exitScalar_function_name(TSqlParser::Scalar_function_nam
 void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContext * ctx)
 {
         _query->mode = MODE_SELECT;
-        _query->oper = OP_SELECT;
+        //_query->oper = OP_SELECT;
+        _query->oper = select_new();
 }
+
 void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx)
 {
 }
@@ -266,7 +269,7 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
         /* Check if an operation is already defined.
          * If it is, this is a sub-query
          */
-        if (_query->oper != OP_NONE) {
+        if (_query->oper != NULL) {
                 _query = query_new();
                 stack_push(&_query_stack, _query);
         }
