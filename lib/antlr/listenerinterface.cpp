@@ -199,7 +199,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
                                          expression_new(EXPR_COLUMN_NAME, token),
                                          _table_name);
                 } else if (_query->mode == MODE_SEARCH) {
-                        query_add_search_column(_query,
+                        query_add_logic_column(_query,
                                                 expression_new(EXPR_COLUMN_NAME, token),
                                                 _table_name);
                 } else {
@@ -234,7 +234,7 @@ void ListenerInterface::exitSimple_id(TSqlParser::Simple_idContext * ctx) { }
 
 void ListenerInterface::enterComparison_operator(TSqlParser::Comparison_operatorContext * ctx) 
 { 
-        query_set_search_comparison(_query, ctx->getText().c_str());
+        query_set_logic_comparison(_query, ctx->getText().c_str());
 }
 void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorContext * ctx) { }
 
@@ -284,7 +284,7 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
         switch(_query->mode) {
         case MODE_SELECT:
                 new_expr->type = EXPR_SUBQUERY_CONST;
-                schema_add_column(_query->schema, new_expr, "");
+                select_add_column((struct select*) _query->oper, new_expr, "");
                 break;
         case MODE_UPDATE:
                 new_expr->type = EXPR_SUBQUERY;

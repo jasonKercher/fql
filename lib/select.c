@@ -1,5 +1,6 @@
 #include "select.h"
 
+#include "column.h"
 #include "schema.h"
 #include "util/util.h"
 
@@ -9,7 +10,8 @@ struct select* select_new()
         malloc_(new_select, sizeof(*new_select));
 
         *new_select = (struct select) {
-                schema_new()
+                 OP_SELECT
+                ,schema_new()
         };
 
         return new_select;
@@ -23,9 +25,10 @@ void select_free(struct select* select)
 
 void select_add_column(struct select* select
                       ,struct expression* expr
-                      ,char* table_name)
+                      ,const char* table_name)
 {
-        schema_add_column(select->schema, expr, table_name);
+        struct column* new_col = column_new(expr, table_name);
+        schema_add_column(select->schema, new_col);
 }
 
 void select_apply_column_alias(struct select* select, const char* alias)

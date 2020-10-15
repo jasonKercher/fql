@@ -32,7 +32,7 @@ void logic_free(struct logic*);
 
 void logic_get_description(struct logic* logic, char* msg);
 
-void logic_add_column(struct logic*, struct expression*, const char* table_name);
+void logic_add_column(struct logic*, struct column*);
 void logic_set_comparison(struct logic* logic, const char* op);
 
 struct logic_tree {

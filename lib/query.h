@@ -33,13 +33,12 @@ enum logic_mode {
 /** Query **/
 struct query {
         struct schema* schema;          /* output table */
-        struct vec* sources;         /* struct source */
+        struct vec* sources;            /* struct source */
         struct logic_tree* where;       /* struct logic */
         struct queue* groups;           /* struct expression */
         struct queue* having;           /* struct expression */
         struct expression* limit;       /* TOP */
         void* oper;                     /* Operation structure */
-        //enum oper oper;                 /* type of operation */
 
         /* All the variables below are temporaries for
          * tracking the query as antlr traverses it
@@ -67,8 +66,8 @@ void exit_search_and(struct query*);
 void enter_search_not(struct query*);
 void exit_search_not(struct query*);
 
-void query_add_search_column(struct query*, struct expression*, const char*);
-void query_set_search_comparison(struct query*, const char*);
+void query_add_logic_column(struct query*, struct expression*, const char*);
+void query_set_logic_comparison(struct query*, const char*);
 
 
 

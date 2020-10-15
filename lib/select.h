@@ -5,9 +5,11 @@
 extern "C" {
 #endif
 
+#include "operation.h"
 #include "schema.h"
 
 struct select {
+        enum oper oper_type;
         struct schema* schema;
 };
 
@@ -16,7 +18,7 @@ void select_free(struct select*);
 
 void select_add_column(struct select*
                       ,struct expression* expr
-                      ,char* table_name);
+                      ,const char* table_name);
 
 void select_apply_column_alias(struct select*, const char* alias);
 

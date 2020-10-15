@@ -32,12 +32,9 @@ void schema_free(void* generic_schema)
         free_(schema);
 }
 
-void schema_add_column(struct schema* schema,
-                      struct expression* expr,
-                      const char* table_name)
+void schema_add_column(struct schema* schema, struct column* col)
 {
-        struct column* new_col = column_new(expr, table_name);
-        stack_push(&schema->columns, new_col);
+        stack_push(&schema->columns, col);
 }
 
 void schema_apply_column_alias(struct schema* schema, const char* alias)
@@ -141,16 +138,16 @@ void schema_assign_header(struct table* table, csv_record* rec)
 
         for (; i < rec->size; ++i) {
                 char* column_name = strdup(rec->fields[i]);
-                schema_add_column(table->schema,
-                                 expression_new(EXPR_COLUMN_NAME, column_name),
-                                 "");
+                struct expression* new_expr = expression_new(EXPR_COLUMN_NAME
+                                                            ,column_name);
+                struct column* new_col = column_new(new_expr, "");
+                schema_add_column(table->schema, new_col);
 
-                struct column* col = table->schema->columns->data;
-                col->location = i;
-                col->table = table;
+                new_col->location = i;
+                new_col->table = table;
 
                 /* add to hash map for easy searching */
-                hmap_set(table->schema->col_map, column_name, col);
+                hmap_set(table->schema->col_map, column_name, new_col);
         }
 }
 

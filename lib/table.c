@@ -40,6 +40,7 @@ struct source* source_new(struct table* table,
         *new_source = (struct source) {
                  table          /* table */
                 ,NULL           /* condition */
+                ,vec_new()      /* logic_columns */
                 ,""             /* alias */
                 ,source_type    /* source_type */
                 ,join_type      /* join_type */
@@ -59,6 +60,7 @@ void source_free(struct source* source)
         if (source == NULL)
                 return;
 
+        vec_free(source->logic_columns);
         table_free(source->table);
         free_(source);
 }

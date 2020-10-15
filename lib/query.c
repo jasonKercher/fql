@@ -1,8 +1,8 @@
-/*** VERSION 1 ***/
-
 #include "query.h"
 
 #include <stdbool.h>
+
+#include "column.h"
 
 #include "util/util.h"
 
@@ -13,12 +13,12 @@ struct query* query_new()
 
         *new_query = (struct query) {
                  schema_new()           /* table */
-                ,vec_new()           /* sources */
+                ,vec_new()              /* sources */
                 ,NULL                   /* where */
                 ,NULL                   /* groups */
                 ,NULL                   /* having */
                 ,NULL                   /* limit */
-                ,OP_NONE                /* operation */
+                ,NULL                   /* operation */
 
                 ,NULL                   /* logic_stack */
                 ,NULL                   /* expr */
@@ -74,19 +74,19 @@ void query_add_source(struct query* query,
 
                 char* schema_name = stack_pop(source_stack);
                 if (schema_name != NULL) {
-                        strncpy_(new_table->schema->name,
-                                 schema_name,
-                                 TABLE_NAME_MAX);
+                        strncpy_(new_table->schema->name
+                                ,schema_name
+                                ,TABLE_NAME_MAX);
                         free_(schema_name);
                 }
         }
 
         stack_free_data(source_stack);
 
-        vec_push_back(query->sources, source_new(new_table,
-                                                    alias,
-                                                    type,
-                                                    query->join));
+        vec_push_back(query->sources, source_new(new_table
+                                                ,alias
+                                                ,type
+                                                ,query->join));
 }
 
 void query_apply_table_alias(struct query* query, const char* alias)
@@ -115,23 +115,28 @@ struct logic_builder* logic_builder_new()
                  logic_tree_new()       /* tree */
                 ,NULL                   /* current */
                 ,NULL                   /* next_not */
-                ,vec_new()           /* truths */
-                ,vec_new()           /* falses */
+                ,vec_new()              /* truths */
+                ,vec_new()              /* falses */
                 ,false                  /* sublogic_exit */
         };
 
         return builder;
 }
 
-void query_add_search_column(struct query* query,
+void query_add_logic_column(struct query* query,
                              struct expression* expr,
                              const char* table_name)
 {
+        struct column* new_col = column_new(expr, table_name);
+
         struct logic_builder* builder = query->logic_stack->data;
-        logic_add_column(builder->current, expr, table_name);
+        logic_add_column(builder->current, new_col);
+
+        struct source* src = vec_end(query->sources);
+        vec_push_back(src->logic_columns, new_col);
 }
 
-void query_set_search_comparison(struct query* query, const char* op)
+void query_set_logic_comparison(struct query* query, const char* op)
 {
         struct logic_builder* builder = query->logic_stack->data;
         logic_set_comparison(builder->current, op);

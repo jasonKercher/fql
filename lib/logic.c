@@ -71,15 +71,12 @@ void logic_get_description(struct logic* logic, char* msg)
         column_cat_description(logic->col[1], msg);
 }
 
-void logic_add_column(struct logic* logic,
-                       struct expression* expr,
-                       const char* table_name)
+void logic_add_column(struct logic* logic, struct column* col)
 {
-        struct column* new_col = column_new(expr, table_name);
         if (logic->col[0] == NULL) {
-                logic->col[0] = new_col;
+                logic->col[0] = col;
         } else {
-                logic->col[1] = new_col;
+                logic->col[1] = col;
         }
 }
 

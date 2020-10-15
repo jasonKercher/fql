@@ -87,7 +87,7 @@ void* hmap_set(struct hmap* m, char* key, void* data)
                 return old_data;
         }
 
-        if (ent->data == HMAP_NONE) {
+        if (ent) {
                 ent->data = data;
         } else {
                 hmap_insert(m, key, data);

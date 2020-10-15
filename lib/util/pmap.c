@@ -27,7 +27,7 @@ struct vec* pmap_set(struct pmap* pmap, char* key, void* data)
         struct vec* new_vec = vec_new_s(1);
         vec_push_back(new_vec, data);
 
-        if (ent->data == HMAP_NONE) {
+        if (ent) {
                 ent->data = new_vec;
         } else {
                 hmap_insert(pmap, key, new_vec); 
