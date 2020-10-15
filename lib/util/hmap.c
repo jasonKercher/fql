@@ -2,12 +2,6 @@
 #include <limits.h>
 #include <stdint.h>
 
-#define NONE (void*) ULONG_MAX
-
-void* _hmap_update(struct hmap* m, const char* key, void* data);
-int _hmap_insert(struct hmap* m, char* key, void* data);
-ENTRY* _hmap_get(struct hmap* m, const char* key);
-
 struct hmap* hmap_new(size_t limit, unsigned props)
 {
         struct hmap* new_map = NULL;
@@ -29,7 +23,7 @@ struct hmap* hmap_new(size_t limit, unsigned props)
         return new_map;
 }
 
-int _hmap_insert(struct hmap* m, char* key, void* data)
+int hmap_insert(struct hmap* m, char* key, void* data)
 {
         ENTRY new_entry;
         ENTRY* ret = NULL;
@@ -52,24 +46,7 @@ int _hmap_insert(struct hmap* m, char* key, void* data)
         return 1;
 }
 
-void* _hmap_update(struct hmap* m, const char* key, void* data)
-{
-        ENTRY* ent = _hmap_get(m, key);
-        if (!ent)
-                return NULL;
-
-        if (ent->data == NONE) {
-                ent->data = data;
-                return NULL;
-        }
-
-        void* old_data = ent->data;
-        ent->data = data;
-
-        return old_data;
-}
-
-ENTRY* _hmap_get(struct hmap* m, const char* key)
+ENTRY* hmap_get_entry(struct hmap* m, const char* key)
 {
         ENTRY search_entry;
         ENTRY* ret = NULL;
@@ -92,25 +69,33 @@ ENTRY* _hmap_get(struct hmap* m, const char* key)
         return NULL;
 }
 
-void* hmap_set(struct hmap* m, char* key, void* data)
-{
-        if (hmap_haskey(m, key))
-                return _hmap_update(m, key, data);
-
-        _hmap_insert(m, key, data);
-        return NULL;
-}
-
 void* hmap_get(struct hmap* m, const char* key)
 {
-       ENTRY* ent = _hmap_get(m, key);
+       ENTRY* ent = hmap_get_entry(m, key);
        if (!ent)
                return NULL;
 
        return ent->data;
 }
 
-/* lol */
+void* hmap_set(struct hmap* m, char* key, void* data)
+{
+        ENTRY* ent = hmap_get_entry(m, key);
+        if (ent && ent->data != NONE) {
+                void* old_data = ent->data;
+                ent->data = data;
+                return old_data;
+        }
+
+        if (ent->data == NONE) {
+                ent->data = data;
+        } else {
+                hmap_insert(m, key, data);
+        }
+
+        return NULL;
+}
+
 void* hmap_get_a(struct hmap* m, void* key)
 {
         char addr[sizeof(key) + 3];
@@ -123,11 +108,11 @@ void* hmap_set_a(struct hmap* m, void* key, void* data)
 {
         char addr[sizeof(key) + 3];
         sprintf(addr, "%p", key);
-        
+
         return hmap_set(m, addr, data);
 }
 
-int hmap_haskey(struct hmap* m, const char* key)
+_Bool hmap_haskey(struct hmap* m, const char* key)
 {
         ENTRY search_entry;
         ENTRY* ret = NULL;
@@ -142,9 +127,9 @@ int hmap_haskey(struct hmap* m, const char* key)
         int ret_val = hsearch_r(search_entry, FIND, &ret, m->tab);
 
         if (ret_val /*&& ret->data != NONE*/)
-                return TRUE;
+                return true;
 
-        return FALSE;
+        return false;
 }
 
 /**
@@ -155,7 +140,7 @@ int hmap_haskey(struct hmap* m, const char* key)
  */
 void* hmap_remove(struct hmap* m, const char* key)
 {
-        ENTRY* ent = _hmap_get(m, key);
+        ENTRY* ent = hmap_get_entry(m, key);
         if (!ent)
                 return NULL;
 

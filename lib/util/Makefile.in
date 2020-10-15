@@ -103,7 +103,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libutil_la_LIBADD =
-am_libutil_la_OBJECTS = util.lo stack.lo queue.lo hmap.lo vec.lo
+am_libutil_la_OBJECTS = util.lo stack.lo queue.lo hmap.lo pmap.lo \
+	vec.lo
 libutil_la_OBJECTS = $(am_libutil_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -124,8 +125,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/hmap.Plo ./$(DEPDIR)/queue.Plo \
-	./$(DEPDIR)/stack.Plo ./$(DEPDIR)/util.Plo ./$(DEPDIR)/vec.Plo
+am__depfiles_remade = ./$(DEPDIR)/hmap.Plo ./$(DEPDIR)/pmap.Plo \
+	./$(DEPDIR)/queue.Plo ./$(DEPDIR)/stack.Plo \
+	./$(DEPDIR)/util.Plo ./$(DEPDIR)/vec.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -305,6 +307,7 @@ libutil_la_SOURCES = util.h util.c \
 					 stack.h stack.c \
 					 queue.h queue.c \
 					 hmap.h hmap.c \
+					 pmap.h pmap.c \
 					 vec.h vec.c
 
 all: all-am
@@ -362,6 +365,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hmap.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pmap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/queue.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stack.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/util.Plo@am__quote@ # am--include-marker
@@ -526,6 +530,7 @@ clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/hmap.Plo
+	-rm -f ./$(DEPDIR)/pmap.Plo
 	-rm -f ./$(DEPDIR)/queue.Plo
 	-rm -f ./$(DEPDIR)/stack.Plo
 	-rm -f ./$(DEPDIR)/util.Plo
@@ -576,6 +581,7 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/hmap.Plo
+	-rm -f ./$(DEPDIR)/pmap.Plo
 	-rm -f ./$(DEPDIR)/queue.Plo
 	-rm -f ./$(DEPDIR)/stack.Plo
 	-rm -f ./$(DEPDIR)/util.Plo

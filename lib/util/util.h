@@ -15,9 +15,6 @@ extern "C" {
 
 #include "queue.h"
 
-#define TRUE  1
-#define FALSE 0
-
 typedef void(*generic_data_func)(void*);
 
 

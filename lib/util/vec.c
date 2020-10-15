@@ -1,13 +1,13 @@
 #include "vec.h"
 #include "util.h"
 
-struct vector* vector_new()
+struct vec* vec_new()
 {
-        struct vector* new_vec = NULL;
+        struct vec* new_vec = NULL;
         malloc_(new_vec, sizeof(*new_vec));
 
-        *new_vec = (struct vector) {
-                 NULL /* data_vec */
+        *new_vec = (struct vec) {
+                 NULL /* vector */
                 ,0    /* size */
                 ,0    /* _alloc */
         };
@@ -15,77 +15,77 @@ struct vector* vector_new()
         return new_vec;
 }
 
-struct vector* vector_new_s(size_t size)
+struct vec* vec_new_s(size_t size)
 {
-        struct vector* new_vec = vector_new();
-        vector_reserve(new_vec, size);
+        struct vec* new_vec = vec_new();
+        vec_reserve(new_vec, size);
         return new_vec;
 }
 
-void vector_free(struct vector* vec)
+void vec_free(struct vec* vec)
 {
-        free_(vec->data_vec);
+        free_(vec->vector);
         free_(vec);
 }
 
-void* vector_end(struct vector* vec)
+void* vec_end(struct vec* vec)
 {
         if (vec->size == 0)
                 return NULL;
 
-        return vec->data_vec[vec->size-1];
+        return vec->vector[vec->size-1];
 }
 
-void vector_reserve(struct vector* vec, size_t size)
+void vec_reserve(struct vec* vec, size_t size)
 {
         if (vec->_alloc > ++size) {
                 return;
         }
 
         if (vec->_alloc) {
-                realloc_(vec->data_vec, size * sizeof(void*));
+                realloc_(vec->vector, size * sizeof(void*));
         } else {
-                malloc_(vec->data_vec, size * sizeof(void*));
+                malloc_(vec->vector, size * sizeof(void*));
         }
 
         vec->_alloc = size;
 }
 
-void vector_resize(struct vector* vec, size_t size)
+void vec_resize(struct vec* vec, size_t size)
 {
         if (size == vec->size) {
                 return;
         }
 
         if (size > vec->size) {
-                vector_reserve(vec, size);
+                vec_reserve(vec, size);
                 size_t i = vec->size;
 
                 /* TODO - just memset this */
                 for (; i < size; ++i) {
-                        vec->data_vec[i] = NULL;
+                        vec->vector[i] = NULL;
                 }
         } 
         /* TODO - else do we want to realloc smaller? */
 
-        vec->data_vec[size] = NULL;
+        vec->vector[size] = NULL;
         vec->size = size;
 }
 
-void vector_push_back(struct vector* vec, void* item) 
+void vec_push_back(struct vec* vec, void* item) 
 {
         if (vec->_alloc <= ++vec->size)        
-                vector_reserve(vec, vec->_alloc * 2 + 1);
+                vec_reserve(vec, vec->_alloc * 2 + 1);
 
-        vec->data_vec[vec->size-1] = item;
+        vec->vector[vec->size-1] = item;
 }
 
-void vector_extend(struct vector* dest, struct vector* src)
+void vec_extend(struct vec* dest, struct vec* src)
 {
-        vector_reserve(dest, dest->size + src->size);
+        vec_reserve(dest, dest->size + src->size);
 
         int i = 0;
         for (; i < src->size; ++i) {
-                vector_push_back(dest, src->data_vec[i]);
+                vec_push_back(dest, src->vector[i]);
         }
 }
