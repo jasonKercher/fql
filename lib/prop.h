@@ -5,12 +5,14 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
+
 struct props {
         char in_delim[32];
         char out_delim[32];
-        int verbose;
-        int dry_run;
-        int override_warnings;
+        _Bool verbose;
+        _Bool dry_run;
+        _Bool override_warnings;
 };
 
 

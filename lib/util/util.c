@@ -1,5 +1,6 @@
 #include "util.h"
 
+#include <stdbool.h>
 #include <dirent.h>
 
 #include "queue.h"
@@ -42,9 +43,9 @@ int strhaschar(const char* s, char c)
         int i = 0;
         for (; s[i] != '\0'; ++i)
                 if (s[i] == c)
-                        return TRUE;
+                        return true;
 
-        return FALSE;
+        return false;
 }
 
 void removecharat(char* s, int i)

@@ -195,7 +195,7 @@ void schema_validate(struct query* query)
                 int i = 0;
 
                 for (; i < query->sources->size; ++i) {
-                        struct source* src = query->sources->data_vec[i];
+                        struct source* src = query->sources->vector[i];
                         if (col->table_name[0] == '\0' ||
                             istring_eq(col->table_name, src->alias)) {
                                 matches += column_try_assign_source(col, src);
@@ -221,7 +221,7 @@ void schema_resolve(struct queue* query_node)
 
                 int i = 0;
                 for (; i < query->sources->size; ++i) {
-                        schema_resolve_source(query->sources->data_vec[i]);
+                        schema_resolve_source(query->sources->vector[i]);
                 }
 
                 schema_validate(query);

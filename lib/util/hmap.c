@@ -81,13 +81,13 @@ void* hmap_get(struct hmap* m, const char* key)
 void* hmap_set(struct hmap* m, char* key, void* data)
 {
         ENTRY* ent = hmap_get_entry(m, key);
-        if (ent && ent->data != NONE) {
+        if (ent && ent->data != HMAP_NONE) {
                 void* old_data = ent->data;
                 ent->data = data;
                 return old_data;
         }
 
-        if (ent->data == NONE) {
+        if (ent->data == HMAP_NONE) {
                 ent->data = data;
         } else {
                 hmap_insert(m, key, data);
@@ -126,14 +126,14 @@ _Bool hmap_haskey(struct hmap* m, const char* key)
 
         int ret_val = hsearch_r(search_entry, FIND, &ret, m->tab);
 
-        if (ret_val /*&& ret->data != NONE*/)
+        if (ret_val /*&& ret->data != HMAP_NONE*/)
                 return true;
 
         return false;
 }
 
 /**
- * Simulate delete by setting to NONE (-1L). hsearch
+ * Simulate delete by setting to HMAP_NONE (-1L). hsearch
  * does not have the ability to delete, however,
  * hmap_get will return the same way. Return the
  * data in case user would like to free it.
@@ -145,7 +145,7 @@ void* hmap_remove(struct hmap* m, const char* key)
                 return NULL;
 
         void* data = ent->data;
-        ent->data = NONE;
+        ent->data = HMAP_NONE;
 
         return data;
 }

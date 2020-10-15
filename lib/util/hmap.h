@@ -21,7 +21,7 @@ extern "C" {
 
 #include "util.h"
 
-#define NONE (void*) ULONG_MAX
+#define HMAP_NONE (void*) ULONG_MAX
 
 #define MAX_KEY_LEN 128
 

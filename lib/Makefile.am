@@ -1,4 +1,4 @@
-SUBDIRS = docs util antlr
+SUBDIRS = docs antlr util
 
 AM_CPPFLAGS = -Iinclude
 include_HEADERS = include/fql.h

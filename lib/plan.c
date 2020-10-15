@@ -78,7 +78,7 @@ void _plan_from(struct plan* plan, struct query* query)
         plan->current = plan->processes;
 
         if (query->sources->size) {
-                struct source* src = query->sources->data_vec[0];
+                struct source* src = query->sources->vector[0];
                 sprintf(action_msg, "%s: %s", src->table->reader->file_name,
                                           "stream read");
                 struct process* from_proc = process_new(action_msg);
@@ -88,7 +88,7 @@ void _plan_from(struct plan* plan, struct query* query)
 
         int i = 1;
         for (; i < query->sources->size; ++i) {
-                struct source* src = query->sources->data_vec[i];
+                struct source* src = query->sources->vector[i];
 
                 struct process* join_proc = NULL;
 
