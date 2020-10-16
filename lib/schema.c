@@ -181,21 +181,23 @@ void schema_resolve_source(struct source* source)
         csv_record_free(rec);
 }
 
-void schema_validate(struct query* query)
+void schema_validate_logic_columns(struct vec* sources, int limit)
 {
-        struct stack* col_node = query->schema->columns;
+        struct source* src = sources->vector[limit];
+        struct vec* columns = src->logic_columns;
 
-        for (; col_node; col_node = col_node->next) {
+        int i = 0;
+        for (; i < columns->size; ++i) {
                 int matches = 0;
-                struct column* col = col_node->data;
+                struct column* col = columns->vector[i];
 
-                int i = 0;
+                int j = 0;
 
-                for (; i < query->sources->size; ++i) {
-                        struct source* src = query->sources->vector[i];
+                for (; j <= limit; ++j) {
+                        struct source* search_src = sources->vector[j];
                         if (col->table_name[0] == '\0' ||
-                            istring_eq(col->table_name, src->alias)) {
-                                matches += column_try_assign_source(col, src);
+                            istring_eq(col->table_name, search_src->alias)) {
+                                matches += column_try_assign_source(col, search_src);
                         }
                 }
 
@@ -219,9 +221,9 @@ void schema_resolve(struct queue* query_node)
                 int i = 0;
                 for (; i < query->sources->size; ++i) {
                         schema_resolve_source(query->sources->vector[i]);
+                        schema_validate_logic_columns(query->sources, i);
                 }
 
-                schema_validate(query);
         }
 }
 
