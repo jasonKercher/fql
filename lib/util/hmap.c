@@ -20,6 +20,7 @@ struct hmap* hmap_new(size_t limit, unsigned props)
         memset(new_tab, 0, sizeof(*new_tab));
 
         new_map->tab = new_tab;
+        new_map->items = NULL;
         new_map->props = props;
 
         if (!hcreate_r(limit, new_tab)) {
@@ -40,15 +41,13 @@ struct hmap_item* hmap_item_new(struct hmap* m, const char* key, void* data)
                 ,NULL
         };
 
-        char* key_cpy = strdup(key);
-
-        if ((m->props & HMAP_NOCASE)) {
-                string_to_lower(key_cpy);
-        }
-
         int size = strlen(key) + 1;
         size = size > HMAP_KEY_MAX ? HMAP_KEY_MAX : size;
         strncpy_(item->_key, key, size);
+
+        if ((m->props & HMAP_NOCASE)) {
+                string_to_lower(item->_key);
+        }
 
         return item;
 }
@@ -185,6 +184,11 @@ void* hmap_remove(struct hmap* m, const char* key)
 
 void hmap_free(struct hmap* m)
 {
+        struct hmap_item* item = queue_dequeue(&m->items);
+        for (; item; item = queue_dequeue(&m->items)) {
+                free_(item);
+        }
+
         hdestroy_r(m->tab);
         free_(m->tab);
         free_(m);
