@@ -23,12 +23,13 @@ extern "C" {
 
 #define HMAP_NONE (void*) ULONG_MAX
 
-#define MAX_KEY_LEN 128
+#define HMAP_KEY_MAX 128
 
 #define HMAP_NOCASE 0x01
 
 struct hmap {
     struct hsearch_data* tab;
+    struct queue* items;
     unsigned props;
 };
 
@@ -40,7 +41,7 @@ void* hmap_set_a(struct hmap* m, void* key, void* data);
 void* hmap_get_a(struct hmap* m, void* key);
 void* hmap_remove(struct hmap* m, const char* key);
 _Bool hmap_haskey(struct hmap* m, const char* key);
-int hmap_insert(struct hmap* m, char* key, void* data);
+int hmap_insert(struct hmap* m, const char* key, void* data);
 ENTRY* hmap_get_entry(struct hmap* m, const char* key);
 
 #ifdef __cplusplus
