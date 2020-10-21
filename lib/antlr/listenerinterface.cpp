@@ -195,7 +195,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
         switch (_current_list) {
         case TOK_COLUMN_NAME:
                 if (_query->mode == MODE_SELECT) {
-                        select_add_column((struct select*) _query->oper,
+                        select_add_column((struct select*) _query->op,
                                          expression_new(EXPR_COLUMN_NAME, token),
                                          _table_name);
                 } else if (_query->mode == MODE_SEARCH) {
@@ -208,7 +208,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
                 }
                 break;
         case TOK_COLUMN_ALIAS:
-                select_apply_column_alias((struct select*)_query->oper, token);
+                select_apply_column_alias((struct select*)_query->op, token);
                 free_(token);
                 break;
         case TOK_TABLE_NAME:
@@ -247,8 +247,8 @@ void ListenerInterface::exitScalar_function_name(TSqlParser::Scalar_function_nam
 void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContext * ctx)
 {
         _query->mode = MODE_SELECT;
-        //_query->oper = OP_SELECT;
-        _query->oper = select_new();
+        //_query->op = OP_SELECT;
+        _query->op = select_new();
 }
 
 void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx)
@@ -269,7 +269,7 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
         /* Check if an operation is already defined.
          * If it is, this is a sub-query
          */
-        if (_query->oper != NULL) {
+        if (_query->op != NULL) {
                 _query = query_new();
                 stack_push(&_query_stack, _query);
         }
@@ -284,7 +284,7 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
         switch(_query->mode) {
         case MODE_SELECT:
                 new_expr->type = EXPR_SUBQUERY_CONST;
-                select_add_column((struct select*) _query->oper, new_expr, "");
+                select_add_column((struct select*) _query->op, new_expr, "");
                 break;
         case MODE_UPDATE:
                 new_expr->type = EXPR_SUBQUERY;

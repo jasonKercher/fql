@@ -35,4 +35,3 @@ void select_apply_column_alias(struct select* select, const char* alias)
 {
         schema_apply_column_alias(select->schema, alias);
 }
-

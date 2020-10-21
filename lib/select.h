@@ -5,11 +5,12 @@
 extern "C" {
 #endif
 
+#include "query.h"
 #include "operation.h"
 #include "schema.h"
 
 struct select {
-        enum oper oper_type;
+        enum op oper_type;
         struct schema* schema;
 };
 

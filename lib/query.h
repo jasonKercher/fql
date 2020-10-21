@@ -38,7 +38,7 @@ struct query {
         struct queue* groups;           /* struct expression */
         struct queue* having;           /* struct expression */
         struct expression* limit;       /* TOP */
-        void* oper;                     /* Operation structure */
+        void* op;                       /* Operation structure */
 
         /* All the variables below are temporaries for
          * tracking the query as antlr traverses it

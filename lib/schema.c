@@ -5,6 +5,7 @@
 
 #include "column.h"
 #include "query.h"
+#include "operation.h"
 #include "util/util.h"
 #include "util/vec.h"
 
@@ -224,7 +225,10 @@ void schema_resolve(struct queue* query_node)
                         schema_validate_logic_columns(query->sources, i);
                 }
 
+                struct schema* op_schema = op_get_schema(query);
         }
+
+
 }
 
 
