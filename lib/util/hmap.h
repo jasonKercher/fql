@@ -29,7 +29,9 @@ extern "C" {
 
 struct hmap {
     struct hsearch_data* tab;
-    struct queue* items;
+    char* _buffer;
+    char* _bufhead;
+    size_t _bufsize;
     unsigned props;
 };
 
