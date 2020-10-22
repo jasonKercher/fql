@@ -2,6 +2,7 @@
 
 #include <cstring>
 
+#include "query.h"
 #include "util/util.h"
 #include "prop.h"
 #include "select.h"
@@ -91,7 +92,7 @@ void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx)
 }
 void ListenerInterface::exitJoin_part(TSqlParser::Join_partContext * ctx) 
 { 
-        //_query->logic_mode = LOGIC_WHERE;
+        _query->logic_mode = LOGIC_UNDEFINED;
 }
 
 void ListenerInterface::enterTable_name_with_hint(TSqlParser::Table_name_with_hintContext * ctx)
