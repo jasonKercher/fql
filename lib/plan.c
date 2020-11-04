@@ -41,10 +41,11 @@ struct plan* _plan_new()
  * rebuild it as a process tree
  */
 void _traverse_logic(struct process* proc,
-                     struct logic* logic,
+                     struct dnode* node,
                      struct process* proc_true,
                      struct process* proc_false)
 {
+        struct logic* logic = node->data;
         if (logic->proc == NULL) {
                 logic_get_description(logic, proc->action_msg);
         } else {
@@ -53,18 +54,19 @@ void _traverse_logic(struct process* proc,
 
         int branch = 0;
         for (; branch < 2; ++branch) {
-                if (logic->out[branch]->comp_type == COMP_TRUE) {
+                struct logic* next = logic->node->out[branch]->data;
+                if (next->comp_type == COMP_TRUE) {
                         proc->out[branch] = proc_true;
-                } else if (logic->out[branch]->comp_type == COMP_FALSE) {
+                } else if (next->comp_type == COMP_FALSE) {
                         proc->out[branch] = proc_false;
                 } else {
-                        if (logic->out[branch]->proc == NULL) {
+                        if (next->proc == NULL) {
                                 proc->out[branch] = process_new("");
                         } else {
-                                proc->out[branch] = logic->out[branch]->proc;
+                                proc->out[branch] = next->proc;
                         }
                         _traverse_logic(proc->out[branch],
-                                        logic->out[branch],
+                                        logic->node->out[branch],
                                         proc_true,
                                         proc_false);
                 }
@@ -77,14 +79,16 @@ void _traverse_logic(struct process* proc,
  */
 struct process* _logic_to_process(struct process** proc_true,
                                   struct process** proc_false,
-                                  struct logic* logic)
+                                  struct dtree* tree)
 {
         struct process* proc_begin = process_new("");
 
         *proc_true = process_new("End logic: TRUE");
         *proc_false = process_new("End logic: FALSE");
 
-        _traverse_logic(proc_begin, logic, *proc_true, *proc_false);
+        struct dnode* begin = tree->nodes->vector[0];
+
+        _traverse_logic(proc_begin, begin, *proc_true, *proc_false);
 
         return proc_begin;
 }
@@ -142,7 +146,7 @@ void _plan_from(struct plan* plan, struct query* query)
                         struct process* proc_false = NULL;
                         join_proc->out[0] = _logic_to_process(&proc_true,
                                                               &proc_false,
-                                                              src->condition->begin);
+                                                              src->condition->tree);
                         plan->current = proc_true;
                 } else {
                         plan->current = join_proc;
@@ -161,7 +165,7 @@ void _plan_where(struct plan* plan, struct query* query)
 
         plan->current->out[0] = _logic_to_process(&proc_true,
                                                   &proc_false,
-                                                  query->where->begin);
+                                                  query->where->tree);
         plan->current = proc_true;
 
 }

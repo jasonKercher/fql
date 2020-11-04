@@ -10,7 +10,7 @@ struct logic* logic_new()
 
         *new_logic = (struct logic) {
                  {NULL, NULL}   /* col */
-                ,{NULL, NULL}   /* out */
+                ,NULL           /* node */
                 ,0              /* data_type */
                 ,COMP_NOT_SET   /* comp_type */
                 ,NULL           /* proc */
@@ -110,17 +110,17 @@ struct logic_tree* logic_tree_new()
         malloc_(new_tree, sizeof(*new_tree));
 
         *new_tree = (struct logic_tree) {
-                 NULL
-                ,NULL
-                ,NULL
+                 dtree_new()    /* tree */
+                ,NULL           /* end_true */
+                ,NULL           /* end_false */
         };
 
-        //new_tree->end_true->comp_type = COMP_TRUE;
+        //new_tree->end_true->comp_type = COMP_TRUE
 
         return new_tree;
 }
 
-void logic_free_tree(struct logic_tree* tree)
+void logic_tree_free(struct logic_tree* tree)
 {
         /* TODO - recursively free logic tree */
 

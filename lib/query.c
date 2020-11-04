@@ -39,7 +39,7 @@ void query_free(void* generic_query)
         }
         free_(query->sources);
 
-        logic_free_tree(query->where);
+        logic_tree_free(query->where);
 
         queue_free_data(&query->groups);
         queue_free_data(&query->having);
@@ -98,7 +98,7 @@ void query_apply_table_alias(struct query* query, const char* alias)
 /* Scroll below this comment at your own risk */
 
 struct logic_builder {
-        struct logic_tree* tree;
+        struct logic_tree* ltree;
         struct logic* current;
         struct logic* next_not;
         struct vec* truths;
@@ -147,11 +147,11 @@ void _assign_logic(struct query* query, struct logic_builder* builder)
         switch (query->logic_mode) {
         case LOGIC_JOIN: {
                 struct source* src = vec_end(query->sources);
-                src->condition = builder->tree;
+                src->condition = builder->ltree;
                 break;
         }
         case LOGIC_WHERE:
-                query->where = builder->tree;
+                query->where = builder->ltree;
                 break;
         case LOGIC_UNDEFINED:
                 /* TODO - report error */;
@@ -167,16 +167,16 @@ void enter_search(struct query* query)
 
         if (query->logic_stack->next == NULL) {
                 upper->next_not = logic_new();
-                upper->tree->begin = upper->next_not;
-                upper->tree->end_false = logic_new();
-                upper->tree->end_false->comp_type = COMP_FALSE;
-                upper->tree->end_true = logic_new();
-                upper->tree->end_true->comp_type = COMP_TRUE;
+                dtree_add_data(upper->ltree->tree, upper->next_not);
+                upper->ltree->end_false = logic_new();
+                upper->ltree->end_false->comp_type = COMP_FALSE;
+                upper->ltree->end_true = logic_new();
+                upper->ltree->end_true->comp_type = COMP_TRUE;
         } else {
                 struct logic_builder* lower = query->logic_stack->next->data;
-                upper->tree->begin = lower->current;
+                dtree_add_data(upper->ltree->tree, lower->current);
                 upper->next_not = lower->current;
-                upper->tree->end_true = lower->next_not;
+                upper->ltree->end_true = lower->next_not;
         }
 }
 
@@ -188,7 +188,7 @@ void exit_search(struct query* query)
                 int i = 0;
                 for (i = 0; i < upper->falses->size; ++i) {
                         struct logic* logic = upper->falses->vector[i];
-                        logic->out[false] = upper->tree->end_false;
+                        logic->node->out[false] = upper->ltree->end_false->node;
                 }
                 _assign_logic(query, upper);
                 return;
@@ -208,7 +208,7 @@ void enter_search_and(struct query* query)
         int i = 0;
         for (; i < builder->falses->size; ++i) {
                 struct logic* logic = builder->falses->vector[i];
-                logic->out[false] = builder->next_not;
+                logic->node->out[false] = builder->next_not->node;
         }
 
         vec_resize(builder->falses, 0);
@@ -229,7 +229,7 @@ void exit_search_and(struct query* query)
         int i = 0;
         for (; i < builder->truths->size; ++i) {
                 struct logic* truthy = builder->truths->vector[i];
-                truthy->out[true] = builder->tree->end_true;
+                truthy->node->out[true] = builder->ltree->end_true->node;
         }
         vec_resize(builder->truths, 0);
 }
@@ -252,11 +252,11 @@ void exit_search_not(struct query* query)
         int i = 0;
         for (; i < builder->truths->size; ++i) {
                 struct logic* truthy = builder->truths->vector[i];
-                truthy->out[true] = builder->next_not;
+                truthy->node->out[true] = builder->next_not->node;
         }
         if (builder->sublogic_exit) {
                 return;
         }
-        builder->current->out[true] = builder->next_not;
+        builder->current->node->out[true] = builder->next_not->node;
         vec_push_back(builder->falses, builder->current);
 }
