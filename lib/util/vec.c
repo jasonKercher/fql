@@ -1,6 +1,8 @@
 #include "vec.h"
 #include "util.h"
 
+void _vec_backfill(struct vec* vec, size_t size);
+
 struct vec* vec_new()
 {
         struct vec* new_vec = NULL;
@@ -12,13 +14,15 @@ struct vec* vec_new()
                 ,0    /* _alloc */
         };
 
+        _vec_backfill(new_vec, 0);
+
         return new_vec;
 }
 
 struct vec* vec_new_s(size_t size)
 {
         struct vec* new_vec = vec_new();
-        vec_reserve(new_vec, size);
+        vec_resize(new_vec, size);
         return new_vec;
 }
 
@@ -51,6 +55,17 @@ void vec_reserve(struct vec* vec, size_t size)
         vec->_alloc = size;
 }
 
+void _vec_backfill(struct vec* vec, size_t size)
+{
+        vec_reserve(vec, size);
+        size_t i = vec->size;
+        
+        /* TODO - just memset this */
+        for (; i < size; ++i) {
+                vec->vector[i] = NULL;
+        }
+}
+
 void vec_resize(struct vec* vec, size_t size)
 {
         if (size == vec->size) {
@@ -58,15 +73,8 @@ void vec_resize(struct vec* vec, size_t size)
         }
 
         if (size > vec->size) {
-                vec_reserve(vec, size);
-                size_t i = vec->size;
-
-                /* TODO - just memset this */
-                for (; i < size; ++i) {
-                        vec->vector[i] = NULL;
-                }
+                _vec_backfill(vec, size);
         } 
-        /* TODO - else do we want to realloc smaller? */
 
         vec->vector[size] = NULL;
         vec->size = size;

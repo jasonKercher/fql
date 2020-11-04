@@ -4,4 +4,5 @@ libutil_la_SOURCES = util.h util.c \
 					 queue.h queue.c \
 					 hmap.h hmap.c \
 					 pmap.h pmap.c \
-					 vec.h vec.c
+					 vec.h vec.c \
+					 dtree.h dtree.c
