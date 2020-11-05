@@ -54,7 +54,7 @@ void _traverse_logic(struct process* proc,
 
         int branch = 0;
         for (; branch < 2; ++branch) {
-                struct logic* next = logic->node->out[branch]->data;
+                struct logic* next = node->out[branch]->data;
                 if (next->comp_type == COMP_TRUE) {
                         proc->out[branch] = proc_true;
                 } else if (next->comp_type == COMP_FALSE) {
@@ -66,7 +66,7 @@ void _traverse_logic(struct process* proc,
                                 proc->out[branch] = next->proc;
                         }
                         _traverse_logic(proc->out[branch],
-                                        logic->node->out[branch],
+                                        node->out[branch],
                                         proc_true,
                                         proc_false);
                 }

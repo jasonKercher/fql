@@ -22,7 +22,6 @@ enum comparison {
 
 struct logic {
         struct column* col[2];
-        struct dnode* node;
         int data_type;
         enum comparison comp_type;
         struct process* proc;
@@ -38,8 +37,8 @@ void logic_set_comparison(struct logic* logic, const char* op);
 
 struct logic_tree {
         struct dtree* tree;
-        struct logic* end_true;
-        struct logic* end_false;
+        struct dnode* end_true;
+        struct dnode* end_false;
 };
 struct logic_tree* logic_tree_new();
 void logic_tree_free(struct logic_tree*);

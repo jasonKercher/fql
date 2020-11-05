@@ -4,6 +4,8 @@
 
 #include "column.h"
 
+#include "logic.h"
+#include "util/dtree.h"
 #include "util/util.h"
 
 struct query* query_new()
@@ -99,8 +101,8 @@ void query_apply_table_alias(struct query* query, const char* alias)
 
 struct logic_builder {
         struct logic_tree* ltree;
-        struct logic* current;
-        struct logic* next_not;
+        struct dnode* current;
+        struct dnode* next_not;
         struct vec* truths;
         struct vec* falses;
         _Bool sublogic_exit;
@@ -130,7 +132,7 @@ void query_add_logic_column(struct query* query,
         struct column* new_col = column_new(expr, table_name);
 
         struct logic_builder* builder = query->logic_stack->data;
-        logic_add_column(builder->current, new_col);
+        logic_add_column(builder->current->data, new_col);
 
         struct source* src = vec_end(query->sources);
         vec_push_back(src->logic_columns, new_col);
@@ -139,7 +141,7 @@ void query_add_logic_column(struct query* query,
 void query_set_logic_comparison(struct query* query, const char* op)
 {
         struct logic_builder* builder = query->logic_stack->data;
-        logic_set_comparison(builder->current, op);
+        logic_set_comparison(builder->current->data, op);
 }
 
 void _assign_logic(struct query* query, struct logic_builder* builder)
@@ -166,17 +168,21 @@ void enter_search(struct query* query)
         stack_push(&query->logic_stack, upper);
 
         if (query->logic_stack->next == NULL) {
-                upper->next_not = logic_new();
-                dtree_add_data(upper->ltree->tree, upper->next_not);
-                upper->ltree->end_false = logic_new();
-                upper->ltree->end_false->comp_type = COMP_FALSE;
-                upper->ltree->end_true = logic_new();
-                upper->ltree->end_true->comp_type = COMP_TRUE;
+                upper->next_not = dtree_add_data(upper->ltree->tree, logic_new());
+
+                struct logic* new_false = logic_new();
+                new_false->comp_type = COMP_FALSE;
+                //upper->ltree->end_false = dnode_new(new_false);
+                upper->ltree->end_false = dtree_add_data(upper->ltree->tree, new_false);
+
+                struct logic* new_true = logic_new();
+                new_true->comp_type = COMP_TRUE;
+                upper->ltree->end_true = dtree_add_data(upper->ltree->tree, new_true);
         } else {
                 struct logic_builder* lower = query->logic_stack->next->data;
                 dtree_add_data(upper->ltree->tree, lower->current);
                 upper->next_not = lower->current;
-                upper->ltree->end_true = lower->next_not;
+                upper->ltree->end_true = lower->next_not->data;
         }
 }
 
@@ -187,8 +193,8 @@ void exit_search(struct query* query)
         if (query->logic_stack == NULL) {
                 int i = 0;
                 for (i = 0; i < upper->falses->size; ++i) {
-                        struct logic* logic = upper->falses->vector[i];
-                        logic->node->out[false] = upper->ltree->end_false->node;
+                        struct dnode* node = upper->falses->vector[i];
+                        node->out[false] = upper->ltree->end_false;
                 }
                 _assign_logic(query, upper);
                 return;
@@ -207,8 +213,8 @@ void enter_search_and(struct query* query)
         struct logic_builder* builder = query->logic_stack->data;
         int i = 0;
         for (; i < builder->falses->size; ++i) {
-                struct logic* logic = builder->falses->vector[i];
-                logic->node->out[false] = builder->next_not->node;
+                struct dnode* node = builder->falses->vector[i];
+                node->out[false] = builder->next_not;
         }
 
         vec_resize(builder->falses, 0);
@@ -228,8 +234,8 @@ void exit_search_and(struct query* query)
 
         int i = 0;
         for (; i < builder->truths->size; ++i) {
-                struct logic* truthy = builder->truths->vector[i];
-                truthy->node->out[true] = builder->ltree->end_true->node;
+                struct dnode* truthy = builder->truths->vector[i];
+                truthy->out[true] = builder->ltree->end_true;
         }
         vec_resize(builder->truths, 0);
 }
@@ -243,7 +249,7 @@ void enter_search_not(struct query* query)
         }
 
         builder->current = builder->next_not;
-        builder->next_not = logic_new();
+        builder->next_not = dtree_add_data(builder->ltree->tree, logic_new());
 }
 
 void exit_search_not(struct query* query)
@@ -251,12 +257,12 @@ void exit_search_not(struct query* query)
         struct logic_builder* builder = query->logic_stack->data;
         int i = 0;
         for (; i < builder->truths->size; ++i) {
-                struct logic* truthy = builder->truths->vector[i];
-                truthy->node->out[true] = builder->next_not->node;
+                struct dnode* truthy = builder->truths->vector[i];
+                truthy->out[true] = builder->next_not;
         }
         if (builder->sublogic_exit) {
                 return;
         }
-        builder->current->node->out[true] = builder->next_not->node;
+        builder->current->out[true] = builder->next_not;
         vec_push_back(builder->falses, builder->current);
 }

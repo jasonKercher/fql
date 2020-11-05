@@ -10,7 +10,6 @@ struct logic* logic_new()
 
         *new_logic = (struct logic) {
                  {NULL, NULL}   /* col */
-                ,NULL           /* node */
                 ,0              /* data_type */
                 ,COMP_NOT_SET   /* comp_type */
                 ,NULL           /* proc */
