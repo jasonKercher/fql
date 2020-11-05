@@ -1,4 +1,4 @@
-#include "dtree.h"
+#include "dgraph.h"
 
 #include "util.h"
 
@@ -16,41 +16,41 @@ struct dnode* dnode_new(void* data)
         return new_node;
 }
 
-struct dtree* dtree_new()
+struct dgraph* dgraph_new()
 {
-        struct dtree* new_dtree = NULL;
-        malloc_(new_dtree, sizeof(*new_dtree));
+        struct dgraph* new_dgraph = NULL;
+        malloc_(new_dgraph, sizeof(*new_dgraph));
 
-        *new_dtree = (struct dtree) {
+        *new_dgraph = (struct dgraph) {
                  vec_new()      /* nodes */
                 ,NULL           /* newest */
                 ,NULL           /* _trav */
                 ,0              /* _trav_idx */
         };
-        
-        return new_dtree;
+
+        return new_dgraph;
 }
 
-void dtree_free(struct dtree* tree)
+void dgraph_free(struct dgraph* tree)
 {
         vec_free(tree->nodes);
         free_(tree);
 }
 
-struct dnode* dtree_add_node(struct dtree* tree, struct dnode* node)
+struct dnode* dgraph_add_node(struct dgraph* tree, struct dnode* node)
 {
         vec_push_back(tree->nodes, node);
         tree->newest = node;
         return node;
 }
 
-struct dnode* dtree_add_data(struct dtree* tree, void* data)
+struct dnode* dgraph_add_data(struct dgraph* tree, void* data)
 {
         struct dnode* new_node = dnode_new(data);
-        return dtree_add_node(tree, new_node);
+        return dgraph_add_node(tree, new_node);
 }
 
-void dtree_traverse_begin(struct dtree* tree)
+void dgraph_traverse_begin(struct dgraph* tree)
 {
         stack_free(&tree->_trav);
         tree->_trav_idx = 0;
@@ -63,7 +63,7 @@ void dtree_traverse_begin(struct dtree* tree)
 }
 
 /* depth first traverse by 1 */
-struct dnode* dtree_traverse(struct dtree* tree)
+struct dnode* dgraph_traverse(struct dgraph* tree)
 {
         if (tree->_trav == NULL) {
                 if (tree->_trav_idx >= tree->nodes->size) {
@@ -82,9 +82,9 @@ struct dnode* dtree_traverse(struct dtree* tree)
                 stack_push(&tree->_trav, node);
         } else {
                 stack_pop(&tree->_trav);
-                return dtree_traverse(tree);
+                return dgraph_traverse(tree);
         }
-        
+
         node->visited = true;
 
         return node;

@@ -5,7 +5,7 @@
 #include "column.h"
 
 #include "logic.h"
-#include "util/dtree.h"
+#include "util/dgraph.h"
 #include "util/util.h"
 
 struct query* query_new()
@@ -168,19 +168,19 @@ void enter_search(struct query* query)
         stack_push(&query->logic_stack, upper);
 
         if (query->logic_stack->next == NULL) {
-                upper->next_not = dtree_add_data(upper->ltree->tree, logic_new());
+                upper->next_not = dgraph_add_data(upper->ltree->tree, logic_new());
 
                 struct logic* new_false = logic_new();
                 new_false->comp_type = COMP_FALSE;
                 //upper->ltree->end_false = dnode_new(new_false);
-                upper->ltree->end_false = dtree_add_data(upper->ltree->tree, new_false);
+                upper->ltree->end_false = dgraph_add_data(upper->ltree->tree, new_false);
 
                 struct logic* new_true = logic_new();
                 new_true->comp_type = COMP_TRUE;
-                upper->ltree->end_true = dtree_add_data(upper->ltree->tree, new_true);
+                upper->ltree->end_true = dgraph_add_data(upper->ltree->tree, new_true);
         } else {
                 struct logic_builder* lower = query->logic_stack->next->data;
-                dtree_add_data(upper->ltree->tree, lower->current);
+                dgraph_add_data(upper->ltree->tree, lower->current);
                 upper->next_not = lower->current;
                 upper->ltree->end_true = lower->next_not->data;
         }
@@ -249,7 +249,7 @@ void enter_search_not(struct query* query)
         }
 
         builder->current = builder->next_not;
-        builder->next_not = dtree_add_data(builder->ltree->tree, logic_new());
+        builder->next_not = dgraph_add_data(builder->ltree->tree, logic_new());
 }
 
 void exit_search_not(struct query* query)

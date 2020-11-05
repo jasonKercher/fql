@@ -109,7 +109,7 @@ struct logic_tree* logic_tree_new()
         malloc_(new_tree, sizeof(*new_tree));
 
         *new_tree = (struct logic_tree) {
-                 dtree_new()    /* tree */
+                 dgraph_new()    /* tree */
                 ,NULL           /* end_true */
                 ,NULL           /* end_false */
         };

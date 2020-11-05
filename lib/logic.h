@@ -2,7 +2,7 @@
 #define LOGIC_H
 
 #include "expression.h"
-#include "util/dtree.h"
+#include "util/dgraph.h"
 
 enum comparison {
          COMP_NOT_SET = -1
@@ -36,7 +36,7 @@ void logic_add_column(struct logic*, struct column*);
 void logic_set_comparison(struct logic* logic, const char* op);
 
 struct logic_tree {
-        struct dtree* tree;
+        struct dgraph* tree;
         struct dnode* end_true;
         struct dnode* end_false;
 };

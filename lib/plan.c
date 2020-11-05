@@ -4,12 +4,7 @@
 #include <stdint.h>
 
 #include "column.h"
-//#include "logic.h"
-//#include "process.h"
 #include "query.h"
-//#include "table.h"
-//#include "util/queue.h"
-//#include "util/stack.h"
 #include "util/util.h"
 
 /**
@@ -79,7 +74,7 @@ void _traverse_logic(struct process* proc,
  */
 struct process* _logic_to_process(struct process** proc_true,
                                   struct process** proc_false,
-                                  struct dtree* tree)
+                                  struct dgraph* tree)
 {
         struct process* proc_begin = process_new("");
 
