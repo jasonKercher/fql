@@ -5,6 +5,7 @@
 
 #include "column.h"
 #include "query.h"
+#include "util/dgraph.h"
 #include "util/util.h"
 
 /**
@@ -23,11 +24,14 @@ struct plan* _plan_new()
         malloc_(new_plan, sizeof(*new_plan));
 
         *new_plan = (struct plan) {
-                 process_new("start")     /* processes */
-                ,process_new("OP_TRUE")   /* op_true */
-                ,process_new("OP_FALSE")  /* op_false */
-                ,NULL                     /* current */
+                 dgraph_new()                        /* processes */
+                ,dnode_new(process_new("OP_TRUE"))   /* op_true */
+                ,dnode_new(process_new("OP_FALSE"))  /* op_false */
+                ,NULL                                /* current */
         };
+
+        dgraph_add_data(new_plan->processes, process_new("start"));
+        new_plan->current = new_plan->processes->newest;
 
         return new_plan;
 }
@@ -35,12 +39,16 @@ struct plan* _plan_new()
 /* recursively traverse logic tree and
  * rebuild it as a process tree
  */
-void _traverse_logic(struct process* proc,
-                     struct dnode* node,
-                     struct process* proc_true,
-                     struct process* proc_false)
+void _traverse_logic(struct dgraph* proc_graph,
+                     struct dnode* proc_node,
+                     struct dnode* lnode,
+                     struct dnode* proc_true,
+                     struct dnode* proc_false)
 {
-        struct logic* logic = node->data;
+        //struct dnode* proc_node = proc_graph->newest;
+        struct process* proc = proc_node->data;
+
+        struct logic* logic = lnode->data;
         if (logic->proc == NULL) {
                 logic_get_description(logic, proc->action_msg);
         } else {
@@ -49,19 +57,20 @@ void _traverse_logic(struct process* proc,
 
         int branch = 0;
         for (; branch < 2; ++branch) {
-                struct logic* next = node->out[branch]->data;
+                struct logic* next = lnode->out[branch]->data;
                 if (next->comp_type == COMP_TRUE) {
-                        proc->out[branch] = proc_true;
+                        proc_node->out[branch] = proc_true;
                 } else if (next->comp_type == COMP_FALSE) {
-                        proc->out[branch] = proc_false;
+                        proc_node->out[branch] = proc_false;
                 } else {
                         if (next->proc == NULL) {
-                                proc->out[branch] = process_new("");
+                                proc_node->out[branch] = dgraph_add_data(proc_graph, process_new(""));
                         } else {
-                                proc->out[branch] = next->proc;
+                                proc_node->out[branch] = lnode->out[branch];
                         }
-                        _traverse_logic(proc->out[branch],
-                                        node->out[branch],
+                        _traverse_logic(proc_graph,
+                                        proc_node->out[branch],
+                                        lnode->out[branch],
                                         proc_true,
                                         proc_false);
                 }
@@ -69,23 +78,25 @@ void _traverse_logic(struct process* proc,
 }
 
 /* return logic beginning process
- * allocate and assign ending 
+ * allocate and assign ending
  * processes for true and false
  */
-struct process* _logic_to_process(struct process** proc_true,
-                                  struct process** proc_false,
-                                  struct dgraph* tree)
+struct dgraph* _logic_to_process(struct dnode** proc_node_true,
+                                 struct dnode** proc_node_false,
+                                 struct dgraph* logic_tree)
 {
-        struct process* proc_begin = process_new("");
+        struct dgraph* proc_graph = dgraph_new();
 
-        *proc_true = process_new("End logic: TRUE");
-        *proc_false = process_new("End logic: FALSE");
+        struct dnode* proc_begin = dgraph_add_data(proc_graph, process_new(""));
 
-        struct dnode* begin = tree->nodes->vector[0];
+        *proc_node_true  = dgraph_add_data(proc_graph, process_new("End logic: TRUE"));
+        *proc_node_false = dgraph_add_data(proc_graph, process_new("End logic: FALSE"));
 
-        _traverse_logic(proc_begin, begin, *proc_true, *proc_false);
+        struct dnode* logic_begin = logic_tree->nodes->vector[0];
 
-        return proc_begin;
+        _traverse_logic(proc_graph, proc_begin, logic_begin, *proc_node_true, *proc_node_false);
+
+        return proc_graph;
 }
 
 
@@ -93,13 +104,13 @@ struct process* _logic_to_process(struct process** proc_true,
 void _plan_from(struct plan* plan, struct query* query)
 {
         char action_msg[ACTION_MAX] = "";
-        plan->current = plan->processes;
+        //plan->current = plan->processes;
 
         if (query->sources->size) {
                 struct source* src = query->sources->vector[0];
                 sprintf(action_msg, "%s: %s", src->table->reader->file_name,
                                               "stream read");
-                struct process* from_proc = process_new(action_msg);
+                struct dnode* from_proc = dgraph_add_data(plan->processes, process_new(action_msg));
                 plan->current->out[0] = from_proc;
                 plan->current = from_proc;
         }
@@ -130,21 +141,24 @@ void _plan_from(struct plan* plan, struct query* query)
                         join_proc = process_new("unexpected: JOIN_FROM");
                 }
 
-                plan->current->out[0] = join_proc;
+                struct dnode* join_proc_node = dgraph_add_data(plan->processes, join_proc);
 
-                sprintf(action_msg, "%s: %s", src->table->reader->file_name,
-                                              "mmap read");
+                plan->current->out[0] = join_proc_node;
+
+                sprintf(action_msg,
+                        "%s: %s",
+                        src->table->reader->file_name,
+                        "mmap read");
                 struct process* new_table = process_new(action_msg);
 
                 if (src->condition != NULL) {
-                        struct process* proc_true = NULL;
-                        struct process* proc_false = NULL;
-                        join_proc->out[0] = _logic_to_process(&proc_true,
-                                                              &proc_false,
-                                                              src->condition->tree);
+                        struct dnode* proc_true = NULL;
+                        struct dnode* proc_false = NULL;
+                        struct dgraph* ltree = _logic_to_process(&proc_true, &proc_false, src->condition->tree);
+                        join_proc_node->out[0] = ltree->nodes->vector[0];
                         plan->current = proc_true;
                 } else {
-                        plan->current = join_proc;
+                        plan->current = join_proc_node;
                 }
         }
 }
@@ -155,14 +169,14 @@ void _plan_where(struct plan* plan, struct query* query)
                 return;
         }
 
-        struct process* proc_true = NULL;
-        struct process* proc_false = NULL;
+        struct dnode* proc_true = NULL;
+        struct dnode* proc_false = NULL;
 
-        plan->current->out[0] = _logic_to_process(&proc_true,
-                                                  &proc_false,
-                                                  query->where->tree);
+        struct dgraph* ltree = _logic_to_process(&proc_true,
+                                                 &proc_false,
+                                                 query->where->tree);
+        plan->current->out[0] = ltree->nodes->vector[0];
         plan->current = proc_true;
-
 }
 
 void _plan_group(struct plan* plan, struct query* query) { }
@@ -227,25 +241,27 @@ void _print_indent(struct stack* indents)
         }
 }
 
-void _print_plan(struct process* proc, struct stack** indents, int branch)
+void _print_plan(struct dnode* proc_node, struct stack** indents, int branch)
 {
         if (branch == 0) {
                 _print_indent(*indents);
         }
 
+        struct process* proc = proc_node->data;
+
         fputs(proc->action_msg, stderr);
 
-        if (proc->out[1] != NULL) {
+        if (proc_node->out[1] != NULL) {
                 fputs(" --> ", stderr);
                 stack_push(indents, (void*) 5 + strlen(proc->action_msg));
-                _print_plan(proc->out[1], indents, 1);
+                _print_plan(proc_node->out[1], indents, 1);
                 stack_pop(indents);
         }
 
-        if (proc->out[0] != NULL) { 
+        if (proc_node->out[0] != NULL) {
                 _print_indent(*indents);
                 fputc('|', stderr);
-                _print_plan(proc->out[0], indents, 0);
+                _print_plan(proc_node->out[0], indents, 0);
         }
 }
 
@@ -256,7 +272,7 @@ void print_plans(struct queue* plans)
                 fprintf(stderr, "QUERY %d\n", ++i);
                 struct plan* plan = plans->data;
                 struct stack* indents = NULL;
-                _print_plan(plan->processes, &indents, 0);
+                _print_plan(plan->processes->nodes->vector[0], &indents, 0);
                 fputs("\n", stderr);
         }
 }

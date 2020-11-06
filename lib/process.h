@@ -7,13 +7,7 @@
 /* process_func(records, process_data) */
 typedef int (*process_func)(void**, void*);
 
-/* This is essentially a graph structure
- * with only 2 inputs and outputs per node
- */
-
 struct process {
-        //struct process* in[2];
-        struct process* out[2];
         process_func* action;
         char action_msg[ACTION_MAX];
 };

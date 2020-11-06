@@ -5,11 +5,11 @@
 #include "process.h"
 
 struct plan {
-        struct process* processes;
-        struct process* op_true;
-        struct process* op_false;
+        struct dgraph* processes;
+        struct dnode* op_true;
+        struct dnode* op_false;
         /* temp */
-        struct process* current;
+        struct dnode* current;
 };
 
 //struct plan* plan_new(struct query*)
