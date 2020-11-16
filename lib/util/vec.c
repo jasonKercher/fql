@@ -32,6 +32,11 @@ void vec_free(struct vec* vec)
         free_(vec);
 }
 
+void* vec_begin(struct vec* vec)
+{
+        return vec->vector[0];
+}
+
 void* vec_end(struct vec* vec)
 {
         if (vec->size == 0)
