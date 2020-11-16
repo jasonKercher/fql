@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "column.h"
 #include "logic.h"
@@ -203,46 +204,59 @@ int build_plans(struct queue** plans, struct queue* query_list)
         return 0;
 }
 
-void _print_indent(struct stack* indents)
+void _spaces(int n)
 {
-        fputs("\n", stderr);
-        struct stack* btm = stack_bottom(indents);
-        int first_column = 0;
-
-        for (; btm; btm = btm->prev) {
-                int i = 0;
-                uintptr_t width = (uintptr_t) indents->data;
-                for (; i < width - first_column; ++i) {
-                        fputc(' ', stderr);
-                }
-                first_column = 1;
-                if (btm->prev) {
-                        fputc('|', stderr);
-                }
+        for (; n > 0; --n) {
+                fputc(' ', stderr);
         }
 }
 
-void _print_plan(struct dnode* proc_node, struct stack** indents, int branch)
+void _print_plan(struct plan* plan)
 {
-        if (branch == 0) {
-                _print_indent(*indents);
+        struct dgraph* proc_graph = plan->processes;
+        struct vec* nodes = proc_graph->nodes;
+
+        /* retrieve longest message */
+        int max_len = 0;
+        int i = 0;
+        for (; i < nodes->size; ++i) {
+                struct dnode* node = nodes->vector[i];
+
+                struct process* proc = node->data;
+                int len = strlen(proc->action_msg);
+                if (len > max_len) {
+                        max_len = len;
+                }
         }
 
-        struct process* proc = proc_node->data;
+        /* Print Header */
 
-        fputs(proc->action_msg, stderr);
 
-        if (proc_node->out[1] != NULL) {
-                fputs(" --> ", stderr);
-                stack_push(indents, (void*) 5 + strlen(proc->action_msg));
-                _print_plan(proc_node->out[1], indents, 1);
-                stack_pop(indents);
-        }
+        /* Print adjacency list */
+        for (i = 0; i < nodes->size; ++i) {
+                fputc('\n', stderr);
+                struct dnode* node = nodes->vector[i];
 
-        if (proc_node->out[0] != NULL) {
-                _print_indent(*indents);
-                fputc('|', stderr);
-                _print_plan(proc_node->out[0], indents, 0);
+                struct process* proc = node->data;
+                int len = strlen(proc->action_msg);
+                fputs(proc->action_msg, stderr);
+                _spaces(2 + max_len - len);
+
+                if (node->out[0] == NULL) {
+                        continue;
+                }
+                proc = node->out[0]->data;
+                len = strlen(proc->action_msg);
+                fputs(proc->action_msg, stderr);
+                _spaces(2 + max_len - len);
+
+                if (node->out[1] == NULL) {
+                        continue;
+                }
+                proc = node->out[1]->data;
+                len = strlen(proc->action_msg);
+                fputs(proc->action_msg, stderr);
+                _spaces(2 + max_len - len);
         }
 }
 
@@ -252,8 +266,7 @@ void print_plans(struct queue* plans)
         for (; plans; plans = plans->next) {
                 fprintf(stderr, "QUERY %d\n", ++i);
                 struct plan* plan = plans->data;
-                struct stack* indents = NULL;
-                _print_plan(plan->processes->nodes->vector[0], &indents, 0);
+                _print_plan(plan);
                 fputs("\n", stderr);
         }
 }
