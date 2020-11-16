@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 #include "column.h"
+#include "logic.h"
+#include "process.h"
 #include "query.h"
 #include "util/dgraph.h"
 #include "util/util.h"
@@ -36,47 +38,6 @@ struct plan* _plan_new()
         return new_plan;
 }
 
-/* recursively traverse logic graph and
- * rebuild it as a process graph
- */
-//void _traverse_logic(struct dgraph* proc_graph,
-//                     struct dnode* proc_node,
-//                     struct dnode* lnode,
-//                     struct dnode* proc_true,
-//                     struct dnode* proc_false)
-//{
-//        //struct dnode* proc_node = proc_graph->newest;
-//        struct process* proc = proc_node->data;
-//
-//        struct logic* logic = lnode->data;
-//        if (logic->proc == NULL) {
-//                logic_get_description(logic, proc->action_msg);
-//        } else {
-//                logic->proc = proc;
-//        }
-//
-//        int branch = 0;
-//        for (; branch < 2; ++branch) {
-//                struct logic* next = lnode->out[branch]->data;
-//                if (next->comp_type == COMP_TRUE) {
-//                        proc_node->out[branch] = proc_true;
-//                } else if (next->comp_type == COMP_FALSE) {
-//                        proc_node->out[branch] = proc_false;
-//                } else {
-//                        if (next->proc == NULL) {
-//                                proc_node->out[branch] = dgraph_add_data(proc_graph, process_new(""));
-//                        } else {
-//                                proc_node->out[branch] = lnode->out[branch];
-//                        }
-//                        _traverse_logic(proc_graph,
-//                                        proc_node->out[branch],
-//                                        lnode->out[branch],
-//                                        proc_true,
-//                                        proc_false);
-//                }
-//        }
-//}
-
 /* return logic beginning process
  * allocate and assign ending
  * processes for true and false
@@ -87,26 +48,34 @@ struct dgraph* _logic_to_process(struct dnode** proc_node_true,
 {
         struct dgraph* proc_graph = dgraph_new();
 
-        //struct dnode* proc_begin = dgraph_add_data(proc_graph, process_new(""));
-
-        //*proc_node_true  = dgraph_add_data(proc_graph, process_new("End logic: TRUE"));
-        //*proc_node_false = dgraph_add_data(proc_graph, process_new("End logic: FALSE"));
-
         /* build all process nodes */
-        struct dnode* it = vec_begin(logic_graph->nodes);
-        for (; it; ++it) {
-                struct logic* logic = it->data;
-                struct dnode* proc_node = dnode_new(process_new(""));
+        int i = 0;
+        for (; i < logic_graph->nodes->size; ++i) {
+                struct dnode* lnode = logic_graph->nodes->vector[i];
+                struct logic* logic = lnode->data;
+                struct process* proc = process_new("");
+                logic_get_description(logic, proc->action_msg);
+
+                struct dnode* proc_node = dnode_new(proc);
                 dgraph_add_node(proc_graph, proc_node);
-                logic->proc = proc_node;
+                logic->proc_node = proc_node;
+                if (logic->comp_type == COMP_TRUE) {
+                        *proc_node_true = proc_node;
+                } else {
+                        *proc_node_false = proc_node;
+                }
         }
 
         /* link process all nodes */
-        it = vec_begin(logic_graph->nodes);
-        for (; it; ++it) {
-                struct logic* logic = it->data;
-                logic->proc->out[0] = ((struct logic*)it->out[0]->data)->proc;
-                logic->proc->out[1] = ((struct logic*)it->out[1]->data)->proc;
+        for (i = 0; i < logic_graph->nodes->size; ++i) {
+                struct dnode* lnode = logic_graph->nodes->vector[i];
+                struct logic* logic = lnode->data;
+                if (lnode->out[0] != NULL) {
+                        logic->proc_node->out[0] = ((struct logic*)lnode->out[0]->data)->proc_node;
+                }
+                if (lnode->out[1] != NULL) {
+                        logic->proc_node->out[1] = ((struct logic*)lnode->out[1]->data)->proc_node;
+                }
         }
 
         return proc_graph;

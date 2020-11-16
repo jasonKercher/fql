@@ -2,6 +2,7 @@
 
 #include "column.h"
 #include "util/util.h"
+#include <string.h>
 
 struct logic* logic_new()
 {
@@ -25,6 +26,14 @@ void logic_free(struct logic* logic)
 
 void logic_get_description(struct logic* logic, char* msg)
 {
+        if (logic->comp_type == COMP_TRUE) {
+                strcpy(msg, "End Logic: TRUE");
+                return;
+        }
+        if (logic->comp_type == COMP_FALSE) {
+                strcpy(msg, "End Logic: FALSE");
+                return;
+        }
         if (logic->col[0] == NULL) {
                 return;
         }

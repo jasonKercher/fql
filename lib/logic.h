@@ -24,7 +24,7 @@ struct logic {
         struct column* col[2];
         int data_type;
         enum comparison comp_type;
-        struct dnode* proc;
+        struct dnode* proc_node;
 };
 
 struct logic* logic_new();
