@@ -11,6 +11,8 @@
 #include "util/dgraph.h"
 #include "util/util.h"
 
+#define PLAN_COLUMN_SEP " | "
+
 /**
  * Implementation for struct plan
  *
@@ -39,15 +41,17 @@ struct plan* _plan_new()
         return new_plan;
 }
 
-/* return logic beginning process
- * allocate and assign ending
- * processes for true and false
+/* build process nodes from logic graph
+ * assign processes for true and false
+ * return beginning process
  */
-struct dgraph* _logic_to_process(struct dnode** proc_node_true,
-                                 struct dnode** proc_node_false,
-                                 struct dgraph* logic_graph)
+struct dnode* _logic_to_process(struct dgraph* proc_graph,
+                                struct dgraph* logic_graph,
+                                struct dnode** proc_node_true,
+                                struct dnode** proc_node_false)
+
 {
-        struct dgraph* proc_graph = dgraph_new();
+        struct dnode* return_node = NULL;
 
         /* build all process nodes */
         int i = 0;
@@ -58,6 +62,9 @@ struct dgraph* _logic_to_process(struct dnode** proc_node_true,
                 logic_get_description(logic, proc->action_msg);
 
                 struct dnode* proc_node = dnode_new(proc);
+                if (return_node == NULL) {
+                        return_node = proc_node;
+                }
                 dgraph_add_node(proc_graph, proc_node);
                 logic->proc_node = proc_node;
                 if (logic->comp_type == COMP_TRUE) {
@@ -79,7 +86,7 @@ struct dgraph* _logic_to_process(struct dnode** proc_node_true,
                 }
         }
 
-        return proc_graph;
+        return return_node;
 }
 
 
@@ -131,14 +138,19 @@ void _plan_from(struct plan* plan, struct query* query)
                         "%s: %s",
                         src->table->reader->file_name,
                         "mmap read");
-                struct process* new_table = process_new(action_msg);
+                struct dnode* read_proc = dgraph_add_data(plan->processes, process_new(action_msg));
+                read_proc->out[0] = join_proc_node;
 
                 if (src->condition != NULL) {
                         struct dnode* proc_true = NULL;
                         struct dnode* proc_false = NULL;
-                        struct dgraph* lgraph = _logic_to_process(&proc_true, &proc_false, src->condition->tree);
-                        join_proc_node->out[0] = lgraph->nodes->vector[0];
+
+                        join_proc_node->out[0] = _logic_to_process(plan->processes,
+                                                                   src->condition->tree,
+                                                                   &proc_true,
+                                                                   &proc_false);
                         plan->current = proc_true;
+                        /* TODO: handle proc_false */
                 } else {
                         plan->current = join_proc_node;
                 }
@@ -154,11 +166,13 @@ void _plan_where(struct plan* plan, struct query* query)
         struct dnode* proc_true = NULL;
         struct dnode* proc_false = NULL;
 
-        struct dgraph* lgraph = _logic_to_process(&proc_true,
-                                                 &proc_false,
-                                                 query->where->tree);
-        plan->current->out[0] = lgraph->nodes->vector[0];
+        plan->current->out[0] = _logic_to_process(plan->processes,
+                                                  query->where->tree,
+                                                  &proc_true,
+                                                  &proc_false);
         plan->current = proc_true;
+
+        /* TODO: handle proc_false */
 }
 
 void _plan_group(struct plan* plan, struct query* query) { }
@@ -204,11 +218,12 @@ int build_plans(struct queue** plans, struct queue* query_list)
         return 0;
 }
 
-void _spaces(int n)
+void _col_sep(int n)
 {
         for (; n > 0; --n) {
                 fputc(' ', stderr);
         }
+        fputs(PLAN_COLUMN_SEP, stderr);
 }
 
 void _print_plan(struct plan* plan)
@@ -217,7 +232,7 @@ void _print_plan(struct plan* plan)
         struct vec* nodes = proc_graph->nodes;
 
         /* retrieve longest message */
-        int max_len = 0;
+        int max_len = strlen("BRANCH 0");
         int i = 0;
         for (; i < nodes->size; ++i) {
                 struct dnode* node = nodes->vector[i];
@@ -229,7 +244,25 @@ void _print_plan(struct plan* plan)
                 }
         }
 
+
         /* Print Header */
+        fputs("NODE", stderr);
+        _col_sep(max_len - strlen("NODE"));
+        fputs("BRANCH 0", stderr);
+        _col_sep(max_len - strlen("BRANCH 0"));
+        fputs("BRANCH 1\n", stderr);
+
+        for (i = 0; i < max_len; ++i) {
+                fputc('=', stderr);
+        }
+        _col_sep(0);
+        for (i = 0; i < max_len; ++i) {
+                fputc('=', stderr);
+        }
+        _col_sep(0);
+        for (i = 0; i < max_len; ++i) {
+                fputc('=', stderr);
+        }
 
 
         /* Print adjacency list */
@@ -240,23 +273,20 @@ void _print_plan(struct plan* plan)
                 struct process* proc = node->data;
                 int len = strlen(proc->action_msg);
                 fputs(proc->action_msg, stderr);
-                _spaces(2 + max_len - len);
+                _col_sep(max_len - len);
+                len = 0;
 
-                if (node->out[0] == NULL) {
-                        continue;
+                if (node->out[0] != NULL) {
+                        proc = node->out[0]->data;
+                        len = strlen(proc->action_msg);
+                        fputs(proc->action_msg, stderr);
                 }
-                proc = node->out[0]->data;
-                len = strlen(proc->action_msg);
-                fputs(proc->action_msg, stderr);
-                _spaces(2 + max_len - len);
+                _col_sep(max_len - len);
 
-                if (node->out[1] == NULL) {
-                        continue;
+                if (node->out[1] != NULL) {
+                        proc = node->out[1]->data;
+                        fputs(proc->action_msg, stderr);
                 }
-                proc = node->out[1]->data;
-                len = strlen(proc->action_msg);
-                fputs(proc->action_msg, stderr);
-                _spaces(2 + max_len - len);
         }
 }
 

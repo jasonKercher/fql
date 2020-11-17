@@ -31,10 +31,16 @@ struct dgraph* dgraph_new()
         return new_dgraph;
 }
 
-void dgraph_free(struct dgraph* graph)
+void dgraph_shallow_free(struct dgraph* graph)
 {
         vec_free(graph->nodes);
         free_(graph);
+}
+
+void dgraph_free(struct dgraph* graph)
+{
+        /* TODO: free nodes */
+        dgraph_shallow_free(graph);
 }
 
 struct dnode* dgraph_add_node(struct dgraph* graph, struct dnode* node)
@@ -48,6 +54,11 @@ struct dnode* dgraph_add_data(struct dgraph* graph, void* data)
 {
         struct dnode* new_node = dnode_new(data);
         return dgraph_add_node(graph, new_node);
+}
+
+void dgraph_extend(struct dgraph* dest, struct dgraph* src)
+{
+        /* TODO */
 }
 
 struct dnode* graph_traverse_begin(struct dgraph* graph)
