@@ -36,6 +36,8 @@ struct plan* _plan_new()
         };
 
         dgraph_add_data(new_plan->processes, process_new("start"));
+        dgraph_add_node(new_plan->processes, new_plan->op_true);
+        dgraph_add_node(new_plan->processes, new_plan->op_false);
         new_plan->current = new_plan->processes->newest;
 
         return new_plan;
