@@ -2,12 +2,12 @@
 
 #include "util.h"
 
-struct dnode* dnode_new(void* data)
+Dnode* dnode_new(void* data)
 {
-        struct dnode* new_node = NULL;
+        Dnode* new_node = NULL;
         malloc_(new_node, sizeof(*new_node));
 
-        *new_node = (struct dnode) {
+        *new_node = (Dnode) {
                  data           /* data */
                 ,{NULL, NULL}   /* out */
                 ,false          /* visited */
@@ -16,12 +16,17 @@ struct dnode* dnode_new(void* data)
         return new_node;
 }
 
-struct dgraph* dgraph_new()
+void dnode_free(Dnode* node)
 {
-        struct dgraph* new_dgraph = NULL;
+        free_(node);
+}
+
+Dgraph* dgraph_new()
+{
+        Dgraph* new_dgraph = NULL;
         malloc_(new_dgraph, sizeof(*new_dgraph));
 
-        *new_dgraph = (struct dgraph) {
+        *new_dgraph = (Dgraph) {
                  vec_new()      /* nodes */
                 ,NULL           /* newest */
                 ,NULL           /* _trav */
@@ -31,44 +36,44 @@ struct dgraph* dgraph_new()
         return new_dgraph;
 }
 
-void dgraph_shallow_free(struct dgraph* graph)
+void dgraph_shallow_free(Dgraph* graph)
 {
         vec_free(graph->nodes);
         free_(graph);
 }
 
-void dgraph_free(struct dgraph* graph)
+void dgraph_free(Dgraph* graph)
 {
         /* TODO: free nodes */
         dgraph_shallow_free(graph);
 }
 
-struct dnode* dgraph_add_node(struct dgraph* graph, struct dnode* node)
+Dnode* dgraph_add_node(Dgraph* graph, Dnode* node)
 {
         vec_push_back(graph->nodes, node);
         graph->newest = node;
         return node;
 }
 
-struct dnode* dgraph_add_data(struct dgraph* graph, void* data)
+Dnode* dgraph_add_data(Dgraph* graph, void* data)
 {
-        struct dnode* new_node = dnode_new(data);
+        Dnode* new_node = dnode_new(data);
         return dgraph_add_node(graph, new_node);
 }
 
-void dgraph_extend(struct dgraph* dest, struct dgraph* src)
+void dgraph_extend(Dgraph* dest, Dgraph* src)
 {
         /* TODO */
 }
 
-struct dnode* graph_traverse_begin(struct dgraph* graph)
+Dnode* graph_traverse_begin(Dgraph* graph)
 {
         stack_free(&graph->_trav);
         graph->_trav_idx = 0;
 
         int i = 0;
         for (; i < graph->nodes->size; ++i) {
-                struct dnode* node = graph->nodes->vector[i];
+                Dnode* node = graph->nodes->vector[i];
                 node->visited = false;
         }
 
@@ -76,7 +81,7 @@ struct dnode* graph_traverse_begin(struct dgraph* graph)
 }
 
 /* depth first traverse by 1 */
-struct dnode* dgraph_traverse(struct dgraph* graph)
+Dnode* dgraph_traverse(Dgraph* graph)
 {
         if (graph->_trav == NULL) {
                 if (graph->_trav_idx >= graph->nodes->size) {
@@ -85,7 +90,7 @@ struct dnode* dgraph_traverse(struct dgraph* graph)
                 stack_push(&graph->_trav, graph->nodes->vector[graph->_trav_idx++]);
         }
 
-        struct dnode* node = graph->_trav->data;
+        Dnode* node = graph->_trav->data;
 
         if (node->out[0] != NULL && !node->out[0]->visited) {
                 node = node->out[0];

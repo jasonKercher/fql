@@ -112,12 +112,12 @@ void logic_set_comparison(struct logic* logic, const char* op)
                 logic->comp_type = COMP_NOT_NULL;
 }
 
-struct logic_tree* logic_tree_new()
+LogicTree* logic_tree_new()
 {
-        struct logic_tree* new_tree = NULL;
+        LogicTree* new_tree = NULL;
         malloc_(new_tree, sizeof(*new_tree));
 
-        *new_tree = (struct logic_tree) {
+        *new_tree = (LogicTree) {
                  dgraph_new()    /* tree */
                 ,NULL           /* end_true */
                 ,NULL           /* end_false */
@@ -128,7 +128,7 @@ struct logic_tree* logic_tree_new()
         return new_tree;
 }
 
-void logic_tree_free(struct logic_tree* tree)
+void logic_tree_free(LogicTree* tree)
 {
         /* TODO - recursively free logic tree */
 

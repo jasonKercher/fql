@@ -50,6 +50,7 @@ struct query {
         enum logic_mode logic_mode;
         enum join_type join;
 };
+typedef struct query Query;
 
 struct query* query_new();
 void query_free(void*);

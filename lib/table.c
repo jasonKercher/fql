@@ -3,12 +3,12 @@
 
 #include "util/util.h"
 
-struct table* table_new()
+Table* table_new()
 {
-        struct table* new_table = NULL;
+        Table* new_table = NULL;
         malloc_(new_table, sizeof(*new_table));
 
-        *new_table = (struct table) {
+        *new_table = (Table) {
                  reader_new() /* reader */
                 ,schema_new() /* schema */
                 ,""           /* name */
@@ -17,7 +17,7 @@ struct table* table_new()
         return new_table;
 }
 
-void table_free(struct table* table)
+void table_free(Table* table)
 {
         if (table == NULL)
                 return;
@@ -29,15 +29,15 @@ void table_free(struct table* table)
 
 
 
-struct source* source_new(struct table* table,
+Source* source_new(Table* table,
                           const char* alias,
                           enum source_type source_type,
                           enum join_type join_type)
 {
-        struct source* new_source = NULL;
+        Source* new_source = NULL;
         malloc_(new_source, sizeof(*new_source));
 
-        *new_source = (struct source) {
+        *new_source = (Source) {
                  table          /* table */
                 ,NULL           /* condition */
                 ,vec_new()      /* logic_columns */
@@ -55,7 +55,7 @@ struct source* source_new(struct table* table,
         return new_source;
 }
 
-void source_free(struct source* source)
+void source_free(Source* source)
 {
         if (source == NULL)
                 return;

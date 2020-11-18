@@ -15,6 +15,7 @@ struct stack {
         struct stack* prev;
         struct stack* next;
 };
+typedef struct stack Stack;
 
 struct stack* stack_push(struct stack** head, void*);
 void* stack_remove(struct stack** head, struct stack*);

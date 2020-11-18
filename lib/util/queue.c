@@ -1,17 +1,17 @@
 #include "queue.h"
 #include "util.h"
 
-struct queue* queue_enqueue(struct queue** head, void* data)
+Queue* queue_enqueue(Queue** head, void* data)
 {
-        struct queue* newnode = NULL;
+        Queue* newnode = NULL;
         malloc_(newnode, sizeof(*newnode));
-        *newnode = (struct queue) {
+        *newnode = (Queue) {
                  data
                 ,NULL
                 ,NULL
         };
 
-        struct queue* back = queue_back(*head);
+        Queue* back = queue_back(*head);
 
         if (back) {
                 newnode->prev = back;
@@ -24,7 +24,7 @@ struct queue* queue_enqueue(struct queue** head, void* data)
         return newnode;
 }
 
-void queue_delete(struct queue** head, struct queue* node)
+void queue_delete(Queue** head, Queue* node)
 {
         if (!node)
                 return;
@@ -33,7 +33,7 @@ void queue_delete(struct queue** head, struct queue* node)
         free_(data);
 }
 
-void* queue_remove(struct queue** head, struct queue* node)
+void* queue_remove(Queue** head, Queue* node)
 {
         if (!node)
                 return NULL;
@@ -51,60 +51,60 @@ void* queue_remove(struct queue** head, struct queue* node)
         return data;
 }
 
-void* queue_dequeue(struct queue** head)
+void* queue_dequeue(Queue** head)
 {
         return queue_remove(head, *head);
 }
 
-struct queue* queue_front(struct queue* node)
+Queue* queue_front(Queue* node)
 {
         if (!node)
                 return NULL;
 
-        struct queue* head = node;
+        Queue* head = node;
         while (head && head->prev)
                 head = head->prev;
 
         return head;
 }
 
-struct queue* queue_back(struct queue* node)
+Queue* queue_back(Queue* node)
 {
         if (!node)
                 return NULL;
 
-        struct queue* back = node;
+        Queue* back = node;
         while (back && back->next)
                 back = back->next;
 
         return back;
 }
 
-int queue_count(struct queue* head)
+int queue_count(Queue* head)
 {
         if (!head)
                 return 0;
 
         int count = 1;
-        struct queue* back = head;
+        Queue* back = head;
         while ((back = back->next))
                 ++count;
 
         return count;
 }
 
-void queue_free_func(struct queue** head, generic_data_func free_func)
+void queue_free_func(Queue** head, generic_data_func free_func)
 {
         for (; *head; queue_dequeue(head))
                 free_func((*head)->data);
 }
 
-void queue_free_data(struct queue** head)
+void queue_free_data(Queue** head)
 {
         for (; *head; queue_delete(head, *head));
 }
 
-void queue_free(struct queue** head)
+void queue_free(Queue** head)
 {
         for (; *head; queue_dequeue(head));
 }

@@ -17,9 +17,10 @@ enum expr_e {
 };
 
 struct expression {
-        void* expr;
         enum expr_e type;
+        void* expr;
 };
+typedef struct expression Expression;
 
 struct expression* expression_new(enum expr_e type, void*);
 void expression_free(struct expression*);

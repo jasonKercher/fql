@@ -20,6 +20,7 @@ struct table {
         struct schema* schema;
         char name[TABLE_NAME_MAX];
 };
+typedef struct table Table;
 
 struct table* table_new();
 void table_free(struct table*);
@@ -48,6 +49,7 @@ struct source {
         enum source_type source_type;
         enum join_type join_type;
 };
+typedef struct source Source;
 
 struct source* source_new(struct table*,
                           const char* alias,

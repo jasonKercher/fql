@@ -56,12 +56,12 @@ void fql_set_out_delim(const char* delim)
 
 int fql_exec(const char* query_str)
 {
-        struct queue* query_list = NULL;
+        Queue* query_list = NULL;
         analyze_query(&query_list, query_str);
 
         schema_resolve(query_list);
 
-        struct queue* plans = NULL;
+        Queue* plans = NULL;
         build_plans(&plans, query_list);
 
         print_plans(plans);

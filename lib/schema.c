@@ -9,12 +9,12 @@
 #include "util/util.h"
 #include "util/vec.h"
 
-struct schema* schema_new()
+Schema* schema_new()
 {
-        struct schema* new_schema = NULL;
+        Schema* new_schema = NULL;
         malloc_(new_schema, sizeof(*new_schema));
 
-        *new_schema = (struct schema) {
+        *new_schema = (Schema) {
                  NULL   /* columns */
                 ,NULL   /* col_map */
                 ,""     /* name */
@@ -25,7 +25,7 @@ struct schema* schema_new()
 
 void schema_free(void* generic_schema)
 {
-        struct schema* schema = generic_schema;
+        Schema* schema = generic_schema;
         stack_free_func(&schema->columns, &column_free);
         if (schema->col_map != NULL) {
                 hmap_free(schema->col_map);
@@ -33,19 +33,19 @@ void schema_free(void* generic_schema)
         free_(schema);
 }
 
-void schema_add_column(struct schema* schema, struct column* col)
+void schema_add_column(Schema* schema, Column* col)
 {
         stack_push(&schema->columns, col);
 }
 
-void schema_apply_column_alias(struct schema* schema, const char* alias)
+void schema_apply_column_alias(Schema* schema, const char* alias)
 {
-        struct column* col = schema->columns->data;
+        Column* col = schema->columns->data;
         strncpy_(col->alias, alias, COLUMN_NAME_MAX);
 }
 
 
-void schema_resolve_file(struct table* table)
+void schema_resolve_file(Table* table)
 {
         /* Usage of PATH_MAX here is kind of silly,
          * but I'm too lazy to allocate these correctly.
@@ -59,8 +59,8 @@ void schema_resolve_file(struct table* table)
         char* dir = dirname(table_name_dir);
         char* base = basename(table_name_base);
 
-        struct queue* files = dir_list_files(dir);
-        struct queue* node = files;
+        Queue* files = dir_list_files(dir);
+        Queue* node = files;
 
         int matches = 0;
         /* Match exact */
@@ -131,7 +131,7 @@ success_return:
         queue_free_data(&files);
 }
 
-void schema_assign_header(struct table* table, csv_record* rec)
+void schema_assign_header(Table* table, csv_record* rec)
 {
         int i = 0;
 
@@ -139,9 +139,9 @@ void schema_assign_header(struct table* table, csv_record* rec)
 
         for (; i < rec->size; ++i) {
                 char* column_name = strdup(rec->fields[i]);
-                struct expression* new_expr = expression_new(EXPR_COLUMN_NAME
+                Expression* new_expr = expression_new(EXPR_COLUMN_NAME
                                                             ,column_name);
-                struct column* new_col = column_new(new_expr, "");
+                Column* new_col = column_new(new_expr, "");
                 schema_add_column(table->schema, new_col);
 
                 new_col->location = i;
@@ -152,7 +152,7 @@ void schema_assign_header(struct table* table, csv_record* rec)
         }
 }
 
-void schema_resolve_source(struct source* source)
+void schema_resolve_source(Source* source)
 {
         if (source->source_type == SOURCE_SUBQUERY) {
                 fputs("Not supporting subquery schema yet\n", stderr);
@@ -161,7 +161,7 @@ void schema_resolve_source(struct source* source)
 
         schema_resolve_file(source->table);
 
-        struct table* table = source->table;
+        Table* table = source->table;
         if (table->schema->columns) {
                 return;  /* Schema already set */
         }
@@ -182,20 +182,20 @@ void schema_resolve_source(struct source* source)
         csv_record_free(rec);
 }
 
-void schema_validate_logic_columns(struct vec* sources, int limit)
+void schema_validate_logic_columns(Vec* sources, int limit)
 {
-        struct source* src = sources->vector[limit];
-        struct vec* columns = src->logic_columns;
+        Source* src = sources->vector[limit];
+        Vec* columns = src->logic_columns;
 
         int i = 0;
         for (; i < columns->size; ++i) {
                 int matches = 0;
-                struct column* col = columns->vector[i];
+                Column* col = columns->vector[i];
 
                 int j = 0;
 
                 for (; j <= limit; ++j) {
-                        struct source* search_src = sources->vector[j];
+                        Source* search_src = sources->vector[j];
                         if (col->table_name[0] == '\0' ||
                             istring_eq(col->table_name, search_src->alias)) {
                                 matches += column_try_assign_source(col, search_src);
@@ -214,10 +214,10 @@ void schema_validate_logic_columns(struct vec* sources, int limit)
         }
 }
 
-void schema_resolve(struct queue* query_node)
+void schema_resolve(Queue* query_node)
 {
         for (; query_node; query_node = query_node->next) {
-                struct query* query = query_node->data;
+                Query* query = query_node->data;
 
                 int i = 0;
                 for (; i < query->sources->size; ++i) {
@@ -225,7 +225,7 @@ void schema_resolve(struct queue* query_node)
                         schema_validate_logic_columns(query->sources, i);
                 }
 
-                struct schema* op_schema = op_get_schema(query);
+                Schema* op_schema = op_get_schema(query);
         }
 
 

@@ -15,6 +15,7 @@ struct queue {
         struct queue* prev;
         struct queue* next;
 };
+typedef struct queue Queue;
 
 struct queue* queue_enqueue(struct queue** head, void*);
 void* queue_remove(struct queue** head, struct queue* node);

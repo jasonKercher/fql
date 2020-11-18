@@ -34,6 +34,7 @@ struct hmap {
     size_t _bufsize;
     unsigned props;
 };
+typedef struct hmap Hmap;
 
 struct hmap* hmap_new(size_t limit, unsigned);
 void hmap_free(struct hmap* m);

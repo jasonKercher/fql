@@ -1,12 +1,12 @@
 #include "process.h"
 #include "util/util.h"
 
-struct process* process_new(const char* action)
+Process* process_new(const char* action)
 {
-        struct process* new_proc = NULL;
+        Process* new_proc = NULL;
         malloc_(new_proc, sizeof(*new_proc));
 
-        *new_proc = (struct process) {
+        *new_proc = (Process) {
                  NULL           /* action */
                 ,""             /* action_msg */
         };
@@ -16,7 +16,7 @@ struct process* process_new(const char* action)
         return new_proc;
 }
 
-void process_free(struct process* proc)
+void process_free(Process* proc)
 {
         free_(proc);
 }

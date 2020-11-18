@@ -2,12 +2,12 @@
 #include "query.h"
 #include "util/util.h"
 
-struct column* column_new(struct expression* expr, const char* table_name)
+Column* column_new(Expression* expr, const char* table_name)
 {
-        struct column* new_column = NULL;
+        Column* new_column = NULL;
         malloc_(new_column, sizeof(*new_column));
 
-        *new_column = (struct column) {
+        *new_column = (Column) {
                  NULL   /* table */
                 ,NULL   /* data_source */
                 ,expr   /* expression */
@@ -27,12 +27,12 @@ struct column* column_new(struct expression* expr, const char* table_name)
 
 void column_free(void* generic_col)
 {
-        struct column* col = generic_col;       
+        Column* col = generic_col;
         expression_free(col->expr);
         free_(col);
 }
 
-void column_cat_description(struct column* col, char* msg)
+void column_cat_description(Column* col, char* msg)
 {
         switch (col->expr->type) {
         case EXPR_COLUMN_NAME:
@@ -56,7 +56,7 @@ void column_cat_description(struct column* col, char* msg)
         }
 }
 
-int column_try_assign_source(struct column* col, struct source* src)
+int column_try_assign_source(Column* col, Source* src)
 {
         col->data_source = hmap_get(src->table->schema->col_map, col->alias);
         if (col->data_source) {

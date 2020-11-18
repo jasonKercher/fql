@@ -12,6 +12,7 @@ struct schema {
         struct hmap* col_map;
         char name[TABLE_NAME_MAX];
 };
+typedef struct schema Schema;
 
 struct column;
 

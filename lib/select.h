@@ -13,6 +13,7 @@ struct select {
         enum op oper_type;
         struct schema* schema;
 };
+typedef struct select Select;
 
 struct select* select_new();
 void select_free(struct select*);

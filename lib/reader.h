@@ -25,6 +25,7 @@ struct reader {
         generic_data_func free_f;
         char file_name[PATH_MAX];
 };
+typedef struct reader Reader;
 
 struct reader* reader_new();
 void reader_free(struct reader*);

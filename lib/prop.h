@@ -14,12 +14,12 @@ struct props {
         _Bool dry_run;
         _Bool override_warnings;
 };
-
+typedef struct props Props;
 
 #ifdef __cplusplus
 struct props g_props;
 }
-#else 
+#else
 extern struct props g_props;
 #endif
 

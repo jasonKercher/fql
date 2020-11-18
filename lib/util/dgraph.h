@@ -11,8 +11,10 @@ struct dnode {
         struct dnode* out[2];
         _Bool visited;
 };
+typedef struct dnode Dnode;
 
 struct dnode* dnode_new(void*);
+void dnode_free(struct dnode*);
 
 struct dgraph {
         struct vec* nodes;
@@ -20,6 +22,7 @@ struct dgraph {
         struct stack* _trav;
         int _trav_idx;
 };
+typedef struct dgraph Dgraph;
 
 struct dgraph* dgraph_new();
 void dgraph_shallow_free(struct dgraph*);

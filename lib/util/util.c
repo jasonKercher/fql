@@ -150,10 +150,10 @@ char * strnstr(const char *s, const char *find, size_t slen)
 	return ((char *)s);
 }
 
-struct queue* dir_list_files(const char* dir)
+Queue* dir_list_files(const char* dir)
 {
         /* Read file names into queue */
-        struct queue* files = NULL;
+        Queue* files = NULL;
         DIR *dr;
         struct dirent *en;
 

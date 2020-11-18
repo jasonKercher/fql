@@ -26,6 +26,7 @@ struct logic {
         enum comparison comp_type;
         struct dnode* proc_node;
 };
+typedef struct logic Logic;
 
 struct logic* logic_new();
 void logic_free(struct logic*);
@@ -40,6 +41,8 @@ struct logic_tree {
         struct dnode* end_true;
         struct dnode* end_false;
 };
+typedef struct logic_tree LogicTree;
+
 struct logic_tree* logic_tree_new();
 void logic_tree_free(struct logic_tree*);
 

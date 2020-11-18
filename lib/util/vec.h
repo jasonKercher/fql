@@ -10,6 +10,7 @@ struct vec {
         size_t size;
         size_t _alloc;
 };
+typedef struct vec Vec;
 
 struct vec* vec_new();
 struct vec* vec_new_s(size_t);

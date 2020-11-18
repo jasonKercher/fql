@@ -15,6 +15,7 @@ struct column {
         unsigned location;
         unsigned width;
 };
+typedef struct column Column;
 
 struct column* column_new(struct expression*, const char*);
 void column_free(void*);

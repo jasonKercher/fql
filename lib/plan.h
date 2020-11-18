@@ -11,6 +11,7 @@ struct plan {
         /* temp */
         struct dnode* current;
 };
+typedef struct plan Plan;
 
 //struct plan* plan_new(struct query*)
 void plan_free(void*);

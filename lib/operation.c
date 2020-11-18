@@ -4,13 +4,13 @@
 #include "util/util.h"
 
 
-struct schema* op_get_schema(void* op)
+Schema* op_get_schema(void* op)
 {
         enum op* type = op;
 
         switch(*type) {
         case OP_SELECT:
-                return ((struct select*) op)->schema;
+                return ((Select*) op)->schema;
         default:
                 return NULL;
         }

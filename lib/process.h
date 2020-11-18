@@ -11,6 +11,7 @@ struct process {
         process_func* action;
         char action_msg[ACTION_MAX];
 };
+typedef struct process Process;
 
 struct process* process_new(const char* action);
 void process_free(struct process*);
