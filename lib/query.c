@@ -146,6 +146,18 @@ void query_set_logic_comparison(Query* query, const char* op)
 
 void _assign_logic(Query* query, struct logic_builder* builder)
 {
+        /* remove stranded nodes */
+        Vec* nodes = builder->ltree->tree->nodes;
+        int i = 0;
+        for (; i < nodes->size; ++i) {
+                Dnode* node = nodes->vector[i];
+                Logic* logic = node->data;
+                if (logic->comp_type == COMP_NOT_SET) {
+                        vec_remove(nodes, i);
+                        dnode_free(node);
+                }
+        }
+
         switch (query->logic_mode) {
         case LOGIC_JOIN: {
                 Source* src = vec_end(query->sources);

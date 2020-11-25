@@ -102,3 +102,20 @@ void vec_extend(Vec* dest, Vec* src)
                 vec_push_back(dest, src->vector[i]);
         }
 }
+
+void* vec_remove(Vec* vec, size_t index)
+{
+        if (index >= vec->size) {
+                return NULL;
+        }
+        void* data = vec->vector[index];
+
+        int i = index;
+        for (; i < vec->size; ++i) {
+               vec->vector[i] = vec->vector[i+1];
+        }
+
+        --vec->size;
+
+        return data;
+}

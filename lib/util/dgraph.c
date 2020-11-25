@@ -16,9 +16,11 @@ Dnode* dnode_new(void* data)
         return new_node;
 }
 
-void dnode_free(Dnode* node)
+void* dnode_free(Dnode* node)
 {
+        void* data = node->data;
         free_(node);
+        return data;
 }
 
 Dgraph* dgraph_new()
@@ -64,6 +66,12 @@ Dnode* dgraph_add_data(Dgraph* graph, void* data)
 void dgraph_extend(Dgraph* dest, Dgraph* src)
 {
         /* TODO */
+}
+
+void* dgraph_remove(Dgraph* graph, Dnode* node)
+{
+        /* TODO */
+        return NULL;
 }
 
 Dnode* graph_traverse_begin(Dgraph* graph)
