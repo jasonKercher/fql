@@ -28,14 +28,19 @@ Dgraph* dgraph_new()
         Dgraph* new_dgraph = NULL;
         malloc_(new_dgraph, sizeof(*new_dgraph));
 
-        *new_dgraph = (Dgraph) {
-                 vec_new()      /* nodes */
-                ,NULL           /* newest */
-                ,NULL           /* _trav */
-                ,0              /* _trav_idx */
+        return dgraph_init(new_dgraph);
+}
+
+Dgraph* dgraph_init(Dgraph* dgraph)
+{
+        *dgraph = (Dgraph) {
+                 vec_new_(Dnode)        /* nodes */
+                ,NULL                   /* newest */
+                ,NULL                   /* _trav */
+                ,0                      /* _trav_idx */
         };
 
-        return new_dgraph;
+        return dgraph;
 }
 
 void dgraph_shallow_free(Dgraph* graph)
@@ -50,6 +55,7 @@ void dgraph_free(Dgraph* graph)
         dgraph_shallow_free(graph);
 }
 
+/* making a copy here */
 Dnode* dgraph_add_node(Dgraph* graph, Dnode* node)
 {
         vec_push_back(graph->nodes, node);
@@ -59,8 +65,9 @@ Dnode* dgraph_add_node(Dgraph* graph, Dnode* node)
 
 Dnode* dgraph_add_data(Dgraph* graph, void* data)
 {
-        Dnode* new_node = dnode_new(data);
-        return dgraph_add_node(graph, new_node);
+        Dnode* node = dnode_init(vec_add(graph->nodes), data);
+        graph->newest = node;
+        return node;
 }
 
 void dgraph_extend(Dgraph* dest, Dgraph* src)
@@ -80,8 +87,8 @@ Dnode* graph_traverse_begin(Dgraph* graph)
         graph->_trav_idx = 0;
 
         int i = 0;
-        for (; i < graph->nodes->size; ++i) {
-                Dnode* node = graph->nodes->vector[i];
+        Dnode* node = vec_begin(graph->nodes);
+        for (; node != vec_end(graph->nodes); ++node) {
                 node->visited = false;
         }
 
@@ -95,7 +102,8 @@ Dnode* dgraph_traverse(Dgraph* graph)
                 if (graph->_trav_idx >= graph->nodes->size) {
                         return NULL;
                 }
-                stack_push(&graph->_trav, graph->nodes->vector[graph->_trav_idx++]);
+                /* TODO: validate this */
+                stack_push(&graph->_trav, vec_at(graph->nodes, graph->_trav_idx++));
         }
 
         Dnode* node = graph->_trav->data;

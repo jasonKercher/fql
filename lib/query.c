@@ -13,9 +13,14 @@ Query* query_new()
         Query* new_query = NULL;
         malloc_(new_query, sizeof(*new_query));
 
-        *new_query = (Query) {
+        return query_init(new_query);
+}
+
+Query* query_init(Query* query)
+{
+        *query = (Query) {
                  schema_new()           /* table */
-                ,vec_new()              /* sources */
+                ,vec_new_(Source)       /* sources */
                 ,NULL                   /* where */
                 ,NULL                   /* groups */
                 ,NULL                   /* having */
@@ -29,17 +34,15 @@ Query* query_new()
                 ,JOIN_FROM              /* join */
         };
 
-        return new_query;
+        return query;
 }
 
 void query_free(void* generic_query)
 {
         Query* query = generic_query;
-        int i = 0;
-        for (; i < query->sources->size; ++i) {
-                source_free(query->sources->vector[i]);
-        }
-        free_(query->sources);
+
+        /* TODO: leaking here */
+        vec_free(query->sources);
 
         logic_tree_free(query->where);
 
@@ -85,15 +88,16 @@ void query_add_source(Query* query,
 
         stack_free_data(source_stack);
 
-        vec_push_back(query->sources, source_new(new_table
-                                                ,alias
-                                                ,type
-                                                ,query->join));
+        source_init(vec_add(query->sources),
+                    new_table,
+                    alias,
+                    type,
+                    query->join);
 }
 
 void query_apply_table_alias(Query* query, const char* alias)
 {
-        Source* source = vec_end(query->sources);
+        Source* source = vec_back(query->sources);
         strncpy_(source->alias, alias, TABLE_NAME_MAX);
 }
 
@@ -117,8 +121,8 @@ struct logic_builder* logic_builder_new()
                  logic_tree_new()       /* tree */
                 ,NULL                   /* current */
                 ,NULL                   /* next_not */
-                ,vec_new()              /* truths */
-                ,vec_new()              /* falses */
+                ,vec_new_(Dnode*)       /* truths */
+                ,vec_new_(Dnode*)       /* falses */
                 ,false                  /* sublogic_exit */
         };
 
@@ -126,16 +130,15 @@ struct logic_builder* logic_builder_new()
 }
 
 void query_add_logic_column(Query* query,
-                             Expression* expr,
-                             const char* table_name)
+                            Expression* expr,
+                            const char* table_name)
 {
-        Column* new_col = column_new(expr, table_name);
+        Source* src = vec_back(query->sources);
+        Column* new_col = vec_add(src->logic_columns);
+        column_init(new_col, expr, table_name);
 
         struct logic_builder* builder = query->logic_stack->data;
         logic_add_column(builder->current->data, new_col);
-
-        Source* src = vec_end(query->sources);
-        vec_push_back(src->logic_columns, new_col);
 }
 
 void query_set_logic_comparison(Query* query, const char* op)
@@ -148,19 +151,18 @@ void _assign_logic(Query* query, struct logic_builder* builder)
 {
         /* remove stranded nodes */
         Vec* nodes = builder->ltree->tree->nodes;
-        int i = 0;
-        for (; i < nodes->size; ++i) {
-                Dnode* node = nodes->vector[i];
+        Dnode* node = vec_begin(nodes);
+        for (; node != vec_end(nodes); ++node) {
                 Logic* logic = node->data;
                 if (logic->comp_type == COMP_NOT_SET) {
-                        vec_remove(nodes, i);
+                        vec_erase(nodes, node);
                         dnode_free(node);
                 }
         }
 
         switch (query->logic_mode) {
         case LOGIC_JOIN: {
-                Source* src = vec_end(query->sources);
+                Source* src = vec_back(query->sources);
                 src->condition = builder->ltree;
                 break;
         }
@@ -203,10 +205,9 @@ void exit_search(Query* query)
         struct logic_builder* upper = stack_pop(&query->logic_stack);
 
         if (query->logic_stack == NULL) {
-                int i = 0;
-                for (i = 0; i < upper->falses->size; ++i) {
-                        Dnode* node = upper->falses->vector[i];
-                        node->out[false] = upper->ltree->end_false;
+                Dnode** it = vec_begin(upper->falses);
+                for (; it != vec_end(upper->falses); ++it) {
+                        (*it)->out[false] = upper->ltree->end_false;
                 }
                 _assign_logic(query, upper);
                 return;
@@ -223,10 +224,9 @@ void exit_search(Query* query)
 void enter_search_and(Query* query)
 {
         struct logic_builder* builder = query->logic_stack->data;
-        int i = 0;
-        for (; i < builder->falses->size; ++i) {
-                Dnode* node = builder->falses->vector[i];
-                node->out[false] = builder->next_not;
+        Dnode** it = vec_begin(builder->falses);
+        for (; it != vec_end(builder->falses); ++it) {
+                (*it)->out[false] = builder->next_not;
         }
 
         vec_resize(builder->falses, 0);
@@ -235,7 +235,7 @@ void enter_search_and(Query* query)
 void exit_search_and(Query* query)
 {
         struct logic_builder* builder = query->logic_stack->data;
-        vec_push_back(builder->truths, builder->current);
+        vec_push_back(builder->truths, &builder->current);
 
         if (query->logic_stack->next != NULL) {
                 struct logic_builder* lower = query->logic_stack->next->data;
@@ -244,10 +244,9 @@ void exit_search_and(Query* query)
                 return;
         }
 
-        int i = 0;
-        for (; i < builder->truths->size; ++i) {
-                Dnode* truthy = builder->truths->vector[i];
-                truthy->out[true] = builder->ltree->end_true;
+        Dnode** it = vec_begin(builder->truths);
+        for (; it != vec_end(builder->truths); ++it) {
+                (*it)->out[true] = builder->ltree->end_true;
         }
         vec_resize(builder->truths, 0);
 }
@@ -267,14 +266,14 @@ void enter_search_not(Query* query)
 void exit_search_not(Query* query)
 {
         struct logic_builder* builder = query->logic_stack->data;
-        int i = 0;
-        for (; i < builder->truths->size; ++i) {
-                Dnode* truthy = builder->truths->vector[i];
-                truthy->out[true] = builder->next_not;
+
+        Dnode** it = vec_begin(builder->truths);
+        for (; it != vec_end(builder->truths); ++it) {
+                (*it)->out[true] = builder->next_not;
         }
         if (builder->sublogic_exit) {
                 return;
         }
         builder->current->out[true] = builder->next_not;
-        vec_push_back(builder->falses, builder->current);
+        vec_push_back(builder->falses, &builder->current);
 }

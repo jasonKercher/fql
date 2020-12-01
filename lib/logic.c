@@ -4,27 +4,32 @@
 #include "util/util.h"
 #include <string.h>
 
-struct logic* logic_new()
+Logic* logic_new()
 {
-        struct logic* new_logic = NULL;
+        Logic* new_logic = NULL;
         malloc_(new_logic, sizeof(*new_logic));
 
-        *new_logic = (struct logic) {
+        return logic_init(new_logic);
+}
+
+Logic* logic_init(Logic* logic)
+{
+        *logic = (Logic) {
                  {NULL, NULL}   /* col */
                 ,0              /* data_type */
                 ,COMP_NOT_SET   /* comp_type */
                 ,NULL           /* proc */
         };
 
-        return new_logic;
+        return logic;
 }
 
-void logic_free(struct logic* logic)
+void logic_free(Logic* logic)
 {
         free_(logic);
 }
 
-void logic_get_description(struct logic* logic, char* msg)
+void logic_get_description(Logic* logic, char* msg)
 {
         if (logic->comp_type == COMP_TRUE) {
                 strcpy(msg, "End Logic: TRUE");
@@ -79,7 +84,7 @@ void logic_get_description(struct logic* logic, char* msg)
         column_cat_description(logic->col[1], msg);
 }
 
-void logic_add_column(struct logic* logic, struct column* col)
+void logic_add_column(Logic* logic, struct column* col)
 {
         if (logic->col[0] == NULL) {
                 logic->col[0] = col;
@@ -88,7 +93,7 @@ void logic_add_column(struct logic* logic, struct column* col)
         }
 }
 
-void logic_set_comparison(struct logic* logic, const char* op)
+void logic_set_comparison(Logic* logic, const char* op)
 {
         if(string_eq(op, "="))
                 logic->comp_type = COMP_EQ;
@@ -119,8 +124,8 @@ LogicTree* logic_tree_new()
 
         *new_tree = (LogicTree) {
                  dgraph_new()    /* tree */
-                ,NULL           /* end_true */
-                ,NULL           /* end_false */
+                ,NULL            /* end_true */
+                ,NULL            /* end_false */
         };
 
         //new_tree->end_true->comp_type = COMP_TRUE

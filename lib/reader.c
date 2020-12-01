@@ -9,14 +9,19 @@ Reader* reader_new()
         Reader* new_reader = NULL;
         malloc_(new_reader, sizeof(*new_reader));
 
-        *new_reader = (Reader) {
+        return reader_init(new_reader);
+}
+
+Reader* reader_init(Reader* reader)
+{
+        *reader = (Reader) {
                  NULL   /* handle */
                 ,NULL   /* get_record_f */
                 ,NULL   /* free_f */
                 ,""     /* file_name */
         };
 
-        return new_reader;
+        return reader;
 }
 
 void reader_free(Reader* reader)

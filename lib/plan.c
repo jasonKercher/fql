@@ -23,24 +23,29 @@
 
 /* Constructor (private)
  */
-Plan* _plan_new()
+Plan* plan_new()
 {
         Plan* new_plan = NULL;
         malloc_(new_plan, sizeof(*new_plan));
 
-        *new_plan = (Plan) {
+        return plan_init(new_plan);
+}
+
+Plan* plan_init(Plan* plan)
+{
+        *plan = (Plan) {
                  dgraph_new()                        /* processes */
                 ,dnode_new(process_new("OP_TRUE"))   /* op_true */
                 ,dnode_new(process_new("OP_FALSE"))  /* op_false */
                 ,NULL                                /* current */
         };
 
-        dgraph_add_data(new_plan->processes, process_new("start"));
-        dgraph_add_node(new_plan->processes, new_plan->op_true);
-        dgraph_add_node(new_plan->processes, new_plan->op_false);
-        new_plan->current = new_plan->processes->newest;
+        dgraph_add_data(plan->processes, process_new("start"));
+        dgraph_add_node(plan->processes, plan->op_true);
+        dgraph_add_node(plan->processes, plan->op_false);
+        plan->current = plan->processes->newest;
 
-        return new_plan;
+        return plan;
 }
 
 /* build process nodes from logic graph
@@ -189,7 +194,7 @@ void _plan_limit(Plan* plan, Query* query) { }
 
 Plan* _build_plan(Query* query)
 {
-        Plan* new_plan = _plan_new();
+        Plan* new_plan = plan_new();
 
         _plan_from(new_plan, query);
         _plan_where(new_plan, query);

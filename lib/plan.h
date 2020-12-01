@@ -13,7 +13,8 @@ struct plan {
 };
 typedef struct plan Plan;
 
-//struct plan* plan_new(struct query*)
+struct plan* plan_new();
+struct plan* plan_init(struct plan*);
 void plan_free(void*);
 int build_plans(struct queue**, struct queue*);
 

@@ -29,6 +29,7 @@ struct logic {
 typedef struct logic Logic;
 
 struct logic* logic_new();
+struct logic* logic_init(struct logic*);
 void logic_free(struct logic*);
 
 void logic_get_description(struct logic* logic, char* msg);

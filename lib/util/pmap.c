@@ -5,6 +5,11 @@ Pmap* pmap_new(size_t limit, unsigned props)
         return hmap_new(limit, props);
 }
 
+Pmap* pmap_init(Pmap* pmap, size_t limit, unsigned props)
+{
+        return hmap_init(pmap, limit, props);
+}
+
 void pmap_free(Pmap* pmap)
 {
         hmap_free(pmap);
@@ -24,7 +29,7 @@ Vec* pmap_set(Pmap* pmap, char* key, void* data)
                 return v;
         }
 
-        Vec* new_vec = vec_new_s(1);
+        Vec* new_vec = vec_new_(void*);
         vec_push_back(new_vec, data);
 
         if (ent) {

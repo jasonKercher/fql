@@ -14,6 +14,7 @@ struct process {
 typedef struct process Process;
 
 struct process* process_new(const char* action);
+struct process* process_init(struct process*, const char*);
 void process_free(struct process*);
 
 #endif /* PROCESS_H */

@@ -28,6 +28,7 @@ struct reader {
 typedef struct reader Reader;
 
 struct reader* reader_new();
+struct reader* reader_init(struct reader*);
 void reader_free(struct reader*);
 
 void reader_assign(struct reader*, enum read_type);

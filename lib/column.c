@@ -7,7 +7,12 @@ Column* column_new(Expression* expr, const char* table_name)
         Column* new_column = NULL;
         malloc_(new_column, sizeof(*new_column));
 
-        *new_column = (Column) {
+        return column_init(new_column, expr, table_name);
+}
+
+Column* column_init(Column* col, Expression* expr, const char* table_name)
+{
+        *col = (Column) {
                  NULL   /* table */
                 ,NULL   /* data_source */
                 ,expr   /* expression */
@@ -17,12 +22,12 @@ Column* column_new(Expression* expr, const char* table_name)
                 ,0      /* width */
         };
 
-        strncpy_(new_column->table_name, table_name, TABLE_NAME_MAX);
+        strncpy_(col->table_name, table_name, TABLE_NAME_MAX);
         if (expr->type == EXPR_COLUMN_NAME) {
-                strncpy_(new_column->alias, expr->expr, COLUMN_NAME_MAX);
+                strncpy_(col->alias, expr->expr, COLUMN_NAME_MAX);
         }
 
-        return new_column;
+        return col;
 }
 
 void column_free(void* generic_col)

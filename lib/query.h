@@ -53,6 +53,7 @@ struct query {
 typedef struct query Query;
 
 struct query* query_new();
+struct query* query_init(struct query*);
 void query_free(void*);
 
 void query_add_source(struct query*, struct stack**, const char*);

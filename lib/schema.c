@@ -14,13 +14,18 @@ Schema* schema_new()
         Schema* new_schema = NULL;
         malloc_(new_schema, sizeof(*new_schema));
 
-        *new_schema = (Schema) {
+        return schema_new(new_schema);
+}
+
+Schema* schema_init(Schema* schema)
+{
+        *schema = (Schema) {
                  NULL   /* columns */
                 ,NULL   /* col_map */
                 ,""     /* name */
         };
 
-        return new_schema;
+        return schema;
 }
 
 void schema_free(void* generic_schema)

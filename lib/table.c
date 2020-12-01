@@ -8,13 +8,18 @@ Table* table_new()
         Table* new_table = NULL;
         malloc_(new_table, sizeof(*new_table));
 
-        *new_table = (Table) {
+        return table_init(new_table);
+}
+
+Table* table_init(Table* table)
+{
+        *table = (Table) {
                  reader_new() /* reader */
                 ,schema_new() /* schema */
                 ,""           /* name */
         };
 
-        return new_table;
+        return table;
 }
 
 void table_free(Table* table)
@@ -30,14 +35,23 @@ void table_free(Table* table)
 
 
 Source* source_new(Table* table,
-                          const char* alias,
-                          enum source_type source_type,
-                          enum join_type join_type)
+                   const char* alias,
+                   enum source_type source_type,
+                   enum join_type join_type)
 {
         Source* new_source = NULL;
         malloc_(new_source, sizeof(*new_source));
 
-        *new_source = (Source) {
+        return source_init(new_source, table, alias, source_type, join_type);
+}
+
+Source* source_init(Source* src,
+                    Table* table,
+                    const char* alias,
+                    enum source_type source_type,
+                    enum join_type join_type)
+{
+        *src = (Source) {
                  table          /* table */
                 ,NULL           /* condition */
                 ,vec_new()      /* logic_columns */
@@ -47,12 +61,10 @@ Source* source_new(Table* table,
         };
 
         if (alias[0] == '\0') {
-                strncpy_(new_source->alias, table->name, TABLE_NAME_MAX);
+                strncpy_(src->alias, table->name, TABLE_NAME_MAX);
         } else {
-                strncpy_(new_source->alias, alias, TABLE_NAME_MAX);
+                strncpy_(src->alias, alias, TABLE_NAME_MAX);
         }
-
-        return new_source;
 }
 
 void source_free(Source* source)
@@ -64,6 +76,3 @@ void source_free(Source* source)
         table_free(source->table);
         free_(source);
 }
-
-
-

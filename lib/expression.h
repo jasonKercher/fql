@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 /** Expression **/
-enum expr_e {
+enum expr_type {
         EXPR_NONE,
         EXPR_COLUMN_NAME,
         EXPR_CONST,
@@ -17,12 +17,13 @@ enum expr_e {
 };
 
 struct expression {
-        enum expr_e type;
+        enum expr_type type;
         void* expr;
 };
 typedef struct expression Expression;
 
-struct expression* expression_new(enum expr_e type, void*);
+struct expression* expression_new(enum expr_type type, void*);
+struct expression* expression_init(struct expression*, enum expr_type, void*);
 void expression_free(struct expression*);
 
 #ifdef __cplusplus

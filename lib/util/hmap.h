@@ -37,6 +37,7 @@ struct hmap {
 typedef struct hmap Hmap;
 
 struct hmap* hmap_new(size_t limit, unsigned);
+struct hmap* hmap_init(struct hmap*, size_t limit, unsigned);
 void hmap_free(struct hmap* m);
 void* hmap_set(struct hmap* m, char* key, void* data);
 void* hmap_get(struct hmap* m, const char* key);

@@ -9,12 +9,17 @@ Select* select_new()
         Select* new_select = NULL;
         malloc_(new_select, sizeof(*new_select));
 
-        *new_select = (Select) {
+        return select_init(new_select);
+}
+
+Select* select_init(Select* select)
+{
+        *select = (Select) {
                  OP_SELECT
                 ,schema_new()
         };
 
-        return new_select;
+        return select;
 }
 
 void select_free(Select* select)

@@ -21,9 +21,9 @@ typedef void(*generic_data_func)(void*);
 /**
  * malloc wrapper that does error checking
  */
-#define malloc_(dest, size) {           \
-        dest = malloc(size);            \
-        if (!dest) {                    \
+#define malloc_(dest_, size_) {         \
+        dest_ = malloc(size_);          \
+        if (!dest_) {                   \
                 perror("malloc");       \
                 exit(EXIT_FAILURE);     \
         }                               \
@@ -32,13 +32,13 @@ typedef void(*generic_data_func)(void*);
 /**
  * realloc wrapper that does error checking
  */
-#define realloc_(dest, size) {                  \
-        void* new_dest_ = realloc(dest, size);  \
-        if (!dest) {                            \
+#define realloc_(dest_, size_) {                \
+        void* new_dest_ = realloc(dest_, size_);\
+        if (!dest_) {                           \
                 perror("realloc");              \
                 exit(EXIT_FAILURE);             \
         }                                       \
-        dest = new_dest_;                       \
+        dest_ = new_dest_;                      \
         new_dest_ = NULL;                       \
 }
 
@@ -47,12 +47,12 @@ typedef void(*generic_data_func)(void*);
  * strdup allocates memory for us. If dest is already
  * allocated memory, free it first.
  */
-#define strdup_(src, dest)  {                                           \
-        if (dest)                                                       \
-                free(dest);                                             \
-        dest = strdup(src);                                             \
-        if (!dest) {                                                    \
-                fprintf(stderr, "strdup failed on string %s.\n", src);  \
+#define strdup_(src_, dest_)  {                                         \
+        if (dest_)                                                      \
+                free(dest_);                                            \
+        dest_ = strdup(src_);                                           \
+        if (!dest_) {                                                   \
+                fprintf(stderr, "strdup failed on string %s.\n", src_); \
                 exit(EXIT_FAILURE);                                     \
         }                                                               \
 }
@@ -60,19 +60,19 @@ typedef void(*generic_data_func)(void*);
 /**
  * strncpy but guaranteed to end with '\0'
  */
-#define strncpy_(dest, src, n) {        \
-        strncpy(dest, src, n-1);        \
-        dest[n-1] = '\0';               \
+#define strncpy_(dest_, src_, n_) {     \
+        strncpy(dest_, src_, n_-1);     \
+        dest_[n_-1] = '\0';             \
 }
 
 
 /**
  * Free pointer if not NULL and set to NULL
  */
-#define free_(ptr) {                \
-        if (ptr) {                  \
-                free((void*)ptr);   \
-                ptr = NULL;         \
+#define free_(ptr_) {               \
+        if (ptr_) {                 \
+                free((void*)ptr_);  \
+                ptr_ = NULL;        \
         }                           \
 }
 

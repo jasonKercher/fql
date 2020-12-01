@@ -7,24 +7,29 @@ Hmap* hmap_new(size_t limit, unsigned props)
         Hmap* new_map = NULL;
         malloc_(new_map, sizeof(*new_map));
 
+        return hmap_init(new_map, limit, props);
+}
+
+Hmap* hmap_init(Hmap* m, size_t limit, unsigned props)
+{
         struct hsearch_data* new_tab = NULL;
         malloc_(new_tab, sizeof(*new_tab));
 
         memset(new_tab, 0, sizeof(*new_tab));
 
-        new_map->tab = new_tab;
-        new_map->props = props;
-        new_map->_bufsize = HMAP_KEY_MAX * limit;
+        m->tab = new_tab;
+        m->props = props;
+        m->_bufsize = HMAP_KEY_MAX * limit;
 
-        malloc_(new_map->_buffer, new_map->_bufsize);
-        new_map->_bufhead = new_map->_buffer;
+        malloc_(m->_buffer, m->_bufsize);
+        m->_bufhead = m->_buffer;
 
         if (!hcreate_r(limit, new_tab)) {
                 perror("hcreate_r");
                 return NULL;
         }
 
-        return new_map;
+        return m;
 }
 
 int hmap_insert(Hmap* m, const char* key, void* data)

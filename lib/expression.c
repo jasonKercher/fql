@@ -2,17 +2,22 @@
 
 #include "util/util.h"
 
-Expression* expression_new(enum expr_e type, void* expr)
+Expression* expression_new(enum expr_type type, void* expr_data)
 {
         Expression* new_expression = NULL;
         malloc_(new_expression, sizeof(*new_expression));
 
-        *new_expression = (Expression) {
+        return expression_init(new_expression, type, expr_data);
+}
+
+Expression* expression_init(Expression* expr, enum expr_type type, void* expr_data)
+{
+        *expr = (Expression) {
                  type   /* type */
                 ,expr   /* expression */
         };
 
-        return new_expression;
+        return expr;
 }
 
 void expression_free(Expression* expr)

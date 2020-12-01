@@ -17,6 +17,7 @@ typedef struct schema Schema;
 struct column;
 
 struct schema* schema_new();
+struct schema* schema_init(struct schema*);
 void schema_free(void*);
 
 void schema_resolve(struct queue* query_list);
