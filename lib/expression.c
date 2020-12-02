@@ -2,19 +2,19 @@
 
 #include "util/util.h"
 
-Expression* expression_new(enum expr_type type, void* expr_data)
+Expression* expression_new(enum expr_type type, void* data)
 {
         Expression* new_expression = NULL;
         malloc_(new_expression, sizeof(*new_expression));
 
-        return expression_init(new_expression, type, expr_data);
+        return expression_init(new_expression, type, data);
 }
 
-Expression* expression_init(Expression* expr, enum expr_type type, void* expr_data)
+Expression* expression_init(Expression* expr, enum expr_type type, void* data)
 {
         *expr = (Expression) {
                  type   /* type */
-                ,expr   /* expression */
+                ,data   /* expression */
         };
 
         return expr;
@@ -30,7 +30,7 @@ void expression_free(Expression* expr)
 
         switch (expr->type) {
         default:
-                free_(expr->expr);
+                free_(expr->data);
         }
 
         free_(expr);

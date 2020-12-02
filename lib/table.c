@@ -54,7 +54,7 @@ Source* source_init(Source* src,
         *src = (Source) {
                  table                  /* table */
                 ,NULL                   /* condition */
-                ,vec_new_(Column)       /* logic_columns */
+                ,vec_new_(Column*)      /* logic_columns */
                 ,""                     /* alias */
                 ,source_type            /* source_type */
                 ,join_type              /* join_type */

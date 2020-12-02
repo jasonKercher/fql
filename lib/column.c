@@ -24,7 +24,7 @@ Column* column_init(Column* col, Expression* expr, const char* table_name)
 
         strncpy_(col->table_name, table_name, TABLE_NAME_MAX);
         if (expr->type == EXPR_COLUMN_NAME) {
-                strncpy_(col->alias, expr->expr, COLUMN_NAME_MAX);
+                strncpy_(col->alias, expr->data, COLUMN_NAME_MAX);
         }
 
         return col;
@@ -41,7 +41,7 @@ void column_cat_description(Column* col, char* msg)
 {
         switch (col->expr->type) {
         case EXPR_COLUMN_NAME:
-                strcat(msg, col->expr->expr);
+                strcat(msg, col->expr->data);
                 break;
         case EXPR_CONST:
                 strcat(msg, "CONST EXPRESSION");

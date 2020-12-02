@@ -192,7 +192,6 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
                 token = strdup(ctx->getText().c_str());
         }
 
-
         switch (_current_list) {
         case TOK_COLUMN_NAME:
                 if (_query->mode == MODE_SELECT) {
@@ -201,8 +200,8 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
                                          _table_name);
                 } else if (_query->mode == MODE_SEARCH) {
                         query_add_logic_column(_query,
-                                                expression_new(EXPR_COLUMN_NAME, token),
-                                                _table_name);
+                                               expression_new(EXPR_COLUMN_NAME, token),
+                                               _table_name);
                 } else {
                         std::cerr << "Unhandled COLUMN_NAME: " << token << '\n';
                         free_(token);
@@ -280,7 +279,6 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 {
         struct expression* new_expr = expression_new(EXPR_NONE, stack_pop(&_query_stack));
         _query = (struct query*) _query_stack->data;
-
 
         switch(_query->mode) {
         case MODE_SELECT:

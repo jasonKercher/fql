@@ -60,9 +60,9 @@ Dnode* _logic_to_process(Dgraph* proc_graph,
         Dnode* return_node = NULL;
 
         /* build all process nodes */
-        Dnode* it = vec_begin(logic_graph->nodes);
+        Dnode** it = vec_begin(logic_graph->nodes);
         for (; it != vec_end(logic_graph->nodes); ++it) {
-                Logic* logic = it->data;
+                Logic* logic = (*it)->data;
                 Process* proc = process_new("");
                 logic_get_description(logic, proc->action_msg);
 
@@ -81,12 +81,12 @@ Dnode* _logic_to_process(Dgraph* proc_graph,
 
         /* link process all nodes */
         for (it = vec_begin(logic_graph->nodes); it != vec_end(logic_graph->nodes); ++it) {
-                Logic* logic = it->data;
-                if (it->out[0] != NULL) {
-                        logic->proc_node->out[0] = ((Logic*)it->out[0]->data)->proc_node;
+                Logic* logic = (*it)->data;
+                if ((*it)->out[0] != NULL) {
+                        logic->proc_node->out[0] = ((Logic*)(*it)->out[0]->data)->proc_node;
                 }
-                if (it->out[1] != NULL) {
-                        logic->proc_node->out[1] = ((Logic*)it->out[1]->data)->proc_node;
+                if ((*it)->out[1] != NULL) {
+                        logic->proc_node->out[1] = ((Logic*)(*it)->out[1]->data)->proc_node;
                 }
         }
 
@@ -235,9 +235,9 @@ void _print_plan(Plan* plan)
         /* retrieve longest message */
         int max_len = strlen("BRANCH 0");
 
-        Dnode* it = vec_begin(nodes);
+        Dnode** it = vec_begin(nodes);
         for (; it != vec_end(nodes); ++it) {
-                Process* proc = it->data;
+                Process* proc = (*it)->data;
                 int len = strlen(proc->action_msg);
                 if (len > max_len) {
                         max_len = len;
@@ -270,21 +270,21 @@ void _print_plan(Plan* plan)
         for (it = vec_begin(nodes); it != vec_end(nodes); ++it) {
                 fputc('\n', stderr);
 
-                Process* proc = it->data;
+                Process* proc = (*it)->data;
                 int len = strlen(proc->action_msg);
                 fputs(proc->action_msg, stderr);
                 _col_sep(max_len - len);
                 len = 0;
 
-                if (it->out[0] != NULL) {
-                        proc = it->out[0]->data;
+                if ((*it)->out[0] != NULL) {
+                        proc = (*it)->out[0]->data;
                         len = strlen(proc->action_msg);
                         fputs(proc->action_msg, stderr);
                 }
                 _col_sep(max_len - len);
 
-                if (it->out[1] != NULL) {
-                        proc = it->out[1]->data;
+                if ((*it)->out[1] != NULL) {
+                        proc = (*it)->out[1]->data;
                         fputs(proc->action_msg, stderr);
                 }
         }

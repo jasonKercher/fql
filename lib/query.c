@@ -134,8 +134,8 @@ void query_add_logic_column(Query* query,
                             const char* table_name)
 {
         Source* src = vec_back(query->sources);
-        Column* new_col = vec_add(src->logic_columns);
-        column_init(new_col, expr, table_name);
+        Column* new_col = column_new(expr, table_name);
+        vec_push_back(src->logic_columns, &new_col);
 
         struct logic_builder* builder = query->logic_stack->data;
         logic_add_column(builder->current->data, new_col);
@@ -151,12 +151,12 @@ void _assign_logic(Query* query, struct logic_builder* builder)
 {
         /* remove stranded nodes */
         Vec* nodes = builder->ltree->tree->nodes;
-        Dnode* node = vec_begin(nodes);
-        for (; node != vec_end(nodes); ++node) {
-                Logic* logic = node->data;
+        Dnode** node = vec_begin(nodes);
+        for (; (void*)node < vec_end(nodes); ++node) {
+                Logic* logic = (*node)->data;
                 if (logic->comp_type == COMP_NOT_SET) {
                         vec_erase(nodes, node);
-                        dnode_free(node);
+                        dnode_free(*node);
                 }
         }
 

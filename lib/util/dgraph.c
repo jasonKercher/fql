@@ -63,7 +63,7 @@ void dgraph_free(Dgraph* graph)
 /* making a copy here */
 Dnode* dgraph_add_node(Dgraph* graph, Dnode* node)
 {
-        vec_push_back(graph->nodes, node);
+        vec_push_back(graph->nodes, &node);
         graph->newest = node;
         return node;
 }
@@ -91,9 +91,9 @@ Dnode* graph_traverse_begin(Dgraph* graph)
         graph->_trav_idx = 0;
 
         int i = 0;
-        Dnode* node = vec_begin(graph->nodes);
+        Dnode** node = vec_begin(graph->nodes);
         for (; node != vec_end(graph->nodes); ++node) {
-                node->visited = false;
+                (*node)->visited = false;
         }
 
         return dgraph_traverse(graph);

@@ -52,7 +52,8 @@ void schema_apply_column_alias(Schema* schema, const char* alias)
 
 void schema_resolve_file(Table* table)
 {
-        /* Usage of PATH_MAX here is kind of silly,
+        /* TODO: could overflow here
+         * Usage of PATH_MAX here is kind of silly,
          * but I'm too lazy to allocate these correctly.
          */
         char table_name_dir[PATH_MAX] = "";
@@ -192,26 +193,26 @@ void schema_validate_logic_columns(Vec* sources, int limit)
         Source* src = vec_at(sources, limit);
         Vec* columns = src->logic_columns;
 
-        Column* it = vec_begin(columns);
+        Column** it = vec_begin(columns);
         for (; it != vec_end(columns); ++it) {
                 int matches = 0;
                 int j = 0;
 
                 for (; j <= limit; ++j) {
                         Source* search_src = vec_at(sources, j);
-                        if (it->table_name[0] == '\0' ||
-                            istring_eq(it->table_name, search_src->alias)) {
-                                matches += column_try_assign_source(it, search_src);
+                        if ((*it)->table_name[0] == '\0' ||
+                            istring_eq((*it)->table_name, search_src->alias)) {
+                                matches += column_try_assign_source(*it, search_src);
                         }
                 }
 
                 if (matches > 1) {
-                        fprintf(stderr, "%s: ambiguous column\n", it->alias);
+                        fprintf(stderr, "%s: ambiguous column\n", (*it)->alias);
                         exit(EXIT_FAILURE);
                 }
 
                 if (matches == 0) {
-                        fprintf(stderr, "%s: cannot find column\n", it->alias);
+                        fprintf(stderr, "%s: cannot find column\n", (*it)->alias);
                         exit(EXIT_FAILURE);
                 }
         }
@@ -230,7 +231,6 @@ void schema_resolve(Queue* query_node)
 
                 Schema* op_schema = op_get_schema(query);
         }
-
 
 }
 

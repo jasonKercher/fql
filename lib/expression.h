@@ -18,7 +18,7 @@ enum expr_type {
 
 struct expression {
         enum expr_type type;
-        void* expr;
+        void* data;
 };
 typedef struct expression Expression;
 

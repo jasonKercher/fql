@@ -11,6 +11,11 @@
  * This used to be a small, elegant struct for
  * storing void*. Then, I wanted to have itertors.
  * Now, it's fugly...
+ *
+ * Also now... This vector owns the data it is
+ * given. Don't keep references to its data 
+ * outside the vector, or realloc will fuck
+ * your day all up.
  */
 
 #include <stdlib.h>
