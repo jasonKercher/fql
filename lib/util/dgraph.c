@@ -7,13 +7,18 @@ Dnode* dnode_new(void* data)
         Dnode* new_node = NULL;
         malloc_(new_node, sizeof(*new_node));
 
-        *new_node = (Dnode) {
+        return dnode_init(new_node, data);
+}
+
+Dnode* dnode_init(Dnode* node, void* data)
+{
+        *node = (Dnode) {
                  data           /* data */
                 ,{NULL, NULL}   /* out */
                 ,false          /* visited */
         };
 
-        return new_node;
+        return node;
 }
 
 void* dnode_free(Dnode* node)
@@ -34,7 +39,7 @@ Dgraph* dgraph_new()
 Dgraph* dgraph_init(Dgraph* dgraph)
 {
         *dgraph = (Dgraph) {
-                 vec_new_(Dnode)        /* nodes */
+                 vec_new_(Dnode*)       /* nodes */
                 ,NULL                   /* newest */
                 ,NULL                   /* _trav */
                 ,0                      /* _trav_idx */
@@ -65,9 +70,8 @@ Dnode* dgraph_add_node(Dgraph* graph, Dnode* node)
 
 Dnode* dgraph_add_data(Dgraph* graph, void* data)
 {
-        Dnode* node = dnode_init(vec_add(graph->nodes), data);
-        graph->newest = node;
-        return node;
+        Dnode* node = dnode_new(data);
+        return dgraph_add_node(graph, node);
 }
 
 void dgraph_extend(Dgraph* dest, Dgraph* src)

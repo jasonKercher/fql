@@ -23,7 +23,7 @@ Vec* vec_init(Vec* vec, size_t elem_size)
         /* Allocate space for first element and
          * trailing NULL pointer
          */
-        vec_reserve(vec, 1);
+        malloc_(vec->vector, 2 * vec->_elem_size);
 
         return vec;
 }
@@ -36,9 +36,6 @@ void vec_free(Vec* vec)
 
 void* vec_at(Vec* vec, size_t index)
 {
-        if (vec->size == 0)
-                return NULL;
-
         return (char*) vec->vector + vec->_elem_size * index;
 }
 
@@ -63,13 +60,7 @@ void vec_reserve(Vec* vec, size_t size)
         if (vec->_alloc > ++size) {
                 return;
         }
-
-        if (vec->_alloc) {
-                realloc_(vec->vector, size * vec->_elem_size);
-        } else {
-                malloc_(vec->vector, size * vec->_elem_size);
-        }
-
+        realloc_(vec->vector, size * vec->_elem_size);
         vec->_alloc = size;
 }
 
@@ -95,7 +86,7 @@ void vec_shrink_to_fit(Vec* vec)
 void* vec_add(Vec* vec)
 {
         if (vec->_alloc <= ++vec->size) {
-                vec_reserve(vec, vec->_alloc * 2 + 1);
+                vec_reserve(vec, vec->_alloc * 2);
         }
 
         return vec_back(vec);

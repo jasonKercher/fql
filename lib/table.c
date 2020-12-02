@@ -52,12 +52,12 @@ Source* source_init(Source* src,
                     enum join_type join_type)
 {
         *src = (Source) {
-                 table          /* table */
-                ,NULL           /* condition */
-                ,vec_new()      /* logic_columns */
-                ,""             /* alias */
-                ,source_type    /* source_type */
-                ,join_type      /* join_type */
+                 table                  /* table */
+                ,NULL                   /* condition */
+                ,vec_new_(Column)       /* logic_columns */
+                ,""                     /* alias */
+                ,source_type            /* source_type */
+                ,join_type              /* join_type */
         };
 
         if (alias[0] == '\0') {
@@ -65,6 +65,8 @@ Source* source_init(Source* src,
         } else {
                 strncpy_(src->alias, alias, TABLE_NAME_MAX);
         }
+
+        return src;
 }
 
 void source_free(Source* source)

@@ -1,6 +1,7 @@
 fql
 .gdb_history
 .clangd/
+.cache/
 
 
 # temp files

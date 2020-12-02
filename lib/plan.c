@@ -53,18 +53,16 @@ Plan* plan_init(Plan* plan)
  * return beginning process
  */
 Dnode* _logic_to_process(Dgraph* proc_graph,
-                                Dgraph* logic_graph,
-                                Dnode** proc_node_true,
-                                Dnode** proc_node_false)
-
+                         Dgraph* logic_graph,
+                         Dnode** proc_node_true,
+                         Dnode** proc_node_false)
 {
         Dnode* return_node = NULL;
 
         /* build all process nodes */
-        int i = 0;
-        for (; i < logic_graph->nodes->size; ++i) {
-                Dnode* lnode = logic_graph->nodes->vector[i];
-                Logic* logic = lnode->data;
+        Dnode* it = vec_begin(logic_graph->nodes);
+        for (; it != vec_end(logic_graph->nodes); ++it) {
+                Logic* logic = it->data;
                 Process* proc = process_new("");
                 logic_get_description(logic, proc->action_msg);
 
@@ -82,14 +80,13 @@ Dnode* _logic_to_process(Dgraph* proc_graph,
         }
 
         /* link process all nodes */
-        for (i = 0; i < logic_graph->nodes->size; ++i) {
-                Dnode* lnode = logic_graph->nodes->vector[i];
-                Logic* logic = lnode->data;
-                if (lnode->out[0] != NULL) {
-                        logic->proc_node->out[0] = ((Logic*)lnode->out[0]->data)->proc_node;
+        for (it = vec_begin(logic_graph->nodes); it != vec_end(logic_graph->nodes); ++it) {
+                Logic* logic = it->data;
+                if (it->out[0] != NULL) {
+                        logic->proc_node->out[0] = ((Logic*)it->out[0]->data)->proc_node;
                 }
-                if (lnode->out[1] != NULL) {
-                        logic->proc_node->out[1] = ((Logic*)lnode->out[1]->data)->proc_node;
+                if (it->out[1] != NULL) {
+                        logic->proc_node->out[1] = ((Logic*)it->out[1]->data)->proc_node;
                 }
         }
 
@@ -103,18 +100,15 @@ void _plan_from(Plan* plan, Query* query)
         char action_msg[ACTION_MAX] = "";
         //plan->current = plan->processes;
 
+        Source* src = vec_begin(query->sources);
         if (query->sources->size) {
-                Source* src = query->sources->vector[0];
                 sprintf(action_msg, "%s: %s", src->table->reader->file_name, "stream read");
                 Dnode* from_proc = dgraph_add_data(plan->processes, process_new(action_msg));
                 plan->current->out[0] = from_proc;
                 plan->current = from_proc;
         }
 
-        int i = 1;
-        for (; i < query->sources->size; ++i) {
-                Source* src = query->sources->vector[i];
-
+        for (++src; src != vec_end(query->sources); ++src) {
                 Process* join_proc = NULL;
 
                 switch (src->join_type) {
@@ -240,11 +234,10 @@ void _print_plan(Plan* plan)
 
         /* retrieve longest message */
         int max_len = strlen("BRANCH 0");
-        int i = 0;
-        for (; i < nodes->size; ++i) {
-                Dnode* node = nodes->vector[i];
 
-                Process* proc = node->data;
+        Dnode* it = vec_begin(nodes);
+        for (; it != vec_end(nodes); ++it) {
+                Process* proc = it->data;
                 int len = strlen(proc->action_msg);
                 if (len > max_len) {
                         max_len = len;
@@ -259,6 +252,7 @@ void _print_plan(Plan* plan)
         _col_sep(max_len - strlen("BRANCH 0"));
         fputs("BRANCH 1\n", stderr);
 
+        int i = 0;
         for (i = 0; i < max_len; ++i) {
                 fputc('=', stderr);
         }
@@ -273,25 +267,24 @@ void _print_plan(Plan* plan)
 
 
         /* Print adjacency list */
-        for (i = 0; i < nodes->size; ++i) {
+        for (it = vec_begin(nodes); it != vec_end(nodes); ++it) {
                 fputc('\n', stderr);
-                Dnode* node = nodes->vector[i];
 
-                Process* proc = node->data;
+                Process* proc = it->data;
                 int len = strlen(proc->action_msg);
                 fputs(proc->action_msg, stderr);
                 _col_sep(max_len - len);
                 len = 0;
 
-                if (node->out[0] != NULL) {
-                        proc = node->out[0]->data;
+                if (it->out[0] != NULL) {
+                        proc = it->out[0]->data;
                         len = strlen(proc->action_msg);
                         fputs(proc->action_msg, stderr);
                 }
                 _col_sep(max_len - len);
 
-                if (node->out[1] != NULL) {
-                        proc = node->out[1]->data;
+                if (it->out[1] != NULL) {
+                        proc = it->out[1]->data;
                         fputs(proc->action_msg, stderr);
                 }
         }
