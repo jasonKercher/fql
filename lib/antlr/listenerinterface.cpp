@@ -206,6 +206,8 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
                         std::cerr << "Unhandled COLUMN_NAME: " << token << '\n';
                         free_(token);
                 }
+                /* consume table designation */
+                _table_name[0] = '\0';
                 break;
         case TOK_COLUMN_ALIAS:
                 select_apply_column_alias((struct select*)_query->op, token);
