@@ -40,3 +40,8 @@ void select_apply_column_alias(Select* select, const char* alias)
 {
         schema_apply_column_alias(select->schema, alias);
 }
+
+_Bool select_validate(Select* select)
+{
+        return true;
+}

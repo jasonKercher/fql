@@ -24,6 +24,7 @@ void select_add_column(struct select*
                       ,const char* table_name);
 
 void select_apply_column_alias(struct select*, const char* alias);
+_Bool select_validate(struct select*);
 
 #ifdef __cplusplus
 }

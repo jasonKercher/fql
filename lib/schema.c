@@ -3,6 +3,7 @@
 #include <dirent.h>
 #include <csv.h>
 
+#include "fql.h"
 #include "column.h"
 #include "query.h"
 #include "operation.h"
@@ -51,7 +52,7 @@ void schema_apply_column_alias(Schema* schema, const char* alias)
 }
 
 
-void schema_resolve_file(Table* table)
+int schema_resolve_file(Table* table)
 {
         /* TODO: could overflow here
          * Usage of PATH_MAX here is kind of silly,
@@ -92,7 +93,7 @@ void schema_resolve_file(Table* table)
 
         if (matches > 1) {
                 fprintf(stderr, "%s: ambiguous file name\n", table->name);
-                exit(EXIT_FAILURE);
+                return FQL_FAIL;
         } else if (matches) {
                 goto success_return;
         }
@@ -110,7 +111,7 @@ void schema_resolve_file(Table* table)
 
         if (matches > 1) {
                 fprintf(stderr, "%s: ambiguous file name\n", table->name);
-                exit(EXIT_FAILURE);
+                return FQL_FAIL;
         } else if (matches) {
                 goto success_return;
         }
@@ -126,16 +127,17 @@ void schema_resolve_file(Table* table)
 
         if (matches > 1) {
                 fprintf(stderr, "%s: ambiguous file name\n", table->name);
-                exit(EXIT_FAILURE);
+                return FQL_FAIL;
         } else if (matches) {
                 goto success_return;
         }
 
         fprintf(stderr, "%s: unable to find matching file\n", table->name);
-        exit(EXIT_FAILURE);
+        return FQL_FAIL;
 
 success_return:
         queue_free_data(&files);
+        return FQL_GOOD;
 }
 
 void schema_assign_header(Table* table, csv_record* rec)
@@ -159,23 +161,25 @@ void schema_assign_header(Table* table, csv_record* rec)
         }
 }
 
-void schema_resolve_source(Source* source)
+int schema_resolve_source(Source* source)
 {
         if (source->source_type == SOURCE_SUBQUERY) {
                 fputs("Not supporting subquery schema yet\n", stderr);
-                exit(EXIT_FAILURE);  /* TODO: retrieve schema from subquery */
+                return FQL_FAIL;  /* TODO: retrieve schema from subquery */
         }
 
-        schema_resolve_file(source->table);
+        if (schema_resolve_file(source->table)) {
+                return FQL_FAIL;
+        }
 
         Table* table = source->table;
         if (!vec_empty(table->schema->columns)) {
-                return;  /* Schema already set */
+                return FQL_GOOD;  /* Schema already set */
         }
 
         if (table->schema->name[0]) {
                 fputs("Not loading schema by name yet\n", stderr);
-                exit(EXIT_FAILURE);  /* TODO: load schema by name */
+                return FQL_FAIL;  /* TODO: load schema by name */
         }
 
         /* Retrieve schema using libcsv */
@@ -187,9 +191,11 @@ void schema_resolve_source(Source* source)
         schema_assign_header(table, rec);
 
         csv_record_free(rec);
+
+        return FQL_GOOD;
 }
 
-void schema_assign_columns(Vec* columns, Vec* sources, int limit)
+int schema_assign_columns(Vec* columns, Vec* sources, int limit)
 {
         Column** it = vec_begin(columns);
         for (; it != vec_end(columns); ++it) {
@@ -206,31 +212,44 @@ void schema_assign_columns(Vec* columns, Vec* sources, int limit)
 
                 if (matches > 1) {
                         fprintf(stderr, "%s: ambiguous column\n", (*it)->alias);
-                        exit(EXIT_FAILURE);
+                        return FQL_FAIL;
                 }
 
                 if (matches == 0) {
                         fprintf(stderr, "%s: cannot find column\n", (*it)->alias);
-                        exit(EXIT_FAILURE);
+                        return FQL_FAIL;
                 }
         }
+
+        return FQL_GOOD;
 }
 
-void schema_resolve(Queue* query_node)
+int schema_resolve(Queue* query_node)
 {
         for (; query_node; query_node = query_node->next) {
                 Query* query = query_node->data;
-
+                Vec* sources = query->sources;
+                
                 int i = 0;
-                for (; i < query->sources->size; ++i) {
+                for (; i < sources->size; ++i) {
                         Source* src = vec_at(query->sources, i);
-                        schema_resolve_source(src);
-                        schema_assign_columns(src->logic_columns, query->sources, i);
+                        if (schema_resolve_source(src)) {
+                                return FQL_FAIL;
+                        }
+                        if (schema_assign_columns(src->logic_columns,
+                                                  sources, i)) {
+                                return FQL_FAIL;
+                        }
                 }
 
-                Schema* op_schema = op_get_schema(query);
+                if (schema_assign_columns(op_get_columns(query->op), 
+                                          sources, 
+                                          sources->size - 1)) {
+                        return FQL_FAIL;
+                }
         }
 
+        return FQL_GOOD;
 }
 
 

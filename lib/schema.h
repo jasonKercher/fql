@@ -20,8 +20,8 @@ struct schema* schema_new();
 struct schema* schema_init(struct schema*);
 void schema_free(void*);
 
-void schema_assign_columns(Vec* columns, Vec* sources, int);
-void schema_resolve(struct queue* query_list);
+int schema_assign_columns(Vec* columns, Vec* sources, int);
+int schema_resolve(struct queue* query_list);
 
 void schema_add_column(struct schema*, struct column*);
 void schema_apply_column_alias(struct schema* schema, const char* alias);

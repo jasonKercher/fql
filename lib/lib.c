@@ -59,7 +59,9 @@ int fql_exec(const char* query_str)
         Queue* query_list = NULL;
         analyze_query(&query_list, query_str);
 
-        schema_resolve(query_list);
+        if (schema_resolve(query_list)) {
+                return FQL_FAIL;
+        }
 
         Queue* plans = NULL;
         build_plans(&plans, query_list);

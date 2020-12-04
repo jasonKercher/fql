@@ -18,7 +18,7 @@ enum op {
         OP_UPDATE,
 };
 
-struct schema* op_get_schema(void*);
+struct vec* op_get_columns(void*);
 
 #ifdef __cplusplus
 }
