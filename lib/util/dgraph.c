@@ -15,7 +15,8 @@ Dnode* dnode_init(Dnode* node, void* data)
         *node = (Dnode) {
                  data           /* data */
                 ,{NULL, NULL}   /* out */
-                ,false          /* visited */
+                ,false          /* was_visited */
+                ,false          /* is_root */
         };
 
         return node;
@@ -93,7 +94,7 @@ Dnode* graph_traverse_begin(Dgraph* graph)
         int i = 0;
         Dnode** node = vec_begin(graph->nodes);
         for (; node != vec_end(graph->nodes); ++node) {
-                (*node)->visited = false;
+                (*node)->was_visited = false;
         }
 
         return dgraph_traverse(graph);
@@ -112,10 +113,10 @@ Dnode* dgraph_traverse(Dgraph* graph)
 
         Dnode* node = graph->_trav->data;
 
-        if (node->out[0] != NULL && !node->out[0]->visited) {
+        if (node->out[0] != NULL && !node->out[0]->was_visited) {
                 node = node->out[0];
                 stack_push(&graph->_trav, node);
-        } else if (node->out[1] != NULL && !node->out[1]->visited) {
+        } else if (node->out[1] != NULL && !node->out[1]->was_visited) {
                 node = node->out[1];
                 stack_push(&graph->_trav, node);
         } else {
@@ -123,7 +124,7 @@ Dnode* dgraph_traverse(Dgraph* graph)
                 return dgraph_traverse(graph);
         }
 
-        node->visited = true;
+        node->was_visited = true;
 
         return node;
 }

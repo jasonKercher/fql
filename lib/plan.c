@@ -41,9 +41,9 @@ Plan* plan_init(Plan* plan)
         };
 
         dgraph_add_data(plan->processes, process_new("start"));
+        plan->current = plan->processes->newest;
         dgraph_add_node(plan->processes, plan->op_true);
         dgraph_add_node(plan->processes, plan->op_false);
-        plan->current = plan->processes->newest;
 
         return plan;
 }
@@ -104,6 +104,7 @@ void _plan_from(Plan* plan, Query* query)
         if (query->sources->size) {
                 sprintf(action_msg, "%s: %s", src->table->reader->file_name, "stream read");
                 Dnode* from_proc = dgraph_add_data(plan->processes, process_new(action_msg));
+                from_proc->is_root = true;
                 plan->current->out[0] = from_proc;
                 plan->current = from_proc;
         }
@@ -140,6 +141,7 @@ void _plan_from(Plan* plan, Query* query)
                         src->table->reader->file_name,
                         "mmap read");
                 Dnode* read_proc = dgraph_add_data(plan->processes, process_new(action_msg));
+                read_proc->is_root = true;
                 read_proc->out[0] = join_proc_node;
 
                 if (src->condition != NULL) {
@@ -151,7 +153,7 @@ void _plan_from(Plan* plan, Query* query)
                                                                    &proc_true,
                                                                    &proc_false);
                         plan->current = proc_true;
-                        /* TODO: handle proc_false */
+                        proc_false->out[0] = plan->op_false;
                 } else {
                         plan->current = join_proc_node;
                 }
@@ -172,8 +174,7 @@ void _plan_where(Plan* plan, Query* query)
                                                   &proc_true,
                                                   &proc_false);
         plan->current = proc_true;
-
-        /* TODO: handle proc_false */
+        proc_false->out[0] = plan->op_false;
 }
 
 void _plan_group(Plan* plan, Query* query) { }
