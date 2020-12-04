@@ -20,9 +20,9 @@ Schema* schema_new()
 Schema* schema_init(Schema* schema)
 {
         *schema = (Schema) {
-                 NULL   /* columns */
-                ,NULL   /* col_map */
-                ,""     /* name */
+                 vec_new_(Column*)      /* columns */
+                ,NULL                   /* col_map */
+                ,""                     /* name */
         };
 
         return schema;
@@ -31,7 +31,8 @@ Schema* schema_init(Schema* schema)
 void schema_free(void* generic_schema)
 {
         Schema* schema = generic_schema;
-        stack_free_func(&schema->columns, &column_free);
+        //stack_free_func(&schema->columns, &column_free);
+        /* TODO: free columns */
         if (schema->col_map != NULL) {
                 hmap_free(schema->col_map);
         }
@@ -40,12 +41,12 @@ void schema_free(void* generic_schema)
 
 void schema_add_column(Schema* schema, Column* col)
 {
-        stack_push(&schema->columns, col);
+        vec_push_back(schema->columns, &col);
 }
 
 void schema_apply_column_alias(Schema* schema, const char* alias)
 {
-        Column* col = schema->columns->data;
+        Column* col = vec_back(schema->columns);
         strncpy_(col->alias, alias, COLUMN_NAME_MAX);
 }
 
@@ -168,7 +169,7 @@ void schema_resolve_source(Source* source)
         schema_resolve_file(source->table);
 
         Table* table = source->table;
-        if (table->schema->columns) {
+        if (!vec_empty(table->schema->columns)) {
                 return;  /* Schema already set */
         }
 
@@ -188,11 +189,8 @@ void schema_resolve_source(Source* source)
         csv_record_free(rec);
 }
 
-void schema_validate_logic_columns(Vec* sources, int limit)
+void schema_assign_columns(Vec* columns, Vec* sources, int limit)
 {
-        Source* src = vec_at(sources, limit);
-        Vec* columns = src->logic_columns;
-
         Column** it = vec_begin(columns);
         for (; it != vec_end(columns); ++it) {
                 int matches = 0;
@@ -225,8 +223,9 @@ void schema_resolve(Queue* query_node)
 
                 int i = 0;
                 for (; i < query->sources->size; ++i) {
-                        schema_resolve_source(vec_at(query->sources, i));
-                        schema_validate_logic_columns(query->sources, i);
+                        Source* src = vec_at(query->sources, i);
+                        schema_resolve_source(src);
+                        schema_assign_columns(src->logic_columns, query->sources, i);
                 }
 
                 Schema* op_schema = op_get_schema(query);

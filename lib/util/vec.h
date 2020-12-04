@@ -33,6 +33,7 @@ struct vec* vec_new(size_t);
 struct vec* vec_init(struct vec*, size_t);
 void vec_free(struct vec*);
 
+_Bool vec_empty(struct vec* vec);
 void* vec_at(struct vec*, size_t);
 void* vec_begin(struct vec*);
 void* vec_back(struct vec*);

@@ -34,6 +34,11 @@ void vec_free(Vec* vec)
         free_(vec);
 }
 
+_Bool vec_empty(Vec* vec)
+{
+        return vec->size == 0;
+}
+
 void* vec_at(Vec* vec, size_t index)
 {
         return (char*) vec->vector + vec->_elem_size * index;
