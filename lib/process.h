@@ -10,6 +10,7 @@ typedef int (*process_func)(void**, void*);
 struct process {
         process_func* action;
         char action_msg[ACTION_MAX];
+        _Bool is_passive;
 };
 typedef struct process Process;
 

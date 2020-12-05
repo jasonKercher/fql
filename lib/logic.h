@@ -2,6 +2,7 @@
 #define LOGIC_H
 
 #include "expression.h"
+#include "process.h"
 #include "util/dgraph.h"
 
 enum comparison {
@@ -32,8 +33,7 @@ struct logic* logic_new();
 struct logic* logic_init(struct logic*);
 void logic_free(struct logic*);
 
-void logic_get_description(struct logic* logic, char* msg);
-
+void logic_assign_process(struct logic*, struct process*);
 void logic_add_column(struct logic*, struct column*);
 void logic_set_comparison(struct logic* logic, const char* op);
 

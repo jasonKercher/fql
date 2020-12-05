@@ -29,59 +29,61 @@ void logic_free(Logic* logic)
         free_(logic);
 }
 
-void logic_get_description(Logic* logic, char* msg)
+void logic_assign_process(Logic* logic, Process* proc)
 {
         if (logic->comp_type == COMP_TRUE) {
-                strcpy(msg, "End Logic: TRUE");
+                strcpy(proc->action_msg, "End Logic: TRUE");
+                proc->is_passive = true;
                 return;
         }
         if (logic->comp_type == COMP_FALSE) {
-                strcpy(msg, "End Logic: FALSE");
+                strcpy(proc->action_msg, "End Logic: FALSE");
+                proc->is_passive = true;
                 return;
         }
         if (logic->col[0] == NULL) {
                 return;
         }
 
-        column_cat_description(logic->col[0], msg);
+        column_cat_description(logic->col[0], proc->action_msg);
         switch (logic->comp_type) {
         case COMP_EQ:
-                strcat(msg, " = ");
+                strcat(proc->action_msg, " = ");
                 break;
         case COMP_NE:
-                strcat(msg, " != ");
+                strcat(proc->action_msg, " != ");
                 break;
         case COMP_GT:
-                strcat(msg, " > ");
+                strcat(proc->action_msg, " > ");
                 break;
         case COMP_GE:
-                strcat(msg, " >= ");
+                strcat(proc->action_msg, " >= ");
                 break;
         case COMP_LT:
-                strcat(msg, " < ");
+                strcat(proc->action_msg, " < ");
                 break;
         case COMP_LE:
-                strcat(msg, " <= ");
+                strcat(proc->action_msg, " <= ");
                 break;
         case COMP_LIKE:
-                strcat(msg, " LIKE ");
+                strcat(proc->action_msg, " LIKE ");
                 break;
         case COMP_NOT_LIKE:
-                strcat(msg, " NOT LIKE ");
+                strcat(proc->action_msg, " NOT LIKE ");
                 break;
         case COMP_NULL:
-                strcat(msg, " NULL ");
+                strcat(proc->action_msg, " NULL ");
                 break;
         case COMP_NOT_NULL:
-                strcat(msg, " NOT NULL ");
+                strcat(proc->action_msg, " NOT NULL ");
                 break;
         case COMP_NOT_SET:
-                strcat(msg, " <no comparison> ");
+                strcat(proc->action_msg, " <no comparison> ");
                 break;
         default:
                 break;
         }
-        column_cat_description(logic->col[1], msg);
+        column_cat_description(logic->col[1], proc->action_msg);
 }
 
 void logic_add_column(Logic* logic, struct column* col)

@@ -80,10 +80,11 @@ void dgraph_extend(Dgraph* dest, Dgraph* src)
         /* TODO */
 }
 
-void* dgraph_remove(Dgraph* graph, Dnode* node)
+void* dgraph_remove(Dgraph* graph, Dnode** node)
 {
-        /* TODO */
-        return NULL;
+        void* data = (*node)->data;
+        vec_erase(graph->nodes, node);
+        return data;
 }
 
 Dnode* graph_traverse_begin(Dgraph* graph)

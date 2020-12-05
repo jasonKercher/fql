@@ -111,9 +111,9 @@ void vec_extend(Vec* dest, Vec* src)
 
 void vec_erase(Vec* vec, void* elem)
 {
-        size_t index = (char*) elem - (char*) vec_begin(vec);
-        index /= vec->_elem_size;
-        vec_remove(vec, index);
+        size_t bytes = (char*)vec_back(vec) - (char*)elem;
+        memmove(elem, (char*)elem + vec->_elem_size, bytes);
+        --vec->size;
 }
 
 void vec_remove(Vec* vec, size_t index)
@@ -122,11 +122,5 @@ void vec_remove(Vec* vec, size_t index)
                 return; /* abort? */
         }
 
-        --vec->size;
-
-        if (index != vec->size) {
-                memmove(vec_at(vec, index),
-                        vec_at(vec, index + 1),
-                        vec->size - index);
-        }
+        vec_erase(vec, vec_at(vec, index));
 }

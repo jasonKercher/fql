@@ -1,4 +1,7 @@
 #include "process.h"
+
+#include <stdbool.h>
+
 #include "util/util.h"
 
 Process* process_new(const char* action)
@@ -14,6 +17,7 @@ Process* process_init(Process* proc, const char* action)
         *proc = (Process) {
                  NULL           /* action */
                 ,""             /* action_msg */
+                ,false          /* is_passive */
         };
 
         strncpy_(proc->action_msg, action, ACTION_MAX);

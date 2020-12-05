@@ -24,6 +24,4 @@ void column_free(void*);
 void column_cat_description(struct column* col, char* msg);
 int column_try_assign_source(struct column*, struct source*);
 
-
-
-#endif
+#endif /* COLUMN_H */

@@ -2,7 +2,6 @@
 #define PLAN_H
 
 #include "util/queue.h"
-#include "process.h"
 
 struct plan {
         struct dgraph* processes;

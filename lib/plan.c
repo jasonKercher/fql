@@ -40,8 +40,9 @@ Plan* plan_init(Plan* plan)
                 ,NULL                                /* current */
         };
 
-        dgraph_add_data(plan->processes, process_new("start"));
-        plan->current = plan->processes->newest;
+        Process* start = process_new("start");
+        start->is_passive = true;
+        plan->current = dgraph_add_data(plan->processes, start);
         dgraph_add_node(plan->processes, plan->op_true);
         dgraph_add_node(plan->processes, plan->op_false);
 
@@ -64,7 +65,7 @@ Dnode* _logic_to_process(Dgraph* proc_graph,
         for (; it != vec_end(logic_graph->nodes); ++it) {
                 Logic* logic = (*it)->data;
                 Process* proc = process_new("");
-                logic_get_description(logic, proc->action_msg);
+                logic_assign_process(logic, proc);
 
                 Dnode* proc_node = dnode_new(proc);
                 if (return_node == NULL) {
@@ -187,18 +188,65 @@ void _plan_operation(Plan* plan, Query* query)
 
 void _plan_limit(Plan* plan, Query* query) { }
 
+/* In an effort to make building of the process graph easier
+ * passive nodes are used as a sort of link between the steps.
+ * Passive nodes always point to the next node on out[0]
+ */
+void _plan_clear_passive(Plan* plan) 
+{
+        Vec* node_vec = plan->processes->nodes;
+        Dnode** nodes = vec_begin(node_vec);
+        int i = 0;
+
+        /* Re-link nodes so passive ones get skipped during traversal */
+        for (; i < node_vec->size; ++i) {
+                /* Check branch 0 */
+                while (nodes[i]->out[0] != NULL) {
+                        Process* proc = nodes[i]->out[0]->data;
+                        if (proc->is_passive) {
+                                nodes[i]->out[0] = nodes[i]->out[0]->out[0];
+                        } else {
+                                break;
+                        }
+                }
+
+                /* Check branch 1 */
+                while (nodes[i]->out[1] != NULL) {
+                        Process* proc = nodes[i]->out[1]->data;
+                        if (proc->is_passive) {
+                                nodes[i]->out[1] = nodes[i]->out[1]->out[0];
+                        } else {
+                                break;
+                        }
+                }
+        }
+
+        /* At this point, all passive nodes should be unreachable */
+        for (i = 0; i < node_vec->size;) {
+                Process* proc = nodes[i]->data;
+                if (proc->is_passive) {
+                        process_free(proc);
+                        dgraph_remove(plan->processes, &nodes[i]);
+                } else {
+                        ++i;
+                }
+        }
+}
+
 Plan* _build_plan(Query* query)
 {
-        Plan* new_plan = plan_new();
+        Plan* plan = plan_new();
 
-        _plan_from(new_plan, query);
-        _plan_where(new_plan, query);
-        _plan_group(new_plan, query);
-        _plan_having(new_plan, query);
-        _plan_operation(new_plan, query);
-        _plan_limit(new_plan, query);
+        _plan_from(plan, query);
+        _plan_where(plan, query);
+        _plan_group(plan, query);
+        _plan_having(plan, query);
+        _plan_operation(plan, query);
+        _plan_limit(plan, query);
 
-        return new_plan;
+        _plan_clear_passive(plan);
+
+        return plan;
 }
 
 void plan_free(void* generic_plan)
