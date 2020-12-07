@@ -28,6 +28,15 @@ void ListenerInterface::exitSelect_list(TSqlParser::Select_listContext * ctx)
         _query->mode = MODE_UNDEFINED;
 }
 
+void ListenerInterface::enterGroup_by_item(TSqlParser::Group_by_itemContext * ctx) 
+{ 
+        _query->mode = MODE_GROUPBY;
+}
+void ListenerInterface::exitGroup_by_item(TSqlParser::Group_by_itemContext * ctx) 
+{
+        _query->mode = MODE_UNDEFINED;
+}
+
 void ListenerInterface::enterAsterisk(TSqlParser::AsteriskContext * ctx)
 {
 
@@ -196,10 +205,14 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
         case TOK_COLUMN_NAME:
                 if (_query->mode == MODE_SELECT) {
                         select_add_column((struct select*) _query->op,
-                                         expression_new(EXPR_COLUMN_NAME, token),
-                                         _table_name);
+                                          expression_new(EXPR_COLUMN_NAME, token),
+                                          _table_name);
                 } else if (_query->mode == MODE_SEARCH) {
                         query_add_logic_column(_query,
+                                               expression_new(EXPR_COLUMN_NAME, token),
+                                               _table_name);
+                } else if (_query->mode == MODE_GROUPBY) {
+                        query_add_group_column(_query,
                                                expression_new(EXPR_COLUMN_NAME, token),
                                                _table_name);
                 } else {
@@ -1495,9 +1508,6 @@ void ListenerInterface::exitXml_common_directives(TSqlParser::Xml_common_directi
 
 void ListenerInterface::enterOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx) { }
-
-void ListenerInterface::enterGroup_by_item(TSqlParser::Group_by_itemContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitGroup_by_item(TSqlParser::Group_by_itemContext * ctx) { }
 
 void ListenerInterface::enterOption_clause(TSqlParser::Option_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitOption_clause(TSqlParser::Option_clauseContext * ctx) { }

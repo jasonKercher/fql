@@ -22,7 +22,7 @@ Query* query_init(Query* query)
                  schema_new()           /* table */
                 ,vec_new_(Source)       /* sources */
                 ,NULL                   /* where */
-                ,NULL                   /* groups */
+                ,vec_new_(Column*)      /* groups */
                 ,NULL                   /* having */
                 ,NULL                   /* limit */
                 ,NULL                   /* operation */
@@ -46,7 +46,8 @@ void query_free(void* generic_query)
 
         logic_tree_free(query->where);
 
-        queue_free_data(&query->groups);
+        /* TODO: leaking here */
+        vec_free(query->groups);
         queue_free_data(&query->having);
 
         //table_free(query->table);
@@ -99,6 +100,14 @@ void query_apply_table_alias(Query* query, const char* alias)
 {
         Source* source = vec_back(query->sources);
         strncpy_(source->alias, alias, TABLE_NAME_MAX);
+}
+
+void query_add_group_column(Query* query,
+                            Expression* expr,
+                            const char* table_name)
+{
+        Column* new_col = column_new(expr, table_name);
+        vec_push_back(query->groups, &new_col);
 }
 
 /* Scroll below this comment at your own risk */

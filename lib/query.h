@@ -22,12 +22,13 @@ enum mode {
         MODE_UPDATE,
         MODE_SOURCES,
         MODE_SEARCH,
+        MODE_GROUPBY,
 };
 
 enum logic_mode {
         LOGIC_UNDEFINED,
         LOGIC_WHERE,
-        LOGIC_JOIN
+        LOGIC_JOIN,
 };
 
 /** Query **/
@@ -35,7 +36,7 @@ struct query {
         struct schema* schema;          /* output table */
         struct vec* sources;            /* struct source */
         struct logic_tree* where;       /* struct logic */
-        struct queue* groups;           /* struct expression */
+        struct vec* groups;             /* struct expression */
         struct queue* having;           /* struct expression */
         struct expression* limit;       /* TOP */
         void* op;                       /* Operation structure */
@@ -59,7 +60,12 @@ void query_free(void*);
 void query_add_source(struct query*, struct stack**, const char*);
 void query_apply_table_alias(struct query*, const char*);
 
+void query_add_group_column(struct query*, struct expression*, const char*);
+
 /* Search building functions */
+
+void query_add_logic_column(struct query*, struct expression*, const char*);
+void query_set_logic_comparison(struct query*, const char*);
 
 void enter_search(struct query*);
 void exit_search(struct query*);
@@ -67,9 +73,6 @@ void enter_search_and(struct query*);
 void exit_search_and(struct query*);
 void enter_search_not(struct query*);
 void exit_search_not(struct query*);
-
-void query_add_logic_column(struct query*, struct expression*, const char*);
-void query_set_logic_comparison(struct query*, const char*);
 
 
 

@@ -49,6 +49,13 @@ Plan* plan_init(Plan* plan)
         return plan;
 }
 
+void plan_free(void* generic_plan)
+{
+        Plan* plan = generic_plan;
+        /* TODO */
+        free_(plan);
+}
+
 /* build process nodes from logic graph
  * assign processes for true and false
  * return beginning process
@@ -178,8 +185,16 @@ void _plan_where(Plan* plan, Query* query)
         proc_false->out[0] = plan->op_false;
 }
 
-void _plan_group(Plan* plan, Query* query) { }
+void _plan_group(Plan* plan, Query* query) 
+{ 
+        Process* group_proc = process_new("GROUP BY");
+        Dnode* group_node = dgraph_add_data(plan->processes, group_proc);
+        plan->current->out[0] = group_node;
+        plan->current = group_node;
+}
+
 void _plan_having(Plan* plan, Query* query) { }
+
 void _plan_operation(Plan* plan, Query* query)
 {
         plan->current->out[0] = plan->op_true;
@@ -247,13 +262,6 @@ Plan* _build_plan(Query* query)
         _plan_clear_passive(plan);
 
         return plan;
-}
-
-void plan_free(void* generic_plan)
-{
-        Plan* plan = generic_plan;
-        /* TODO */
-        free_(plan);
 }
 
 int build_plans(Queue** plans, Queue* query_list)

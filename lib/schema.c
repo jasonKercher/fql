@@ -195,7 +195,7 @@ int schema_resolve_source(Source* source)
         return FQL_GOOD;
 }
 
-int schema_assign_columns(Vec* columns, Vec* sources, int limit)
+int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
 {
         Column** it = vec_begin(columns);
         for (; it != vec_end(columns); ++it) {
@@ -224,27 +224,45 @@ int schema_assign_columns(Vec* columns, Vec* sources, int limit)
         return FQL_GOOD;
 }
 
+int schema_assign_columns(Vec* columns, Vec* sources)
+{
+        return schema_assign_columns_limited(columns, 
+                                             sources, 
+                                             sources->size - 1);
+}
+
+int schema_resolve_query(Query* query) 
+{
+       Vec* sources = query->sources;
+       
+       int i = 0;
+       for (; i < sources->size; ++i) {
+               Source* src = vec_at(query->sources, i);
+               if (schema_resolve_source(src)) {
+                       return FQL_FAIL;
+               }
+               if (schema_assign_columns_limited(src->logic_columns,
+                                         sources, i)) {
+                       return FQL_FAIL;
+               }
+       }
+
+       if (schema_assign_columns(query->groups, sources)) {
+               return FQL_FAIL;
+       }
+
+       if (schema_assign_columns(op_get_columns(query->op), sources)) {
+               return FQL_FAIL;
+       }
+
+       return FQL_GOOD;
+}
+ 
 int schema_resolve(Queue* query_node)
 {
         for (; query_node; query_node = query_node->next) {
                 Query* query = query_node->data;
-                Vec* sources = query->sources;
-                
-                int i = 0;
-                for (; i < sources->size; ++i) {
-                        Source* src = vec_at(query->sources, i);
-                        if (schema_resolve_source(src)) {
-                                return FQL_FAIL;
-                        }
-                        if (schema_assign_columns(src->logic_columns,
-                                                  sources, i)) {
-                                return FQL_FAIL;
-                        }
-                }
-
-                if (schema_assign_columns(op_get_columns(query->op), 
-                                          sources, 
-                                          sources->size - 1)) {
+                if (schema_resolve_query(query)) {
                         return FQL_FAIL;
                 }
         }
