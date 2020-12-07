@@ -105,17 +105,18 @@ Dnode* _logic_to_process(Dgraph* proc_graph,
 
 void _plan_from(Plan* plan, Query* query)
 {
-        char action_msg[ACTION_MAX] = "";
-        //plan->current = plan->processes;
-
-        Source* src = vec_begin(query->sources);
-        if (query->sources->size) {
-                sprintf(action_msg, "%s: %s", src->table->reader->file_name, "stream read");
-                Dnode* from_proc = dgraph_add_data(plan->processes, process_new(action_msg));
-                from_proc->is_root = true;
-                plan->current->out[0] = from_proc;
-                plan->current = from_proc;
+        if (query->sources->size == 0) {
+                return;
         }
+
+        char action_msg[ACTION_MAX] = "";
+        Source* src = vec_begin(query->sources);
+
+        sprintf(action_msg, "%s: %s", src->table->reader->file_name, "stream read");
+        Dnode* from_proc = dgraph_add_data(plan->processes, process_new(action_msg));
+        from_proc->is_root = true;
+        plan->current->out[0] = from_proc;
+        plan->current = from_proc;
 
         for (++src; src != vec_end(query->sources); ++src) {
                 Process* join_proc = NULL;
@@ -187,6 +188,9 @@ void _plan_where(Plan* plan, Query* query)
 
 void _plan_group(Plan* plan, Query* query) 
 { 
+        if (query->groups->size == 0) {
+                return;
+        }
         Process* group_proc = process_new("GROUP BY");
         Dnode* group_node = dgraph_add_data(plan->processes, group_proc);
         plan->current->out[0] = group_node;
