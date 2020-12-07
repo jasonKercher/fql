@@ -23,6 +23,7 @@ void select_add_column(struct select*
                       ,struct expression* expr
                       ,const char* table_name);
 
+void select_apply_process(struct select*, struct plan*);
 void select_apply_column_alias(struct select*, const char* alias);
 _Bool select_validate(struct select*);
 

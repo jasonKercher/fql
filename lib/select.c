@@ -36,6 +36,15 @@ void select_add_column(Select* select
         schema_add_column(select->schema, new_col);
 }
 
+void select_apply_process(Select* select, Plan* plan)
+{
+        Process* proc = plan->op_true->data;
+        strcpy(proc->action_msg, "SELECT");
+
+        proc = plan->op_false->data;
+        proc->is_passive = true;
+}
+
 void select_apply_column_alias(Select* select, const char* alias)
 {
         schema_apply_column_alias(select->schema, alias);

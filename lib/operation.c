@@ -18,3 +18,14 @@ Vec* op_get_columns(void* op)
         return NULL;
 }
 
+void op_apply_process(void* op, Plan* plan)
+{
+        enum op* type = op;
+
+        switch(*type) {
+        case OP_SELECT:
+                select_apply_process(op, plan);
+        default:
+                ;
+        }
+}

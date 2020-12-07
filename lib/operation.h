@@ -6,9 +6,8 @@
 extern "C" {
 #endif
 
-#include "table.h"
+#include "plan.h"
 #include "util/queue.h"
-
 
 /** Operation **/
 enum op {
@@ -18,7 +17,8 @@ enum op {
         OP_UPDATE,
 };
 
-struct vec* op_get_columns(void*);
+struct vec* op_get_columns(void* op);
+void op_apply_process(void* op, struct plan*);
 
 #ifdef __cplusplus
 }

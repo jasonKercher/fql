@@ -182,8 +182,8 @@ void _plan_group(Plan* plan, Query* query) { }
 void _plan_having(Plan* plan, Query* query) { }
 void _plan_operation(Plan* plan, Query* query)
 {
-        /* TODO */
         plan->current->out[0] = plan->op_true;
+        op_apply_process(query->op, plan);
 }
 
 void _plan_limit(Plan* plan, Query* query) { }
