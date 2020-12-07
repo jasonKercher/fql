@@ -5,12 +5,7 @@
 
 #include "queue.h"
 
-long stringtolong10(const char* s)
-{
-        return stringtolong(s, 10);
-}
-
-long stringtolong(const char* s, int base)
+long str2longbase(const char* s, int base)
 {
         char* endPtr = NULL;
         errno = 0;
@@ -19,12 +14,39 @@ long stringtolong(const char* s, int base)
         if ((errno == ERANGE && (val == LONG_MIN || val == LONG_MAX))
                         || (errno == EINVAL)
                         || (errno != 0 && val == 0)
-                        || (errno == 0 && s && *endPtr != 0))
-                perror("strtol");
-        else
-                return val;
+                        || (errno == 0 && s && *endPtr != 0)) {
+                perror(s);
+                exit(EXIT_FAILURE);
+        }
+                
+        return val;
+}
 
-        exit(EXIT_FAILURE);
+long str2long10(const char* s)
+{
+        return str2longbase(s, 10);
+}
+
+long str2long(const char* s)
+{
+        if (s[0] == '0' && s[1] == 'x') {
+                return str2longbase(s, 16);
+        }
+        return str2longbase(s, 10);
+}
+
+double str2double(const char* s)
+{
+        char* endPtr = NULL;
+        errno = 0;
+        double val = strtod(s, &endPtr);
+
+        if (errno || (errno == 0 && s && *endPtr != 0)) {
+                perror(s);
+                exit(EXIT_FAILURE);
+        }
+
+        return val;
 }
 
 int charcount(const char* s, char c)

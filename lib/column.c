@@ -13,13 +13,14 @@ Column* column_new(Expression* expr, const char* table_name)
 Column* column_init(Column* col, Expression* expr, const char* table_name)
 {
         *col = (Column) {
-                 NULL   /* table */
-                ,NULL   /* data_source */
-                ,expr   /* expression */
-                ,""     /* alias */
-                ,""     /* table_name */
-                ,0      /* location */
-                ,0      /* width */
+                 COL_UNDEFINED  /* type */
+                ,NULL           /* table */
+                ,NULL           /* data_source */
+                ,expr           /* expression */
+                ,""             /* alias */
+                ,""             /* table_name */
+                ,0              /* location */
+                ,0              /* width */
         };
 
         strncpy_(col->table_name, table_name, TABLE_NAME_MAX);

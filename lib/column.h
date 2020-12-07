@@ -5,8 +5,16 @@
 #include "table.h"
 #include "expression.h"
 
+enum col_type {
+        COL_UNDEFINED,
+        COL_STRING,
+        COL_INT,
+        COL_FLOAT,
+};
+
 /** Column **/
 struct column {
+        enum col_type type;
         struct table* table;
         struct column* data_source;
         struct expression* expr;

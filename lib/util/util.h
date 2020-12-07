@@ -78,22 +78,15 @@ typedef void(*generic_data_func)(void*);
 
 
 /**
- * This function is a wrapper for stringtolong below.
- * with an assumed base of 10.
- *
- * Returns:
- *      - parsed base 10 long int
- */
-long stringtolong10(const char* s);
-
-/**
  * This function is a wrapper for the standard strtol
  * function that also handles all errors internally.
  *
  * Returns:
  *      - parsed long int
  */
-long stringtolong(const char* s, int base);
+long str2long(const char* s);
+
+double str2double(const char* s);
 
 /**
  * charcount simply counts the occurences of char c

@@ -2,10 +2,11 @@
 
 #include <cstring>
 
-#include "query.h"
-#include "util/util.h"
 #include "prop.h"
+#include "query.h"
+#include "column.h"
 #include "select.h"
+#include "util/util.h"
 
 ListenerInterface::ListenerInterface(struct queue** query_list, const std::vector<std::string>& rules)
 {
@@ -181,7 +182,45 @@ void ListenerInterface::exitSql_clause(TSqlParser::Sql_clauseContext * ctx)
 void ListenerInterface::enterDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
 void ListenerInterface::exitDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
 
-void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx) { }
+void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx) 
+{ 
+        enum col_type type = COL_STRING;
+        int len = ctx->getText().length();
+        char* token = NULL;
+
+        char first_char = ctx->getText()[0];
+        if (first_char == '\'') {
+                token = strdup(ctx->getText().c_str() + 1);
+                token[len - 2] = '\0';
+        } else {
+                token = strdup(ctx->getText().c_str());
+                if (strhaschar(token, '.')) {
+                        type = COL_FLOAT;
+                        double value = str2double(token);
+                } else {
+                        type = COL_INT;
+                        long value = str2long(token);
+                }
+        }
+
+        switch(_query->mode)
+        {
+        case MODE_SELECT:
+                //_tables.top()->add_constant(type, stringCopy);
+                break;
+        case MODE_SEARCH:
+                //_tables.top()->add_search_column_const(type, stringCopy);
+                break;
+        default:
+                std::cerr << "Error: Constant expression mode: " << _query->mode << ".\n";
+                break;
+    }
+
+    /* Minor memory leak here - DataView needs destructor for special cases like this to free the memory. */
+    //free(stringCopy);
+
+
+}
 void ListenerInterface::exitConstant(TSqlParser::ConstantContext * ctx) { }
 
 void ListenerInterface::enterSign(TSqlParser::SignContext * ctx) { }
