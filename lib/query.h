@@ -57,14 +57,12 @@ struct query* query_new();
 struct query* query_init(struct query*);
 void query_free(void*);
 
+void query_add_constant(Query*, const char*, int);
+void query_add_column(struct query*, char*, const char* table);
 void query_add_source(struct query*, struct stack**, const char*);
 void query_apply_table_alias(struct query*, const char*);
 
-void query_add_group_column(struct query*, struct expression*, const char*);
-
 /* Search building functions */
-
-void query_add_logic_column(struct query*, struct expression*, const char*);
 void query_set_logic_comparison(struct query*, const char*);
 
 void enter_search(struct query*);

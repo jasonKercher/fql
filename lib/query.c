@@ -2,11 +2,22 @@
 
 #include <stdbool.h>
 
-#include "column.h"
+//#include "column.h"
 
 #include "logic.h"
+#include "select.h"
 #include "util/dgraph.h"
 #include "util/util.h"
+
+struct logic_builder {
+        LogicTree* ltree;
+        Dnode* current;
+        Dnode* next_not;
+        Vec* truths;
+        Vec* falses;
+        _Bool sublogic_exit;
+};
+
 
 Query* query_new()
 {
@@ -57,6 +68,105 @@ void query_free(void* generic_query)
         free_(query);
 }
 
+
+Column* _add_logic_column(Query* query,
+                          Expression* expr,
+                          const char* table_name)
+{
+        Source* src = vec_back(query->sources);
+        Column* new_col = column_new(expr, table_name);
+        vec_push_back(src->logic_columns, &new_col);
+
+        struct logic_builder* builder = query->logic_stack->data;
+        logic_add_column(builder->current->data, new_col);
+
+        return new_col;
+}
+
+Column* _add_group_column(Query* query,
+                          Expression* expr,
+                          const char* table_name)
+{
+        Column* new_col = column_new(expr, table_name);
+        vec_push_back(query->groups, &new_col);
+
+        return new_col;
+}
+
+void query_add_column(Query* query, char* col_name, const char* table_id)
+{
+        Column* col = NULL;
+        switch(query->mode) {
+        case MODE_SELECT:
+                col = select_add_column(query->op,
+                                        expression_new(EXPR_COLUMN_NAME, col_name),
+                                        table_id);
+                break; 
+        case MODE_SEARCH:
+                col = _add_logic_column(query,
+                                        expression_new(EXPR_COLUMN_NAME, col_name),
+                                        table_id);
+                break;
+        case MODE_GROUPBY:
+                col = _add_group_column(query,
+                                        expression_new(EXPR_COLUMN_NAME, col_name),
+                                        table_id);
+                break;
+        default:
+                fprintf(stderr, "Unhandled COLUMN_NAME: %s\n", col_name);
+                free_(col_name);
+                return;
+        }
+
+        /* TODO: This is sort of misplaced. Only acting as a default, but
+         *       it should be set when schema is applied.
+         */
+        col->type = COL_STRING;
+}
+
+void query_add_constant(Query* query, const char* s, int len)
+{
+        Expression* expr = expression_new(EXPR_CONST, NULL);
+
+        enum col_type type = COL_UNDEFINED;
+        if (s[0] == '\'') {
+                char* value = strdup(s + 1);
+                value[len - 2] = '\0';
+                expr->data = value;
+        } else {
+                if (strhaschar(s, '.')) {
+                        type = COL_FLOAT;
+                        double* value = NULL;
+                        malloc_(value, sizeof(*value));
+                        *value = str2double(s);
+                        expr->data = value;
+                } else {
+                        type = COL_INT;
+                        long* value = NULL;
+                        malloc_(value, sizeof(*value));
+                        *value = str2long(s);
+                        expr->data = value;
+                }
+        }
+
+        Column* col = NULL;
+        switch(query->mode)
+        {
+        case MODE_SELECT:
+                col = select_add_column(query->op, expr, "");
+                break;
+        case MODE_SEARCH:
+                col = _add_logic_column(query->op, expr, "");
+                break;
+        default:
+                fprintf(stderr, "Unhandled constant expression: %d\n", query->mode);
+                return; 
+        }
+
+        col->type = type;
+}
+
+
 /**
  * Create new table and source object
  * Assign name and schema if provided. If not provided,
@@ -102,24 +212,7 @@ void query_apply_table_alias(Query* query, const char* alias)
         strncpy_(source->alias, alias, TABLE_NAME_MAX);
 }
 
-void query_add_group_column(Query* query,
-                            Expression* expr,
-                            const char* table_name)
-{
-        Column* new_col = column_new(expr, table_name);
-        vec_push_back(query->groups, &new_col);
-}
-
 /* Scroll below this comment at your own risk */
-
-struct logic_builder {
-        LogicTree* ltree;
-        Dnode* current;
-        Dnode* next_not;
-        Vec* truths;
-        Vec* falses;
-        _Bool sublogic_exit;
-};
 
 struct logic_builder* logic_builder_new()
 {
@@ -136,18 +229,6 @@ struct logic_builder* logic_builder_new()
         };
 
         return builder;
-}
-
-void query_add_logic_column(Query* query,
-                            Expression* expr,
-                            const char* table_name)
-{
-        Source* src = vec_back(query->sources);
-        Column* new_col = column_new(expr, table_name);
-        vec_push_back(src->logic_columns, &new_col);
-
-        struct logic_builder* builder = query->logic_stack->data;
-        logic_add_column(builder->current->data, new_col);
 }
 
 void query_set_logic_comparison(Query* query, const char* op)

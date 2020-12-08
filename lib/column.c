@@ -24,6 +24,8 @@ Column* column_init(Column* col, Expression* expr, const char* table_name)
         };
 
         strncpy_(col->table_name, table_name, TABLE_NAME_MAX);
+
+        /* hmmmm... */
         if (expr->type == EXPR_COLUMN_NAME) {
                 strncpy_(col->alias, expr->data, COLUMN_NAME_MAX);
         }

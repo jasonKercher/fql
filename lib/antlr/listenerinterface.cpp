@@ -188,37 +188,7 @@ void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx)
         int len = ctx->getText().length();
         char* token = NULL;
 
-        char first_char = ctx->getText()[0];
-        if (first_char == '\'') {
-                token = strdup(ctx->getText().c_str() + 1);
-                token[len - 2] = '\0';
-        } else {
-                token = strdup(ctx->getText().c_str());
-                if (strhaschar(token, '.')) {
-                        type = COL_FLOAT;
-                        double value = str2double(token);
-                } else {
-                        type = COL_INT;
-                        long value = str2long(token);
-                }
-        }
-
-        switch(_query->mode)
-        {
-        case MODE_SELECT:
-                //_tables.top()->add_constant(type, stringCopy);
-                break;
-        case MODE_SEARCH:
-                //_tables.top()->add_search_column_const(type, stringCopy);
-                break;
-        default:
-                std::cerr << "Error: Constant expression mode: " << _query->mode << ".\n";
-                break;
-    }
-
-    /* Minor memory leak here - DataView needs destructor for special cases like this to free the memory. */
-    //free(stringCopy);
-
+        query_add_constant(_query, ctx->getText().c_str(), ctx->getText().length());
 
 }
 void ListenerInterface::exitConstant(TSqlParser::ConstantContext * ctx) { }
@@ -242,22 +212,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 
         switch (_current_list) {
         case TOK_COLUMN_NAME:
-                if (_query->mode == MODE_SELECT) {
-                        select_add_column((struct select*) _query->op,
-                                          expression_new(EXPR_COLUMN_NAME, token),
-                                          _table_name);
-                } else if (_query->mode == MODE_SEARCH) {
-                        query_add_logic_column(_query,
-                                               expression_new(EXPR_COLUMN_NAME, token),
-                                               _table_name);
-                } else if (_query->mode == MODE_GROUPBY) {
-                        query_add_group_column(_query,
-                                               expression_new(EXPR_COLUMN_NAME, token),
-                                               _table_name);
-                } else {
-                        std::cerr << "Unhandled COLUMN_NAME: " << token << '\n';
-                        free_(token);
-                }
+                query_add_column(_query, token, _table_name);
                 /* consume table designation */
                 _table_name[0] = '\0';
                 break;

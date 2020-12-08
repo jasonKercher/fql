@@ -8,6 +8,7 @@ extern "C" {
 #include "query.h"
 #include "operation.h"
 #include "schema.h"
+#include "column.h"
 
 struct select {
         enum op oper_type;
@@ -19,7 +20,7 @@ struct select* select_new();
 struct select* select_init(struct select*);
 void select_free(struct select*);
 
-void select_add_column(struct select*
+Column* select_add_column(struct select*
                       ,struct expression* expr
                       ,const char* table_name);
 

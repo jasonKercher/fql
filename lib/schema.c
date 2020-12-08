@@ -199,6 +199,9 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
 {
         Column** it = vec_begin(columns);
         for (; it != vec_end(columns); ++it) {
+                if ((*it)->expr->type == EXPR_CONST) {
+                        continue;
+                }
                 int matches = 0;
                 int j = 0;
 

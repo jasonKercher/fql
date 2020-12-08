@@ -28,12 +28,13 @@ void select_free(Select* select)
         free_(select);
 }
 
-void select_add_column(Select* select
-                      ,Expression* expr
-                      ,const char* table_name)
+Column* select_add_column(Select* select,
+                          Expression* expr,
+                          const char* table_name)
 {
         Column* new_col = column_new(expr, table_name);
         schema_add_column(select->schema, new_col);
+        return new_col;
 }
 
 void select_apply_process(Select* select, Plan* plan)
