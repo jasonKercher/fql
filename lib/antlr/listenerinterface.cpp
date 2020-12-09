@@ -196,6 +196,9 @@ void ListenerInterface::exitConstant(TSqlParser::ConstantContext * ctx) { }
 void ListenerInterface::enterSign(TSqlParser::SignContext * ctx) { }
 void ListenerInterface::exitSign(TSqlParser::SignContext * ctx) { }
 
+void ListenerInterface::enterUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx) { }
+void ListenerInterface::exitUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx) { }
+
 void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 {
         int len = ctx->getText().length();
@@ -1470,9 +1473,6 @@ void ListenerInterface::exitConstant_LOCAL_ID(TSqlParser::Constant_LOCAL_IDConte
 
 void ListenerInterface::enterCase_expression(TSqlParser::Case_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitCase_expression(TSqlParser::Case_expressionContext * ctx) { }
-
-void ListenerInterface::enterUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx) { }
 
 void ListenerInterface::enterConstant_expression(TSqlParser::Constant_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitConstant_expression(TSqlParser::Constant_expressionContext * ctx) { }
