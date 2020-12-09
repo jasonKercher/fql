@@ -245,18 +245,28 @@ void ListenerInterface::enterComparison_operator(TSqlParser::Comparison_operator
 { 
         query_set_logic_comparison(_query, ctx->getText().c_str());
 }
-void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorContext * ctx) { }
+void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorContext * ctx) 
+{ 
+}
 
-void ListenerInterface::enterSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) { }
-void ListenerInterface::exitSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) { }
+void ListenerInterface::enterSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) 
+{ 
+       /* Some functions may enter here only */ 
+}
+void ListenerInterface::exitSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) 
+{ 
+        query_exit_function(_query);
+}
 
-void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx) { }
+void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx) 
+{
+        query_enter_function(_query, ctx->getText().c_str());
+}
 void ListenerInterface::exitScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx) { }
 
 void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContext * ctx)
 {
         _query->mode = MODE_SELECT;
-        //_query->op = OP_SELECT;
         _query->op = select_new();
 }
 
@@ -289,25 +299,25 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
         struct expression* new_expr = expression_new(EXPR_NONE, stack_pop(&_query_stack));
         _query = (struct query*) _query_stack->data;
 
-        switch(_query->mode) {
-        case MODE_SELECT:
-                new_expr->type = EXPR_SUBQUERY_CONST;
-                select_add_column((struct select*) _query->op, new_expr, "");
-                break;
-        case MODE_UPDATE:
-                new_expr->type = EXPR_SUBQUERY;
-                /* TODO */
-                break;
-        case MODE_SOURCES:
-                new_expr->type = EXPR_SUBQUERY;
-                /* TODO */
-                break;
-        case MODE_SEARCH:
-                break;
-        default:
-                std::cerr << "Undefined mode\n";
-                exit(EXIT_FAILURE);
-        }
+        //switch(_query->mode) {
+        //case MODE_SELECT:
+        //        new_expr->type = EXPR_SUBQUERY_CONST;
+        //        select_add_column((struct select*) _query->op, new_expr, "");
+        //        break;
+        //case MODE_UPDATE:
+        //        new_expr->type = EXPR_SUBQUERY;
+        //        /* TODO */
+        //        break;
+        //case MODE_SOURCES:
+        //        new_expr->type = EXPR_SUBQUERY;
+        //        /* TODO */
+        //        break;
+        //case MODE_SEARCH:
+        //        break;
+        //default:
+        //        std::cerr << "Undefined mode\n";
+        //        exit(EXIT_FAILURE);
+        //}
 }
 
 void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContext * ctx)

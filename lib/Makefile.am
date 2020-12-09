@@ -14,5 +14,6 @@ libfql_la_SOURCES = include/fql.h lib.c \
 					operation.h operation.c \
 					reader.h reader.c \
 					logic.h logic.c \
-					select.h select.c
+					select.h select.c \
+					function.h function.c
 libfql_la_LIBADD = antlr/libantlr.la util/libutil.la -lantlr4-runtime -lcsv

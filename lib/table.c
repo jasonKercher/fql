@@ -54,7 +54,7 @@ Source* source_init(Source* src,
         *src = (Source) {
                  table                  /* table */
                 ,NULL                   /* condition */
-                ,vec_new_(Column*)      /* logic_columns */
+                ,vec_new_(Column*)      /* validation_list */
                 ,""                     /* alias */
                 ,source_type            /* source_type */
                 ,join_type              /* join_type */
@@ -74,7 +74,7 @@ void source_free(Source* source)
         if (source == NULL)
                 return;
 
-        vec_free(source->logic_columns);
+        vec_free(source->validation_list);
         table_free(source->table);
         free_(source);
 }

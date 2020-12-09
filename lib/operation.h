@@ -17,7 +17,7 @@ enum op {
         OP_UPDATE,
 };
 
-struct vec* op_get_columns(void* op);
+struct vec* op_get_validation_list(void* op);
 void op_apply_process(void* op, struct plan*);
 
 #ifdef __cplusplus

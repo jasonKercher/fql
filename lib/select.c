@@ -17,6 +17,7 @@ Select* select_init(Select* select)
         *select = (Select) {
                  OP_SELECT
                 ,schema_new()
+                ,vec_new_(Column*)
         };
 
         return select;
@@ -28,13 +29,10 @@ void select_free(Select* select)
         free_(select);
 }
 
-Column* select_add_column(Select* select,
-                          Expression* expr,
-                          const char* table_name)
+void select_add_column(Select* select, Column* col)
 {
-        Column* new_col = column_new(expr, table_name);
-        schema_add_column(select->schema, new_col);
-        return new_col;
+        schema_add_column(select->schema, col);
+        vec_push_back(select->validation_list, &col);
 }
 
 void select_apply_process(Select* select, Plan* plan)

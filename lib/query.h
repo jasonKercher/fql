@@ -44,7 +44,8 @@ struct query {
         /* All the variables below are temporaries for
          * tracking the query as antlr traverses it
          */
-        struct stack* logic_stack;      /* stack used to build logic trees */
+        struct stack* logic_stack;      /* used to build logic trees */
+        struct stack* function_stack;   /* used to track function nesting */
 
         struct expression* expr;
         enum mode mode;
@@ -61,6 +62,9 @@ void query_add_constant(Query*, const char*, int);
 void query_add_column(struct query*, char*, const char* table);
 void query_add_source(struct query*, struct stack**, const char*);
 void query_apply_table_alias(struct query*, const char*);
+
+void query_enter_function(struct query*, const char*);
+void query_exit_function(struct query*);
 
 /* Search building functions */
 void query_set_logic_comparison(struct query*, const char*);

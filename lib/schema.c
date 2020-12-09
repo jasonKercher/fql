@@ -4,7 +4,9 @@
 #include <csv.h>
 
 #include "fql.h"
+#include "expression.h"
 #include "column.h"
+#include "function.h"
 #include "query.h"
 #include "operation.h"
 #include "util/util.h"
@@ -199,7 +201,13 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
 {
         Column** it = vec_begin(columns);
         for (; it != vec_end(columns); ++it) {
-                if ((*it)->expr->type == EXPR_CONST) {
+                if ((*it)->expr->type == EXPR_FUNCTION) {
+                        Function* func = (*it)->expr->data;
+                        function_validate(func);
+                        schema_assign_columns_limited(func->args, sources, limit);
+                        continue;
+                }
+                if ((*it)->expr->type != EXPR_COLUMN_NAME) {
                         continue;
                 }
                 int matches = 0;
@@ -244,17 +252,18 @@ int schema_resolve_query(Query* query)
                if (schema_resolve_source(src)) {
                        return FQL_FAIL;
                }
-               if (schema_assign_columns_limited(src->logic_columns,
+               if (schema_assign_columns_limited(src->validation_list,
                                          sources, i)) {
                        return FQL_FAIL;
                }
        }
 
-       if (schema_assign_columns(query->groups, sources)) {
-               return FQL_FAIL;
-       }
+       //if (schema_assign_columns(query->groups, sources)) {
+       //        return FQL_FAIL;
+       //}
 
-       if (schema_assign_columns(op_get_columns(query->op), sources)) {
+       Vec* op_cols = op_get_validation_list(query->op);
+       if (schema_assign_columns(op_cols, sources)) {
                return FQL_FAIL;
        }
 

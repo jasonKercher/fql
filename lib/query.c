@@ -2,10 +2,10 @@
 
 #include <stdbool.h>
 
-//#include "column.h"
-
+#include "fql.h"
 #include "logic.h"
 #include "select.h"
+#include "function.h"
 #include "util/dgraph.h"
 #include "util/util.h"
 
@@ -39,6 +39,7 @@ Query* query_init(Query* query)
                 ,NULL                   /* operation */
 
                 ,NULL                   /* logic_stack */
+                ,NULL                   /* function_stack */
                 ,NULL                   /* expr */
                 ,MODE_UNDEFINED         /* mode */
                 ,LOGIC_UNDEFINED        /* logic_mode */
@@ -68,51 +69,47 @@ void query_free(void* generic_query)
         free_(query);
 }
 
-
-Column* _add_logic_column(Query* query,
-                          Expression* expr,
-                          const char* table_name)
+void _add_validation_column(Query* query, Column* col)
 {
         Source* src = vec_back(query->sources);
-        Column* new_col = column_new(expr, table_name);
-        vec_push_back(src->logic_columns, &new_col);
-
-        struct logic_builder* builder = query->logic_stack->data;
-        logic_add_column(builder->current->data, new_col);
-
-        return new_col;
+        vec_push_back(src->validation_list, &col);
 }
 
-Column* _add_group_column(Query* query,
-                          Expression* expr,
-                          const char* table_name)
+void _add_logic_column(Query* query, Column* col)
 {
-        Column* new_col = column_new(expr, table_name);
-        vec_push_back(query->groups, &new_col);
+        struct logic_builder* builder = query->logic_stack->data;
+        logic_add_column(builder->current->data, col);
+}
 
-        return new_col;
+int _distribute_column(Query* query, Column* col)
+{
+        if (query->function_stack) {
+                function_add_column(query->function_stack->data, col);
+                return FQL_GOOD;
+        }
+        switch(query->mode) {
+        case MODE_SELECT:
+                select_add_column(query->op, col);
+                break; 
+        case MODE_SEARCH:
+                _add_logic_column(query, col);
+                _add_validation_column(query, col);
+                break;
+        case MODE_GROUPBY:
+                vec_push_back(query->groups, &col);
+                _add_validation_column(query, col);
+                break;
+        default:
+                return FQL_FAIL;
+        }
+        return FQL_GOOD;
 }
 
 void query_add_column(Query* query, char* col_name, const char* table_id)
 {
-        Column* col = NULL;
-        switch(query->mode) {
-        case MODE_SELECT:
-                col = select_add_column(query->op,
-                                        expression_new(EXPR_COLUMN_NAME, col_name),
-                                        table_id);
-                break; 
-        case MODE_SEARCH:
-                col = _add_logic_column(query,
-                                        expression_new(EXPR_COLUMN_NAME, col_name),
-                                        table_id);
-                break;
-        case MODE_GROUPBY:
-                col = _add_group_column(query,
-                                        expression_new(EXPR_COLUMN_NAME, col_name),
-                                        table_id);
-                break;
-        default:
+        Column* col = column_new(expression_new(EXPR_COLUMN_NAME, col_name), 
+                                 table_id);
+        if (_distribute_column(query, col)) { 
                 fprintf(stderr, "Unhandled COLUMN_NAME: %s\n", col_name);
                 free_(col_name);
                 return;
@@ -149,21 +146,12 @@ void query_add_constant(Query* query, const char* s, int len)
                 }
         }
 
-        Column* col = NULL;
-        switch(query->mode)
-        {
-        case MODE_SELECT:
-                col = select_add_column(query->op, expr, "");
-                break;
-        case MODE_SEARCH:
-                col = _add_logic_column(query->op, expr, "");
-                break;
-        default:
+        Column* col = column_new(expr, "");
+        col->type = type;
+        if (_distribute_column(query, col)) {
                 fprintf(stderr, "Unhandled constant expression: %d\n", query->mode);
                 return; 
         }
-
-        col->type = type;
 }
 
 
@@ -212,7 +200,24 @@ void query_apply_table_alias(Query* query, const char* alias)
         strncpy_(source->alias, alias, TABLE_NAME_MAX);
 }
 
-/* Scroll below this comment at your own risk */
+void query_enter_function(Query* query, const char* func_name)
+{
+        Function* func = function_new(func_name);
+        Column* col = column_new(expression_new(EXPR_FUNCTION, func), "");
+        
+        if (_distribute_column(query, col)) {
+                fprintf(stderr, "Unhandled function: %s\n", func_name);
+                return;
+        }
+        stack_push(&query->function_stack, func);
+}
+
+void query_exit_function(Query* query)
+{
+        stack_pop(&query->function_stack);
+}
+
+/*** Scroll below this comment at your own risk ***/
 
 struct logic_builder* logic_builder_new()
 {

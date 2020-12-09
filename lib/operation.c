@@ -4,13 +4,13 @@
 #include "select.h"
 #include "util/util.h"
 
-Vec* op_get_columns(void* op)
+Vec* op_get_validation_list(void* op)
 {
         enum op* type = op;
 
         switch(*type) {
         case OP_SELECT:
-                return ((Select*) op)->schema->columns;
+                return ((Select*) op)->validation_list;
         default:
                 return NULL;
         }

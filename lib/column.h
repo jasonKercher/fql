@@ -25,7 +25,7 @@ struct column {
 };
 typedef struct column Column;
 
-struct column* column_new(struct expression*, const char*);
+struct column* column_new(struct expression*, const char* table_id);
 struct column* column_init(struct column*, struct expression*, const char*);
 void column_free(void*);
 
