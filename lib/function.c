@@ -12,6 +12,52 @@ Function* function_new(const char* func_name)
         return function_init(new_func, func_name);
 }
 
+Function* function_new_op(enum expr_operator op)
+{
+        Function* new_func = NULL;
+        malloc_(new_func, sizeof(*new_func));
+
+        *new_func = (Function) {
+                 NULL                   /* caller */
+                ,vec_new_(Column*)      /* args */
+                ,""                     /* name */
+                ,2                      /* arg_min */
+                ,2                      /* arg_max */
+        };
+
+        switch (op) {
+        case OPERATOR_PLUS:
+                strncpy_(new_func->name, "PLUS", FUNC_NAME_MAX);
+                break;
+        case OPERATOR_MINUS:
+                strncpy_(new_func->name, "MINUS", FUNC_NAME_MAX);
+                break;
+        case OPERATOR_MULTIPY:
+                strncpy_(new_func->name, "MULTIPLY", FUNC_NAME_MAX);
+                break;
+        case OPERATOR_DIVIDE:
+                strncpy_(new_func->name, "DIVIDE", FUNC_NAME_MAX);
+                break;
+        case OPERATOR_MODULE:
+                strncpy_(new_func->name, "MODULE", FUNC_NAME_MAX);
+                break;
+        case OPERATOR_BIT_OR:
+                strncpy_(new_func->name, "BIT_OR", FUNC_NAME_MAX);
+                break;
+        case OPERATOR_BIT_AND:
+                strncpy_(new_func->name, "BIT_AND", FUNC_NAME_MAX);
+                break;
+        case OPERATOR_BIT_XOR:
+                strncpy_(new_func->name, "BIT_XOR", FUNC_NAME_MAX);
+                break;
+        case OPERATOR_BIT_NOT:
+                strncpy_(new_func->name, "BIT_NOT", FUNC_NAME_MAX);
+                break;
+        }
+
+        return new_func;
+}
+
 Function* function_init(Function* func, const char* func_name)
 {
         *func = (Function) {
@@ -146,12 +192,12 @@ int function_validate(Function* func)
                 return FQL_GOOD;
         }
         if (func->arg_min == func->arg_max) {
-                fprintf(stderr, 
-                        "Function %s expected %d argument(s)... Found %d\n", 
+                fprintf(stderr,
+                        "Function `%s' expected %d argument(s)... Found %d\n",
                         func->name, func->arg_min, argc);
         } else {
-                fprintf(stderr, 
-                        "Function %s expected between %d and %d arguments... Found %d\n", 
+                fprintf(stderr,
+                        "Function `%s' expected between %d and %d arguments... Found %d\n",
                         func->name, func->arg_min, func->arg_max, argc);
         }
         return FQL_FAIL;
@@ -159,5 +205,5 @@ int function_validate(Function* func)
 
 void function_add_column(Function* func, Column* col)
 {
-        vec_push_back(func->args, &col); 
+        vec_push_back(func->args, &col);
 }

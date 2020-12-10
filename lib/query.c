@@ -5,7 +5,6 @@
 #include "fql.h"
 #include "logic.h"
 #include "select.h"
-#include "function.h"
 #include "util/dgraph.h"
 #include "util/util.h"
 
@@ -90,7 +89,7 @@ int _distribute_column(Query* query, Column* col)
         switch(query->mode) {
         case MODE_SELECT:
                 select_add_column(query->op, col);
-                break; 
+                break;
         case MODE_SEARCH:
                 _add_logic_column(query, col);
                 _add_validation_column(query, col);
@@ -107,9 +106,9 @@ int _distribute_column(Query* query, Column* col)
 
 void query_add_column(Query* query, char* col_name, const char* table_id)
 {
-        Column* col = column_new(expression_new(EXPR_COLUMN_NAME, col_name), 
+        Column* col = column_new(expression_new(EXPR_COLUMN_NAME, col_name),
                                  table_id);
-        if (_distribute_column(query, col)) { 
+        if (_distribute_column(query, col)) {
                 fprintf(stderr, "Unhandled COLUMN_NAME: %s\n", col_name);
                 free_(col_name);
                 return;
@@ -150,7 +149,7 @@ void query_add_constant(Query* query, const char* s, int len)
         col->type = type;
         if (_distribute_column(query, col)) {
                 fprintf(stderr, "Unhandled constant expression: %d\n", query->mode);
-                return; 
+                return;
         }
 }
 
@@ -200,16 +199,27 @@ void query_apply_table_alias(Query* query, const char* alias)
         strncpy_(source->alias, alias, TABLE_NAME_MAX);
 }
 
-void query_enter_function(Query* query, const char* func_name)
+void _add_function(Query* query, Function* func)
 {
-        Function* func = function_new(func_name);
         Column* col = column_new(expression_new(EXPR_FUNCTION, func), "");
-        
+
         if (_distribute_column(query, col)) {
-                fprintf(stderr, "Unhandled function: %s\n", func_name);
+                fprintf(stderr, "Unhandled function: %s\n", func->name);
                 return;
         }
         stack_push(&query->function_stack, func);
+}
+
+void query_enter_function(Query* query, const char* func_name)
+{
+        Function* func = function_new(func_name);
+        _add_function(query, func);
+}
+
+void query_enter_operator(Query* query, enum expr_operator op)
+{
+        Function* func = function_new_op(op);
+        _add_function(query, func);
 }
 
 void query_exit_function(Query* query)

@@ -279,59 +279,38 @@ void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext
 
 void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx) 
 { 
-        int plus = ctx->getTokens(TSqlParser::PLUS).size();
-        int minu = ctx->getTokens(TSqlParser::MINUS).size();
-        int mult = ctx->getTokens(TSqlParser::STAR).size();
-        int divi = ctx->getTokens(TSqlParser::DIVIDE).size();
-        int modu = ctx->getTokens(TSqlParser::MODULE).size();
-        int bor  = ctx->getTokens(TSqlParser::BIT_OR).size();
-        int band = ctx->getTokens(TSqlParser::BIT_AND).size();
-        int bxor = ctx->getTokens(TSqlParser::BIT_XOR).size();
-        if (plus) {
-                std::cerr << "enter +\n";
-        } else if (minu) {
-                std::cerr << "enter -\n";
-        } else if (mult) {
-                std::cerr << "enter *\n";
-        } else if (divi) {
-                std::cerr << "enter /\n";
-        } else if (modu) {
-                std::cerr << "enter %\n";
-        } else if (bor ) {
-                std::cerr << "enter |\n";
-        } else if (band) {
-                std::cerr << "enter &\n";
-        } else if (bxor) {
-                std::cerr << "enter ^\n";
+        if        (!ctx->getTokens(TSqlParser::PLUS).empty()) {
+                query_enter_operator(_query, OPERATOR_PLUS);
+        } else if (!ctx->getTokens(TSqlParser::MINUS).empty()) {
+                query_enter_operator(_query, OPERATOR_MINUS);
+        } else if (!ctx->getTokens(TSqlParser::STAR).empty()) {
+                query_enter_operator(_query, OPERATOR_MULTIPY);
+        } else if (!ctx->getTokens(TSqlParser::DIVIDE).empty()) {
+                query_enter_operator(_query, OPERATOR_DIVIDE);
+        } else if (!ctx->getTokens(TSqlParser::MODULE).empty()) {
+                query_enter_operator(_query, OPERATOR_MODULE);
+        } else if (!ctx->getTokens(TSqlParser::BIT_OR).empty()) {
+                query_enter_operator(_query, OPERATOR_BIT_OR);
+        } else if (!ctx->getTokens(TSqlParser::BIT_AND).empty()) {
+                query_enter_operator(_query, OPERATOR_BIT_AND);
+        } else if (!ctx->getTokens(TSqlParser::BIT_XOR).empty()) {
+                query_enter_operator(_query, OPERATOR_BIT_XOR);
         }
 }
 void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx) 
 { 
-        int plus = ctx->getTokens(TSqlParser::PLUS).size();
-        int minu = ctx->getTokens(TSqlParser::MINUS).size();
-        int mult = ctx->getTokens(TSqlParser::STAR).size();
-        int divi = ctx->getTokens(TSqlParser::DIVIDE).size();
-        int modu = ctx->getTokens(TSqlParser::MODULE).size();
-        int bor  = ctx->getTokens(TSqlParser::BIT_OR).size();
-        int band = ctx->getTokens(TSqlParser::BIT_AND).size();
-        int bxor = ctx->getTokens(TSqlParser::BIT_XOR).size();
-        if (plus) {
-                std::cerr << "exit  +\n";
-        } else if (minu) {
-                std::cerr << "exit  -\n";
-        } else if (mult) {
-                std::cerr << "exit  *\n";
-        } else if (divi) {
-                std::cerr << "exit  /\n";
-        } else if (modu) {
-                std::cerr << "exit  %\n";
-        } else if (bor ) {
-                std::cerr << "exit  |\n";
-        } else if (band) {
-                std::cerr << "exit  &\n";
-        } else if (bxor) {
-                std::cerr << "exit  ^\n";
+        if (
+                !ctx->getTokens(TSqlParser::PLUS).empty()
+             || !ctx->getTokens(TSqlParser::MINUS).empty()
+             || !ctx->getTokens(TSqlParser::STAR).empty()
+             || !ctx->getTokens(TSqlParser::DIVIDE).empty()
+             || !ctx->getTokens(TSqlParser::MODULE).empty()
+             || !ctx->getTokens(TSqlParser::BIT_OR).empty()
+             || !ctx->getTokens(TSqlParser::BIT_AND).empty()
+             || !ctx->getTokens(TSqlParser::BIT_XOR).empty()) {
+                query_exit_function(_query);
         }
+        
 }
 
 void ListenerInterface::enterPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { }

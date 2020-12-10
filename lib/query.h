@@ -11,6 +11,7 @@ extern "C" {
 #include "util/queue.h"
 #include "util/vec.h"
 #include "table.h"
+#include "function.h"
 #include "expression.h"
 #include "operation.h"
 #include "reader.h"
@@ -65,6 +66,7 @@ void query_apply_table_alias(struct query*, const char*);
 
 void query_enter_function(struct query*, const char*);
 void query_exit_function(struct query*);
+void query_enter_operator(struct query*, enum expr_operator op);
 
 /* Search building functions */
 void query_set_logic_comparison(struct query*, const char*);
