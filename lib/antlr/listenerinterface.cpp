@@ -277,8 +277,62 @@ void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext
 {
 }
 
-void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx) { }
-void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx) { }
+void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx) 
+{ 
+        int plus = ctx->getTokens(TSqlParser::PLUS).size();
+        int minu = ctx->getTokens(TSqlParser::MINUS).size();
+        int mult = ctx->getTokens(TSqlParser::STAR).size();
+        int divi = ctx->getTokens(TSqlParser::DIVIDE).size();
+        int modu = ctx->getTokens(TSqlParser::MODULE).size();
+        int bor  = ctx->getTokens(TSqlParser::BIT_OR).size();
+        int band = ctx->getTokens(TSqlParser::BIT_AND).size();
+        int bxor = ctx->getTokens(TSqlParser::BIT_XOR).size();
+        if (plus) {
+                std::cerr << "enter +\n";
+        } else if (minu) {
+                std::cerr << "enter -\n";
+        } else if (mult) {
+                std::cerr << "enter *\n";
+        } else if (divi) {
+                std::cerr << "enter /\n";
+        } else if (modu) {
+                std::cerr << "enter %\n";
+        } else if (bor ) {
+                std::cerr << "enter |\n";
+        } else if (band) {
+                std::cerr << "enter &\n";
+        } else if (bxor) {
+                std::cerr << "enter ^\n";
+        }
+}
+void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx) 
+{ 
+        int plus = ctx->getTokens(TSqlParser::PLUS).size();
+        int minu = ctx->getTokens(TSqlParser::MINUS).size();
+        int mult = ctx->getTokens(TSqlParser::STAR).size();
+        int divi = ctx->getTokens(TSqlParser::DIVIDE).size();
+        int modu = ctx->getTokens(TSqlParser::MODULE).size();
+        int bor  = ctx->getTokens(TSqlParser::BIT_OR).size();
+        int band = ctx->getTokens(TSqlParser::BIT_AND).size();
+        int bxor = ctx->getTokens(TSqlParser::BIT_XOR).size();
+        if (plus) {
+                std::cerr << "exit  +\n";
+        } else if (minu) {
+                std::cerr << "exit  -\n";
+        } else if (mult) {
+                std::cerr << "exit  *\n";
+        } else if (divi) {
+                std::cerr << "exit  /\n";
+        } else if (modu) {
+                std::cerr << "exit  %\n";
+        } else if (bor ) {
+                std::cerr << "exit  |\n";
+        } else if (band) {
+                std::cerr << "exit  &\n";
+        } else if (bxor) {
+                std::cerr << "exit  ^\n";
+        }
+}
 
 void ListenerInterface::enterPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { }
 void ListenerInterface::exitPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { }
