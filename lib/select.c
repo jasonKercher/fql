@@ -17,7 +17,6 @@ Select* select_init(Select* select)
         *select = (Select) {
                  OP_SELECT
                 ,schema_new()
-                ,vec_new_(Column*)
         };
 
         return select;
@@ -32,7 +31,6 @@ void select_free(Select* select)
 void select_add_column(Select* select, Column* col)
 {
         schema_add_column(select->schema, col);
-        vec_push_back(select->validation_list, &col); /* TODO: remove */
 }
 
 void select_apply_process(Select* select, Plan* plan)
@@ -43,6 +41,9 @@ void select_apply_process(Select* select, Plan* plan)
         Vec* col_vec = select->schema->columns;
         Column** it = vec_begin(col_vec);
         for (; it != vec_end(col_vec); ++it) {
+                if (it != vec_begin(col_vec)) {
+                        strcat(proc->action_msg, ",");
+                }
                 column_cat_description(*it, proc->action_msg);
         }
 
@@ -53,9 +54,4 @@ void select_apply_process(Select* select, Plan* plan)
 void select_apply_column_alias(Select* select, const char* alias)
 {
         schema_apply_column_alias(select->schema, alias);
-}
-
-_Bool select_validate(Select* select)
-{
-        return true;
 }

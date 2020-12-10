@@ -10,7 +10,7 @@ Vec* op_get_validation_list(void* op)
 
         switch(*type) {
         case OP_SELECT:
-                return ((Select*) op)->validation_list;
+                return ((Select*) op)->schema->columns;
         default:
                 return NULL;
         }

@@ -13,7 +13,6 @@ extern "C" {
 struct select {
         enum op oper_type;
         struct schema* schema;
-        struct vec* validation_list;
 };
 typedef struct select Select;
 
@@ -25,7 +24,6 @@ void select_add_column(struct select*, struct column*);
 
 void select_apply_process(struct select*, struct plan*);
 void select_apply_column_alias(struct select*, const char* alias);
-_Bool select_validate(struct select*);
 
 #ifdef __cplusplus
 }
