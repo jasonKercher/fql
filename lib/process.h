@@ -1,7 +1,7 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
-#define ACTION_MAX 512
+#define ACTION_MAX 1024
 #define OBJECT_MAX 128
 
 /* process_func(records, process_data) */

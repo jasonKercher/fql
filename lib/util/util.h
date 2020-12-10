@@ -65,6 +65,17 @@ typedef void(*generic_data_func)(void*);
         dest_[n_-1] = '\0';             \
 }
 
+/**
+ * strncat but guaranteed to end with '\0'
+ * TODO: Would be more efficient to just
+ *       write this one from scratch...
+ */
+#define strncat_(dest_, src_, n_) {     \
+        int l0_ = strlen(dest_);        \
+        strncat(dest_, src_, l0_+n_-1); \
+        dest_[n_-1] = '\0';             \
+}
+
 
 /**
  * Free pointer if not NULL and set to NULL

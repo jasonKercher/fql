@@ -32,13 +32,19 @@ void select_free(Select* select)
 void select_add_column(Select* select, Column* col)
 {
         schema_add_column(select->schema, col);
-        vec_push_back(select->validation_list, &col);
+        vec_push_back(select->validation_list, &col); /* TODO: remove */
 }
 
 void select_apply_process(Select* select, Plan* plan)
 {
         Process* proc = plan->op_true->data;
-        strcpy(proc->action_msg, "SELECT");
+        strcpy(proc->action_msg, "SELECT ");
+
+        Vec* col_vec = select->schema->columns;
+        Column** it = vec_begin(col_vec);
+        for (; it != vec_end(col_vec); ++it) {
+                column_cat_description(*it, proc->action_msg);
+        }
 
         proc = plan->op_false->data;
         proc->is_passive = true;
