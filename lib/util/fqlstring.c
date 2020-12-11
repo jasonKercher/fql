@@ -75,10 +75,13 @@ void string_sprintf(String* s, const char* fmt, ...)
 {
         va_list args;
         va_start(args, fmt);
-        int len = vsprintf(NULL, fmt, args);
-        vec_resize(s, len);
-        vsprintf(s->data, fmt, args);
+        va_list args2;
+        va_copy(args2, args);
+        int len = vsnprintf(NULL, 0, fmt, args);
         va_end(args);
+        vec_resize(s, len+1);
+        vsnprintf(s->data, len+1, fmt, args2);
+        va_end(args2);
 }
 
 
