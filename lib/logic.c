@@ -32,12 +32,12 @@ void logic_free(Logic* logic)
 void logic_assign_process(Logic* logic, Process* proc)
 {
         if (logic->comp_type == COMP_TRUE) {
-                strcpy(proc->action_msg, "End Logic: TRUE");
+                string_cpy(proc->action_msg, "End Logic: TRUE");
                 proc->is_passive = true;
                 return;
         }
         if (logic->comp_type == COMP_FALSE) {
-                strcpy(proc->action_msg, "End Logic: FALSE");
+                string_cpy(proc->action_msg, "End Logic: FALSE");
                 proc->is_passive = true;
                 return;
         }
@@ -48,37 +48,37 @@ void logic_assign_process(Logic* logic, Process* proc)
         column_cat_description(logic->col[0], proc->action_msg);
         switch (logic->comp_type) {
         case COMP_EQ:
-                strcat(proc->action_msg, " = ");
+                string_cat(proc->action_msg, " = ");
                 break;
         case COMP_NE:
-                strcat(proc->action_msg, " != ");
+                string_cat(proc->action_msg, " != ");
                 break;
         case COMP_GT:
-                strcat(proc->action_msg, " > ");
+                string_cat(proc->action_msg, " > ");
                 break;
         case COMP_GE:
-                strcat(proc->action_msg, " >= ");
+                string_cat(proc->action_msg, " >= ");
                 break;
         case COMP_LT:
-                strcat(proc->action_msg, " < ");
+                string_cat(proc->action_msg, " < ");
                 break;
         case COMP_LE:
-                strcat(proc->action_msg, " <= ");
+                string_cat(proc->action_msg, " <= ");
                 break;
         case COMP_LIKE:
-                strcat(proc->action_msg, " LIKE ");
+                string_cat(proc->action_msg, " LIKE ");
                 break;
         case COMP_NOT_LIKE:
-                strcat(proc->action_msg, " NOT LIKE ");
+                string_cat(proc->action_msg, " NOT LIKE ");
                 break;
         case COMP_NULL:
-                strcat(proc->action_msg, " NULL ");
+                string_cat(proc->action_msg, " NULL ");
                 break;
         case COMP_NOT_NULL:
-                strcat(proc->action_msg, " NOT NULL ");
+                string_cat(proc->action_msg, " NOT NULL ");
                 break;
         case COMP_NOT_SET:
-                strcat(proc->action_msg, " <no comparison> ");
+                string_cat(proc->action_msg, " <no comparison> ");
                 break;
         default:
                 break;

@@ -1,15 +1,14 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
-#define ACTION_MAX 1024
-#define OBJECT_MAX 128
+#include "util/fqlstring.h"
 
 /* process_func(records, process_data) */
 typedef int (*process_func)(void**, void*);
 
 struct process {
         process_func* action;
-        char action_msg[ACTION_MAX];
+        String* action_msg;
         _Bool is_passive;
 };
 typedef struct process Process;

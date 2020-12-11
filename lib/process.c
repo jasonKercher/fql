@@ -15,17 +15,16 @@ Process* process_new(const char* action)
 Process* process_init(Process* proc, const char* action)
 {
         *proc = (Process) {
-                 NULL           /* action */
-                ,""             /* action_msg */
-                ,false          /* is_passive */
+                 NULL                           /* action */
+                ,string_from_char_ptr(action)   /* action_msg */
+                ,false                          /* is_passive */
         };
-
-        strncpy_(proc->action_msg, action, ACTION_MAX);
 
         return proc;
 }
 
 void process_free(Process* proc)
 {
+        string_free(proc->action_msg);
         free_(proc);
 }

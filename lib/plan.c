@@ -109,11 +109,11 @@ void _plan_from(Plan* plan, Query* query)
                 return;
         }
 
-        char action_msg[ACTION_MAX] = "";
+        String* action_msg = string_new();
         Source* src = vec_begin(query->sources);
 
-        sprintf(action_msg, "%s: %s", src->table->reader->file_name, "stream read");
-        Dnode* from_proc = dgraph_add_data(plan->processes, process_new(action_msg));
+        string_sprintf(action_msg, "%s: %s", src->table->reader->file_name, "stream read");
+        Dnode* from_proc = dgraph_add_data(plan->processes, process_new(action_msg->data));
         from_proc->is_root = true;
         plan->current->out[0] = from_proc;
         plan->current = from_proc;
@@ -145,11 +145,11 @@ void _plan_from(Plan* plan, Query* query)
 
                 plan->current->out[0] = join_proc_node;
 
-                sprintf(action_msg,
-                        "%s: %s",
-                        src->table->reader->file_name,
-                        "mmap read");
-                Dnode* read_proc = dgraph_add_data(plan->processes, process_new(action_msg));
+                string_sprintf(action_msg,
+                               "%s: %s",
+                               src->table->reader->file_name,
+                               "mmap read");
+                Dnode* read_proc = dgraph_add_data(plan->processes, process_new(action_msg->data));
                 read_proc->is_root = true;
                 read_proc->out[0] = join_proc_node;
 
@@ -299,7 +299,7 @@ void _print_plan(Plan* plan)
         Dnode** it = vec_begin(nodes);
         for (; it != vec_end(nodes); ++it) {
                 Process* proc = (*it)->data;
-                int len = strlen(proc->action_msg);
+                int len = proc->action_msg->size;
                 if (len > max_len) {
                         max_len = len;
                 }
@@ -332,21 +332,21 @@ void _print_plan(Plan* plan)
                 fputc('\n', stderr);
 
                 Process* proc = (*it)->data;
-                int len = strlen(proc->action_msg);
-                fputs(proc->action_msg, stderr);
+                int len = proc->action_msg->size;
+                fputs(proc->action_msg->data, stderr);
                 _col_sep(max_len - len);
                 len = 0;
 
                 if ((*it)->out[0] != NULL) {
                         proc = (*it)->out[0]->data;
-                        len = strlen(proc->action_msg);
-                        fputs(proc->action_msg, stderr);
+                        len = proc->action_msg->size;
+                        fputs(proc->action_msg->data, stderr);
                 }
                 _col_sep(max_len - len);
 
                 if ((*it)->out[1] != NULL) {
                         proc = (*it)->out[1]->data;
-                        fputs(proc->action_msg, stderr);
+                        fputs(proc->action_msg->data, stderr);
                 }
         }
 }

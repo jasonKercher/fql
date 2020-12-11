@@ -36,13 +36,13 @@ void select_add_column(Select* select, Column* col)
 void select_apply_process(Select* select, Plan* plan)
 {
         Process* proc = plan->op_true->data;
-        strcpy(proc->action_msg, "SELECT ");
+        string_cpy(proc->action_msg, "SELECT ");
 
         Vec* col_vec = select->schema->columns;
         Column** it = vec_begin(col_vec);
         for (; it != vec_end(col_vec); ++it) {
                 if (it != vec_begin(col_vec)) {
-                        strcat(proc->action_msg, ",");
+                        string_cat(proc->action_msg, ",");
                 }
                 column_cat_description(*it, proc->action_msg);
         }

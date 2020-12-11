@@ -186,7 +186,7 @@ void query_add_source(Query* query,
 
         stack_free_data(source_stack);
 
-        source_init(vec_add(query->sources),
+        source_init(vec_add_one(query->sources),
                     new_table,
                     alias,
                     type,
@@ -257,11 +257,13 @@ void _assign_logic(Query* query, struct logic_builder* builder)
         /* remove stranded nodes */
         Vec* nodes = builder->ltree->tree->nodes;
         Dnode** node = vec_begin(nodes);
-        for (; (void*)node < vec_end(nodes); ++node) {
+        while ((void*)node != vec_end(nodes)) {
                 Logic* logic = (*node)->data;
                 if (logic->comp_type == COMP_NOT_SET) {
-                        vec_erase(nodes, node);
                         dnode_free(*node);
+                        vec_erase(nodes, node);
+                } else {
+                        ++node;
                 }
         }
 

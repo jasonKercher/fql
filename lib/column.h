@@ -5,6 +5,8 @@
 #include "table.h"
 #include "expression.h"
 
+#include "util/fqlstring.h"
+
 enum col_type {
         COL_UNDEFINED,
         COL_STRING,
@@ -29,7 +31,7 @@ struct column* column_new(struct expression*, const char* table_id);
 struct column* column_init(struct column*, struct expression*, const char*);
 void column_free(void*);
 
-void column_cat_description(struct column* col, char* msg);
+void column_cat_description(struct column* col, String*);
 int column_try_assign_source(struct column*, struct source*);
 
 #endif /* COLUMN_H */

@@ -41,75 +41,63 @@ void column_free(void* generic_col)
         free_(col);
 }
 
-/* TODO: The silly use of strncat_ and maxlen here
- *       should be replaced by vec(char). We can
- *       easily overflow here in any strcat. Fixing
- *       this without vec would be impractical.
- */
-void column_cat_description(Column* col, char* msg)
+void column_cat_description(Column* col, String* msg)
 {
-        int maxlen = ACTION_MAX - strlen(msg);
-        if (maxlen <= 2) {
-                return;
-        }
         switch (col->expr->type) {
         case EXPR_COLUMN_NAME:
-                strncat_(msg, col->expr->data, maxlen);
+                string_cat(msg, col->expr->data);
                 break;
         case EXPR_FUNCTION:
         {
                 Function* func = col->expr->data;
-                strncat_(msg, func->name, maxlen);
-                strcat(msg, "(");
+                string_cat(msg, func->name);
+                string_push_back(msg, '(');
 
                 Column** it = vec_begin(func->args);
                 for (; it != vec_end(func->args); ++it) {
                         if (it != vec_begin(func->args)) {
-                                strcat(msg, ",");
+                                string_push_back(msg, ',');
                         }
                         column_cat_description(*it, msg);
-                        if (strlen(msg) - ACTION_MAX <= 2) {
-                                return;
-                        }
                 }
-                strcat(msg, ")");
+                string_push_back(msg, ')');
                 break;
         }
         case EXPR_CONST:
                 switch (col->type) {
                 case COL_STRING:
-                        strncat_(msg, col->expr->data, maxlen);
+                        string_cat(msg, col->expr->data);
                         break;
                 case COL_INT:
                 {
                         char buf[20];
                         sprintf(buf, "%ld", *(long*)col->expr->data);
-                        strncat_(msg, buf, maxlen);
+                        string_cat(msg, buf);
                         break;
                 }
                 case COL_FLOAT:
                 {
                         char buf[30];
                         sprintf(buf, "%lf", *(double*)col->expr->data);
-                        strncat_(msg, buf, maxlen);
+                        string_cat(msg, buf);
                         break;
                 }
                 default:
-                        strncat_(msg, "<<const>>", maxlen);
+                        string_cat(msg, "<<const>>");
 
                 }
                 break;
         case EXPR_SOURCE:
-                strncat_(msg, "TABLE SOURCE", maxlen);
+                string_cat(msg, "TABLE SOURCE");
                 break;
         case EXPR_SUBQUERY:
-                strncat_(msg, "SUBQUERY", maxlen);
+                string_cat(msg, "SUBQUERY");
                 break;
         case EXPR_SUBQUERY_CONST:
-                strncat_(msg, "SUBQUERY CONST", maxlen);
+                string_cat(msg, "SUBQUERY CONST");
                 break;
         case EXPR_NONE:
-                strncat_(msg, "No expression", maxlen);
+                string_cat(msg, "No expression");
                 break;
         }
 }
