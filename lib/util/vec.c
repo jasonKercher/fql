@@ -51,6 +51,9 @@ void* vec_begin(const Vec* vec)
 
 void* vec_back(const Vec* vec)
 {
+        if (vec->size == 0) {
+                return vec->data;
+        }
         return vec_at(vec, vec->size - 1);
 }
 

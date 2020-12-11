@@ -58,10 +58,11 @@ void string_push_back(String* s, char c)
 
 void string_cat(String* dest, const char* src)
 {
-        void* back = vec_back(dest);
         int len = strlen(src);
+        int index = dest->size;
         vec_resize(dest, dest->size + len);
-        memcpy(back, src, len + 1);
+        void* end = vec_at(dest, index);
+        memcpy(end, src, len + 1);
 }
 
 void string_cpy(String* dest, const char* src)
