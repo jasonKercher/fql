@@ -1,7 +1,6 @@
 #ifndef SCHEMA_H
 #define SCHEMA_H
 
-#include "expression.h"
 #include "fqlimits.h"
 #include "util/queue.h"
 #include "util/hmap.h"

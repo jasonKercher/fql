@@ -332,7 +332,7 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 }
 void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 {
-        struct expression* new_expr = expression_new(EXPR_NONE, stack_pop(&_query_stack));
+        //struct expression* new_expr = expression_new(EXPR_NONE, stack_pop(&_query_stack));
         _query = (struct query*) _query_stack->data;
 
         //switch(_query->mode) {

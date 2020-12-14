@@ -4,7 +4,6 @@
 #include <csv.h>
 
 #include "fql.h"
-#include "expression.h"
 #include "column.h"
 #include "function.h"
 #include "query.h"
@@ -150,9 +149,7 @@ void schema_assign_header(Table* table, csv_record* rec)
 
         for (; i < rec->size; ++i) {
                 char* column_name = strdup(rec->fields[i]);
-                Expression* new_expr = expression_new(EXPR_COLUMN_NAME
-                                                            ,column_name);
-                Column* new_col = column_new(new_expr, "");
+                Column* new_col = column_new(EXPR_COLUMN_NAME, column_name, "");
                 schema_add_column(table->schema, new_col);
 
                 new_col->location = i;
@@ -201,13 +198,13 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
 {
         Column** it = vec_begin(columns);
         for (; it != vec_end(columns); ++it) {
-                if ((*it)->expr->type == EXPR_FUNCTION) {
-                        Function* func = (*it)->expr->data;
+                if ((*it)->expr == EXPR_FUNCTION) {
+                        Function* func = (*it)->data;
                         function_validate(func);
                         schema_assign_columns_limited(func->args, sources, limit);
                         continue;
                 }
-                if ((*it)->expr->type != EXPR_COLUMN_NAME) {
+                if ((*it)->expr != EXPR_COLUMN_NAME) {
                         continue;
                 }
                 int matches = 0;
@@ -237,15 +234,15 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
 
 int schema_assign_columns(Vec* columns, Vec* sources)
 {
-        return schema_assign_columns_limited(columns, 
-                                             sources, 
+        return schema_assign_columns_limited(columns,
+                                             sources,
                                              sources->size - 1);
 }
 
-int schema_resolve_query(Query* query) 
+int schema_resolve_query(Query* query)
 {
        Vec* sources = query->sources;
-       
+
        int i = 0;
        for (; i < sources->size; ++i) {
                Source* src = vec_at(query->sources, i);
@@ -269,7 +266,7 @@ int schema_resolve_query(Query* query)
 
        return FQL_GOOD;
 }
- 
+
 int schema_resolve(Queue* query_node)
 {
         for (; query_node; query_node = query_node->next) {

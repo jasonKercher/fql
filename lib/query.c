@@ -106,8 +106,7 @@ int _distribute_column(Query* query, Column* col)
 
 void query_add_column(Query* query, char* col_name, const char* table_id)
 {
-        Column* col = column_new(expression_new(EXPR_COLUMN_NAME, col_name),
-                                 table_id);
+        Column* col = column_new(EXPR_COLUMN_NAME, col_name, table_id);
         if (_distribute_column(query, col)) {
                 fprintf(stderr, "Unhandled COLUMN_NAME: %s\n", col_name);
                 free_(col_name);
@@ -122,30 +121,29 @@ void query_add_column(Query* query, char* col_name, const char* table_id)
 
 void query_add_constant(Query* query, const char* s, int len)
 {
-        Expression* expr = expression_new(EXPR_CONST, NULL);
+        Column* col = column_new(EXPR_CONST, NULL, "");
 
         enum col_type type = COL_UNDEFINED;
         if (s[0] == '\'') {
                 char* value = strdup(s + 1);
                 value[len - 2] = '\0';
-                expr->data = value;
+                col->data = value;
         } else {
                 if (strhaschar(s, '.')) {
                         type = COL_FLOAT;
                         double* value = NULL;
                         malloc_(value, sizeof(*value));
                         *value = str2double(s);
-                        expr->data = value;
+                        col->data = value;
                 } else {
                         type = COL_INT;
                         long* value = NULL;
                         malloc_(value, sizeof(*value));
                         *value = str2long(s);
-                        expr->data = value;
+                        col->data = value;
                 }
         }
 
-        Column* col = column_new(expr, "");
         col->type = type;
         if (_distribute_column(query, col)) {
                 fprintf(stderr, "Unhandled constant expression: %d\n", query->mode);
@@ -201,7 +199,7 @@ void query_apply_table_alias(Query* query, const char* alias)
 
 void _add_function(Query* query, Function* func)
 {
-        Column* col = column_new(expression_new(EXPR_FUNCTION, func), "");
+        Column* col = column_new(EXPR_FUNCTION, func, "");
 
         if (_distribute_column(query, col)) {
                 fprintf(stderr, "Unhandled function: %s\n", func->name);

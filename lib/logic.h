@@ -1,7 +1,6 @@
 #ifndef LOGIC_H
 #define LOGIC_H
 
-#include "expression.h"
 #include "process.h"
 #include "util/dgraph.h"
 

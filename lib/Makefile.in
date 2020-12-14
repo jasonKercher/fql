@@ -134,8 +134,8 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libfql_la_DEPENDENCIES = antlr/libantlr.la util/libutil.la
 am_libfql_la_OBJECTS = lib.lo plan.lo process.lo prop.lo query.lo \
-	expression.lo table.lo schema.lo column.lo operation.lo \
-	reader.lo logic.lo select.lo function.lo
+	table.lo schema.lo column.lo operation.lo reader.lo logic.lo \
+	select.lo function.lo
 libfql_la_OBJECTS = $(am_libfql_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -156,8 +156,7 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/column.Plo \
-	./$(DEPDIR)/expression.Plo ./$(DEPDIR)/function.Plo \
+am__depfiles_remade = ./$(DEPDIR)/column.Plo ./$(DEPDIR)/function.Plo \
 	./$(DEPDIR)/lib.Plo ./$(DEPDIR)/logic.Plo \
 	./$(DEPDIR)/operation.Plo ./$(DEPDIR)/plan.Plo \
 	./$(DEPDIR)/process.Plo ./$(DEPDIR)/prop.Plo \
@@ -389,7 +388,6 @@ libfql_la_SOURCES = include/fql.h lib.c \
 					plan.h plan.c process.c \
 					prop.h prop.c \
 					query.h query.c \
-					expression.h expression.c \
 					table.h table.c \
 					schema.h schema.c \
 					column.h column.c \
@@ -479,7 +477,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/column.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/expression.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/function.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/logic.Plo@am__quote@ # am--include-marker
@@ -749,7 +746,6 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 
 distclean: distclean-recursive
 		-rm -f ./$(DEPDIR)/column.Plo
-	-rm -f ./$(DEPDIR)/expression.Plo
 	-rm -f ./$(DEPDIR)/function.Plo
 	-rm -f ./$(DEPDIR)/lib.Plo
 	-rm -f ./$(DEPDIR)/logic.Plo
@@ -808,7 +804,6 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-recursive
 		-rm -f ./$(DEPDIR)/column.Plo
-	-rm -f ./$(DEPDIR)/expression.Plo
 	-rm -f ./$(DEPDIR)/function.Plo
 	-rm -f ./$(DEPDIR)/lib.Plo
 	-rm -f ./$(DEPDIR)/logic.Plo

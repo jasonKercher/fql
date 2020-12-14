@@ -3,10 +3,9 @@
 
 #include "fqlimits.h"
 #include "table.h"
-#include "expression.h"
-
 #include "util/fqlstring.h"
 
+/** data type **/
 enum col_type {
         COL_UNDEFINED,
         COL_STRING,
@@ -14,12 +13,24 @@ enum col_type {
         COL_FLOAT,
 };
 
+/** Expression **/
+enum expr_type {
+        EXPR_NONE,
+        EXPR_COLUMN_NAME,
+        EXPR_CONST,
+        EXPR_FUNCTION,
+        EXPR_SOURCE,
+        EXPR_SUBQUERY,
+        EXPR_SUBQUERY_CONST,
+};
+
 /** Column **/
 struct column {
         enum col_type type;
         struct table* table;
         struct column* data_source;
-        struct expression* expr;
+        enum expr_type expr;
+        void* data;
         char alias[COLUMN_NAME_MAX];
         char table_name[TABLE_NAME_MAX];
         unsigned location;
@@ -27,8 +38,8 @@ struct column {
 };
 typedef struct column Column;
 
-struct column* column_new(struct expression*, const char* table_id);
-struct column* column_init(struct column*, struct expression*, const char*);
+struct column* column_new(enum expr_type, void*, const char* table_id);
+struct column* column_init(struct column*, enum expr_type, void*, const char*);
 void column_free(void*);
 
 void column_cat_description(struct column* col, String*);
