@@ -6,4 +6,5 @@ libutil_la_SOURCES = util.h util.c \
 					 pmap.h pmap.c \
 					 vec.h vec.c \
 					 fqlstring.h fqlstring.c \
+					 stringview.h stringview.c \
 					 dgraph.h dgraph.c
