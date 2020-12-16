@@ -1,7 +1,7 @@
 #include "fqlstring.h"
 
 #include <string.h>
-
+#include "stringview.h"
 #include "util.h"
 
 String* string_new()
@@ -49,6 +49,22 @@ String* string_take(char* src)
         return new_string;
 }
 
+void string_copy_from_stringview(String* s, struct stringview* sv)
+{
+        vec_resize(s, sv->len);
+        memcpy(s->data, sv->data, sv->len);
+        ((char*) s->data)[s->size] = '\0';
+}
+
+void string_append_stringview(String* dest, struct stringview* sv)
+{
+        int index = dest->size;
+        vec_resize(dest, dest->size + sv->len);
+        void* end = vec_at(dest, index);
+        memcpy(end, sv->data, sv->len);
+        ((char*) dest->data)[dest->size] = '\0';
+}
+
 void string_push_back(String* s, char c)
 {
         char* back = vec_add_one(s);
@@ -84,9 +100,3 @@ void string_sprintf(String* s, const char* fmt, ...)
         vsnprintf(s->data, len+1, fmt, args2);
         va_end(args2);
 }
-
-
-
-
-
-

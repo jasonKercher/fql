@@ -1,9 +1,8 @@
 #ifndef STRING_H
 #define STRING_H
 
-#include "vec.h"
-
 #include <stdarg.h>
+#include "vec.h"
 
 /**
  * String is a vector of char with
@@ -16,6 +15,8 @@
  * be a NULL terminator.
  */
 
+struct stringview;
+
 typedef Vec String;
 
 String* string_new();
@@ -25,8 +26,10 @@ String* string_take(char*);
 #define string_free(s_) { vec_free(s_); }
 #define string_get(s_) { vec_begin(s_); }
 #define string_empty(s_) { vec_empty(s_); }
-void string_push_back(String*, char);
 #define string_append(src_, dest_) { vec_extend(src_, dest_); }
+void string_copy_from_stringview(String* s, struct stringview*);
+void string_append_stringview(String*, struct stringview*);
+void string_push_back(String*, char);
 void string_cat(String*, const char*);
 void string_cpy(String*, const char*);
 void string_sprintf(String* s, const char* fmt, ...);

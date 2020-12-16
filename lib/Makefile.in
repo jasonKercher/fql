@@ -135,7 +135,7 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libfql_la_DEPENDENCIES = antlr/libantlr.la util/libutil.la
 am_libfql_la_OBJECTS = lib.lo plan.lo process.lo prop.lo query.lo \
 	table.lo schema.lo column.lo operation.lo reader.lo logic.lo \
-	select.lo function.lo sql_functions.lo field.lo
+	select.lo function.lo fql_functions.lo field.lo
 libfql_la_OBJECTS = $(am_libfql_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -157,12 +157,12 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/column.Plo ./$(DEPDIR)/field.Plo \
-	./$(DEPDIR)/function.Plo ./$(DEPDIR)/lib.Plo \
-	./$(DEPDIR)/logic.Plo ./$(DEPDIR)/operation.Plo \
-	./$(DEPDIR)/plan.Plo ./$(DEPDIR)/process.Plo \
-	./$(DEPDIR)/prop.Plo ./$(DEPDIR)/query.Plo \
-	./$(DEPDIR)/reader.Plo ./$(DEPDIR)/schema.Plo \
-	./$(DEPDIR)/select.Plo ./$(DEPDIR)/sql_functions.Plo \
+	./$(DEPDIR)/fql_functions.Plo ./$(DEPDIR)/function.Plo \
+	./$(DEPDIR)/lib.Plo ./$(DEPDIR)/logic.Plo \
+	./$(DEPDIR)/operation.Plo ./$(DEPDIR)/plan.Plo \
+	./$(DEPDIR)/process.Plo ./$(DEPDIR)/prop.Plo \
+	./$(DEPDIR)/query.Plo ./$(DEPDIR)/reader.Plo \
+	./$(DEPDIR)/schema.Plo ./$(DEPDIR)/select.Plo \
 	./$(DEPDIR)/table.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -396,7 +396,7 @@ libfql_la_SOURCES = include/fql.h lib.c \
 					reader.h reader.c \
 					logic.h logic.c \
 					select.h select.c \
-					function.h function.c sql_functions.c \
+					function.h function.c fql_functions.c \
 					field.h field.c
 
 libfql_la_LIBADD = antlr/libantlr.la util/libutil.la -lantlr4-runtime -lcsv
@@ -480,6 +480,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/column.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/field.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fql_functions.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/function.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lib.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/logic.Plo@am__quote@ # am--include-marker
@@ -491,7 +492,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reader.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/schema.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/select.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sql_functions.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/table.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -751,6 +751,7 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 distclean: distclean-recursive
 		-rm -f ./$(DEPDIR)/column.Plo
 	-rm -f ./$(DEPDIR)/field.Plo
+	-rm -f ./$(DEPDIR)/fql_functions.Plo
 	-rm -f ./$(DEPDIR)/function.Plo
 	-rm -f ./$(DEPDIR)/lib.Plo
 	-rm -f ./$(DEPDIR)/logic.Plo
@@ -762,7 +763,6 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/reader.Plo
 	-rm -f ./$(DEPDIR)/schema.Plo
 	-rm -f ./$(DEPDIR)/select.Plo
-	-rm -f ./$(DEPDIR)/sql_functions.Plo
 	-rm -f ./$(DEPDIR)/table.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -811,6 +811,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 		-rm -f ./$(DEPDIR)/column.Plo
 	-rm -f ./$(DEPDIR)/field.Plo
+	-rm -f ./$(DEPDIR)/fql_functions.Plo
 	-rm -f ./$(DEPDIR)/function.Plo
 	-rm -f ./$(DEPDIR)/lib.Plo
 	-rm -f ./$(DEPDIR)/logic.Plo
@@ -822,7 +823,6 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/reader.Plo
 	-rm -f ./$(DEPDIR)/schema.Plo
 	-rm -f ./$(DEPDIR)/select.Plo
-	-rm -f ./$(DEPDIR)/sql_functions.Plo
 	-rm -f ./$(DEPDIR)/table.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

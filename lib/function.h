@@ -7,6 +7,7 @@
 #define FUNC_NAME_MAX 100
 
 enum expr_operator {
+        OPERATOR_NONE,
         OPERATOR_PLUS,
         OPERATOR_MINUS,
         OPERATOR_MULTIPY,
@@ -27,13 +28,15 @@ struct function {
         //struct vec* retbuf;
         struct vec* args;
         char name[FUNC_NAME_MAX];
+        enum expr_operator op;
         unsigned arg_min;
         unsigned arg_max;
 };
 typedef struct function Function;
 
 struct function* function_new(const char*, enum field_type*);
-struct function* function_new_op(enum expr_operator, enum field_type*);
+int function_op_resolve(Function* func, enum field_type*);
+struct function* function_new_op(enum expr_operator);
 struct function* function_init(struct function*, const char*, enum field_type*);
 void function_free(Function* func);
 
@@ -43,5 +46,22 @@ void function_add_column(struct function* func, void* col);
 /* Function list */
 int fql_left(struct function*, union field* ret, struct vec* rec);
 int fql_right(struct function*, union field* ret, struct vec* rec);
+
+/* operator functions */
+int fql_op_plus_i(struct function*, union field* ret, struct vec* rec);
+int fql_op_plus_f(struct function*, union field* ret, struct vec* rec);
+int fql_op_plus_s(struct function*, union field* ret, struct vec* rec);
+int fql_op_minus_i(struct function*, union field* ret, struct vec* rec);
+int fql_op_minus_f(struct function*, union field* ret, struct vec* rec);
+int fql_op_mult_i(struct function*, union field* ret, struct vec* rec);
+int fql_op_mult_f(struct function*, union field* ret, struct vec* rec);
+int fql_op_divi_i(struct function*, union field* ret, struct vec* rec);
+int fql_op_divi_f(struct function*, union field* ret, struct vec* rec);
+int fql_op_mod_i(struct function*, union field* ret, struct vec* rec);
+int fql_op_mod_f(struct function*, union field* ret, struct vec* rec);
+int fql_op_bit_or(struct function*, union field* ret, struct vec* rec);
+int fql_op_bit_and(struct function*, union field* ret, struct vec* rec);
+int fql_op_bit_xor(struct function*, union field* ret, struct vec* rec);
+int fql_op_bit_not(struct function*, union field* ret, struct vec* rec);
 
 #endif  /* FUNCTION_H */

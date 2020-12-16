@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 
+#include "field.h"
 #include "fql.h"
 #include "logic.h"
 #include "select.h"
@@ -83,7 +84,8 @@ void _add_logic_column(Query* query, Column* col)
 int _distribute_column(Query* query, Column* col)
 {
         if (query->function_stack) {
-                function_add_column(query->function_stack->data, col);
+                Column* fn_col = query->function_stack->data;
+                function_add_column(fn_col->field.fn, col);
                 return FQL_GOOD;
         }
         switch(query->mode) {
@@ -203,7 +205,7 @@ void _add_function(Query* query, Function* func, enum field_type type)
                 fprintf(stderr, "Unhandled function: %s\n", func->name);
                 return;
         }
-        stack_push(&query->function_stack, func);
+        stack_push(&query->function_stack, col);
 }
 
 void query_enter_function(Query* query, const char* func_name)
@@ -216,13 +218,16 @@ void query_enter_function(Query* query, const char* func_name)
 void query_enter_operator(Query* query, enum expr_operator op)
 {
         enum field_type type = FIELD_UNDEFINED;
-        Function* func = function_new_op(op, &type);
-        _add_function(query, func, type);
+        Function* func = function_new_op(op);
+        _add_function(query, func, FIELD_UNDEFINED);
 }
 
 void query_exit_function(Query* query)
 {
-        stack_pop(&query->function_stack);
+        Column* col = stack_pop(&query->function_stack);
+        if (function_op_resolve(col->field.fn, &col->field_type)) {
+                ;/* TODO: stop here */
+        }
 }
 
 /*** Scroll below this comment at your own risk ***/
