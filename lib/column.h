@@ -3,15 +3,8 @@
 
 #include "fqlimits.h"
 #include "table.h"
+#include "field.h"
 #include "util/fqlstring.h"
-
-/** data type **/
-enum col_type {
-        COL_UNDEFINED,
-        COL_STRING,
-        COL_INT,
-        COL_FLOAT,
-};
 
 /** Expression **/
 enum expr_type {
@@ -26,18 +19,13 @@ enum expr_type {
 
 /** Column **/
 struct column {
-        enum col_type type;
+        enum expr_type expr;
         struct table* table;
         struct column* data_source;
-        enum expr_type expr;
         char alias[COLUMN_NAME_MAX];
         char table_name[TABLE_NAME_MAX];
-        union {
-                struct function* fn;
-                String* s;
-                double f;
-                long i;
-        } data; 
+        enum field_type field_type;
+        union field field;
         unsigned location;
         unsigned width;
 };

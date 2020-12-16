@@ -107,10 +107,11 @@ void vec_push_back(Vec* vec, void* item)
 
 void vec_extend(Vec* dest, const Vec* src)
 {
-        void* back = vec_back(dest);
+        int index = dest->size;
         vec_resize(dest, dest->size + src->size);
-        size_t bytes = src->_elem_size + src->_elem_size * src->size;
-        memcpy(back, vec_begin(src), bytes);
+        void* end = vec_at(dest, index);
+        size_t bytes = src->_elem_size * (src->size + 1);
+        memcpy(end, vec_begin(src), bytes);
 }
 
 void vec_erase(Vec* vec, void* elem)

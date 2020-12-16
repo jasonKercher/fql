@@ -184,12 +184,7 @@ void ListenerInterface::exitDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
 
 void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx) 
 { 
-        enum col_type type = COL_STRING;
-        int len = ctx->getText().length();
-        char* token = NULL;
-
         query_add_constant(_query, ctx->getText().c_str(), ctx->getText().length());
-
 }
 void ListenerInterface::exitConstant(TSqlParser::ConstantContext * ctx) { }
 

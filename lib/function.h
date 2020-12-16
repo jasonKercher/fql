@@ -1,7 +1,7 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
 
-#include "column.h"
+#include "field.h"
 #include "util/vec.h"
 
 #define FUNC_NAME_MAX 100
@@ -18,7 +18,7 @@ enum expr_operator {
         OPERATOR_BIT_NOT,
 };
 
-typedef int(*scalar_f)(void* data, void* ret, struct vec* args);
+typedef int(*scalar_f)(union field* ret, struct vec* rec, struct vec* args);
 
 struct function {
         scalar_f caller;
@@ -35,6 +35,6 @@ struct function* function_init(struct function*, const char*);
 void function_free(Function* func);
 
 int function_validate(struct function*);
-void function_add_column(struct function* func, struct column* col);
+void function_add_column(struct function* func, void* col);
 
 #endif  /* FUNCTION_H */

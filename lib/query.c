@@ -117,29 +117,29 @@ void query_add_column(Query* query, char* col_name, const char* table_id)
         /* TODO: This is sort of misplaced. Only acting as a default, but
          *       it should be set when schema is applied.
          */
-        col->type = COL_STRING;
+        col->field_type = FIELD_STRING;
 }
 
 void query_add_constant(Query* query, const char* s, int len)
 {
         Column* col = column_new(EXPR_CONST, NULL, "");
 
-        enum col_type type = COL_UNDEFINED;
+        enum field_type type = FIELD_UNDEFINED;
         if (s[0] == '\'') {
                 String* literal = string_from_char_ptr(s + 1);
                 ((char*) literal->data)[len-2] = '\0';
-                col->data.s = literal;
+                col->field.s = literal;
         } else {
                 if (strhaschar(s, '.')) {
-                        type = COL_FLOAT;
-                        col->data.f = str2double(s);
+                        type = FIELD_FLOAT;
+                        col->field.f = str2double(s);
                 } else {
-                        type = COL_INT;
-                        col->data.i = str2long(s);
+                        type = FIELD_INT;
+                        col->field.i = str2long(s);
                 }
         }
 
-        col->type = type;
+        col->field_type = type;
         if (_distribute_column(query, col)) {
                 fprintf(stderr, "Unhandled constant expression: %d\n", query->mode);
                 return;

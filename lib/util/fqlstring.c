@@ -31,7 +31,7 @@ String* string_from_char_ptr(const char* src)
 String* string_take(char* src)
 {
         String* new_string = NULL;
-        malloc_(new_string, sizeof(new_string));
+        malloc_(new_string, sizeof(*new_string));
 
         int len = strlen(src);
 

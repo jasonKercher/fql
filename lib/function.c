@@ -4,6 +4,12 @@
 #include "column.h"
 #include "util/util.h"
 
+int not_implemented(union field* f, Vec* rec, Vec* args)
+{
+        fprintf(stderr, "function not implemented\n");
+        return 0;
+}
+
 Function* function_new(const char* func_name)
 {
         Function* new_func = NULL;
@@ -18,7 +24,7 @@ Function* function_new_op(enum expr_operator op)
         malloc_(new_func, sizeof(*new_func));
 
         *new_func = (Function) {
-                 NULL                   /* caller */
+                 &not_implemented       /* caller */
                 ,vec_new_(Column*)      /* args */
                 ,""                     /* name */
                 ,2                      /* arg_min */
@@ -61,7 +67,7 @@ Function* function_new_op(enum expr_operator op)
 Function* function_init(Function* func, const char* func_name)
 {
         *func = (Function) {
-                 NULL                   /* caller */
+                 &not_implemented       /* caller */
                 ,vec_new_(Column*)      /* args */
                 ,""                     /* name */
                 ,0                      /* arg_min */
@@ -98,8 +104,6 @@ Function* function_init(Function* func, const char* func_name)
         else if (istring_eq(func_name, "CEILING")){ return func; }
         else if (istring_eq(func_name, "CHAR")){ return func; }
         else if (istring_eq(func_name, "DATALENGTH")) { return func; }
-            //_type = COL_INT;
-            //func->caller = &sql::DATALENGTH;
         else if (istring_eq(func_name, "DAY")){ return func; }
         else if (istring_eq(func_name, "FLOOR")){ return func; }
         else if (istring_eq(func_name, "ISDATE")){ return func; }
@@ -203,7 +207,7 @@ int function_validate(Function* func)
         return FQL_FAIL;
 }
 
-void function_add_column(Function* func, Column* col)
+void function_add_column(Function* func, void* col)
 {
         vec_push_back(func->args, &col);
 }

@@ -33,8 +33,6 @@ Schema* schema_init(Schema* schema)
 void schema_free(void* generic_schema)
 {
         Schema* schema = generic_schema;
-        //stack_free_func(&schema->columns, &column_free);
-        /* TODO: free columns */
         if (schema->col_map != NULL) {
                 hmap_free(schema->col_map);
         }
@@ -148,7 +146,7 @@ void schema_assign_header(Table* table, csv_record* rec)
         table->schema->col_map = hmap_new(rec->size * 2, HMAP_NOCASE);
 
         for (; i < rec->size; ++i) {
-                char* column_name = strdup(rec->fields[i]);
+                String* column_name = string_from_char_ptr(rec->fields[i]);
                 Column* new_col = column_new(EXPR_COLUMN_NAME, column_name, "");
                 schema_add_column(table->schema, new_col);
 
@@ -156,7 +154,7 @@ void schema_assign_header(Table* table, csv_record* rec)
                 new_col->table = table;
 
                 /* add to hash map for easy searching */
-                hmap_set(table->schema->col_map, column_name, new_col);
+                hmap_set(table->schema->col_map, column_name->data, new_col);
         }
 }
 
@@ -194,19 +192,38 @@ int schema_resolve_source(Source* source)
         return FQL_GOOD;
 }
 
+void _evaluate_if_const(Column* col)
+{
+        Function* func = col->field.fn;
+        Column** it = vec_begin(func->args);
+        for (; it != vec_end(func->args); ++it) {
+                if ((*it)->expr != EXPR_CONST) {
+                        return;
+                }
+        }
+        
+        union field new_field;
+        if (col->field_type == FIELD_STRING) {
+                new_field.s = string_new();
+        }
+        func->caller(&new_field, NULL, func->args);
+}
+
 int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
 {
         Column** it = vec_begin(columns);
         for (; it != vec_end(columns); ++it) {
                 if ((*it)->expr == EXPR_FUNCTION) {
-                        Function* func = (*it)->data.fn;
+                        Function* func = (*it)->field.fn;
                         function_validate(func);
                         schema_assign_columns_limited(func->args, sources, limit);
+                        _evaluate_if_const(*it);
                         continue;
                 }
                 if ((*it)->expr != EXPR_COLUMN_NAME) {
                         continue;
                 }
+                
                 int matches = 0;
                 int j = 0;
 
@@ -254,10 +271,6 @@ int schema_resolve_query(Query* query)
                        return FQL_FAIL;
                }
        }
-
-       //if (schema_assign_columns(query->groups, sources)) {
-       //        return FQL_FAIL;
-       //}
 
        Vec* op_cols = op_get_validation_list(query->op);
        if (schema_assign_columns(op_cols, sources)) {

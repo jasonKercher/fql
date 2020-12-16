@@ -103,7 +103,7 @@ Dnode* _logic_to_process(Dgraph* proc_graph,
 
 
 
-void _plan_from(Plan* plan, Query* query)
+void _from(Plan* plan, Query* query)
 {
         if (query->sources->size == 0) {
                 return;
@@ -169,7 +169,7 @@ void _plan_from(Plan* plan, Query* query)
         }
 }
 
-void _plan_where(Plan* plan, Query* query)
+void _where(Plan* plan, Query* query)
 {
         if (query->where == NULL) {
                 return;
@@ -186,7 +186,7 @@ void _plan_where(Plan* plan, Query* query)
         proc_false->out[0] = plan->op_false;
 }
 
-void _plan_group(Plan* plan, Query* query) 
+void _group(Plan* plan, Query* query) 
 { 
         if (query->groups->size == 0) {
                 return;
@@ -197,21 +197,21 @@ void _plan_group(Plan* plan, Query* query)
         plan->current = group_node;
 }
 
-void _plan_having(Plan* plan, Query* query) { }
+void _having(Plan* plan, Query* query) { }
 
-void _plan_operation(Plan* plan, Query* query)
+void _operation(Plan* plan, Query* query)
 {
         plan->current->out[0] = plan->op_true;
         op_apply_process(query->op, plan);
 }
 
-void _plan_limit(Plan* plan, Query* query) { }
+void _limit(Plan* plan, Query* query) { }
 
 /* In an effort to make building of the process graph easier
  * passive nodes are used as a sort of link between the steps.
  * Passive nodes always point to the next node on out[0]
  */
-void _plan_clear_passive(Plan* plan) 
+void _clear_passive(Plan* plan) 
 {
         Vec* node_vec = plan->processes->nodes;
         Dnode** nodes = vec_begin(node_vec);
@@ -256,14 +256,14 @@ Plan* _build_plan(Query* query)
 {
         Plan* plan = plan_new();
 
-        _plan_from(plan, query);
-        _plan_where(plan, query);
-        _plan_group(plan, query);
-        _plan_having(plan, query);
-        _plan_operation(plan, query);
-        _plan_limit(plan, query);
+        _from(plan, query);
+        _where(plan, query);
+        _group(plan, query);
+        _having(plan, query);
+        _operation(plan, query);
+        _limit(plan, query);
 
-        _plan_clear_passive(plan);
+        _clear_passive(plan);
 
         return plan;
 }
