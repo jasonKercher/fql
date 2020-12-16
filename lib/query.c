@@ -126,8 +126,10 @@ void query_add_constant(Query* query, const char* s, int len)
 
         enum field_type type = FIELD_UNDEFINED;
         if (s[0] == '\'') {
+                type = FIELD_STRING;
                 String* literal = string_from_char_ptr(s + 1);
                 ((char*) literal->data)[len-2] = '\0';
+                --literal->size;
                 col->field.s = literal;
         } else {
                 if (strhaschar(s, '.')) {
@@ -192,9 +194,10 @@ void query_apply_table_alias(Query* query, const char* alias)
         strncpy_(source->alias, alias, TABLE_NAME_MAX);
 }
 
-void _add_function(Query* query, Function* func)
+void _add_function(Query* query, Function* func, enum field_type type)
 {
         Column* col = column_new(EXPR_FUNCTION, func, "");
+        col->field_type = type;
 
         if (_distribute_column(query, col)) {
                 fprintf(stderr, "Unhandled function: %s\n", func->name);
@@ -205,14 +208,16 @@ void _add_function(Query* query, Function* func)
 
 void query_enter_function(Query* query, const char* func_name)
 {
-        Function* func = function_new(func_name);
-        _add_function(query, func);
+        enum field_type type = FIELD_UNDEFINED;
+        Function* func = function_new(func_name, &type);
+        _add_function(query, func, type);
 }
 
 void query_enter_operator(Query* query, enum expr_operator op)
 {
-        Function* func = function_new_op(op);
-        _add_function(query, func);
+        enum field_type type = FIELD_UNDEFINED;
+        Function* func = function_new_op(op, &type);
+        _add_function(query, func, type);
 }
 
 void query_exit_function(Query* query)

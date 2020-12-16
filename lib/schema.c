@@ -206,7 +206,11 @@ void _evaluate_if_const(Column* col)
         if (col->field_type == FIELD_STRING) {
                 new_field.s = string_new();
         }
-        func->caller(&new_field, NULL, func->args);
+        func->caller(func, &new_field, NULL);
+
+        function_free(func);
+        col->expr = EXPR_CONST;
+        col->field = new_field;
 }
 
 int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)

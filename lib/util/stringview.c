@@ -20,6 +20,16 @@ StringView* stringview_init(StringView* sv, char* s, unsigned len)
         return sv;
 }
 
+StringView* stringview_init_from_string(StringView* sv, String* s)
+{
+        *sv = (StringView) {
+                 s->data
+                ,s->size
+        };
+
+        return sv;
+}
+
 void stringview_free(StringView* sv)
 {
         free_(sv);

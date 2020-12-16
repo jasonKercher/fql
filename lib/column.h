@@ -4,6 +4,7 @@
 #include "fqlimits.h"
 #include "table.h"
 #include "field.h"
+#include "util/stringview.h"
 #include "util/fqlstring.h"
 
 /** Expression **/
@@ -37,5 +38,10 @@ void column_free(void*);
 
 void column_cat_description(struct column* col, String*);
 int column_try_assign_source(struct column*, struct source*);
+
+/* Data Access */
+int column_get_int(long*, struct column*, struct vec*);
+int column_get_float(double*, struct column*, struct vec*);
+int column_get_stringview(struct stringview*, struct column*, struct vec*);
 
 #endif /* COLUMN_H */

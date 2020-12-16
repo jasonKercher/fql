@@ -1,4 +1,5 @@
 #include "column.h"
+#include "fql.h"
 #include "query.h"
 #include "process.h"
 #include "util/util.h"
@@ -73,7 +74,9 @@ void column_cat_description(Column* col, String* msg)
         case EXPR_CONST:
                 switch (col->field_type) {
                 case FIELD_STRING:
+                        string_push_back(msg, '\'');
                         string_append(msg, col->field.s);
+                        string_push_back(msg, '\'');
                         break;
                 case FIELD_INT:
                 {
@@ -117,5 +120,55 @@ int column_try_assign_source(Column* col, Source* src)
         }
 
         return 0;
+}
+
+/* TODO: field_to_xx functions should only be called once.
+ *       After which we should be able to assume the correct
+ *       type. The best way to handle this would be to set
+ *       the type during parsing.
+ */
+int column_get_int(long* ret, Column* col, Vec* rec)
+{
+        switch (col->expr) {
+        case EXPR_CONST:
+                if (field_to_int(ret, &col->field, &col->field_type)) {
+                        return FQL_FAIL;
+                }
+                break;
+        default:
+                return FQL_FAIL;
+        }
+
+        return FQL_GOOD;
+}
+
+int column_get_float(double* ret, Column* col, Vec* rec)
+{
+        switch (col->expr) {
+        case EXPR_CONST:
+                if (field_to_float(ret, &col->field, &col->field_type)) {
+                        return FQL_FAIL;
+                }
+                break;
+        default:
+                return FQL_FAIL;
+        }
+
+        return FQL_GOOD;
+}
+
+int column_get_stringview(StringView* ret, Column* col, Vec* rec)
+{
+        switch (col->expr) {
+        case EXPR_CONST:
+                if (field_to_stringview(ret, &col->field, &col->field_type)) {
+                        return FQL_FAIL;
+                }
+                break;
+        default:
+                return FQL_FAIL;
+        }
+
+        return FQL_GOOD;
 }
 
