@@ -131,7 +131,11 @@ Function* function_init(Function* func, const char* func_name, enum field_type* 
         }
         else if (istring_eq(func_name, "NULLIF")){ return func; }
         else if (istring_eq(func_name, "PATINDEX")){ return func; }
-        else if (istring_eq(func_name, "RIGHT")) { return func; }
+        else if (istring_eq(func_name, "RIGHT")) {
+                func->caller = &fql_right;
+                *type = FIELD_STRING;
+                return func; 
+        }
 
         func->arg_min = 2;
         func->arg_max = 3;

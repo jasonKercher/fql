@@ -42,5 +42,6 @@ void function_add_column(struct function* func, void* col);
 
 /* Function list */
 int fql_left(struct function*, union field* ret, struct vec* rec);
+int fql_right(struct function*, union field* ret, struct vec* rec);
 
 #endif  /* FUNCTION_H */
