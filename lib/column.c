@@ -18,9 +18,9 @@ Column* column_init(Column* col, enum expr_type expr, void* data, const char* ta
                 ,NULL           /* table */
                 ,NULL           /* data_source */
                 ,expr           /* expression */
-                ,data           /* data */
                 ,""             /* alias */
                 ,""             /* table_name */
+                ,data           /* data */
                 ,0              /* location */
                 ,0              /* width */
         };
@@ -45,11 +45,11 @@ void column_cat_description(Column* col, String* msg)
 {
         switch (col->expr) {
         case EXPR_COLUMN_NAME:
-                string_cat(msg, col->data);
+                string_append(msg, col->data.s);
                 break;
         case EXPR_FUNCTION:
         {
-                Function* func = col->data;
+                Function* func = col->data.fn;
                 string_cat(msg, func->name);
                 string_push_back(msg, '(');
 
@@ -66,19 +66,19 @@ void column_cat_description(Column* col, String* msg)
         case EXPR_CONST:
                 switch (col->type) {
                 case COL_STRING:
-                        string_cat(msg, col->data);
+                        string_append(msg, col->data.s);
                         break;
                 case COL_INT:
                 {
                         char buf[20];
-                        sprintf(buf, "%ld", *(long*)col->data);
+                        sprintf(buf, "%ld", col->data.i);
                         string_cat(msg, buf);
                         break;
                 }
                 case COL_FLOAT:
                 {
                         char buf[30];
-                        sprintf(buf, "%lf", *(double*)col->data);
+                        sprintf(buf, "%lf", col->data.f);
                         string_cat(msg, buf);
                         break;
                 }

@@ -106,7 +106,8 @@ int _distribute_column(Query* query, Column* col)
 
 void query_add_column(Query* query, char* col_name, const char* table_id)
 {
-        Column* col = column_new(EXPR_COLUMN_NAME, col_name, table_id);
+        String* col_name_str = string_take(col_name);
+        Column* col = column_new(EXPR_COLUMN_NAME, col_name_str, table_id);
         if (_distribute_column(query, col)) {
                 fprintf(stderr, "Unhandled COLUMN_NAME: %s\n", col_name);
                 free_(col_name);
@@ -125,22 +126,16 @@ void query_add_constant(Query* query, const char* s, int len)
 
         enum col_type type = COL_UNDEFINED;
         if (s[0] == '\'') {
-                char* value = strdup(s + 1);
-                value[len - 2] = '\0';
-                col->data = value;
+                String* literal = string_from_char_ptr(s + 1);
+                ((char*) literal->data)[len-2] = '\0';
+                col->data.s = literal;
         } else {
                 if (strhaschar(s, '.')) {
                         type = COL_FLOAT;
-                        double* value = NULL;
-                        malloc_(value, sizeof(*value));
-                        *value = str2double(s);
-                        col->data = value;
+                        col->data.f = str2double(s);
                 } else {
                         type = COL_INT;
-                        long* value = NULL;
-                        malloc_(value, sizeof(*value));
-                        *value = str2long(s);
-                        col->data = value;
+                        col->data.i = str2long(s);
                 }
         }
 

@@ -199,7 +199,7 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
         Column** it = vec_begin(columns);
         for (; it != vec_end(columns); ++it) {
                 if ((*it)->expr == EXPR_FUNCTION) {
-                        Function* func = (*it)->data;
+                        Function* func = (*it)->data.fn;
                         function_validate(func);
                         schema_assign_columns_limited(func->args, sources, limit);
                         continue;

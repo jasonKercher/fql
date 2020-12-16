@@ -30,9 +30,14 @@ struct column {
         struct table* table;
         struct column* data_source;
         enum expr_type expr;
-        void* data;
         char alias[COLUMN_NAME_MAX];
         char table_name[TABLE_NAME_MAX];
+        union {
+                struct function* fn;
+                String* s;
+                double f;
+                long i;
+        } data; 
         unsigned location;
         unsigned width;
 };
