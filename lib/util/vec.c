@@ -99,6 +99,12 @@ void* vec_add_one(Vec* vec)
 
         return vec_back(vec);
 }
+        
+void vec_set(Vec* vec, size_t n, void* src)
+{
+        void* dest = vec_at(vec, n);
+        memcpy(dest, src, vec->_elem_size);
+}
 
 void vec_push_back(Vec* vec, void* item)
 {
