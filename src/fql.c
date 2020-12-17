@@ -15,23 +15,26 @@ static const char* help_string = "\n No Help here !\n\n";
 void parseargs(char c)
 {
         switch (c) {
+        case 'D':
+                fql_set_dry_run(1);
+                break;
         case 'h':
                 puts(help_string);
                 exit(0);
-        case 'v':
-                fql_set_verbose(1);
-                break;
         case 'O':
                 fql_set_override_warnings(1);
                 break;
-        case 'D':
-                fql_set_dry_run(1);
+        case 'p':
+                fql_set_print_plan(1);
                 break;
         case 's':
                 fql_set_in_delim(optarg);
                 break;
         case 'S':
                 fql_set_out_delim(optarg);
+                break;
+        case 'v':
+                fql_set_verbose(1);
                 break;
         default:
                 abort();
@@ -64,18 +67,19 @@ int main (int argc, char **argv)
         {
                 /* long option, (no) arg, 0, short option */
                 //{"verbose", no_argument, 0, 'v'},
-                {"help", no_argument, 0, 'h'},
-                {"verbose", no_argument, 0, 'v'},
-                {"override-warnings", no_argument, 0, 'O'},
                 {"dry-run",no_argument, 0, 'D' },
+                {"help", no_argument, 0, 'h'},
+                {"override-warnings", no_argument, 0, 'O'},
+                {"print-plan", no_argument, 0, 'p'},
                 {"in-delimiter", required_argument, 0, 's'},
                 {"out-delimiter", required_argument, 0, 'S'},
+                {"verbose", no_argument, 0, 'v'},
                 {0, 0, 0, 0}
         };
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        while ( (c = getopt_long (argc, argv, "hvODs:S:",
+        while ( (c = getopt_long (argc, argv, "hDOps:S:v",
                                         long_options, &option_index)) != -1)
                         parseargs(c);
 

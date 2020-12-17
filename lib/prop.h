@@ -13,6 +13,7 @@ struct props {
         _Bool verbose;
         _Bool dry_run;
         _Bool override_warnings;
+        _Bool print_plan;
 };
 typedef struct props Props;
 

@@ -38,6 +38,11 @@ void fql_set_override_warnings(int override)
         g_props.override_warnings = override;
 }
 
+void fql_set_print_plan(int print_plan)
+{
+        g_props.print_plan = print_plan;
+}
+
 void fql_set_in_delim(const char* delim)
 {
         strncpy_(g_props.in_delim, delim, 32);
@@ -65,7 +70,9 @@ int fql_exec(const char* query_str)
         Queue* plans = NULL;
         build_plans(&plans, query_list);
 
-        print_plans(plans);
+        if (g_props.print_plan) {
+                print_plans(plans);
+        }
 
         queue_free_func(&query_list, &query_free);
         queue_free_func(&plans, &plan_free);

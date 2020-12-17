@@ -355,7 +355,7 @@ void print_plans(Queue* plans)
 {
         int i = 0;
         for (; plans; plans = plans->next) {
-                fprintf(stderr, "QUERY %d\n", ++i);
+                fprintf(stderr, "\nQUERY %d\n", ++i);
                 Plan* plan = plans->data;
                 _print_plan(plan);
                 fputs("\n", stderr);

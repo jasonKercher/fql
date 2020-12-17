@@ -9,5 +9,6 @@ void prop_init()
                 ,false  /* verbose */
                 ,false  /* dry_run */
                 ,false  /* override_warnings */
+                ,false  /* print_plan */
         };
 }

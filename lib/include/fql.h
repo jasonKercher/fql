@@ -11,6 +11,7 @@ void fql_init();
 void fql_set_verbose(int);
 void fql_set_dry_run(int);
 void fql_set_override_warnings(int);
+void fql_set_print_plan(int);
 void fql_set_in_delim(const char*);
 void fql_set_out_delim(const char*);
 
