@@ -21,8 +21,8 @@ enum read_type {
 
 struct reader {
         void* handle;
-        read_next_func get_record_f;
-        generic_data_func free_f;
+        read_next_func get_record_fn;
+        generic_data_fn free_fn;
         char file_name[PATH_MAX];
 };
 typedef struct reader Reader;

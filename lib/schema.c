@@ -183,7 +183,7 @@ int schema_resolve_source(Source* source)
         reader_assign(table->reader, READ_LIBCSV);
 
         csv_record* rec = csv_record_new();
-        table->reader->get_record_f(table->reader->handle, rec);
+        table->reader->get_record_fn(table->reader->handle, rec);
 
         schema_assign_header(table, rec);
 

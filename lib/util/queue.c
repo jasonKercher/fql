@@ -93,7 +93,7 @@ int queue_count(Queue* head)
         return count;
 }
 
-void queue_free_func(Queue** head, generic_data_func free_func)
+void queue_free_func(Queue** head, generic_data_fn free_func)
 {
         for (; *head; queue_dequeue(head))
                 free_func((*head)->data);

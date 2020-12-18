@@ -4,11 +4,13 @@
 #include "util/fqlstring.h"
 #include "util/fifo.h"
 
-/* process_func(records, process_data) */
-typedef int (*process_f)(void**, void*);
+struct process;
+
+/* process_fn(records, process_data) */
+typedef int (*process_fn)(struct process*);
 
 struct process {
-        process_f* action;              /* function pointer for process */
+        process_fn* action;             /* function pointer for process */
         Fifo* records;                  /* ring buffer of records */
         void* proc_data;                /* process specific data */
         String* action_msg;             /* Message that prints with plan */
@@ -19,5 +21,7 @@ typedef struct process Process;
 struct process* process_new(const char* action);
 struct process* process_init(struct process*, const char*);
 void process_free(struct process*);
+
+int libcsv_read(struct process*);
 
 #endif /* PROCESS_H */

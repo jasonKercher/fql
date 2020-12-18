@@ -16,8 +16,8 @@ Reader* reader_init(Reader* reader)
 {
         *reader = (Reader) {
                  NULL   /* handle */
-                ,NULL   /* get_record_f */
-                ,NULL   /* free_f */
+                ,NULL   /* get_record_fn */
+                ,NULL   /* free_fn */
                 ,""     /* file_name */
         };
 
@@ -29,8 +29,8 @@ void reader_free(Reader* reader)
         if (reader == NULL) {
                 return;
         }
-        if (reader->free_f) {
-                reader->free_f(reader->handle);
+        if (reader->free_fn) {
+                reader->free_fn(reader->handle);
         }
         free_(reader);
 }
@@ -45,8 +45,8 @@ void reader_assign(Reader* reader, enum read_type type)
         switch (type) {
         case READ_LIBCSV:
                 reader->handle = csv_reader_new();
-                reader->get_record_f = &csv_get_record_i;
-                reader->free_f = &csv_reader_free_i;
+                reader->get_record_fn = &csv_get_record_i;
+                reader->free_fn = &csv_reader_free_i;
                 ret = csv_reader_open(reader->handle, reader->file_name);
                 break;
         case READ_SUBQUERY:
