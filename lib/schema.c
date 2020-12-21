@@ -195,7 +195,7 @@ int schema_resolve_source(Source* source)
         Vec* rec = vec_new_(StringView);
         table->reader->get_record_fn(table->reader->reader_data, rec, 0);
 
-        //schema_assign_header(table, rec);
+        schema_assign_header(table, rec);
 
         //csv_record_free(rec);
 

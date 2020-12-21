@@ -14,7 +14,7 @@ typedef struct csv_record csv_record;
 typedef struct csv_reader csv_reader;
 
 struct libcsv_data {
-        csv_reader* reader;
+        csv_reader* handle;
         struct vec* records;
 };
 

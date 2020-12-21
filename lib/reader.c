@@ -29,7 +29,8 @@ struct libcsv_data* libcsv_init(struct libcsv_data* csv_data, size_t buflen)
          */
         int i = 0;
         for (; i < buflen; ++i) {
-                vec_push_back(csv_data->records, csv_record_new());
+                csv_record* rec = csv_record_new();
+                vec_push_back(csv_data->records, &rec);
         }
 
         return csv_data;
@@ -40,7 +41,7 @@ int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
         struct libcsv_data* csv = reader_data;
         csv_record** csv_rec = vec_at(csv->records, idx);
 
-        if (csv_get_record(csv->reader, *csv_rec) == CSV_FAIL) {
+        if (csv_get_record(csv->handle, *csv_rec) == CSV_FAIL) {
                 return FQL_FAIL;
         }
 
@@ -56,8 +57,8 @@ int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
                  *       pointer that pointed at the ending NULL
                  *       terminator. Then, this if block can go.
                  */
-                if (i != (*csv_rec)->size) {
-                        sv[i].len = fields[i+1] - fields[i];
+                if (i != (*csv_rec)->size - 1) {
+                        sv[i].len = fields[i+1] - fields[i] - 1;
                 } else {
                         sv[i].len = strlen(fields[i]);
                 }
@@ -69,7 +70,7 @@ int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
 void libcsv_free(void* reader_data)
 {
         struct libcsv_data* csv_data = reader_data;
-        csv_reader_free(csv_data->reader);
+        csv_reader_free(csv_data->handle);
 
         csv_record** recs = csv_data->records->data;
         for (; recs != vec_end(csv_data->records); ++ recs) {
@@ -117,7 +118,8 @@ void reader_assign(Reader* reader, enum read_type type)
                 reader->reader_data = libcsv_new(PROCESS_BUFFER_SIZE);
                 reader->get_record_fn = &libcsv_get_record;
                 reader->free_fn = &libcsv_free;
-                ret = csv_reader_open(reader->reader_data, reader->file_name);
+                struct libcsv_data* data = reader->reader_data;
+                ret = csv_reader_open(data->handle, reader->file_name);
                 break;
         case READ_LIBCSV_MMAP:
                 //reader->reader_data = libcsv_new(PROCESS_BUFFER_SIZE);
