@@ -113,6 +113,29 @@ void _from(Plan* plan, Query* query)
         Source* src = vec_begin(query->sources);
 
         string_sprintf(action_msg, "%s: %s", src->table->reader->file_name, "stream read");
+
+
+//void vec_erase(Vec* vec, void* elem)
+//{
+//        size_t index = (char*) elem - (char*) vec_begin(vec);
+//        index /= vec->_elem_size;
+//        vec_remove(vec, index);
+//}
+//
+//void vec_remove(Vec* vec, size_t index)
+//{
+//        if (index >= vec->size) {
+//                return; /* abort? */
+//        }
+//
+//        --vec->size;
+//
+//        if (index != vec->size) {
+//                memmove(vec_at(vec, index),
+//                        vec_at(vec, index + 1),
+//                        vec->_elem_size * (vec->size - index));
+//        }
+//}
         Dnode* from_proc = dgraph_add_data(plan->processes, process_new(action_msg->data));
         from_proc->is_root = true;
         plan->current->out[0] = from_proc;

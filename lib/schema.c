@@ -139,14 +139,15 @@ success_return:
         return FQL_GOOD;
 }
 
-void schema_assign_header(Table* table, csv_record* rec)
+void schema_assign_header(Table* table, Vec* rec)
 {
         int i = 0;
 
         table->schema->col_map = hmap_new(rec->size * 2, HMAP_NOCASE);
 
+        StringView* fields = rec->data;
         for (; i < rec->size; ++i) {
-                String* column_name = string_from_char_ptr(rec->fields[i]);
+                String* column_name = string_from_stringview(&fields[i]);
                 Column* new_col = column_new(EXPR_COLUMN_NAME, column_name, "");
                 schema_add_column(table->schema, new_col);
 
@@ -160,18 +161,14 @@ void schema_assign_header(Table* table, csv_record* rec)
 
 int schema_resolve_source(Source* source)
 {
-        if (source->source_type == SOURCE_SUBQUERY) {
-                fputs("Not supporting subquery schema yet\n", stderr);
-                return FQL_FAIL;  /* TODO: retrieve schema from subquery */
-        }
-
-        if (schema_resolve_file(source->table)) {
-                return FQL_FAIL;
-        }
-
         Table* table = source->table;
         if (!vec_empty(table->schema->columns)) {
                 return FQL_GOOD;  /* Schema already set */
+        }
+
+        if (source->source_type == SOURCE_SUBQUERY) {
+                fputs("Not supporting subquery schema yet\n", stderr);
+                return FQL_FAIL;  /* TODO: retrieve schema from subquery */
         }
 
         if (table->schema->name[0]) {
@@ -179,15 +176,28 @@ int schema_resolve_source(Source* source)
                 return FQL_FAIL;  /* TODO: load schema by name */
         }
 
+        /* If we've made it this far, we want to try and determine
+         * schema by reading the top row of the file and assume a
+         * delimited list of field names.
+         */
+        if (schema_resolve_file(source->table)) {
+                return FQL_FAIL;
+        }
+
         /* Retrieve schema using libcsv */
-        reader_assign(table->reader, READ_LIBCSV);
+        if (source->join_type == JOIN_FROM) {
+                reader_assign(table->reader, READ_LIBCSV);
+        } else {
+                reader_assign(table->reader, READ_LIBCSV_MMAP);
+        }
 
-        csv_record* rec = csv_record_new();
-        table->reader->get_record_fn(table->reader->handle, rec);
+        //csv_record* rec = csv_record_new();
+        Vec* rec = vec_new_(StringView);
+        table->reader->get_record_fn(table->reader->reader_data, rec, 0);
 
-        schema_assign_header(table, rec);
+        //schema_assign_header(table, rec);
 
-        csv_record_free(rec);
+        //csv_record_free(rec);
 
         return FQL_GOOD;
 }
@@ -201,7 +211,7 @@ void _evaluate_if_const(Column* col)
                         return;
                 }
         }
-        
+
         union field new_field;
         if (col->field_type == FIELD_STRING) {
                 new_field.s = string_new();
@@ -227,7 +237,7 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
                 if ((*it)->expr != EXPR_COLUMN_NAME) {
                         continue;
                 }
-                
+
                 int matches = 0;
                 int j = 0;
 

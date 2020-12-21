@@ -1,6 +1,8 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+#define PROCESS_BUFFER_SIZE 256
+
 #include "util/fqlstring.h"
 #include "util/fifo.h"
 

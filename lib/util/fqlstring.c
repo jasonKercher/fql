@@ -13,6 +13,20 @@ String* string_new()
         return new_string;
 }
 
+String* string_from_stringview(struct stringview* sv)
+{
+        String* new_string = string_new();
+        string_copy_from_stringview(new_string, sv);
+        return new_string;
+}
+
+void string_copy_from_stringview(String* s, struct stringview* sv)
+{
+        vec_resize(s, sv->len);
+        memcpy(s->data, sv->data, sv->len);
+        ((char*) s->data)[s->size] = '\0';
+}
+
 String* string_init(String* string)
 {
         string = vec_init(string, 1);
@@ -47,13 +61,6 @@ String* string_take(char* src)
         };
 
         return new_string;
-}
-
-void string_copy_from_stringview(String* s, struct stringview* sv)
-{
-        vec_resize(s, sv->len);
-        memcpy(s->data, sv->data, sv->len);
-        ((char*) s->data)[s->size] = '\0';
 }
 
 void string_append_stringview(String* dest, struct stringview* sv)
