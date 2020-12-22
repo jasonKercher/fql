@@ -114,32 +114,15 @@ void _from(Plan* plan, Query* query)
 
         string_sprintf(action_msg, "%s: %s", src->table->reader->file_name, "stream read");
 
+        Process* from_proc = process_new(action_msg->data);
+        from_proc->action = &libcsv_read;
+        from_proc->proc_data = src->table->reader->reader_data;
 
-//void vec_erase(Vec* vec, void* elem)
-//{
-//        size_t index = (char*) elem - (char*) vec_begin(vec);
-//        index /= vec->_elem_size;
-//        vec_remove(vec, index);
-//}
-//
-//void vec_remove(Vec* vec, size_t index)
-//{
-//        if (index >= vec->size) {
-//                return; /* abort? */
-//        }
-//
-//        --vec->size;
-//
-//        if (index != vec->size) {
-//                memmove(vec_at(vec, index),
-//                        vec_at(vec, index + 1),
-//                        vec->_elem_size * (vec->size - index));
-//        }
-//}
-        Dnode* from_proc = dgraph_add_data(plan->processes, process_new(action_msg->data));
-        from_proc->is_root = true;
-        plan->current->out[0] = from_proc;
-        plan->current = from_proc;
+        Dnode* from_node = dgraph_add_data(plan->processes, from_proc);
+        from_node->is_root = true;
+        
+        plan->current->out[0] = from_node;
+        plan->current = from_node;
 
         for (++src; src != vec_end(query->sources); ++src) {
                 Process* join_proc = NULL;
@@ -172,9 +155,14 @@ void _from(Plan* plan, Query* query)
                                "%s: %s",
                                src->table->reader->file_name,
                                "mmap read");
-                Dnode* read_proc = dgraph_add_data(plan->processes, process_new(action_msg->data));
-                read_proc->is_root = true;
-                read_proc->out[0] = join_proc_node;
+        
+                Process* read_proc = process_new(action_msg->data);
+                read_proc->action = &libcsv_read_mmap;
+                read_proc->proc_data = src->table->reader->reader_data;
+
+                Dnode* read_node = dgraph_add_data(plan->processes, read_proc);
+                read_node->is_root = true;
+                read_node->out[0] = join_proc_node;
 
                 if (src->condition != NULL) {
                         Dnode* proc_true = NULL;

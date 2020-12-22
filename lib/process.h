@@ -9,7 +9,7 @@
 struct process;
 
 /* process_fn(records, process_data) */
-typedef int (*process_fn)(struct process*);
+typedef int (process_fn)(struct process*);
 
 struct process {
         process_fn* action;             /* function pointer for process */
@@ -25,5 +25,6 @@ struct process* process_init(struct process*, const char*);
 void process_free(struct process*);
 
 int libcsv_read(struct process*);
+int libcsv_read_mmap(struct process*);
 
 #endif /* PROCESS_H */

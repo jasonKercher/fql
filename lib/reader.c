@@ -115,18 +115,23 @@ void reader_assign(Reader* reader, enum read_type type)
         int ret = 0;
         switch (type) {
         case READ_LIBCSV:
+        {
                 reader->reader_data = libcsv_new(PROCESS_BUFFER_SIZE);
                 reader->get_record_fn = &libcsv_get_record;
                 reader->free_fn = &libcsv_free;
                 struct libcsv_data* data = reader->reader_data;
                 ret = csv_reader_open(data->handle, reader->file_name);
                 break;
+        }
         case READ_LIBCSV_MMAP:
-                //reader->reader_data = libcsv_new(PROCESS_BUFFER_SIZE);
-                //reader->get_record_fn = &libcsv_get_record;
-                //reader->free_fn = &libcsv_free;
-                //ret = csv_reader_open(reader->reader_data, reader->file_name);
+        {
+                reader->reader_data = libcsv_new(PROCESS_BUFFER_SIZE);
+                reader->get_record_fn = &libcsv_get_record;
+                reader->free_fn = &libcsv_free;
+                struct libcsv_data* data = reader->reader_data;
+                ret = csv_reader_open(data->handle, reader->file_name);
                 break;
+        }
         case READ_SUBQUERY:
                 fputs("cannot assign reader for subquery\n", stderr);
                 break;
