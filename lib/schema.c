@@ -188,7 +188,7 @@ int schema_resolve_source(Source* source)
         if (source->join_type == JOIN_FROM) {
                 reader_assign(table->reader, READ_LIBCSV);
         } else {
-                reader_assign(table->reader, READ_LIBCSV_MMAP);
+                reader_assign(table->reader, READ_MMAPCSV);
         }
 
         //csv_record* rec = csv_record_new();

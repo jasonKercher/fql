@@ -79,6 +79,85 @@ void libcsv_free(void* reader_data)
         vec_free(csv_data->records);
 }
 
+struct mmapcsv_data* mmapcsv_new(size_t buflen)
+{
+        struct mmapcsv_data* new_data = NULL;
+        malloc_(new_data, sizeof(*new_data));
+
+        return mmapcsv_init(new_data, buflen);
+}
+
+struct mmapcsv_data* mmapcsv_init(struct mmapcsv_data* csv_data, size_t buflen)
+{
+        *csv_data = (struct mmapcsv_data) {
+                 csv_reader_new()
+                ,vec_new_(csv_record*) 
+                ,vec_new_(StringView)  /* raw */
+                ,NULL                  /* rec_map */
+                ,NULL                  /* map */
+                ,0                     /* file_size */
+        };
+
+        vec_reserve(csv_data->records, buflen);
+
+        /* TODO: (mmapcsv) Would be nice if we could stack
+         *       these or put them in contiguous memory.
+         */
+        int i = 0;
+        for (; i < buflen; ++i) {
+                csv_record* rec = csv_record_new();
+                vec_push_back(csv_data->records, &rec);
+        }
+
+        return csv_data;
+}
+
+int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
+{
+        struct mmapcsv_data* csv = reader_data;
+        csv_record** csv_rec = vec_at(csv->records, idx);
+
+        if (csv_get_record(csv->handle, *csv_rec) == CSV_FAIL) {
+                return FQL_FAIL;
+        }
+
+        vec_resize(rec, (*csv_rec)->size);
+
+        StringView* sv = vec_begin(rec);
+        char** fields = (*csv_rec)->fields;
+
+        int i = 0;
+        for (; i < (*csv_rec)->size; ++i) {
+                sv[i].data = fields[i];
+                /* TODO: (mmapcsv) would be nice if it created a trailing
+                 *       pointer that pointed at the ending NULL
+                 *       terminator. Then, this if block can go.
+                 */
+                if (i != (*csv_rec)->size - 1) {
+                        sv[i].len = fields[i+1] - fields[i] - 1;
+                } else {
+                        sv[i].len = strlen(fields[i]);
+                }
+        }
+
+        return FQL_GOOD;
+}
+
+void mmapcsv_free(void* reader_data)
+{
+        struct mmapcsv_data* csv_data = reader_data;
+        csv_reader_free(csv_data->handle);
+
+        csv_record** recs = csv_data->records->data;
+        for (; recs != vec_end(csv_data->records); ++ recs) {
+                csv_record_free(*recs);
+        }
+        vec_free(csv_data->records);
+}
+
+
+
+
 Reader* reader_new()
 {
         Reader* new_reader = NULL;
@@ -123,12 +202,12 @@ void reader_assign(Reader* reader, enum read_type type)
                 ret = csv_reader_open(data->handle, reader->file_name);
                 break;
         }
-        case READ_LIBCSV_MMAP:
+        case READ_MMAPCSV:
         {
-                reader->reader_data = libcsv_new(PROCESS_BUFFER_SIZE);
-                reader->get_record_fn = &libcsv_get_record;
-                reader->free_fn = &libcsv_free;
-                struct libcsv_data* data = reader->reader_data;
+                reader->reader_data = mmapcsv_new(PROCESS_BUFFER_SIZE);
+                reader->get_record_fn = &mmapcsv_get_record;
+                reader->free_fn = &mmapcsv_free;
+                struct mmapcsv_data* data = reader->reader_data;
                 ret = csv_reader_open(data->handle, reader->file_name);
                 break;
         }

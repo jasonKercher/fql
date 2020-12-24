@@ -8,6 +8,7 @@ extern "C" {
 #include <limits.h>
 
 #include "util/vec.h"
+#include "util/pmap.h"
 #include "util/util.h"
 
 typedef struct csv_record csv_record;
@@ -23,11 +24,25 @@ struct libcsv_data* libcsv_init(struct libcsv_data*, size_t);
 int libcsv_get_record(void* reader_data, Vec* rec, unsigned char);
 void libcsv_free(void*);
 
+struct mmapcsv_data {
+        csv_reader* handle;
+        struct vec* records;
+        struct vec* raw;
+        Pmap* rec_map;
+        char* map;
+        size_t file_size;
+};
+
+struct mmapcsv_data* mmapcsv_new(size_t);
+struct mmapcsv_data* mmapcsv_init(struct mmapcsv_data*, size_t);
+int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char);
+void mmapcsv_free(void*);
+
 typedef int (*read_next_fn)(void*, struct vec* rec, unsigned char idx);
 
 enum read_type {
         READ_LIBCSV,
-        READ_LIBCSV_MMAP,
+        READ_MMAPCSV,
         READ_SUBQUERY,
 };
 
