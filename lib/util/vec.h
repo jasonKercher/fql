@@ -41,6 +41,7 @@ void* vec_end(const struct vec*);
 
 void vec_reserve(struct vec*, size_t);
 void vec_resize(struct vec*, size_t);
+void vec_clear(struct vec*);
 void vec_shrink_to_fit(struct vec*);
 
 void* vec_add_one(struct vec*);

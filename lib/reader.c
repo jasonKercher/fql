@@ -1,9 +1,13 @@
 #include "reader.h"
-#include "fql.h"
-#include "process.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 #include <csv.h>
 
+#include "fql.h"
+#include "process.h"
 #include "util/stringview.h"
 #include "util/util.h"
 
@@ -34,6 +38,18 @@ struct libcsv_data* libcsv_init(struct libcsv_data* csv_data, size_t buflen)
         }
 
         return csv_data;
+}
+
+void libcsv_free(void* reader_data)
+{
+        struct libcsv_data* csv_data = reader_data;
+        csv_reader_free(csv_data->handle);
+
+        csv_record** recs = csv_data->records->data;
+        for (; recs != vec_end(csv_data->records); ++ recs) {
+                csv_record_free(*recs);
+        }
+        vec_free(csv_data->records);
 }
 
 int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
@@ -67,18 +83,6 @@ int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
         return FQL_GOOD;
 }
 
-void libcsv_free(void* reader_data)
-{
-        struct libcsv_data* csv_data = reader_data;
-        csv_reader_free(csv_data->handle);
-
-        csv_record** recs = csv_data->records->data;
-        for (; recs != vec_end(csv_data->records); ++ recs) {
-                csv_record_free(*recs);
-        }
-        vec_free(csv_data->records);
-}
-
 struct mmapcsv_data* mmapcsv_new(size_t buflen)
 {
         struct mmapcsv_data* new_data = NULL;
@@ -90,12 +94,15 @@ struct mmapcsv_data* mmapcsv_new(size_t buflen)
 struct mmapcsv_data* mmapcsv_init(struct mmapcsv_data* csv_data, size_t buflen)
 {
         *csv_data = (struct mmapcsv_data) {
-                 csv_reader_new()
-                ,vec_new_(csv_record*) 
-                ,vec_new_(StringView)  /* raw */
-                ,NULL                  /* rec_map */
-                ,NULL                  /* map */
-                ,0                     /* file_size */
+                 csv_reader_new()       /* handle */
+                ,vec_new_(csv_record*)  /* records */
+                ,vec_new_(StringView)   /* raw */
+                ,string_new()           /* buf */
+                ,NULL                   /* rec_map */
+                ,NULL                   /* map */
+                ,0                      /* map_idx */
+                ,0                      /* file_size */
+                ,0                      /* fd */
         };
 
         vec_reserve(csv_data->records, buflen);
@@ -112,14 +119,90 @@ struct mmapcsv_data* mmapcsv_init(struct mmapcsv_data* csv_data, size_t buflen)
         return csv_data;
 }
 
-int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
+int mmapcsv_open(struct mmapcsv_data* data, const char* file_name)
 {
-        struct mmapcsv_data* csv = reader_data;
-        csv_record** csv_rec = vec_at(csv->records, idx);
-
-        if (csv_get_record(csv->handle, *csv_rec) == CSV_FAIL) {
+        data->fd = open(file_name, O_RDONLY);
+        if (data->fd == -1) {
+                perror(file_name);
                 return FQL_FAIL;
         }
+
+        struct stat sb;
+        if (fstat(data->fd, &sb) == -1) {
+                perror(file_name);
+                return FQL_FAIL;
+        }
+
+        data->file_size = sb.st_size;
+
+        data->mmap_base = mmap(NULL, data->file_size, PROT_READ, MAP_PRIVATE, data->fd, 0);
+        if (data->mmap_base == MAP_FAILED) { 
+                perror("file_name");
+                return FQL_FAIL;
+        }
+
+        madvise(data->mmap_base, data->file_size, MADV_SEQUENTIAL);
+        data->mp = data->mmap_base;
+        return FQL_GOOD;
+}
+
+void mmapcsv_free(void* reader_data)
+{
+        struct mmapcsv_data* data = reader_data;
+        csv_reader_free(data->handle);
+
+        csv_record** recs = data->records->data;
+        for (; recs != vec_end(data->records); ++ recs) {
+                csv_record_free(*recs);
+        }
+        vec_free(data->records);
+
+        if (munmap(data->mmap_base, data->file_size)) {
+                perror("munmap");
+        }
+        close(data->fd);
+}
+
+int mmapcsv_getline(struct mmapcsv_data* data) 
+{
+        /* string view will point to the record in the raw data */
+        StringView sv;
+        sv.data = data->mp;
+
+        /* buffer is just a null terminated version of the line */
+        string_clear(data->buf);
+
+        while (data->mp - data->mmap_base < data->file_size) {
+                switch (*data->mp) {
+                        case '\n':
+                                sv.len = data->mp - sv.data;
+                                ++data->mp;
+                                return FQL_GOOD;
+                        case '\r':
+                                sv.len = data->mp - sv.data;
+                                if (data->mp - data->mmap_base + 1 < data->file_size &&
+                                    *(++data)->mp == '\n') {
+                                        ++data->mp;
+                                }
+                                return FQL_GOOD;
+                        default:
+                                string_push_back(data->buf, *data->mp);
+                                ++data->mp;
+                }
+        }
+        return FQL_FAIL;  /* EOF?? */
+} 
+
+int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
+{
+        struct mmapcsv_data* data = reader_data;
+        csv_record** csv_rec = vec_at(data->records, idx);
+
+        if (mmapcsv_getline(data)) {
+                return FQL_FAIL;
+        }
+
+        csv_parse(data->handle, *csv_rec, data->buf->data);
 
         vec_resize(rec, (*csv_rec)->size);
 
@@ -129,10 +212,6 @@ int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
         int i = 0;
         for (; i < (*csv_rec)->size; ++i) {
                 sv[i].data = fields[i];
-                /* TODO: (mmapcsv) would be nice if it created a trailing
-                 *       pointer that pointed at the ending NULL
-                 *       terminator. Then, this if block can go.
-                 */
                 if (i != (*csv_rec)->size - 1) {
                         sv[i].len = fields[i+1] - fields[i] - 1;
                 } else {
@@ -141,18 +220,6 @@ int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
         }
 
         return FQL_GOOD;
-}
-
-void mmapcsv_free(void* reader_data)
-{
-        struct mmapcsv_data* csv_data = reader_data;
-        csv_reader_free(csv_data->handle);
-
-        csv_record** recs = csv_data->records->data;
-        for (; recs != vec_end(csv_data->records); ++ recs) {
-                csv_record_free(*recs);
-        }
-        vec_free(csv_data->records);
 }
 
 
@@ -195,20 +262,20 @@ void reader_assign(Reader* reader, enum read_type type)
         switch (type) {
         case READ_LIBCSV:
         {
-                reader->reader_data = libcsv_new(PROCESS_BUFFER_SIZE);
+                struct libcsv_data* data = libcsv_new(PROCESS_BUFFER_SIZE);
+                reader->reader_data = data;
                 reader->get_record_fn = &libcsv_get_record;
                 reader->free_fn = &libcsv_free;
-                struct libcsv_data* data = reader->reader_data;
                 ret = csv_reader_open(data->handle, reader->file_name);
                 break;
         }
         case READ_MMAPCSV:
         {
-                reader->reader_data = mmapcsv_new(PROCESS_BUFFER_SIZE);
+                struct mmapcsv_data* data = mmapcsv_new(PROCESS_BUFFER_SIZE);
+                reader->reader_data = data;
                 reader->get_record_fn = &mmapcsv_get_record;
                 reader->free_fn = &mmapcsv_free;
-                struct mmapcsv_data* data = reader->reader_data;
-                ret = csv_reader_open(data->handle, reader->file_name);
+                ret = mmapcsv_open(data, reader->file_name);
                 break;
         }
         case READ_SUBQUERY:

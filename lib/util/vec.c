@@ -85,6 +85,11 @@ void vec_resize(Vec* vec, size_t size)
         vec->size = size;
 }
 
+void vec_clear(Vec* vec)
+{
+        vec_resize(vec, 0);
+}
+
 void vec_shrink_to_fit(Vec* vec)
 {
         realloc_(vec->data, (vec->size + 1) * vec->_elem_size);
