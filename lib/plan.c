@@ -115,7 +115,7 @@ void _from(Plan* plan, Query* query)
         string_sprintf(action_msg, "%s: %s", src->table->reader->file_name, "stream read");
 
         Process* from_proc = process_new(action_msg->data);
-        from_proc->action = &libcsv_read;
+        from_proc->action = &fql_read;
         from_proc->proc_data = src->table->reader->reader_data;
 
         Dnode* from_node = dgraph_add_data(plan->processes, from_proc);
@@ -157,7 +157,7 @@ void _from(Plan* plan, Query* query)
                                "mmap read");
         
                 Process* read_proc = process_new(action_msg->data);
-                read_proc->action = &libcsv_read_mmap;
+                read_proc->action = &fql_read;
                 read_proc->proc_data = src->table->reader->reader_data;
 
                 Dnode* read_node = dgraph_add_data(plan->processes, read_proc);
@@ -263,10 +263,16 @@ void _clear_passive(Plan* plan)
         }
 }
 
+void _make_pipes(Plan* plan)
+{
+
+}
+
 Plan* _build_plan(Query* query)
 {
         Plan* plan = plan_new();
 
+        /* Query */
         _from(plan, query);
         _where(plan, query);
         _group(plan, query);
@@ -275,6 +281,7 @@ Plan* _build_plan(Query* query)
         _limit(plan, query);
 
         _clear_passive(plan);
+        _make_pipes(plan);
 
         return plan;
 }

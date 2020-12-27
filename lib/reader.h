@@ -10,6 +10,7 @@ extern "C" {
 #include "util/vec.h"
 #include "util/pmap.h"
 #include "util/fqlstring.h"
+#include "util/stringview.h"
 #include "util/util.h"
 
 typedef struct csv_record csv_record;
@@ -28,8 +29,8 @@ void libcsv_free(void*);
 struct mmapcsv_data {
         csv_reader* handle;
         struct vec* records;
+        struct stringview current;
         struct vec* raw;
-        String* buf;
         Pmap* rec_map;
         char* mmap_base; 
         char* mp;

@@ -16,7 +16,10 @@ Process* process_init(Process* proc, const char* action)
 {
         *proc = (Process) {
                  NULL                           /* action */
-                ,fifo_new_(Vec*)                /* records */
+                ,fifo_new_(Vec*)                /* fifo_in0 */
+                ,NULL                           /* fifo_in1 */
+                ,NULL                           /* fifo_out0 */
+                ,NULL                           /* fifo_out1 */
                 ,NULL                           /* proc_data */
                 ,string_from_char_ptr(action)   /* action_msg */
                 ,false                          /* is_passive */

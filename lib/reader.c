@@ -96,8 +96,8 @@ struct mmapcsv_data* mmapcsv_init(struct mmapcsv_data* csv_data, size_t buflen)
         *csv_data = (struct mmapcsv_data) {
                  csv_reader_new()       /* handle */
                 ,vec_new_(csv_record*)  /* records */
+                ,{ NULL, 0 }            /* current */
                 ,vec_new_(StringView)   /* raw */
-                ,string_new()           /* buf */
                 ,NULL                   /* rec_map */
                 ,NULL                   /* map */
                 ,0                      /* map_idx */
@@ -107,9 +107,6 @@ struct mmapcsv_data* mmapcsv_init(struct mmapcsv_data* csv_data, size_t buflen)
 
         vec_reserve(csv_data->records, buflen);
 
-        /* TODO: (mmapcsv) Would be nice if we could stack
-         *       these or put them in contiguous memory.
-         */
         int i = 0;
         for (; i < buflen; ++i) {
                 csv_record* rec = csv_record_new();
@@ -166,27 +163,24 @@ void mmapcsv_free(void* reader_data)
 int mmapcsv_getline(struct mmapcsv_data* data) 
 {
         /* string view will point to the record in the raw data */
-        StringView sv;
-        sv.data = data->mp;
-
-        /* buffer is just a null terminated version of the line */
-        string_clear(data->buf);
+        data->current.data = data->mp;
 
         while (data->mp - data->mmap_base < data->file_size) {
                 switch (*data->mp) {
                         case '\n':
-                                sv.len = data->mp - sv.data;
+                                data->current.len = data->mp - data->current.data;
                                 ++data->mp;
+                                vec_push_back(data->raw, &data->current);
                                 return FQL_GOOD;
                         case '\r':
-                                sv.len = data->mp - sv.data;
+                                data->current.len = data->mp - data->current.data;
                                 if (data->mp - data->mmap_base + 1 < data->file_size &&
                                     *(++data)->mp == '\n') {
                                         ++data->mp;
                                 }
+                                vec_push_back(data->raw, &data->current);
                                 return FQL_GOOD;
                         default:
-                                string_push_back(data->buf, *data->mp);
                                 ++data->mp;
                 }
         }
@@ -202,7 +196,8 @@ int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
                 return FQL_FAIL;
         }
 
-        csv_parse(data->handle, *csv_rec, data->buf->data);
+        /* lol. lets just call everything data */
+        csv_nparse(data->handle, *csv_rec, data->current.data, data->current.len);
 
         vec_resize(rec, (*csv_rec)->size);
 
