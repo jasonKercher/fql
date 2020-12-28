@@ -120,7 +120,7 @@ void _from(Plan* plan, Query* query)
 
         Dnode* from_node = dgraph_add_data(plan->processes, from_proc);
         from_node->is_root = true;
-        
+
         plan->current->out[0] = from_node;
         plan->current = from_node;
 
@@ -155,10 +155,11 @@ void _from(Plan* plan, Query* query)
                                "%s: %s",
                                src->table->reader->file_name,
                                "mmap read");
-        
+
                 Process* read_proc = process_new(action_msg->data);
-                read_proc->action = &fql_read;
                 read_proc->proc_data = src->table->reader->reader_data;
+                read_proc->action = &fql_read;
+                read_proc->is_secondary = true;
 
                 Dnode* read_node = dgraph_add_data(plan->processes, read_proc);
                 read_node->is_root = true;
@@ -197,8 +198,8 @@ void _where(Plan* plan, Query* query)
         proc_false->out[0] = plan->op_false;
 }
 
-void _group(Plan* plan, Query* query) 
-{ 
+void _group(Plan* plan, Query* query)
+{
         if (query->groups->size == 0) {
                 return;
         }
@@ -222,7 +223,7 @@ void _limit(Plan* plan, Query* query) { }
  * passive nodes are used as a sort of link between the steps.
  * Passive nodes always point to the next node on out[0]
  */
-void _clear_passive(Plan* plan) 
+void _clear_passive(Plan* plan)
 {
         Vec* node_vec = plan->processes->nodes;
         Dnode** nodes = vec_begin(node_vec);
@@ -263,8 +264,37 @@ void _clear_passive(Plan* plan)
         }
 }
 
+/* Run through processes and link up fifos. Input fifos are
+ * owned by the process. Output fifos are just links to other
+ * processes' fifos.
+ */
 void _make_pipes(Plan* plan)
 {
+        Vec* node_vec = plan->processes->nodes;
+        Dnode** nodes = vec_begin(node_vec);
+
+        for (; nodes != vec_end(node_vec); ++nodes) {
+                Process* proc = (*nodes)->data;
+                if ((*nodes)->out[0] == NULL) {
+                        continue;
+                }
+                Process* proc0 = (*nodes)->out[0]->data;
+                proc->fifo_out0 = (proc->is_secondary) ? proc0->fifo_in1 : proc0->fifo_in0;
+                if (proc->fifo_out0 == NULL) {
+                        fprintf (stderr, "fifo missing for `%s'\n", proc0->action_msg->data);
+                        exit(EXIT_FAILURE);
+                }
+
+                if ((*nodes)->out[1] == NULL) {
+                        continue;
+                }
+                Process* proc1 = (*nodes)->out[1]->data;
+                proc->fifo_out1 = (proc->is_secondary) ? proc1->fifo_in1 : proc1->fifo_in0;
+                if (proc->fifo_out1 == NULL) {
+                        fprintf (stderr, "fifo missing for `%s'\n", proc1->action_msg->data);
+                        exit(EXIT_FAILURE);
+                }
+        }
 
 }
 

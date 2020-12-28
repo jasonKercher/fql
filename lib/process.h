@@ -19,6 +19,7 @@ struct process {
         Fifo* fifo_out1;                /* optional second output */
         void* proc_data;                /* process specific data */
         String* action_msg;             /* Message that prints with plan */
+        _Bool is_secondary;             /* fifo_out should link to a fifo_in1 */
         _Bool is_passive;               /* denotes process that does nothing */
 };
 typedef struct process Process;

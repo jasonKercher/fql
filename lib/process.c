@@ -22,6 +22,7 @@ Process* process_init(Process* proc, const char* action)
                 ,NULL                           /* fifo_out1 */
                 ,NULL                           /* proc_data */
                 ,string_from_char_ptr(action)   /* action_msg */
+                ,false                          /* is_secondary */
                 ,false                          /* is_passive */
         };
 
