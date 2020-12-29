@@ -15,7 +15,7 @@ static const char* help_string = "\n No Help here !\n\n";
 void parseargs(char c)
 {
         switch (c) {
-        case 'D':
+        case 'd':
                 fql_set_dry_run(1);
                 break;
         case 'h':
@@ -67,7 +67,7 @@ int main (int argc, char **argv)
         {
                 /* long option, (no) arg, 0, short option */
                 //{"verbose", no_argument, 0, 'v'},
-                {"dry-run",no_argument, 0, 'D' },
+                {"dry-run",no_argument, 0, 'd' },
                 {"help", no_argument, 0, 'h'},
                 {"override-warnings", no_argument, 0, 'O'},
                 {"print-plan", no_argument, 0, 'p'},
@@ -79,7 +79,7 @@ int main (int argc, char **argv)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        while ( (c = getopt_long (argc, argv, "hDOps:S:v",
+        while ( (c = getopt_long (argc, argv, "hdOps:S:v",
                                         long_options, &option_index)) != -1)
                         parseargs(c);
 

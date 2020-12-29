@@ -2,6 +2,10 @@
 
 #include <stdbool.h>
 
+#include "fql.h"
+#include "plan.h"
+#include "util/vec.h"
+#include "util/dgraph.h"
 #include "util/util.h"
 
 Process* process_new(const char* action)
@@ -33,4 +37,33 @@ void process_free(Process* proc)
 {
         string_free(proc->action_msg);
         free_(proc);
+}
+
+int _exec_plan(Plan* plan)
+{
+        Dgraph* proc_graph = plan->processes;
+        Dnode** proc_nodes = vec_begin(proc_graph->nodes);
+        
+        Vec roots;
+        vec_init_(&roots, Process*);
+
+        for (; proc_nodes != vec_end(proc_graph->nodes); ++proc_nodes) {
+                if ((*proc_nodes)->is_root) {
+                        vec_push_back(&roots, (*proc_nodes)->data);
+                }
+        }
+
+        return FQL_GOOD;
+}
+
+int process_exec_plans(Queue* plans)
+{
+        int i = 0;
+        for (; plans; plans = plans->next) {
+                Plan* plan = plans->data;
+                if (_exec_plan(plan)) {
+                        return FQL_FAIL;
+                }
+        }
+        return FQL_GOOD;
 }
