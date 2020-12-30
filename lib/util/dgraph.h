@@ -21,7 +21,7 @@ void* dnode_free(struct dnode*);
 struct dgraph {
         struct vec* nodes;
         struct dnode* newest;
-        struct stack* _trav;
+        struct vec* _trav;
         int _trav_idx;
 };
 typedef struct dgraph Dgraph;

@@ -42,7 +42,7 @@ Dgraph* dgraph_init(Dgraph* dgraph)
         *dgraph = (Dgraph) {
                  vec_new_(Dnode*)       /* nodes */
                 ,NULL                   /* newest */
-                ,NULL                   /* _trav */
+                ,vec_new_(Dnode*)       /* _trav */
                 ,0                      /* _trav_idx */
         };
 
@@ -52,12 +52,13 @@ Dgraph* dgraph_init(Dgraph* dgraph)
 void dgraph_shallow_free(Dgraph* graph)
 {
         vec_free(graph->nodes);
+        vec_free(graph->_trav);
         free_(graph);
 }
 
 void dgraph_free(Dgraph* graph)
 {
-        /* TODO: free nodes */
+        /* TODO: free the individual nodes */
         dgraph_shallow_free(graph);
 }
 
@@ -87,9 +88,13 @@ void* dgraph_remove(Dgraph* graph, Dnode** node)
         return data;
 }
 
+/* TODO: start at root 
+ *       keep track of root nodes
+ *       update_roots()
+ */
 Dnode* graph_traverse_begin(Dgraph* graph)
 {
-        stack_free(&graph->_trav);
+        vec_clear(graph->_trav);
         graph->_trav_idx = 0;
 
         int i = 0;
@@ -102,26 +107,31 @@ Dnode* graph_traverse_begin(Dgraph* graph)
 }
 
 /* depth first traverse by 1 */
+/* TODO: change to BFS traversal... BFS will use Vec more efficiently */
 Dnode* dgraph_traverse(Dgraph* graph)
 {
-        if (graph->_trav == NULL) {
+        Dnode* node = NULL;
+        if (vec_empty(graph->_trav)) {
                 if (graph->_trav_idx >= graph->nodes->size) {
                         return NULL;
                 }
-                /* TODO: validate this */
-                stack_push(&graph->_trav, vec_at(graph->nodes, graph->_trav_idx++));
+
+                node = vec_at(graph->nodes, graph->_trav_idx++);
+                vec_push_back(graph->_trav, &node);
+                node->was_visited = true;
+                return node;
         }
 
-        Dnode* node = graph->_trav->data;
+        node = vec_back(graph->_trav);
 
         if (node->out[0] != NULL && !node->out[0]->was_visited) {
                 node = node->out[0];
-                stack_push(&graph->_trav, node);
+                vec_push_back(graph->_trav, &node);
         } else if (node->out[1] != NULL && !node->out[1]->was_visited) {
                 node = node->out[1];
-                stack_push(&graph->_trav, node);
+                vec_push_back(graph->_trav, &node);
         } else {
-                stack_pop(&graph->_trav);
+                vec_remove(graph->_trav, 0);
                 return dgraph_traverse(graph);
         }
 
