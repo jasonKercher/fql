@@ -43,7 +43,9 @@ Dgraph* dgraph_init(Dgraph* dgraph)
                  vec_new_(Dnode*)       /* nodes */
                 ,NULL                   /* newest */
                 ,fifo_new_(Dnode*, 5)   /* _trav */
+                ,vec_new_(Dnode*)       /* _roots */
                 ,0                      /* _trav_idx */
+                ,false                  /* _roots_good */
         };
 
         return dgraph;
@@ -67,6 +69,7 @@ Dnode* dgraph_add_node(Dgraph* graph, Dnode* node)
 {
         vec_push_back(graph->nodes, &node);
         graph->newest = node;
+        graph->_roots_good = false;
         return node;
 }
 
@@ -78,6 +81,7 @@ Dnode* dgraph_add_data(Dgraph* graph, void* data)
 
 void dgraph_extend(Dgraph* dest, Dgraph* src)
 {
+        dest->_roots_good = false;
         /* TODO */
 }
 
@@ -85,17 +89,33 @@ void* dgraph_remove(Dgraph* graph, Dnode** node)
 {
         void* data = (*node)->data;
         vec_erase(graph->nodes, node);
+        graph->_roots_good = false;
         return data;
 }
 
-/* TODO: start at root 
- *       keep track of root nodes
- *       update_roots()
- */
-Dnode* graph_traverse_begin(Dgraph* graph)
+Vec* dgraph_get_roots(Dgraph* graph)
 {
+        if (graph->_roots_good) {
+                return graph->_roots;
+        }
+
+        vec_clear(graph->_roots);
+        Dnode** it = vec_begin(graph->_roots);
+        for (; it != vec_end(graph->_roots); ++it) {
+                if ((*it)->is_root) {
+                        vec_push_back(graph->_roots, it);
+                }
+        }
+        graph->_roots_good = true;
+        return graph->_roots;
+}
+
+void dgraph_traverse_reset(Dgraph* graph)
+{
+        dgraph_get_roots(graph);
+
         fifo_resize(graph->_trav, graph->nodes->size);
-        graph->_trav_idx = 0;
+        graph->_root_idx = 0;
 
         int i = 0;
         Dnode** node = vec_begin(graph->nodes);
@@ -103,37 +123,32 @@ Dnode* graph_traverse_begin(Dgraph* graph)
                 (*node)->was_visited = false;
         }
 
-        return dgraph_traverse(graph);
+        /* Start at first discovered root */
+        node = vec_begin(graph->_roots);
+        fifo_add(graph->_trav, node);
 }
 
 Dnode* dgraph_traverse(Dgraph* graph)
 {
-        Dnode* node = NULL;
         if (fifo_is_empty(graph->_trav)) {
-                if (graph->_trav_idx >= graph->nodes->size) {
+                if (graph->_root_idx >= graph->_roots->size) {
                         return NULL;
                 }
-
-                node = vec_at(graph->nodes, graph->_trav_idx++);
-                fifo_add(graph->_trav, &node);
-                node->was_visited = true;
-                return node;
-        }
-
-        node = fifo_peek(graph->_trav);
-
-        if (node->out[0] != NULL && !node->out[0]->was_visited) {
-                node = node->out[0];
-                fifo_add(graph->_trav, &node);
-        } else if (node->out[1] != NULL && !node->out[1]->was_visited) {
-                node = node->out[1];
-                fifo_add(graph->_trav, &node);
-        } else {
-                fifo_get(graph->_trav);
+                Dnode** node = vec_at(graph->_roots, graph->_root_idx++);
+                /* Assert node not visited */
+                fifo_add(graph->_trav, node);
                 return dgraph_traverse(graph);
         }
 
+        Dnode* node = fifo_get(graph->_trav);
         node->was_visited = true;
+
+        if (node->out[0] != NULL && !node->out[0]->was_visited) {
+                fifo_add(graph->_trav, &node);
+        }
+        if (node->out[1] != NULL && !node->out[1]->was_visited) {
+                fifo_add(graph->_trav, &node);
+        }
 
         return node;
 }
