@@ -20,7 +20,7 @@ Process* process_init(Process* proc, const char* action)
 {
         *proc = (Process) {
                  NULL                           /* action */
-                ,fifo_new_(Vec*)                /* fifo_in0 */
+                ,fifo_new_(Vec*, UCHAR_MAX)     /* fifo_in0 */
                 ,NULL                           /* fifo_in1 */
                 ,NULL                           /* fifo_out0 */
                 ,NULL                           /* fifo_out1 */

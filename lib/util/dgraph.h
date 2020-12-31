@@ -5,6 +5,7 @@
 
 #include "vec.h"
 #include "stack.h"
+#include "fifo.h"
 
 struct dnode {
         void* data;
@@ -21,7 +22,7 @@ void* dnode_free(struct dnode*);
 struct dgraph {
         struct vec* nodes;
         struct dnode* newest;
-        struct vec* _trav;
+        struct fifo* _trav;
         int _trav_idx;
 };
 typedef struct dgraph Dgraph;

@@ -42,7 +42,7 @@ Dgraph* dgraph_init(Dgraph* dgraph)
         *dgraph = (Dgraph) {
                  vec_new_(Dnode*)       /* nodes */
                 ,NULL                   /* newest */
-                ,vec_new_(Dnode*)       /* _trav */
+                ,fifo_new_(Dnode*, 5)   /* _trav */
                 ,0                      /* _trav_idx */
         };
 
@@ -52,7 +52,7 @@ Dgraph* dgraph_init(Dgraph* dgraph)
 void dgraph_shallow_free(Dgraph* graph)
 {
         vec_free(graph->nodes);
-        vec_free(graph->_trav);
+        fifo_free(graph->_trav);
         free_(graph);
 }
 
@@ -94,7 +94,7 @@ void* dgraph_remove(Dgraph* graph, Dnode** node)
  */
 Dnode* graph_traverse_begin(Dgraph* graph)
 {
-        vec_clear(graph->_trav);
+        fifo_resize(graph->_trav, graph->nodes->size);
         graph->_trav_idx = 0;
 
         int i = 0;
@@ -106,32 +106,30 @@ Dnode* graph_traverse_begin(Dgraph* graph)
         return dgraph_traverse(graph);
 }
 
-/* depth first traverse by 1 */
-/* TODO: change to BFS traversal... BFS will use Vec more efficiently */
 Dnode* dgraph_traverse(Dgraph* graph)
 {
         Dnode* node = NULL;
-        if (vec_empty(graph->_trav)) {
+        if (fifo_is_empty(graph->_trav)) {
                 if (graph->_trav_idx >= graph->nodes->size) {
                         return NULL;
                 }
 
                 node = vec_at(graph->nodes, graph->_trav_idx++);
-                vec_push_back(graph->_trav, &node);
+                fifo_add(graph->_trav, &node);
                 node->was_visited = true;
                 return node;
         }
 
-        node = vec_back(graph->_trav);
+        node = fifo_peek(graph->_trav);
 
         if (node->out[0] != NULL && !node->out[0]->was_visited) {
                 node = node->out[0];
-                vec_push_back(graph->_trav, &node);
+                fifo_add(graph->_trav, &node);
         } else if (node->out[1] != NULL && !node->out[1]->was_visited) {
                 node = node->out[1];
-                vec_push_back(graph->_trav, &node);
+                fifo_add(graph->_trav, &node);
         } else {
-                vec_remove(graph->_trav, 0);
+                fifo_get(graph->_trav);
                 return dgraph_traverse(graph);
         }
 
