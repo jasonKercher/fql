@@ -41,7 +41,7 @@ void dgraph_extend(struct dgraph* dest, struct dgraph* src);
 void* dgraph_remove(struct dgraph*, struct dnode**);
 
 struct vec* dgraph_get_roots(struct dgraph*);
-struct dnode* dgraph_traverse_begin(struct dgraph*);
+void dgraph_traverse_reset(struct dgraph*);
 struct dnode* dgraph_traverse(struct dgraph*);
 
 #endif /* DGRAPH_H */

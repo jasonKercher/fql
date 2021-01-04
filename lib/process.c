@@ -42,17 +42,15 @@ void process_free(Process* proc)
 int _exec_plan(Plan* plan)
 {
         Dgraph* proc_graph = plan->processes;
-        Dnode** proc_nodes = vec_begin(proc_graph->nodes);
-        
-        Vec roots;
-        vec_init_(&roots, Process*);
+        Dnode* proc_node = NULL;
 
-        for (; proc_nodes != vec_end(proc_graph->nodes); ++proc_nodes) {
-                if ((*proc_nodes)->is_root) {
-                        vec_push_back(&roots, (*proc_nodes)->data);
-                }
+        dgraph_traverse_reset(proc_graph);
+
+        while ((proc_node = dgraph_traverse(proc_graph))) {
+                Process* proc = proc_node->data;
+                fprintf(stderr, "%s\n", (char*)proc->action_msg->data);
         }
-
+        
         return FQL_GOOD;
 }
 

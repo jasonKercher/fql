@@ -100,8 +100,8 @@ Vec* dgraph_get_roots(Dgraph* graph)
         }
 
         vec_clear(graph->_roots);
-        Dnode** it = vec_begin(graph->_roots);
-        for (; it != vec_end(graph->_roots); ++it) {
+        Dnode** it = vec_begin(graph->nodes);
+        for (; it != vec_end(graph->nodes); ++it) {
                 if ((*it)->is_root) {
                         vec_push_back(graph->_roots, it);
                 }
@@ -115,7 +115,9 @@ void dgraph_traverse_reset(Dgraph* graph)
         dgraph_get_roots(graph);
 
         fifo_resize(graph->_trav, graph->nodes->size);
-        graph->_root_idx = 0;
+
+        /* we are going to enter the first root manually */
+        graph->_root_idx = 1;
 
         int i = 0;
         Dnode** node = vec_begin(graph->nodes);
@@ -140,15 +142,15 @@ Dnode* dgraph_traverse(Dgraph* graph)
                 return dgraph_traverse(graph);
         }
 
-        Dnode* node = fifo_get(graph->_trav);
-        node->was_visited = true;
+        Dnode** node = fifo_get(graph->_trav);
+        (*node)->was_visited = true;
 
-        if (node->out[0] != NULL && !node->out[0]->was_visited) {
-                fifo_add(graph->_trav, &node);
+        if ((*node)->out[0] != NULL && !(*node)->out[0]->was_visited) {
+                fifo_add(graph->_trav, &(*node)->out[0]);
         }
-        if (node->out[1] != NULL && !node->out[1]->was_visited) {
-                fifo_add(graph->_trav, &node);
+        if ((*node)->out[1] != NULL && !(*node)->out[1]->was_visited) {
+                fifo_add(graph->_trav, &(*node)->out[1]);
         }
 
-        return node;
+        return *node;
 }
