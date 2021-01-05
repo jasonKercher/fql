@@ -23,24 +23,30 @@
 
 /* Constructor (private)
  */
-Plan* plan_new()
+Plan* plan_new(int source_total)
 {
         Plan* new_plan = NULL;
         malloc_(new_plan, sizeof(*new_plan));
 
-        return plan_init(new_plan);
+        return plan_init(new_plan, source_total);
 }
 
-Plan* plan_init(Plan* plan)
+Plan* plan_init(Plan* plan, int source_total)
 {
         *plan = (Plan) {
-                 dgraph_new()                        /* processes */
-                ,dnode_new(process_new("OP_TRUE"))   /* op_true */
-                ,dnode_new(process_new("OP_FALSE"))  /* op_false */
-                ,NULL                                /* current */
+                 dgraph_new()                                      /* processes */
+                ,dnode_new(process_new("OP_TRUE", source_total))   /* op_true */
+                ,dnode_new(process_new("OP_FALSE", source_total))  /* op_false */
+                ,NULL                                              /* current */
+                ,0                                                 /* source_count */
         };
 
-        Process* start = process_new("start");
+        /* source_count is a temporary variable used to keep track
+         * of the current number of sources as the plan is built.
+         * Setting the member (source_count) to 0 is correct here.
+         */
+
+        Process* start = process_new("start", 0);
         start->is_passive = true;
         plan->current = dgraph_add_data(plan->processes, start);
         dgraph_add_node(plan->processes, plan->op_true);
@@ -63,7 +69,8 @@ void plan_free(void* generic_plan)
 Dnode* _logic_to_process(Dgraph* proc_graph,
                          Dgraph* logic_graph,
                          Dnode** proc_node_true,
-                         Dnode** proc_node_false)
+                         Dnode** proc_node_false,
+                         int source_count)
 {
         Dnode* return_node = NULL;
 
@@ -71,7 +78,7 @@ Dnode* _logic_to_process(Dgraph* proc_graph,
         Dnode** it = vec_begin(logic_graph->nodes);
         for (; it != vec_end(logic_graph->nodes); ++it) {
                 Logic* logic = (*it)->data;
-                Process* proc = process_new("");
+                Process* proc = process_new("", source_count);
                 logic_assign_process(logic, proc);
 
                 Dnode* proc_node = dnode_new(proc);
@@ -114,7 +121,7 @@ void _from(Plan* plan, Query* query)
 
         string_sprintf(action_msg, "%s: %s", src->table->reader->file_name, "stream read");
 
-        Process* from_proc = process_new(action_msg->data);
+        Process* from_proc = process_new(action_msg->data, plan->source_count++);
         from_proc->action = &fql_read;
         from_proc->proc_data = src->table->reader->reader_data;
 
@@ -129,22 +136,22 @@ void _from(Plan* plan, Query* query)
 
                 switch (src->join_type) {
                 case JOIN_INNER:
-                        join_proc = process_new("INNER JOIN");
+                        join_proc = process_new("INNER JOIN", ++plan->source_count);
                         break;
                 case JOIN_LEFT:
-                        join_proc = process_new("LEFT JOIN");
+                        join_proc = process_new("LEFT JOIN", ++plan->source_count);
                         break;
                 case JOIN_RIGHT:
-                        join_proc = process_new("RIGHT JOIN");
+                        join_proc = process_new("RIGHT JOIN", ++plan->source_count);
                         break;
                 case JOIN_FULL:
-                        join_proc = process_new("FULL JOIN");
+                        join_proc = process_new("FULL JOIN", ++plan->source_count);
                         break;
                 case JOIN_CROSS:
-                        join_proc = process_new("CROSS JOIN");
+                        join_proc = process_new("CROSS JOIN", ++plan->source_count);
                         break;
                 case JOIN_FROM:
-                        join_proc = process_new("unexpected: JOIN_FROM");
+                        join_proc = process_new("unexpected: JOIN_FROM", ++plan->source_count);
                 }
 
                 Dnode* join_proc_node = dgraph_add_data(plan->processes, join_proc);
@@ -156,7 +163,8 @@ void _from(Plan* plan, Query* query)
                                src->table->reader->file_name,
                                "mmap read");
 
-                Process* read_proc = process_new(action_msg->data);
+                /* Root node only will only have one source */
+                Process* read_proc = process_new(action_msg->data, 1);
                 read_proc->proc_data = src->table->reader->reader_data;
                 read_proc->action = &fql_read;
                 read_proc->is_secondary = true;
@@ -172,7 +180,9 @@ void _from(Plan* plan, Query* query)
                         join_proc_node->out[0] = _logic_to_process(plan->processes,
                                                                    src->condition->tree,
                                                                    &proc_true,
-                                                                   &proc_false);
+                                                                   &proc_false,
+                                                                   plan->source_count
+                                                                   );
                         plan->current = proc_true;
                         proc_false->out[0] = plan->op_false;
                 } else {
@@ -193,7 +203,8 @@ void _where(Plan* plan, Query* query)
         plan->current->out[0] = _logic_to_process(plan->processes,
                                                   query->where->tree,
                                                   &proc_true,
-                                                  &proc_false);
+                                                  &proc_false,
+                                                  plan->source_count);
         plan->current = proc_true;
         proc_false->out[0] = plan->op_false;
 }
@@ -203,7 +214,7 @@ void _group(Plan* plan, Query* query)
         if (query->groups->size == 0) {
                 return;
         }
-        Process* group_proc = process_new("GROUP BY");
+        Process* group_proc = process_new("GROUP BY", plan->source_count);
         Dnode* group_node = dgraph_add_data(plan->processes, group_proc);
         plan->current->out[0] = group_node;
         plan->current = group_node;
@@ -300,7 +311,7 @@ void _make_pipes(Plan* plan)
 
 Plan* _build_plan(Query* query)
 {
-        Plan* plan = plan_new();
+        Plan* plan = plan_new(query->sources->size);
 
         /* Query */
         _from(plan, query);

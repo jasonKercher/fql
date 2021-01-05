@@ -9,11 +9,12 @@ struct plan {
         struct dnode* op_false;
         /* temp */
         struct dnode* current;
+        int source_count;
 };
 typedef struct plan Plan;
 
-struct plan* plan_new();
-struct plan* plan_init(struct plan*);
+struct plan* plan_new(int);
+struct plan* plan_init(struct plan*, int);
 void plan_free(void*);
 int build_plans(struct queue**, struct queue*);
 

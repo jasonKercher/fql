@@ -106,6 +106,11 @@ Vec* dgraph_get_roots(Dgraph* graph)
                         vec_push_back(graph->_roots, it);
                 }
         }
+
+        /* If no roots found, use first node */
+        if (vec_empty(graph->_roots)) {
+                vec_push_back(graph->_roots, vec_begin(graph->nodes));
+        }
         graph->_roots_good = true;
         return graph->_roots;
 }

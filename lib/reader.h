@@ -13,6 +13,15 @@ extern "C" {
 #include "util/stringview.h"
 #include "util/util.h"
 
+/**
+ * Reader types own the data that is passed from
+ * process to process. The records pass a vector 
+ * of fields in the form of read-only StringViews.
+ * To match the raw records to the correct
+ * StringView, an index is passed to the *_get_record 
+ * family of functions.
+ */
+
 typedef struct csv_record csv_record;
 typedef struct csv_reader csv_reader;
 
