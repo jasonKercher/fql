@@ -15,10 +15,10 @@ extern "C" {
 
 /**
  * Reader types own the data that is passed from
- * process to process. The records pass a vector 
+ * process to process. The records pass a vector
  * of fields in the form of read-only StringViews.
  * To match the raw records to the correct
- * StringView, an index is passed to the *_get_record 
+ * StringView, an index is passed to the *_get_record
  * family of functions.
  */
 
@@ -28,6 +28,7 @@ typedef struct csv_reader csv_reader;
 struct libcsv_data {
         csv_reader* csv_handle;
         struct vec* csv_records; /* vec_(csv_record*) */
+        _Bool eof;
 };
 
 struct libcsv_data* libcsv_new(size_t);
@@ -41,7 +42,7 @@ struct mmapcsv_data {
         struct stringview current;
         struct vec* raw;
         Pmap* rec_map;
-        char* mmap_base; 
+        char* mmap_base;
         char* mp;
         size_t file_size;
         int fd;

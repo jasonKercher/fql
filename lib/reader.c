@@ -24,6 +24,7 @@ struct libcsv_data* libcsv_init(struct libcsv_data* csv_data, size_t buflen)
         *csv_data = (struct libcsv_data) {
                  csv_reader_new()
                 ,vec_new_(csv_record*)
+                ,false
         };
 
         vec_reserve(csv_data->csv_records, buflen);
@@ -55,10 +56,20 @@ void libcsv_free(void* reader_data)
 int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
 {
         struct libcsv_data* csv = reader_data;
+        if (csv->eof) {
+                return 1;
+        }
+
         csv_record** csv_rec = vec_at(csv->csv_records, idx);
 
-        if (csv_get_record(csv->csv_handle, *csv_rec) == CSV_FAIL) {
+        int ret = csv_get_record(csv->csv_handle, *csv_rec);
+        switch (ret) {
+        case CSV_GOOD:
+                break;
+        case CSV_FAIL:
                 return FQL_FAIL;
+        default:
+                csv->eof = true;
         }
 
         vec_resize(rec, (*csv_rec)->size);
@@ -133,7 +144,7 @@ int mmapcsv_open(struct mmapcsv_data* data, const char* file_name)
         data->file_size = sb.st_size;
 
         data->mmap_base = mmap(NULL, data->file_size, PROT_READ, MAP_PRIVATE, data->fd, 0);
-        if (data->mmap_base == MAP_FAILED) { 
+        if (data->mmap_base == MAP_FAILED) {
                 perror("file_name");
                 return FQL_FAIL;
         }
@@ -160,7 +171,7 @@ void mmapcsv_free(void* reader_data)
         close(data->fd);
 }
 
-int mmapcsv_getline(struct mmapcsv_data* data) 
+int mmapcsv_getline(struct mmapcsv_data* data)
 {
         /* string view will point to the record in the raw data */
         data->current.data = data->mp;
@@ -185,7 +196,7 @@ int mmapcsv_getline(struct mmapcsv_data* data)
                 }
         }
         return FQL_FAIL;  /* EOF?? */
-} 
+}
 
 int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
 {
@@ -262,7 +273,7 @@ void reader_free(Reader* reader)
 //        }
 //        case READ_MMAPCSV:
 //        {
-//                struct mmapcsv_data* data = reader->reader_data; 
+//                struct mmapcsv_data* data = reader->reader_data;
 //                return data->recs;
 //        }
 //        default:
