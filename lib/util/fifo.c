@@ -82,3 +82,17 @@ int fifo_add(Fifo* f, void* data)
          
         return 0;
 }
+
+int fifo_advance(Fifo* f)
+{
+        if (f->is_full) {
+                return 1;
+        }
+        ++f->head;
+        f->head %= f->buf->size;
+        f->is_full = (f->head == f->tail);
+
+        return 0;
+}
+
+

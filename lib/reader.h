@@ -26,8 +26,8 @@ typedef struct csv_record csv_record;
 typedef struct csv_reader csv_reader;
 
 struct libcsv_data {
-        csv_reader* handle;
-        struct vec* records;
+        csv_reader* csv_handle;
+        struct vec* csv_records; /* vec_(csv_record*) */
 };
 
 struct libcsv_data* libcsv_new(size_t);
@@ -36,8 +36,8 @@ int libcsv_get_record(void* reader_data, Vec* rec, unsigned char);
 void libcsv_free(void*);
 
 struct mmapcsv_data {
-        csv_reader* handle;
-        struct vec* records;
+        csv_reader* csv_handle;
+        struct vec* csv_records; /* vec_(csv_record*) */
         struct stringview current;
         struct vec* raw;
         Pmap* rec_map;
@@ -56,12 +56,14 @@ void mmapcsv_free(void*);
 typedef int (*read_next_fn)(void*, struct vec* rec, unsigned char idx);
 
 enum read_type {
+        READ_UNDEFINED,
         READ_LIBCSV,
         READ_MMAPCSV,
         READ_SUBQUERY,
 };
 
 struct reader {
+        enum read_type type;
         void* reader_data;
         read_next_fn get_record_fn;
         generic_data_fn free_fn;
@@ -73,7 +75,7 @@ struct reader* reader_new();
 struct reader* reader_init(struct reader*);
 void reader_free(struct reader*);
 
-void reader_assign(struct reader*, enum read_type);
+void reader_assign(struct reader*);
 
 #ifdef __cplusplus
 }

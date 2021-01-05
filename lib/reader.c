@@ -26,7 +26,7 @@ struct libcsv_data* libcsv_init(struct libcsv_data* csv_data, size_t buflen)
                 ,vec_new_(csv_record*)
         };
 
-        vec_reserve(csv_data->records, buflen);
+        vec_reserve(csv_data->csv_records, buflen);
 
         /* TODO: (libcsv) Would be nice if we could stack
          *       these or put them in contiguous memory.
@@ -34,7 +34,7 @@ struct libcsv_data* libcsv_init(struct libcsv_data* csv_data, size_t buflen)
         int i = 0;
         for (; i < buflen; ++i) {
                 csv_record* rec = csv_record_new();
-                vec_push_back(csv_data->records, &rec);
+                vec_push_back(csv_data->csv_records, &rec);
         }
 
         return csv_data;
@@ -43,21 +43,21 @@ struct libcsv_data* libcsv_init(struct libcsv_data* csv_data, size_t buflen)
 void libcsv_free(void* reader_data)
 {
         struct libcsv_data* csv_data = reader_data;
-        csv_reader_free(csv_data->handle);
+        csv_reader_free(csv_data->csv_handle);
 
-        csv_record** recs = csv_data->records->data;
-        for (; recs != vec_end(csv_data->records); ++ recs) {
+        csv_record** recs = csv_data->csv_records->data;
+        for (; recs != vec_end(csv_data->csv_records); ++recs) {
                 csv_record_free(*recs);
         }
-        vec_free(csv_data->records);
+        vec_free(csv_data->csv_records);
 }
 
 int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
 {
         struct libcsv_data* csv = reader_data;
-        csv_record** csv_rec = vec_at(csv->records, idx);
+        csv_record** csv_rec = vec_at(csv->csv_records, idx);
 
-        if (csv_get_record(csv->handle, *csv_rec) == CSV_FAIL) {
+        if (csv_get_record(csv->csv_handle, *csv_rec) == CSV_FAIL) {
                 return FQL_FAIL;
         }
 
@@ -94,8 +94,8 @@ struct mmapcsv_data* mmapcsv_new(size_t buflen)
 struct mmapcsv_data* mmapcsv_init(struct mmapcsv_data* csv_data, size_t buflen)
 {
         *csv_data = (struct mmapcsv_data) {
-                 csv_reader_new()       /* handle */
-                ,vec_new_(csv_record*)  /* records */
+                 csv_reader_new()       /* csv_handle */
+                ,vec_new_(csv_record*)  /* csv_records */
                 ,{ NULL, 0 }            /* current */
                 ,vec_new_(StringView)   /* raw */
                 ,NULL                   /* rec_map */
@@ -105,12 +105,12 @@ struct mmapcsv_data* mmapcsv_init(struct mmapcsv_data* csv_data, size_t buflen)
                 ,0                      /* fd */
         };
 
-        vec_reserve(csv_data->records, buflen);
+        vec_reserve(csv_data->csv_records, buflen);
 
         int i = 0;
         for (; i < buflen; ++i) {
                 csv_record* rec = csv_record_new();
-                vec_push_back(csv_data->records, &rec);
+                vec_push_back(csv_data->csv_records, &rec);
         }
 
         return csv_data;
@@ -146,13 +146,13 @@ int mmapcsv_open(struct mmapcsv_data* data, const char* file_name)
 void mmapcsv_free(void* reader_data)
 {
         struct mmapcsv_data* data = reader_data;
-        csv_reader_free(data->handle);
+        csv_reader_free(data->csv_handle);
 
-        csv_record** recs = data->records->data;
-        for (; recs != vec_end(data->records); ++ recs) {
+        csv_record** recs = data->csv_records->data;
+        for (; recs != vec_end(data->csv_records); ++ recs) {
                 csv_record_free(*recs);
         }
-        vec_free(data->records);
+        vec_free(data->csv_records);
 
         if (munmap(data->mmap_base, data->file_size)) {
                 perror("munmap");
@@ -190,14 +190,14 @@ int mmapcsv_getline(struct mmapcsv_data* data)
 int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
 {
         struct mmapcsv_data* data = reader_data;
-        csv_record** csv_rec = vec_at(data->records, idx);
+        csv_record** csv_rec = vec_at(data->csv_records, idx);
 
         if (mmapcsv_getline(data)) {
                 return FQL_FAIL;
         }
 
         /* lol. lets just call everything data */
-        csv_nparse(data->handle, *csv_rec, data->current.data, data->current.len);
+        csv_nparse(data->csv_handle, *csv_rec, data->current.data, data->current.len);
 
         vec_resize(rec, (*csv_rec)->size);
 
@@ -231,10 +231,11 @@ Reader* reader_new()
 Reader* reader_init(Reader* reader)
 {
         *reader = (Reader) {
-                 NULL   /* reader_data */
-                ,NULL   /* get_record_fn */
-                ,NULL   /* free_fn */
-                ,""     /* file_name */
+                 READ_UNDEFINED /* type */
+                ,NULL           /* reader_data */
+                ,NULL           /* get_record_fn */
+                ,NULL           /* free_fn */
+                ,""             /* file_name */
         };
 
         return reader;
@@ -251,17 +252,37 @@ void reader_free(Reader* reader)
         free_(reader);
 }
 
-void reader_assign(Reader* reader, enum read_type type)
+//Vec* reader_get_recs(Reader* reader)
+//{
+//        switch (reader->type) {
+//        case READ_LIBCSV:
+//        {
+//                struct libcsv_data* data = reader->reader_data;
+//                return data->recs;
+//        }
+//        case READ_MMAPCSV:
+//        {
+//                struct mmapcsv_data* data = reader->reader_data; 
+//                return data->recs;
+//        }
+//        default:
+//                fprintf(stderr, "%d: unknown read_type\n", reader->type);
+//        }
+//
+//        return NULL;
+//}
+
+void reader_assign(Reader* reader)
 {
         int ret = 0;
-        switch (type) {
+        switch (reader->type) {
         case READ_LIBCSV:
         {
                 struct libcsv_data* data = libcsv_new(PROCESS_BUFFER_SIZE);
                 reader->reader_data = data;
                 reader->get_record_fn = &libcsv_get_record;
                 reader->free_fn = &libcsv_free;
-                ret = csv_reader_open(data->handle, reader->file_name);
+                ret = csv_reader_open(data->csv_handle, reader->file_name);
                 break;
         }
         case READ_MMAPCSV:
@@ -277,7 +298,7 @@ void reader_assign(Reader* reader, enum read_type type)
                 fputs("cannot assign reader for subquery\n", stderr);
                 break;
         default:
-                fprintf(stderr, "%d: unknown read_type\n", type);
+                fprintf(stderr, "%d: unknown read_type\n", reader->type);
         }
 
         if (ret == CSV_FAIL) {

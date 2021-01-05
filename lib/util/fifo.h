@@ -28,6 +28,7 @@ _Bool fifo_is_full(struct fifo*);
 void* fifo_get(struct fifo*);
 void* fifo_peek(struct fifo*);
 int fifo_add(struct fifo*, void*);
+int fifo_advance(struct fifo*);
 
 
 #endif  /* CIRCLE_H */

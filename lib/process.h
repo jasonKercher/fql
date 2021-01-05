@@ -6,6 +6,7 @@
 #include "util/fqlstring.h"
 #include "util/fifo.h"
 #include "util/queue.h"
+#include "util/dgraph.h"
 
 struct process;
 
@@ -30,8 +31,10 @@ struct process* process_new(const char* action, int width);
 struct process* process_init(struct process*, const char*, int width);
 void process_free(struct process*);
 
+void process_set_root(struct dnode*);
 int process_exec_plans(struct queue*);
 
 int fql_read(struct process*);
+int fql_no_op(struct process*);
 
 #endif /* PROCESS_H */

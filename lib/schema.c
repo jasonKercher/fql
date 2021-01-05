@@ -186,18 +186,16 @@ int schema_resolve_source(Source* source)
 
         /* Retrieve schema using libcsv */
         if (source->join_type == JOIN_FROM) {
-                reader_assign(table->reader, READ_LIBCSV);
+                table->reader->type = READ_LIBCSV;
         } else {
-                reader_assign(table->reader, READ_MMAPCSV);
+                table->reader->type = READ_MMAPCSV;
         }
+        reader_assign(table->reader);
 
-        //csv_record* rec = csv_record_new();
         Vec* rec = vec_new_(StringView);
         table->reader->get_record_fn(table->reader->reader_data, rec, 0);
 
         schema_assign_header(table, rec);
-
-        //csv_record_free(rec);
 
         return FQL_GOOD;
 }

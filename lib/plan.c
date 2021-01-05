@@ -126,7 +126,7 @@ void _from(Plan* plan, Query* query)
         from_proc->proc_data = src->table->reader->reader_data;
 
         Dnode* from_node = dgraph_add_data(plan->processes, from_proc);
-        from_node->is_root = true;
+        process_set_root(from_node);
 
         plan->current->out[0] = from_node;
         plan->current = from_node;
@@ -170,7 +170,7 @@ void _from(Plan* plan, Query* query)
                 read_proc->is_secondary = true;
 
                 Dnode* read_node = dgraph_add_data(plan->processes, read_proc);
-                read_node->is_root = true;
+                process_set_root(read_node);
                 read_node->out[0] = join_proc_node;
 
                 if (src->condition != NULL) {
