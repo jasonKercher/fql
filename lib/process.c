@@ -35,9 +35,14 @@ Process* process_init(Process* proc, const char* action, int width)
         };
 
         Vec* buf = proc->fifo_in0->buf;
-        Vec** it = vec_begin(buf);
-        for (; it != vec_end(buf); ++it) {
-                *it = vec_new_(StringView);
+        Vec** recs = vec_begin(buf);
+        for (; recs != vec_end(buf); ++recs) {
+                *recs = vec_new_(Vec*);
+                vec_resize(*recs, width);
+                Vec** rec = vec_begin(*recs);
+                for (; rec != vec_end(*recs); ++rec) {
+                        *rec = vec_new_(StringView);
+                }
         }
 
         return proc;

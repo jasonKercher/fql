@@ -7,7 +7,9 @@ int fql_read(Process* proc)
 {
         Reader* reader = proc->proc_data;
         struct libcsv_data* data = reader->reader_data;
-        Vec** rec = fifo_get(proc->fifo_in0);
+        Vec** recs = fifo_get(proc->fifo_in0);
+        /* We can assume recs is of size 1 */
+        Vec** rec = vec_begin(*recs);
         size_t tail = proc->fifo_in0->tail;
         tail = (tail) ? tail-1 : proc->fifo_in0->buf->size;
         int ret = reader->get_record_fn(data, *rec, tail);
@@ -22,7 +24,7 @@ int fql_read(Process* proc)
         }
 
         /* to next process */
-        fifo_add(proc->fifo_out0, rec);
+        fifo_add(proc->fifo_out0, recs);
 
         return 1;
 }
