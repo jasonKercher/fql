@@ -54,14 +54,20 @@ Writer* writer_new()
 
 Writer* writer_init(Writer* writer)
 {
-       *writer = (Writer) {
+        *writer = (Writer) {
                  WRITE_UNDEFINED
                 ,NULL
                 ,NULL
                 ,NULL
                 ,vec_new_(String)
                 ,""
-       };
+        };
+ 
+        /* TODO: This should not be here. This should
+         *       be dependant on output schema
+         */
+        writer->type = WRITE_LIBCSV;
+        writer_assign(writer);
 
        return writer;
 }
