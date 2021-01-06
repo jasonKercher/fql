@@ -112,10 +112,11 @@ void column_cat_description(Column* col, String* msg)
         }
 }
 
-int column_try_assign_source(Column* col, Source* src)
+int column_try_assign_source(Column* col, Source* src, int idx)
 {
         col->data_source = hmap_get(src->table->schema->col_map, col->alias);
         if (col->data_source) {
+                col->src_idx = idx;
                 return 1;
         }
 
@@ -127,9 +128,24 @@ int column_try_assign_source(Column* col, Source* src)
  *       type. The best way to handle this would be to set
  *       the type during parsing.
  */
-int column_get_int(long* ret, Column* col, Vec* rec)
+int column_get_int(long* ret, Column* col, Vec* recs)
 {
         switch (col->expr) {
+        case EXPR_COLUMN_NAME:
+        {
+                /* this is a rather unfortunate necessity */
+                String s;
+                string_init(&s);
+                Vec* rec = vec_at(recs, col->src_idx);
+                StringView* sv = vec_at(rec, col->data_source->location);
+                string_copy_from_stringview(&s, sv);
+                if (str2long(ret, s.data)) {
+                        string_destroy(&s);
+                        return FQL_FAIL;
+                }
+                string_destroy(&s);
+                return FQL_GOOD;
+        }
         case EXPR_CONST:
                 if (field_to_int(ret, &col->field, &col->field_type)) {
                         return FQL_FAIL;
@@ -142,9 +158,24 @@ int column_get_int(long* ret, Column* col, Vec* rec)
         return FQL_GOOD;
 }
 
-int column_get_float(double* ret, Column* col, Vec* rec)
+int column_get_float(double* ret, Column* col, Vec* recs)
 {
         switch (col->expr) {
+        case EXPR_COLUMN_NAME:
+        {
+                /* this is a rather unfortunate necessity */
+                String s;
+                string_init(&s);
+                Vec* rec = vec_at(recs, col->src_idx);
+                StringView* sv = vec_at(rec, col->data_source->location);
+                string_copy_from_stringview(&s, sv);
+                if (str2double(ret, s.data)) {
+                        string_destroy(&s);
+                        return FQL_FAIL;
+                }
+                string_destroy(&s);
+                return FQL_GOOD;
+        }
         case EXPR_CONST:
                 if (field_to_float(ret, &col->field, &col->field_type)) {
                         return FQL_FAIL;
@@ -157,9 +188,15 @@ int column_get_float(double* ret, Column* col, Vec* rec)
         return FQL_GOOD;
 }
 
-int column_get_stringview(StringView* ret, Column* col, Vec* rec)
+int column_get_stringview(StringView* ret, Column* col, Vec* recs)
 {
         switch (col->expr) {
+        case EXPR_COLUMN_NAME:
+        {
+                Vec* rec = vec_at(recs, col->src_idx);
+                ret = vec_at(rec, col->data_source->location);
+                return FQL_GOOD;
+        }
         case EXPR_CONST:
                 if (field_to_stringview(ret, &col->field, &col->field_type)) {
                         return FQL_FAIL;

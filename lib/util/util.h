@@ -95,9 +95,9 @@ typedef void(*generic_data_fn)(void*);
  * Returns:
  *      - parsed long int
  */
-long str2long(const char* s);
+int str2long(long*, const char* s);
 
-double str2double(const char* s);
+int str2double(double*, const char* s);
 
 /**
  * charcount simply counts the occurences of char c

@@ -135,8 +135,8 @@ LTLIBRARIES = $(lib_LTLIBRARIES)
 libfql_la_DEPENDENCIES = antlr/libantlr.la util/libutil.la
 am_libfql_la_OBJECTS = lib.lo plan.lo process.lo fqlprocesses.lo \
 	prop.lo query.lo table.lo schema.lo column.lo operation.lo \
-	reader.lo logic.lo select.lo function.lo fqlfunctions.lo \
-	field.lo
+	reader.lo writer.lo logic.lo select.lo function.lo \
+	fqlfunctions.lo field.lo
 libfql_la_OBJECTS = $(am_libfql_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -164,7 +164,8 @@ am__depfiles_remade = ./$(DEPDIR)/column.Plo ./$(DEPDIR)/field.Plo \
 	./$(DEPDIR)/plan.Plo ./$(DEPDIR)/process.Plo \
 	./$(DEPDIR)/prop.Plo ./$(DEPDIR)/query.Plo \
 	./$(DEPDIR)/reader.Plo ./$(DEPDIR)/schema.Plo \
-	./$(DEPDIR)/select.Plo ./$(DEPDIR)/table.Plo
+	./$(DEPDIR)/select.Plo ./$(DEPDIR)/table.Plo \
+	./$(DEPDIR)/writer.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -396,6 +397,7 @@ libfql_la_SOURCES = include/fql.h lib.c \
 					column.h column.c \
 					operation.h operation.c \
 					reader.h reader.c \
+					writer.h writer.c \
 					logic.h logic.c \
 					select.h select.c \
 					function.h function.c fqlfunctions.c \
@@ -496,6 +498,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/schema.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/select.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/table.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/writer.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -768,6 +771,7 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/schema.Plo
 	-rm -f ./$(DEPDIR)/select.Plo
 	-rm -f ./$(DEPDIR)/table.Plo
+	-rm -f ./$(DEPDIR)/writer.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -829,6 +833,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/schema.Plo
 	-rm -f ./$(DEPDIR)/select.Plo
 	-rm -f ./$(DEPDIR)/table.Plo
+	-rm -f ./$(DEPDIR)/writer.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

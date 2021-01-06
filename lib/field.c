@@ -13,8 +13,11 @@ int field_to_int(long* ret, union field* field, enum field_type* type)
                 break;
         case FIELD_STRING:
                 *type = FIELD_INT;
-                /* TODO: This should fail gracefully */
-                long val = str2long(field->s->data);
+                long val = 0;
+                if (str2long(&val, field->s->data)) {
+                        string_free(field->s);
+                        return FQL_FAIL;
+                }
                 string_free(field->s);
                 field->i = val;
                 break;
@@ -36,15 +39,18 @@ int field_to_float(double* ret, union field* field, enum field_type* type)
                 break;
         case FIELD_STRING:
                 *type = FIELD_FLOAT;
-                /* TODO: This should fail gracefully */
-                double val = str2double(field->s->data);
+                double val = 0;
+                if (str2double(&val, field->s->data)) {
+                        string_free(field->s);
+                        return FQL_FAIL;
+                }
                 string_free(field->s);
                 field->f = val;
                 break;
         default:
                 return FQL_FAIL;
         }
-        
+
         *ret = field->f;
         return FQL_GOOD;
 }

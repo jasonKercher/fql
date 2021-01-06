@@ -11,23 +11,23 @@
 #include "util/stringview.h"
 #include "util/util.h"
 
-struct libcsv_data* libcsv_new(size_t buflen)
+struct libcsv_reader* libcsv_reader_new(size_t buflen)
 {
-        struct libcsv_data* new_data = NULL;
+        struct libcsv_reader* new_data = NULL;
         malloc_(new_data, sizeof(*new_data));
 
-        return libcsv_init(new_data, buflen);
+        return libcsv_reader_init(new_data, buflen);
 }
 
-struct libcsv_data* libcsv_init(struct libcsv_data* csv_data, size_t buflen)
+struct libcsv_reader* libcsv_reader_init(struct libcsv_reader* csv_data, size_t buflen)
 {
-        *csv_data = (struct libcsv_data) {
+        *csv_data = (struct libcsv_reader) {
                  csv_reader_new()
                 ,vec_new_(csv_record*)
                 ,false
         };
 
-        vec_reserve(csv_data->csv_records, buflen);
+        vec_reserve(csv_data->csv_recs, buflen);
 
         /* TODO: (libcsv) Would be nice if we could stack
          *       these or put them in contiguous memory.
@@ -35,32 +35,37 @@ struct libcsv_data* libcsv_init(struct libcsv_data* csv_data, size_t buflen)
         int i = 0;
         for (; i < buflen; ++i) {
                 csv_record* rec = csv_record_new();
-                vec_push_back(csv_data->csv_records, &rec);
+                vec_push_back(csv_data->csv_recs, &rec);
         }
 
         return csv_data;
 }
 
-void libcsv_free(void* reader_data)
+void libcsv_reader_free(void* reader_data)
 {
-        struct libcsv_data* csv_data = reader_data;
+        if (reader_data == NULL) {
+                return;
+        }
+        struct libcsv_reader* csv_data = reader_data;
         csv_reader_free(csv_data->csv_handle);
 
-        csv_record** recs = csv_data->csv_records->data;
-        for (; recs != vec_end(csv_data->csv_records); ++recs) {
+        csv_record** recs = csv_data->csv_recs->data;
+        for (; recs != vec_end(csv_data->csv_recs); ++recs) {
                 csv_record_free(*recs);
         }
-        vec_free(csv_data->csv_records);
+        vec_free(csv_data->csv_recs);
+
+        free_(csv_data);
 }
 
 int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
 {
-        struct libcsv_data* csv = reader_data;
+        struct libcsv_reader* csv = reader_data;
         if (csv->eof) {
                 return 1;
         }
 
-        csv_record** csv_rec = vec_at(csv->csv_records, idx);
+        csv_record** csv_rec = vec_at(csv->csv_recs, idx);
 
         int ret = csv_get_record(csv->csv_handle, *csv_rec);
         switch (ret) {
@@ -72,6 +77,9 @@ int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
                 csv->eof = true;
         }
 
+        /* This should really never change unless we
+         * want this to mean something (like NULLs).
+         */
         vec_resize(rec, (*csv_rec)->size);
 
         StringView* sv = vec_begin(rec);
@@ -106,7 +114,7 @@ struct mmapcsv_data* mmapcsv_init(struct mmapcsv_data* csv_data, size_t buflen)
 {
         *csv_data = (struct mmapcsv_data) {
                  csv_reader_new()       /* csv_handle */
-                ,vec_new_(csv_record*)  /* csv_records */
+                ,vec_new_(csv_record*)  /* csv_recs */
                 ,{ NULL, 0 }            /* current */
                 ,vec_new_(StringView)   /* raw */
                 ,NULL                   /* rec_map */
@@ -116,12 +124,12 @@ struct mmapcsv_data* mmapcsv_init(struct mmapcsv_data* csv_data, size_t buflen)
                 ,0                      /* fd */
         };
 
-        vec_reserve(csv_data->csv_records, buflen);
+        vec_reserve(csv_data->csv_recs, buflen);
 
         int i = 0;
         for (; i < buflen; ++i) {
                 csv_record* rec = csv_record_new();
-                vec_push_back(csv_data->csv_records, &rec);
+                vec_push_back(csv_data->csv_recs, &rec);
         }
 
         return csv_data;
@@ -159,11 +167,11 @@ void mmapcsv_free(void* reader_data)
         struct mmapcsv_data* data = reader_data;
         csv_reader_free(data->csv_handle);
 
-        csv_record** recs = data->csv_records->data;
-        for (; recs != vec_end(data->csv_records); ++ recs) {
+        csv_record** recs = data->csv_recs->data;
+        for (; recs != vec_end(data->csv_recs); ++ recs) {
                 csv_record_free(*recs);
         }
-        vec_free(data->csv_records);
+        vec_free(data->csv_recs);
 
         if (munmap(data->mmap_base, data->file_size)) {
                 perror("munmap");
@@ -201,7 +209,7 @@ int mmapcsv_getline(struct mmapcsv_data* data)
 int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
 {
         struct mmapcsv_data* data = reader_data;
-        csv_record** csv_rec = vec_at(data->csv_records, idx);
+        csv_record** csv_rec = vec_at(data->csv_recs, idx);
 
         if (mmapcsv_getline(data)) {
                 return FQL_FAIL;
@@ -263,36 +271,16 @@ void reader_free(Reader* reader)
         free_(reader);
 }
 
-//Vec* reader_get_recs(Reader* reader)
-//{
-//        switch (reader->type) {
-//        case READ_LIBCSV:
-//        {
-//                struct libcsv_data* data = reader->reader_data;
-//                return data->recs;
-//        }
-//        case READ_MMAPCSV:
-//        {
-//                struct mmapcsv_data* data = reader->reader_data;
-//                return data->recs;
-//        }
-//        default:
-//                fprintf(stderr, "%d: unknown read_type\n", reader->type);
-//        }
-//
-//        return NULL;
-//}
-
 void reader_assign(Reader* reader)
 {
         int ret = 0;
         switch (reader->type) {
         case READ_LIBCSV:
         {
-                struct libcsv_data* data = libcsv_new(PROCESS_BUFFER_SIZE);
+                struct libcsv_reader* data = libcsv_reader_new(PROCESS_BUFFER_SIZE);
                 reader->reader_data = data;
                 reader->get_record_fn = &libcsv_get_record;
-                reader->free_fn = &libcsv_free;
+                reader->free_fn = &libcsv_reader_free;
                 ret = csv_reader_open(data->csv_handle, reader->file_name);
                 break;
         }

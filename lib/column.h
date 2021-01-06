@@ -29,6 +29,7 @@ struct column {
         union field field;
         unsigned location;
         unsigned width;
+        int src_idx;
 };
 typedef struct column Column;
 
@@ -37,7 +38,7 @@ struct column* column_init(struct column*, enum expr_type, void*, const char*);
 void column_free(void*);
 
 void column_cat_description(struct column* col, String*);
-int column_try_assign_source(struct column*, struct source*);
+int column_try_assign_source(struct column*, struct source*, int);
 
 /* Data Access */
 int column_get_int(long*, struct column*, struct vec*);

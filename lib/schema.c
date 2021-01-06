@@ -243,7 +243,7 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
                         Source* search_src = vec_at(sources, j);
                         if ((*it)->table_name[0] == '\0' ||
                             istring_eq((*it)->table_name, search_src->alias)) {
-                                matches += column_try_assign_source(*it, search_src);
+                                matches += column_try_assign_source(*it, search_src, j);
                         }
                 }
 

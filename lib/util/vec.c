@@ -28,9 +28,14 @@ Vec* vec_init(Vec* vec, size_t elem_size)
         return vec;
 }
 
-void vec_free(Vec* vec)
+void vec_destroy(Vec* vec)
 {
         free_(vec->data);
+}
+
+void vec_free(Vec* vec)
+{
+        vec_destroy(vec);
         free_(vec);
 }
 
@@ -104,7 +109,7 @@ void* vec_add_one(Vec* vec)
 
         return vec_back(vec);
 }
-        
+
 void vec_set(Vec* vec, size_t n, void* src)
 {
         void* dest = vec_at(vec, n);

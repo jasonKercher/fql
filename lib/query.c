@@ -136,10 +136,10 @@ void query_add_constant(Query* query, const char* s, int len)
         } else {
                 if (strhaschar(s, '.')) {
                         type = FIELD_FLOAT;
-                        col->field.f = str2double(s);
+                        str2double(&col->field.f, s);
                 } else {
                         type = FIELD_INT;
-                        col->field.i = str2long(s);
+                        str2long(&col->field.i, s);
                 }
         }
 

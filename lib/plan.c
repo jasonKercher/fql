@@ -123,7 +123,7 @@ void _from(Plan* plan, Query* query)
 
         Process* from_proc = process_new(action_msg->data, plan->source_count++);
         from_proc->action = &fql_read;
-        from_proc->proc_data = src->table->reader->reader_data;
+        from_proc->proc_data = src->table->reader;
 
         Dnode* from_node = dgraph_add_data(plan->processes, from_proc);
         process_set_root(from_node);
@@ -165,7 +165,7 @@ void _from(Plan* plan, Query* query)
 
                 /* Root node only will only have one source */
                 Process* read_proc = process_new(action_msg->data, 1);
-                read_proc->proc_data = src->table->reader->reader_data;
+                read_proc->proc_data = src->table->reader;
                 read_proc->action = &fql_read;
                 read_proc->is_secondary = true;
 

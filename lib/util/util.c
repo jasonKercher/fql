@@ -5,48 +5,47 @@
 
 #include "queue.h"
 
-long str2longbase(const char* s, int base)
+int str2longbase(long* ret, const char* s, int base)
 {
         char* endPtr = NULL;
         errno = 0;
-        long val = strtol(s, &endPtr, base);
-        //if (s == endPtr)
-        if ((errno == ERANGE && (val == LONG_MIN || val == LONG_MAX))
+        *ret = strtol(s, &endPtr, base);
+        if ((errno == ERANGE && (*ret == LONG_MIN || *ret == LONG_MAX))
                         || (errno == EINVAL)
-                        || (errno != 0 && val == 0)
+                        || (errno != 0 && *ret == 0)
                         || (errno == 0 && s && *endPtr != 0)) {
                 perror(s);
-                exit(EXIT_FAILURE);
+                return 1;
         }
-                
-        return val;
+
+        return 0;
 }
 
-long str2long10(const char* s)
+int str2long10(long* ret, const char* s)
 {
-        return str2longbase(s, 10);
+        return str2longbase(ret, s, 10);
 }
 
-long str2long(const char* s)
+int str2long(long* ret, const char* s)
 {
         if (s[0] == '0' && s[1] == 'x') {
-                return str2longbase(s, 16);
+                return str2longbase(ret, s, 16);
         }
-        return str2longbase(s, 10);
+        return str2longbase(ret, s, 10);
 }
 
-double str2double(const char* s)
+int str2double(double* ret, const char* s)
 {
         char* endPtr = NULL;
         errno = 0;
-        double val = strtod(s, &endPtr);
+        *ret = strtod(s, &endPtr);
 
         if (errno || (errno == 0 && s && *endPtr != 0)) {
                 perror(s);
-                exit(EXIT_FAILURE);
+                return 1;
         }
 
-        return val;
+        return 0;
 }
 
 int charcount(const char* s, char c)

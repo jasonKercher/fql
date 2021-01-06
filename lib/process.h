@@ -10,7 +10,6 @@
 
 struct process;
 
-/* process_fn(records, process_data) */
 typedef int (process_fn)(struct process*);
 
 struct process {
@@ -35,6 +34,7 @@ void process_set_root(struct dnode*);
 int process_exec_plans(struct queue*);
 
 int fql_read(struct process*);
+int fql_select(struct process*);
 int fql_no_op(struct process*);
 
 #endif /* PROCESS_H */

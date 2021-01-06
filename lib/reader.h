@@ -25,20 +25,20 @@ extern "C" {
 typedef struct csv_record csv_record;
 typedef struct csv_reader csv_reader;
 
-struct libcsv_data {
+struct libcsv_reader {
         csv_reader* csv_handle;
-        struct vec* csv_records; /* vec_(csv_record*) */
+        struct vec* csv_recs; /* vec_(csv_record*) */
         _Bool eof;
 };
 
-struct libcsv_data* libcsv_new(size_t);
-struct libcsv_data* libcsv_init(struct libcsv_data*, size_t);
+struct libcsv_reader* libcsv_reader_new(size_t);
+struct libcsv_reader* libcsv_reader_init(struct libcsv_reader*, size_t);
+void libcsv_reader_free(void*);
 int libcsv_get_record(void* reader_data, Vec* rec, unsigned char);
-void libcsv_free(void*);
 
 struct mmapcsv_data {
         csv_reader* csv_handle;
-        struct vec* csv_records; /* vec_(csv_record*) */
+        struct vec* csv_recs; /* vec_(csv_record*) */
         struct stringview current;
         struct vec* raw;
         Pmap* rec_map;
@@ -54,7 +54,7 @@ int mmapcsv_open(struct mmapcsv_data*, const char* file_name);
 int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char);
 void mmapcsv_free(void*);
 
-typedef int (*read_next_fn)(void*, struct vec* rec, unsigned char idx);
+typedef int (*read_fn)(void*, struct vec* rec, unsigned char idx);
 
 enum read_type {
         READ_UNDEFINED,
@@ -66,7 +66,7 @@ enum read_type {
 struct reader {
         enum read_type type;
         void* reader_data;
-        read_next_fn get_record_fn;
+        read_fn get_record_fn;
         generic_data_fn free_fn;
         char file_name[PATH_MAX];
 };
