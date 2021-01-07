@@ -90,6 +90,22 @@ void vec_resize(Vec* vec, size_t size)
         vec->size = size;
 }
 
+/* It is assumed that a vector resized with
+ * this function should only be resized with
+ * this function.
+ */
+void vec_resize_and_zero(Vec* vec, size_t size)
+{
+        size_t org_alloc = vec->_alloc;
+        vec_resize(vec, size);
+        if (org_alloc == vec->_alloc) {
+                return;
+        }
+        void* new_alloc = vec_at(vec, org_alloc);
+        size_t new_alloc_total = vec->_alloc - org_alloc;
+        memset(new_alloc, 0, new_alloc_total * vec->_elem_size);
+}
+
 void vec_clear(Vec* vec)
 {
         vec_resize(vec, 0);

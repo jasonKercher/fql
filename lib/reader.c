@@ -75,6 +75,7 @@ int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
                 return FQL_FAIL;
         default:
                 csv->eof = true;
+                return EOF;
         }
 
         /* This should really never change unless we

@@ -49,12 +49,20 @@ void select_apply_process(Select* select, Plan* plan)
         string_cpy(proc->action_msg, "SELECT ");
 
         Vec* col_vec = select->schema->columns;
-        Column** it = vec_begin(col_vec);
-        for (; it != vec_end(col_vec); ++it) {
-                if (it != vec_begin(col_vec)) {
+        Column** col = vec_begin(col_vec);
+        for (; col != vec_end(col_vec); ++col) {
+                if (col != vec_begin(col_vec)) {
                         string_cat(proc->action_msg, ",");
                 }
-                column_cat_description(*it, proc->action_msg);
+                column_cat_description(*col, proc->action_msg);
+        }
+
+        /* Initialize the raw strings used for writing */
+        Vec* raw_rec = select->writer->raw_rec;
+        vec_resize(raw_rec, col_vec->size);
+        String* s = vec_begin(raw_rec);
+        for (; s != vec_end(raw_rec); ++s) {
+                string_init(s);
         }
 
         proc = plan->op_false->data;
@@ -72,8 +80,7 @@ int select_record(Select* select, struct vec* rec)
 
         Vec* col_vec = select->schema->columns;
 
-        /* TODO: in reality this should never change */
-        vec_resize(writer->raw_rec, col_vec->size);
+        vec_resize_and_zero(writer->raw_rec, col_vec->size);
 
         Column** cols = vec_begin(col_vec);
         int i = 0;

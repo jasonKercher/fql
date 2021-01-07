@@ -194,7 +194,9 @@ int column_get_stringview(StringView* ret, Column* col, Vec* recs)
         case EXPR_COLUMN_NAME:
         {
                 Vec** rec = vec_at(recs, col->src_idx);
-                ret = vec_at(*rec, col->data_source->location);
+                StringView* sv = vec_at(*rec, col->data_source->location);
+                ret->data = sv->data;
+                ret->len = sv->len;
                 return FQL_GOOD;
         }
         case EXPR_CONST:
