@@ -23,7 +23,7 @@ Process* process_init(Process* proc, const char* action, int width)
 {
         *proc = (Process) {
                  &fql_no_op                     /* action */
-                ,fifo_new_(Vec*, UCHAR_MAX)     /* fifo_in0 */
+                ,NULL                           /* fifo_in0 */
                 ,NULL                           /* fifo_in1 */
                 ,NULL                           /* fifo_out0 */
                 ,NULL                           /* fifo_out1 */
@@ -34,17 +34,6 @@ Process* process_init(Process* proc, const char* action, int width)
                 ,false                          /* is_passive */
         };
 
-        Vec* buf = proc->fifo_in0->buf;
-        Vec** recs = vec_begin(buf);
-        for (; recs != vec_end(buf); ++recs) {
-                *recs = vec_new_(Vec*);
-                vec_resize(*recs, width);
-                Vec** rec = vec_begin(*recs);
-                for (; rec != vec_end(*recs); ++rec) {
-                        *rec = vec_new_(StringView);
-                }
-        }
-
         return proc;
 }
 
@@ -54,17 +43,29 @@ void process_free(Process* proc)
         free_(proc);
 }
 
-void process_set_root(Dnode* proc_node)
+void process_activate(Dnode* proc_node)
 {
-        proc_node->is_root = true;
+        Process* proc = proc_node->data;
+        proc->fifo_in0 = fifo_new_(Vec*, UCHAR_MAX);
+        Vec* buf = proc->fifo_in0->buf;
+        Vec** recs = vec_begin(buf);
+        for (; recs != vec_end(buf); ++recs) {
+                *recs = vec_new_(Vec*);
+                vec_resize(*recs, proc->fifo_width);
+                Vec** rec = vec_begin(*recs);
+                for (; rec != vec_end(*recs); ++rec) {
+                        *rec = vec_new_(StringView);
+                }
+        }
+
+        if (!proc_node->is_root) {
+                return;
+        }
 
         /* root processes own most data. Here, we enter
-         * fifo data into this root process
+         * fifo data into this root process.
          */
-        Process* proc = proc_node->data;
-        
-        /* There should only be one! */
-        Vec* rec = vec_begin(proc->fifo_in0->buf);
+        Vec** rec = vec_begin(proc->fifo_in0->buf);
         fifo_add(proc->fifo_in0, rec);
 }
 

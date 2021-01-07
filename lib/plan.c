@@ -121,12 +121,12 @@ void _from(Plan* plan, Query* query)
 
         string_sprintf(action_msg, "%s: %s", src->table->reader->file_name, "stream read");
 
-        Process* from_proc = process_new(action_msg->data, plan->source_count++);
+        Process* from_proc = process_new(action_msg->data, ++plan->source_count);
         from_proc->action = &fql_read;
         from_proc->proc_data = src->table->reader;
 
         Dnode* from_node = dgraph_add_data(plan->processes, from_proc);
-        process_set_root(from_node);
+        from_node->is_root = true;
 
         plan->current->out[0] = from_node;
         plan->current = from_node;
@@ -170,7 +170,7 @@ void _from(Plan* plan, Query* query)
                 read_proc->is_secondary = true;
 
                 Dnode* read_node = dgraph_add_data(plan->processes, read_proc);
-                process_set_root(read_node);
+                read_node->is_root = true;
                 read_node->out[0] = join_proc_node;
 
                 if (src->condition != NULL) {
@@ -275,6 +275,16 @@ void _clear_passive(Plan* plan)
         }
 }
 
+void _activate_procs(Plan* plan)
+{
+        Vec* node_vec = plan->processes->nodes;
+        Dnode** nodes = vec_begin(node_vec);
+
+        for (; nodes != vec_end(node_vec); ++nodes) {
+                process_activate(*nodes);
+        }
+}
+
 /* Run through processes and link up fifos. Input fifos are
  * owned by the process. Output fifos are just links to other
  * processes' fifos.
@@ -322,6 +332,7 @@ Plan* _build_plan(Query* query)
         _limit(plan, query);
 
         _clear_passive(plan);
+        _activate_procs(plan);
         _make_pipes(plan);
 
         return plan;

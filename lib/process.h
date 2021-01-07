@@ -30,7 +30,7 @@ struct process* process_new(const char* action, int width);
 struct process* process_init(struct process*, const char*, int width);
 void process_free(struct process*);
 
-void process_set_root(struct dnode*);
+void process_activate(Dnode* proc_node);
 int process_exec_plans(struct queue*);
 
 int fql_read(struct process*);
