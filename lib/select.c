@@ -80,8 +80,6 @@ int select_record(Select* select, struct vec* rec)
 
         Vec* col_vec = select->schema->columns;
 
-        vec_resize_and_zero(writer->raw_rec, col_vec->size);
-
         Column** cols = vec_begin(col_vec);
         int i = 0;
         for (; i < col_vec->size; ++i) {
