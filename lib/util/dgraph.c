@@ -109,7 +109,9 @@ Vec* dgraph_get_roots(Dgraph* graph)
 
         /* If no roots found, use first node */
         if (vec_empty(graph->_roots)) {
-                vec_push_back(graph->_roots, vec_begin(graph->nodes));
+                Dnode** new_root = vec_begin(graph->nodes);
+                (*new_root)->is_root = true;
+                vec_push_back(graph->_roots, new_root);
         }
         graph->_roots_good = true;
         return graph->_roots;

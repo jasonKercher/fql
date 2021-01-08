@@ -277,6 +277,11 @@ void _clear_passive(Plan* plan)
 
 void _activate_procs(Plan* plan)
 {
+        /* In case we don't have a root process,
+         * this will assign them.
+         */
+        dgraph_get_roots(plan->processes);
+
         Vec* node_vec = plan->processes->nodes;
         Dnode** nodes = vec_begin(node_vec);
 

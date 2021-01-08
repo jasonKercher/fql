@@ -66,6 +66,7 @@ int field_to_stringview(StringView* ret, union field* field, enum field_type* ty
                 String* s = string_new();
                 string_sprintf(s, "%ld", field->i);
                 field->s = s;
+                break;
         }
         case FIELD_FLOAT:
         {
@@ -73,6 +74,7 @@ int field_to_stringview(StringView* ret, union field* field, enum field_type* ty
                 String* s = string_new();
                 string_sprintf(s, "%lf", field->i);
                 field->s = s;
+                break;
         }
         default:
                 return FQL_FAIL;
