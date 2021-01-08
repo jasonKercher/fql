@@ -146,12 +146,27 @@ int column_get_int(long* ret, Column* col, Vec* recs)
                 string_destroy(&s);
                 return FQL_GOOD;
         }
+        case EXPR_FUNCTION:
+        {
+                Function* func = col->field.fn;
+                union field new_field;
+                if (col->field_type == FIELD_STRING) {
+                        new_field.s = &func->ret_buf;
+                        string_clear(new_field.s);
+                }
+                func->caller(func, &new_field, recs);
+                if (field_to_int(ret, &new_field, &col->field_type)) {
+                        return FQL_FAIL;
+                }
+                break;
+        }
         case EXPR_CONST:
                 if (field_to_int(ret, &col->field, &col->field_type)) {
                         return FQL_FAIL;
                 }
                 break;
         default:
+                fprintf(stderr, "col_get_int: Unexpected expression\n");
                 return FQL_FAIL;
         }
 
@@ -176,6 +191,20 @@ int column_get_float(double* ret, Column* col, Vec* recs)
                 string_destroy(&s);
                 return FQL_GOOD;
         }
+        case EXPR_FUNCTION:
+        {
+                Function* func = col->field.fn;
+                union field new_field;
+                if (col->field_type == FIELD_STRING) {
+                        new_field.s = &func->ret_buf;
+                        string_clear(new_field.s);
+                }
+                func->caller(func, &new_field, recs);
+                if (field_to_float(ret, &new_field, &col->field_type)) {
+                        return FQL_FAIL;
+                }
+                break;
+        }
         case EXPR_CONST:
                 if (field_to_float(ret, &col->field, &col->field_type)) {
                         return FQL_FAIL;
@@ -198,6 +227,20 @@ int column_get_stringview(StringView* ret, Column* col, Vec* recs)
                 ret->data = sv->data;
                 ret->len = sv->len;
                 return FQL_GOOD;
+        }
+        case EXPR_FUNCTION:
+        {
+                Function* func = col->field.fn;
+                union field new_field;
+                if (col->field_type == FIELD_STRING) {
+                        new_field.s = &func->ret_buf;
+                        string_clear(new_field.s);
+                }
+                func->caller(func, &new_field, recs);
+                if (field_to_stringview(ret, &new_field, &col->field_type)) {
+                        return FQL_FAIL;
+                }
+                break;
         }
         case EXPR_CONST:
                 if (field_to_stringview(ret, &col->field, &col->field_type)) {

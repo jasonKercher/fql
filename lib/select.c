@@ -92,5 +92,5 @@ int select_record(Select* select, struct vec* rec)
         }
 
         writer->write_record_fn(writer->writer_data, writer->raw_rec);
-        return FQL_GOOD;
+        return 1;
 }

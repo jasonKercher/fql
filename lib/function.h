@@ -25,8 +25,8 @@ typedef int(*scalar_f)(struct function*, union field* ret, struct vec* rec);
 
 struct function {
         scalar_f caller;
-        //struct vec* retbuf;
         struct vec* args;
+        String ret_buf;
         char name[FUNC_NAME_MAX];
         enum expr_operator op;
         unsigned arg_min;

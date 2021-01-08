@@ -26,11 +26,14 @@ Function* function_new_op(enum expr_operator op)
         *new_func = (Function) {
                  &not_implemented       /* caller */
                 ,vec_new_(Column*)      /* args */
+                ,{ 0 }                  /* ret_buf */
                 ,""                     /* name */
                 ,op                     /* operator */
                 ,2                      /* arg_min */
                 ,2                      /* arg_max */
         };
+
+        string_init(&new_func->ret_buf);
 
         return new_func;
 }
@@ -197,6 +200,7 @@ Function* function_init(Function* func, const char* func_name, enum field_type* 
         };
 
         strncpy_(func->name, func_name, FUNC_NAME_MAX);
+        string_init(&func->ret_buf);
 
         func->arg_min = 0;
         func->arg_max = 0;
@@ -246,17 +250,17 @@ Function* function_init(Function* func, const char* func_name, enum field_type* 
         if      (istring_eq(func_name, "DATENAME")){ return func; }
         else if (istring_eq(func_name, "DATEPART")){ return func; }
         else if (istring_eq(func_name, "ISNULL")){ return func; }
-        else if (istring_eq(func_name, "LEFT")) { 
+        else if (istring_eq(func_name, "LEFT")) {
                 func->caller = &fql_left;
                 *type = FIELD_STRING;
-                return func; 
+                return func;
         }
         else if (istring_eq(func_name, "NULLIF")){ return func; }
         else if (istring_eq(func_name, "PATINDEX")){ return func; }
         else if (istring_eq(func_name, "RIGHT")) {
                 func->caller = &fql_right;
                 *type = FIELD_STRING;
-                return func; 
+                return func;
         }
 
         func->arg_min = 2;
@@ -287,6 +291,8 @@ Function* function_init(Function* func, const char* func_name, enum field_type* 
 
 void function_free(Function* func)
 {
+        vec_free(func->args);
+        string_destroy(&func->ret_buf);
         free_(func);
 }
 

@@ -12,7 +12,6 @@ enum field_type {
         FIELD_FLOAT,
 };
 
-/* forward declaration */
 struct function;
 
 union field {
@@ -20,7 +19,7 @@ union field {
         String* s;
         double f;
         long i;
-}; 
+};
 
 int field_to_int(long*, union field*, enum field_type*);
 int field_to_float(double*, union field*, enum field_type*);

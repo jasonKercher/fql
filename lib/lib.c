@@ -71,14 +71,15 @@ int fql_exec(const char* query_str)
                 print_plans(plans);
         }
 
+        int ret = 0;
         if (!g_props.dry_run) {
-                process_exec_plans(plans);
+                ret = process_exec_plans(plans);
         }
 
         queue_free_func(&query_list, &query_free);
         queue_free_func(&plans, &plan_free);
 
-        return 0;
+        return ret;
 }
 
 
