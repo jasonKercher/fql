@@ -16,6 +16,7 @@ struct libcsv_writer* libcsv_writer_init(struct libcsv_writer* writer)
         *writer = (struct libcsv_writer) {
                  csv_writer_new()
                 ,csv_record_new()
+                ,vec_new_(char*)
         };
         return writer;
 }
@@ -33,13 +34,22 @@ void libcsv_writer_free(void* writer_data)
         free_(data);
 }
 
-int libcsv_write_record(void* writer_data, Vec* fields)
+int libcsv_write_record(void* writer_data, Vec* string_rec)
 {
-        struct libcsv_writer* data = writer_data;
-        data->csv_rec->fields = fields->data;
-        data->csv_rec->size = fields->size;
+        struct libcsv_writer* writer = writer_data;
 
-        csv_write_record(data->csv_handle, data->csv_rec);
+        vec_resize(writer->fields, string_rec->size);
+
+        String* s = vec_begin(string_rec);
+        int i = 0;
+        for (; i < string_rec->size; ++i) {
+                vec_set(writer->fields, i, &s[i].data);
+        }
+
+        writer->csv_rec->fields = writer->fields->data;
+        writer->csv_rec->size = string_rec->size;
+
+        csv_write_record(writer->csv_handle, writer->csv_rec);
 
         return FQL_GOOD;
 }
@@ -62,7 +72,7 @@ Writer* writer_init(Writer* writer)
                 ,vec_new_(String)
                 ,""
         };
- 
+
         /* TODO: This should not be here. This should
          *       be dependant on output schema
          */

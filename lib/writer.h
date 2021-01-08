@@ -13,6 +13,7 @@ typedef struct csv_record csv_record;
 struct libcsv_writer {
         csv_writer* csv_handle;
         csv_record* csv_rec;
+        struct vec* fields;
 };
 
 struct libcsv_writer* libcsv_writer_new();

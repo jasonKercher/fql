@@ -28,9 +28,6 @@ void fql_set_verbose(int verbose)
 void fql_set_dry_run(int dry_run)
 {
         g_props.dry_run = dry_run;
-        if (dry_run) {
-                g_props.verbose = dry_run;
-        }
 }
 
 void fql_set_override_warnings(int override)
