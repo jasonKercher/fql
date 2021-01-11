@@ -3,13 +3,13 @@
 
 #define PROCESS_BUFFER_SIZE 256
 
+#include "plan.h"
 #include "util/fqlstring.h"
 #include "util/fifo.h"
 #include "util/queue.h"
 #include "util/dgraph.h"
 
 struct process;
-
 typedef int (process_fn)(struct process*);
 
 struct process {
@@ -32,6 +32,7 @@ void process_free(struct process*);
 
 void process_activate(Dnode* proc_node);
 int process_exec_plans(struct queue*);
+//int process_exec_plan(struct plan*);
 
 int fql_read(struct process*);
 int fql_select(struct process*);

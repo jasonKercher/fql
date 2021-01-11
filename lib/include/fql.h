@@ -16,5 +16,6 @@ void fql_set_in_delim(const char*);
 void fql_set_out_delim(const char*);
 
 int fql_exec(const char*);
+int fql_open(const char*);
 
 #endif

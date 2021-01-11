@@ -14,6 +14,7 @@ struct schema {
 typedef struct schema Schema;
 
 struct column;
+struct query;
 
 struct schema* schema_new();
 struct schema* schema_init(struct schema*);
@@ -21,6 +22,7 @@ void schema_free(void*);
 
 int schema_assign_columns_limited(Vec* columns, Vec* sources, int);
 int schema_assign_columns(Vec* columns, Vec* sources);
+int schema_resolve_query(struct query*);
 int schema_resolve(struct queue* query_list);
 
 void schema_add_column(struct schema*, struct column*);

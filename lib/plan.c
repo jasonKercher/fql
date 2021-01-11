@@ -324,7 +324,7 @@ void _make_pipes(Plan* plan)
 
 }
 
-Plan* _build_plan(Query* query)
+Plan* plan_build(Query* query)
 {
         Plan* plan = plan_new(query->sources->size);
 
@@ -349,7 +349,7 @@ int build_plans(Queue** plans, Queue* query_list)
 
         for (; node; node = node->next) {
                 Query* query = node->data;
-                queue_enqueue(plans, _build_plan(query));
+                queue_enqueue(plans, plan_build(query));
         }
 
         return 0;

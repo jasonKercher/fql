@@ -82,4 +82,30 @@ int fql_exec(const char* query_str)
         return ret;
 }
 
+int fql_open(const char* query_str)
+{
+        Queue* query_list = NULL;
+        analyze_query(&query_list, query_str);
 
+        int count = queue_count(query_list);
+        if (count != 1) {
+                fprintf(stderr, "Expected 1 query. Found %d.\n", count);
+                return FQL_FAIL;
+        }
+
+        Query* query = query_list->data;
+        queue_free(&query_list);
+
+        if (schema_resolve_query(query)) {
+                return FQL_FAIL;
+        }
+
+        Plan* plan = plan_build(query);
+
+        int ret = 0;
+        //if (!g_props.dry_run) {
+        //        ret = process_exec_plan(plan);
+        //}
+
+        return ret;
+}
