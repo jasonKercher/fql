@@ -12,29 +12,29 @@
 
 static const char* help_string = "\n No Help here !\n\n";
 
-void parseargs(char c)
+void parseargs(struct fql_handle* handle, char c)
 {
         switch (c) {
         case 'd':
-                fql_set_dry_run(1);
+                fql_set_dry_run(handle, 1);
                 break;
         case 'h':
                 puts(help_string);
                 exit(0);
         case 'O':
-                fql_set_override_warnings(1);
+                fql_set_override_warnings(handle, 1);
                 break;
         case 'p':
-                fql_set_print_plan(1);
+                fql_set_print_plan(handle, 1);
                 break;
         case 's':
-                fql_set_in_delim(optarg);
+                fql_set_in_delim(handle, optarg);
                 break;
         case 'S':
-                fql_set_out_delim(optarg);
+                fql_set_out_delim(handle, optarg);
                 break;
         case 'v':
-                fql_set_verbose(1);
+                fql_set_verbose(handle, 1);
                 break;
         default:
                 abort();
@@ -61,7 +61,7 @@ int main (int argc, char **argv)
 
         int c = 0;
 
-        fql_init();
+        struct fql_handle* handle = fql_new();
 
         static struct option long_options[] =
         {
@@ -81,7 +81,7 @@ int main (int argc, char **argv)
 
         while ( (c = getopt_long (argc, argv, "hdOps:S:v",
                                         long_options, &option_index)) != -1)
-                        parseargs(c);
+                        parseargs(handle, c);
 
 
         char query[1024] = "";
@@ -105,7 +105,7 @@ int main (int argc, char **argv)
                         strcat(query, line);
         }
 
-        int ret = fql_exec(query);
+        int ret = fql_exec(handle, query);
 
         free(line);
 

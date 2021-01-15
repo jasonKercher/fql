@@ -3,12 +3,10 @@
 #include "listenerinterface.h"
 #include "errorlistener.h"
 
-#include "plan.h"
-
-int analyze_query(struct queue** query_list, const char* query_str)
+int analyze_query(struct fql_handle* fql)
 {
-
-        UpperStream input(query_str);
+        /* SQL grammar assumes all keywords are upper case */
+        UpperStream input(fql->query_str);
 
         TSqlLexer lexer(&input);
 
@@ -27,7 +25,7 @@ int analyze_query(struct queue** query_list, const char* query_str)
 
         antlr4::tree::ParseTree *tree = parser.tsql_file();
 
-        if(myLexerErrorListener.getError() || 
+        if(myLexerErrorListener.getError() ||
            myParserErrorListener.getError()) {
                 std::cerr << "Lexer/Listener error\n";
                 return 1;
@@ -35,7 +33,7 @@ int analyze_query(struct queue** query_list, const char* query_str)
 
         std::vector<std::string> rule_names = parser.getRuleNames();
 
-        ListenerInterface analyzer(query_list, rule_names);
+        ListenerInterface analyzer(fql, rule_names);
 
         antlr4::tree::ParseTreeWalker::DEFAULT.walk(&analyzer, tree);
 

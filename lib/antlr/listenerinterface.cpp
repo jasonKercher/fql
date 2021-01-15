@@ -2,18 +2,17 @@
 
 #include <cstring>
 
-#include "prop.h"
 #include "query.h"
 #include "column.h"
 #include "select.h"
 #include "util/util.h"
 
-ListenerInterface::ListenerInterface(struct queue** query_list, const std::vector<std::string>& rules)
+ListenerInterface::ListenerInterface(struct fql_handle* fql, const std::vector<std::string>& rules)
 {
         _table_name[0] = '\0';
         _table_alias[0] = '\0';
         _rule_names = rules;
-        _query_list = query_list;
+        _fql = fql;
 
         _next_list = TOK_UNDEFINED;
         _current_list = TOK_UNDEFINED;
@@ -29,11 +28,11 @@ void ListenerInterface::exitSelect_list(TSqlParser::Select_listContext * ctx)
         _query->mode = MODE_UNDEFINED;
 }
 
-void ListenerInterface::enterGroup_by_item(TSqlParser::Group_by_itemContext * ctx) 
-{ 
+void ListenerInterface::enterGroup_by_item(TSqlParser::Group_by_itemContext * ctx)
+{
         _query->mode = MODE_GROUPBY;
 }
-void ListenerInterface::exitGroup_by_item(TSqlParser::Group_by_itemContext * ctx) 
+void ListenerInterface::exitGroup_by_item(TSqlParser::Group_by_itemContext * ctx)
 {
         _query->mode = MODE_UNDEFINED;
 }
@@ -100,8 +99,8 @@ void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx)
 
         _query->logic_mode = LOGIC_JOIN;
 }
-void ListenerInterface::exitJoin_part(TSqlParser::Join_partContext * ctx) 
-{ 
+void ListenerInterface::exitJoin_part(TSqlParser::Join_partContext * ctx)
+{
         _query->logic_mode = LOGIC_UNDEFINED;
 }
 
@@ -171,7 +170,7 @@ void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext * ctx) { 
 void ListenerInterface::enterSql_clause(TSqlParser::Sql_clauseContext * ctx)
 {
         _query = query_new();
-        queue_enqueue(_query_list, _query);
+        queue_enqueue(&_fql->query_list, _query);
         stack_push(&_query_stack, _query);
 }
 void ListenerInterface::exitSql_clause(TSqlParser::Sql_clauseContext * ctx)
@@ -182,8 +181,8 @@ void ListenerInterface::exitSql_clause(TSqlParser::Sql_clauseContext * ctx)
 void ListenerInterface::enterDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
 void ListenerInterface::exitDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
 
-void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx) 
-{ 
+void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx)
+{
         query_add_constant(_query, ctx->getText().c_str(), ctx->getText().length());
 }
 void ListenerInterface::exitConstant(TSqlParser::ConstantContext * ctx) { }
@@ -239,24 +238,24 @@ void ListenerInterface::exitId(TSqlParser::IdContext * ctx) { }
 void ListenerInterface::enterSimple_id(TSqlParser::Simple_idContext * ctx) { }
 void ListenerInterface::exitSimple_id(TSqlParser::Simple_idContext * ctx) { }
 
-void ListenerInterface::enterComparison_operator(TSqlParser::Comparison_operatorContext * ctx) 
-{ 
+void ListenerInterface::enterComparison_operator(TSqlParser::Comparison_operatorContext * ctx)
+{
         query_set_logic_comparison(_query, ctx->getText().c_str());
 }
-void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorContext * ctx) 
-{ 
+void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorContext * ctx)
+{
 }
 
-void ListenerInterface::enterSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) 
-{ 
-       /* Some functions may enter here only */ 
+void ListenerInterface::enterSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx)
+{
+       /* Some functions may enter here only */
 }
-void ListenerInterface::exitSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx) 
-{ 
+void ListenerInterface::exitSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx)
+{
         query_exit_function(_query);
 }
 
-void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx) 
+void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx)
 {
         query_enter_function(_query, ctx->getText().c_str());
 }
@@ -272,8 +271,8 @@ void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext
 {
 }
 
-void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx) 
-{ 
+void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx)
+{
         if        (!ctx->getTokens(TSqlParser::PLUS).empty()) {
                 query_enter_operator(_query, OPERATOR_PLUS);
         } else if (!ctx->getTokens(TSqlParser::MINUS).empty()) {
@@ -292,8 +291,8 @@ void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx)
                 query_enter_operator(_query, OPERATOR_BIT_XOR);
         }
 }
-void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx) 
-{ 
+void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx)
+{
         if (
                 !ctx->getTokens(TSqlParser::PLUS).empty()
              || !ctx->getTokens(TSqlParser::MINUS).empty()
@@ -305,7 +304,7 @@ void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx)
              || !ctx->getTokens(TSqlParser::BIT_XOR).empty()) {
                 query_exit_function(_query);
         }
-        
+
 }
 
 void ListenerInterface::enterPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { }
@@ -358,7 +357,7 @@ void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContex
         }
         enter_search(_query);
 }
-void ListenerInterface::exitSearch_condition(TSqlParser::Search_conditionContext * ctx) 
+void ListenerInterface::exitSearch_condition(TSqlParser::Search_conditionContext * ctx)
 {
         exit_search(_query);
 }
@@ -395,7 +394,7 @@ void ListenerInterface::exitQuery_specification(TSqlParser::Query_specificationC
 
 void ListenerInterface::enterEveryRule(antlr4::ParserRuleContext * ctx)
 {
-        if(g_props.verbose)
+        if(_fql->props.verbose)
                 std::cerr << "ENTER: " << _rule_names[ctx->getRuleIndex()] << " : " << ctx->getText() << std::endl;
 
         if(_error_tokens.size() > 0)
@@ -404,7 +403,7 @@ void ListenerInterface::enterEveryRule(antlr4::ParserRuleContext * ctx)
                 std::cerr << _error_tokens[0];
                 _error_tokens.pop_back();
 
-                if(g_props.override_warnings) {
+                if(_fql->props.override_warnings) {
                         std::cerr << "\nCAUTION: Overriding the above warnings! Results may be incorrect!\n";
                 } else {
                         std::cerr << "\nTerminated: Use -O to Override at your own risk.\n";
@@ -415,7 +414,7 @@ void ListenerInterface::enterEveryRule(antlr4::ParserRuleContext * ctx)
 
 void ListenerInterface::exitEveryRule(antlr4::ParserRuleContext * ctx)
 {
-        if(g_props.verbose)
+        if(_fql->props.verbose)
                 std::cerr << "EXIT:  " << _rule_names[ctx->getRuleIndex()] << " : " << ctx->getText() << std::endl;
 }
 

@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "../plan.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-int analyze_query(struct queue**, const char*);
+#include "fqlhandle.h"
+
+int analyze_query(struct fql_handle*);
 
 #ifdef __cplusplus
 }

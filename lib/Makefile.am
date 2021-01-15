@@ -3,10 +3,9 @@ SUBDIRS = docs antlr util
 AM_CPPFLAGS = -Iinclude
 include_HEADERS = include/fql.h
 lib_LTLIBRARIES = libfql.la
-libfql_la_SOURCES = include/fql.h lib.c \
+libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					plan.h plan.c \
 					process.h process.c fqlprocesses.c \
-					prop.h prop.c \
 					query.h query.c \
 					table.h table.c \
 					schema.h schema.c \
