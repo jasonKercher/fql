@@ -24,7 +24,7 @@ void select_free(struct select*);
 
 void select_add_column(struct select*, struct column*);
 
-void select_apply_process(struct select*, struct plan*);
+void select_apply_process(struct select*, struct fql_plan*);
 void select_apply_column_alias(struct select*, const char* alias);
 
 int select_record(struct select*, struct vec* rec);

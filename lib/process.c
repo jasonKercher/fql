@@ -3,7 +3,6 @@
 #include <stdbool.h>
 
 #include "fql.h"
-#include "plan.h"
 #include "reader.h"
 #include "util/vec.h"
 #include "util/util.h"
@@ -122,12 +121,11 @@ int _exec_plan(Plan* plan)
         return ret;
 }
 
-int process_exec_plans(Queue* plans)
+int process_exec_plans(Plan* plans, int plan_count)
 {
         int i = 0;
-        for (; plans; plans = plans->next) {
-                Plan* plan = plans->data;
-                if (_exec_plan(plan) == FQL_FAIL) {
+        for (; i < plan_count; ++i) {
+                if (_exec_plan(&plans[i]) == FQL_FAIL) {
                         return FQL_FAIL;
                 }
         }

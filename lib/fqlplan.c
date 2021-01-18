@@ -1,4 +1,4 @@
-#include "plan.h"
+#include "fqlplan.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -343,13 +343,13 @@ Plan* plan_build(Query* query)
         return plan;
 }
 
-int build_plans(Queue** plans, Queue* query_list)
+int build_plans(Vec* plans, Queue* query_list)
 {
         Queue* node = query_list;
 
         for (; node; node = node->next) {
                 Query* query = node->data;
-                queue_enqueue(plans, plan_build(query));
+                vec_push_back(plans, plan_build(query));
         }
 
         return 0;
@@ -426,13 +426,13 @@ void _print_plan(Plan* plan)
         }
 }
 
-void print_plans(Queue* plans)
+void print_plans(Vec* plans)
 {
+        Plan* it = vec_begin(plans);
         int i = 0;
-        for (; plans; plans = plans->next) {
+        for (; it != vec_end(plans); ++it) {
                 fprintf(stderr, "\nQUERY %d\n", ++i);
-                Plan* plan = plans->data;
-                _print_plan(plan);
+                _print_plan(it);
                 fputs("\n", stderr);
         }
 }

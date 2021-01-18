@@ -1,10 +1,11 @@
 #include "fql.h"
 #include "util/util.h"
+#include "util/vec.h"
 #include "util/stack.h"
 #include "util/queue.h"
 #include "antlr/antlr.h"
 
-#include "plan.h"
+#include "fqlplan.h"
 
 #include "table.h"
 #include "query.h"
@@ -21,8 +22,9 @@ struct fql_handle* fql_new()
 struct fql_handle* fql_init(struct fql_handle* fql)
 {
         *fql = (struct fql_handle) {
-                 NULL   /* query list */
-                ,NULL   /* query_str */
+                 NULL                       /* queries */
+                ,vec_new_(struct fql_plan)  /* plan_vec */
+                ,NULL                       /* query_str */
                 ,{
                          ","    /* in_delim */
                         ,","    /* out_delim */
@@ -30,7 +32,7 @@ struct fql_handle* fql_init(struct fql_handle* fql)
                         ,false  /* dry_run */
                         ,false  /* override_warnings */
                         ,false  /* print_plan */
-                }
+                }  /* props */
         };
         return fql;
 }
@@ -39,6 +41,7 @@ void fql_free(struct fql_handle* fql)
 {
         free_(fql);
 }
+
 
 /**
  * Property mutators
@@ -79,7 +82,38 @@ void fql_set_out_delim(struct fql_handle* fql, const char* delim)
  * Methods
  */
 
+int fql_open_plan(struct fql_handle* fql, Plan* plan)
+{
+        return FQL_GOOD;
+}
+
+int fql_step(struct fql_handle* fql)
+{
+        return FQL_GOOD;
+}
+
+int fql_exec_plans(struct fql_handle* fql, Plan* plans, int plan_count)
+{
+        int ret = process_exec_plans(plans, plan_count);
+        return ret;
+}
+
 int fql_exec(struct fql_handle* fql, const char* query_str)
+{
+        Plan* plans = NULL;
+        int plan_count = fql_make_plans(fql, &plans, query_str);
+        int ret = 0;
+        if (!fql->props.dry_run) {
+                ret = process_exec_plans(plans, plan_count);
+        }
+
+        queue_free_func(&fql->query_list, &query_free);
+        vec_free(fql->plan_vec);
+
+        return ret;
+}
+
+int fql_make_plans(struct fql_handle* fql, struct fql_plan** plan, const char* query_str)
 {
         fql->query_str = strdup(query_str);
 
@@ -89,47 +123,13 @@ int fql_exec(struct fql_handle* fql, const char* query_str)
                 return FQL_FAIL;
         }
 
-        Queue* plans = NULL;
-        build_plans(&plans, fql->query_list);
+        build_plans(fql->plan_vec, fql->query_list);
 
         if (fql->props.print_plan) {
-                print_plans(plans);
+                print_plans(fql->plan_vec);
         }
 
-        int ret = 0;
-        if (!fql->props.dry_run) {
-                ret = process_exec_plans(plans);
-        }
+        *plan = vec_begin(fql->plan_vec);
 
-        queue_free_func(&fql->query_list, &query_free);
-        queue_free_func(&plans, &plan_free);
-
-        return ret;
-}
-
-int fql_open(struct fql_handle* fql, const char* query_str)
-{
-        analyze_query(fql);
-
-        int count = queue_count(fql->query_list);
-        if (count != 1) {
-                fprintf(stderr, "Expected 1 query. Found %d.\n", count);
-                return FQL_FAIL;
-        }
-
-        Query* query = fql->query_list->data;
-        queue_free(&fql->query_list);
-
-        if (schema_resolve_query(query)) {
-                return FQL_FAIL;
-        }
-
-        Plan* plan = plan_build(query);
-
-        int ret = 0;
-        //if (!fql->props.dry_run) {
-        //        ret = process_exec_plan(plan);
-        //}
-
-        return ret;
+        return fql->plan_vec->size;
 }
