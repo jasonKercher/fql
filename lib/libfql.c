@@ -24,6 +24,7 @@ struct fql_handle* fql_init(struct fql_handle* fql)
         *fql = (struct fql_handle) {
                  NULL                       /* queries */
                 ,vec_new_(struct fql_plan)  /* plan_vec */
+                ,vec_new_(struct fql_field) /* api_vec */
                 ,NULL                       /* query_str */
                 ,{
                          ","    /* in_delim */
@@ -42,11 +43,15 @@ void fql_free(struct fql_handle* fql)
         free_(fql);
 }
 
+int fql_field_count(struct fql_handle* fql)
+{
+        return fql->api_vec->size;
+}
+
 
 /**
  * Property mutators
  */
-
 void fql_set_verbose(struct fql_handle* fql, int verbose)
 {
         fql->props.verbose = verbose;
@@ -82,20 +87,30 @@ void fql_set_out_delim(struct fql_handle* fql, const char* delim)
  * Methods
  */
 
-int fql_open_plan(struct fql_handle* fql, Plan* plan)
+int fql_step(struct fql_handle* fql, struct fql_field** fields)
 {
-        return FQL_GOOD;
-}
+        int ret = process_step(vec_begin(fql->plan_vec));
 
-int fql_step(struct fql_handle* fql)
-{
-        return FQL_GOOD;
-}
-
-int fql_exec_plans(struct fql_handle* fql, Plan* plans, int plan_count)
-{
-        int ret = process_exec_plans(plans, plan_count);
         return ret;
+}
+
+
+int fql_exec_plans(struct fql_handle* fql, int plan_count)
+{
+        int i = 0;
+        for (; i < plan_count; ++i) {
+                Plan* plan = vec_at(fql->plan_vec, i);
+                process_non_api(plan->op_true->data);
+                if (process_exec_plan(plan) == FQL_FAIL) {
+                        return FQL_FAIL;
+                }
+        }
+        return FQL_GOOD;
+}
+
+int fql_exec_all_plans(struct fql_handle* fql)
+{
+        return fql_exec_plans(fql->plan_vec->data, fql->plan_vec->size);
 }
 
 int fql_exec(struct fql_handle* fql, const char* query_str)
@@ -104,7 +119,7 @@ int fql_exec(struct fql_handle* fql, const char* query_str)
         int plan_count = fql_make_plans(fql, &plans, query_str);
         int ret = 0;
         if (!fql->props.dry_run) {
-                ret = process_exec_plans(plans, plan_count);
+                ret = fql_exec_plans(fql, plan_count);
         }
 
         queue_free_func(&fql->query_list, &query_free);

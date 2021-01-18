@@ -8,6 +8,7 @@ extern "C" {
 struct fql_handle {
         struct queue* query_list;
         struct vec* plan_vec;
+        struct vec* api_vec;
         char* query_str;
         struct {
                 char in_delim[32];

@@ -12,6 +12,7 @@ struct fql_plan {
         struct dnode* op_false;
         /* temp */
         struct dnode* current;
+        size_t rows_affected;
         int source_count;
 };
 typedef struct fql_plan Plan;

@@ -18,6 +18,7 @@ Select* select_init(Select* select)
                  OP_SELECT
                 ,schema_new()
                 ,writer_new()
+                ,&select_record_api
         };
 
         return select;
@@ -39,6 +40,11 @@ void select_free(Select* select)
 void select_add_column(Select* select, Column* col)
 {
         schema_add_column(select->schema, col);
+}
+
+void select_use_non_api(Select* select)
+{
+        select->select_fn = &select_record_api;
 }
 
 void select_apply_process(Select* select, Plan* plan)
@@ -72,6 +78,12 @@ void select_apply_process(Select* select, Plan* plan)
 void select_apply_column_alias(Select* select, const char* alias)
 {
         schema_apply_column_alias(select->schema, alias);
+}
+
+int select_record_api(Select* select, struct vec* rec)
+{
+        /* TODO */
+        return FQL_GOOD;
 }
 
 int select_record(Select* select, struct vec* rec)

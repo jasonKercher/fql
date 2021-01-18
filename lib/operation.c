@@ -8,7 +8,7 @@ Vec* op_get_validation_list(void* op)
 {
         enum op* type = op;
 
-        switch(*type) {
+        switch (*type) {
         case OP_SELECT:
                 return ((Select*) op)->schema->columns;
         default:
@@ -22,9 +22,21 @@ void op_apply_process(void* op, Plan* plan)
 {
         enum op* type = op;
 
-        switch(*type) {
+        switch (*type) {
         case OP_SELECT:
                 select_apply_process(op, plan);
+        default:
+                ;
+        }
+}
+
+void op_use_non_api(void* op)
+{
+        enum op* type = op;
+
+        switch (*type) {
+        case OP_SELECT:
+                select_use_non_api(op);
         default:
                 ;
         }

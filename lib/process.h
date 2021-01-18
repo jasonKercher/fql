@@ -31,8 +31,10 @@ struct process* process_init(struct process*, const char*, int width);
 void process_free(struct process*);
 
 void process_activate(Dnode* proc_node);
-int process_exec_plans(struct fql_plan*, int);
+int process_step(Plan* plan);
+//int process_exec_plans(struct fql_plan*, int);
 int process_exec_plan(struct fql_plan*);
+void process_non_api(struct process* plan);
 
 int fql_read(struct process*);
 int fql_select(struct process*);

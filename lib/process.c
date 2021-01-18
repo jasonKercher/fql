@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "fql.h"
+#include "operation.h"
 #include "reader.h"
 #include "util/vec.h"
 #include "util/util.h"
@@ -98,9 +99,11 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
                 }
 
                 run_count += ret;
-
                 /* is leaf? */
                 if (proc_node->out[0] == NULL && proc_node->out[1] == NULL) {
+                        if (proc_node == plan->op_true) {
+                                ++plan->rows_affected;
+                        }
                         _recycle_recs(proc_graph, proc);
                 }
         }
@@ -108,7 +111,22 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
         return run_count;
 }
 
-int _exec_plan(Plan* plan)
+int process_step(Plan* plan)
+{
+        Dgraph* proc_graph = plan->processes;
+        int ret = 0;
+
+        plan->rows_affected = 0;
+
+        do {
+                dgraph_traverse_reset(proc_graph);
+                ret = _exec_one_pass(plan, proc_graph);
+        } while (plan->rows_affected || ret && ret != FQL_FAIL);
+
+        return ret;
+}
+
+int process_exec_plan(Plan* plan)
 {
         Dgraph* proc_graph = plan->processes;
         int ret = 0;
@@ -121,13 +139,7 @@ int _exec_plan(Plan* plan)
         return ret;
 }
 
-int process_exec_plans(Plan* plans, int plan_count)
+void process_non_api(Process* proc)
 {
-        int i = 0;
-        for (; i < plan_count; ++i) {
-                if (_exec_plan(&plans[i]) == FQL_FAIL) {
-                        return FQL_FAIL;
-                }
-        }
-        return FQL_GOOD;
+        op_use_non_api(proc->proc_data);
 }

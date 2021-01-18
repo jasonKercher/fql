@@ -1,6 +1,7 @@
 #ifndef FIELD_H
 #define FIELD_H
 
+#include "fql.h"
 #include "util/fqlstring.h"
 #include "util/stringview.h"
 

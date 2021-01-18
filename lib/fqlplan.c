@@ -38,6 +38,7 @@ Plan* plan_init(Plan* plan, int source_total)
                 ,dnode_new(process_new("OP_TRUE", source_total))   /* op_true */
                 ,dnode_new(process_new("OP_FALSE", source_total))  /* op_false */
                 ,NULL                                              /* current */
+                ,0                                                 /* rows_affected */
                 ,0                                                 /* source_count */
         };
 
@@ -58,7 +59,7 @@ Plan* plan_init(Plan* plan, int source_total)
 void plan_free(void* generic_plan)
 {
         Plan* plan = generic_plan;
-        /* TODO */
+        /* TODO lol */
         free_(plan);
 }
 
