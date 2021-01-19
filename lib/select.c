@@ -15,10 +15,11 @@ Select* select_new()
 Select* select_init(Select* select)
 {
         *select = (Select) {
-                 OP_SELECT
-                ,schema_new()
-                ,writer_new()
-                ,&select_record_api
+                 OP_SELECT              /* oper_type */
+                ,NULL                   /* api */
+                ,schema_new()           /* schema */
+                ,writer_new()           /* writer */
+                ,&select_record_api     /* select_record_fn */
         };
 
         return select;
@@ -42,9 +43,15 @@ void select_add_column(Select* select, Column* col)
         schema_add_column(select->schema, col);
 }
 
+void select_connect_api(struct select* select, Vec* api)
+{
+        vec_resize(api, select->schema->columns->size);
+        select->api = api;
+}
+
 void select_use_non_api(Select* select)
 {
-        select->select_fn = &select_record_api;
+        select->select_fn = &select_record;
 }
 
 void select_apply_process(Select* select, Plan* plan)
@@ -82,8 +89,48 @@ void select_apply_column_alias(Select* select, const char* alias)
 
 int select_record_api(Select* select, struct vec* rec)
 {
-        /* TODO */
-        return FQL_GOOD;
+        Writer* writer = select->writer;
+
+        Vec* col_vec = select->schema->columns;
+
+        Column** cols = vec_begin(col_vec);
+        int i = 0;
+        for (; i < col_vec->size; ++i) {
+                struct fql_field* field = vec_at(select->api, i);
+                switch (cols[i]->field_type) {
+                case FIELD_STRING:
+                {
+                        StringView sv;
+                        if (column_get_stringview(&sv, cols[i], rec)) {
+                                return FQL_FAIL;
+                        }
+                        /* Even though the we are not using the
+                         * writer directly, we use the data it
+                         * owns for our string fields
+                         */
+                        String* s = vec_at(writer->raw_rec, i);
+                        string_copy_from_stringview(s, &sv);
+                        field->type = FQL_STRING;
+                        field->data.s = s->data;
+                        break;
+                }
+                case FIELD_INT:
+                        field->type = FQL_INT;
+                        if (column_get_int(&field->data.i, cols[i], rec)) {
+                                return FQL_FAIL;
+                        }
+                        break;
+                case FIELD_FLOAT:
+                        field->type = FQL_FLOAT;
+                        if (column_get_float(&field->data.f, cols[i], rec)) {
+                                return FQL_FAIL;
+                        }
+                default:
+                        ;
+                }
+        }
+
+        return 1;
 }
 
 int select_record(Select* select, struct vec* rec)

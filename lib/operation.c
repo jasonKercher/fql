@@ -41,3 +41,15 @@ void op_use_non_api(void* op)
                 ;
         }
 }
+
+void op_connect_api(void* op, Vec* api)
+{
+        enum op* type = op;
+
+        switch (*type) {
+        case OP_SELECT:
+                select_connect_api(op, api);
+        default:
+                ;
+        }
+}

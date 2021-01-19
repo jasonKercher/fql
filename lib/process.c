@@ -121,7 +121,7 @@ int process_step(Plan* plan)
         do {
                 dgraph_traverse_reset(proc_graph);
                 ret = _exec_one_pass(plan, proc_graph);
-        } while (plan->rows_affected || ret && ret != FQL_FAIL);
+        } while (!plan->rows_affected && ret && ret != FQL_FAIL);
 
         return ret;
 }

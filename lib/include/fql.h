@@ -25,7 +25,6 @@ struct fql_field {
 };
 
 struct fql_handle;
-struct fql_plan;
 
 struct fql_handle* fql_new();
 struct fql_handle* fql_init(struct fql_handle*);
@@ -46,7 +45,7 @@ int fql_step(struct fql_handle* fql, struct fql_field**);
 int fql_exec_all_plans(struct fql_handle* fql);
 int fql_exec_plans(struct fql_handle* fql, int plan_count);
 int fql_exec(struct fql_handle*, const char*);
-int fql_make_plans(struct fql_handle*, struct fql_plan**, const char*);
+int fql_make_plans(struct fql_handle*, const char*);
 
 #ifdef __cplusplus
 }  /* extern "C" */

@@ -38,7 +38,7 @@ int fql_select(Process* proc)
         Select* select = proc->proc_data;
 
         Vec** rec = fifo_get(proc->fifo_in0);
-        return select_record(proc->proc_data, *rec);
+        return select->select_fn(proc->proc_data, *rec);
 
         /* I suppose select should always be a leaf? */
 }

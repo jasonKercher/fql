@@ -87,13 +87,6 @@ void fql_set_out_delim(struct fql_handle* fql, const char* delim)
  * Methods
  */
 
-int fql_step(struct fql_handle* fql, struct fql_field** fields)
-{
-        int ret = process_step(vec_begin(fql->plan_vec));
-
-        return ret;
-}
-
 
 int fql_exec_plans(struct fql_handle* fql, int plan_count)
 {
@@ -115,8 +108,7 @@ int fql_exec_all_plans(struct fql_handle* fql)
 
 int fql_exec(struct fql_handle* fql, const char* query_str)
 {
-        Plan* plans = NULL;
-        int plan_count = fql_make_plans(fql, &plans, query_str);
+        int plan_count = fql_make_plans(fql, query_str);
         int ret = 0;
         if (!fql->props.dry_run) {
                 ret = fql_exec_plans(fql, plan_count);
@@ -128,7 +120,18 @@ int fql_exec(struct fql_handle* fql, const char* query_str)
         return ret;
 }
 
-int fql_make_plans(struct fql_handle* fql, struct fql_plan** plan, const char* query_str)
+void _api_connect(struct fql_handle* fql)
+{
+        if (!vec_empty(fql->api_vec) || vec_empty(fql->plan_vec)) {
+                return;
+        }
+
+        Plan* plan = vec_begin(fql->plan_vec);
+        Process* proc = plan->op_true->data;
+        op_connect_api(proc->proc_data, fql->api_vec);
+}
+
+int fql_make_plans(struct fql_handle* fql, const char* query_str)
 {
         fql->query_str = strdup(query_str);
 
@@ -144,7 +147,23 @@ int fql_make_plans(struct fql_handle* fql, struct fql_plan** plan, const char* q
                 print_plans(fql->plan_vec);
         }
 
-        *plan = vec_begin(fql->plan_vec);
+        _api_connect(fql);
 
         return fql->plan_vec->size;
 }
+
+int fql_step(struct fql_handle* fql, struct fql_field** fields)
+{
+        int ret = process_step(vec_begin(fql->plan_vec));
+        if (ret == 0) {
+                vec_remove(fql->plan_vec, 0);
+                queue_dequeue(&fql->query_list);
+                vec_resize(fql->api_vec, 0);
+                _api_connect(fql);
+        }
+
+        *fields = vec_begin(fql->api_vec);
+
+        return ret;
+}
+
