@@ -43,13 +43,30 @@ START_TEST(test_fql_const)
         ck_assert_int_eq(fql_field_count(fql), 0);
 
 
+        /* select 1.1 */
+        plan_count = fql_make_plans(fql, "select 1.1");
+        ck_assert_int_eq(plan_count, 1);
+
+        field_count = fql_field_count(fql);
+        ck_assert_int_eq(field_count, 1);
+
+        rows = fql_step(fql, &fields);
+        ck_assert_int_eq(rows, 1);
+        ck_assert_int_eq(fields[0].type, FQL_FLOAT);
+        ck_assert_double_eq(fields[0].data.f, 1.1);
+
+        rows = fql_step(fql, &fields);
+        ck_assert_int_eq(rows, 0);
+        ck_assert_int_eq(fql_field_count(fql), 0);
+
+
         /* select 'x' */
         plan_count = fql_make_plans(fql, "select 'x'");
         ck_assert_int_eq(plan_count, 1);
 
         field_count = fql_field_count(fql);
         ck_assert_int_eq(field_count, 1);
-        
+
         rows = fql_step(fql, &fields);
         ck_assert_int_eq(rows, 1);
         ck_assert_int_eq(fields[0].type, FQL_STRING);
@@ -58,6 +75,41 @@ START_TEST(test_fql_const)
         rows = fql_step(fql, &fields);
         ck_assert_int_eq(rows, 0);
         ck_assert_int_eq(fql_field_count(fql), 0);
+
+
+        /* select 1.1 + 1 */
+        plan_count = fql_make_plans(fql, "select 1.1 + 1");
+        ck_assert_int_eq(plan_count, 1);
+
+        field_count = fql_field_count(fql);
+        ck_assert_int_eq(field_count, 1);
+
+        rows = fql_step(fql, &fields);
+        ck_assert_int_eq(rows, 1);
+        ck_assert_int_eq(fields[0].type, FQL_FLOAT);
+        ck_assert_float_eq(fields[0].data.f, 2.1);
+
+        rows = fql_step(fql, &fields);
+        ck_assert_int_eq(rows, 0);
+        ck_assert_int_eq(fql_field_count(fql), 0);
+
+
+        /* select 1 * 2.0 / (3 + 4.0) */
+        plan_count = fql_make_plans(fql, "select 1 * 2.0 / (3 + 4.0)");
+        ck_assert_int_eq(plan_count, 1);
+
+        field_count = fql_field_count(fql);
+        ck_assert_int_eq(field_count, 1);
+
+        rows = fql_step(fql, &fields);
+        ck_assert_int_eq(rows, 1);
+        ck_assert_int_eq(fields[0].type, FQL_FLOAT);
+        ck_assert_double_eq_tol(fields[0].data.f, 0.285714, .000001);
+
+        rows = fql_step(fql, &fields);
+        ck_assert_int_eq(rows, 0);
+        ck_assert_int_eq(fql_field_count(fql), 0);
+
 }
 END_TEST
 

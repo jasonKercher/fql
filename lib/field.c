@@ -72,7 +72,7 @@ int field_to_stringview(StringView* ret, union field* field, enum field_type* ty
         {
                 *type = FIELD_STRING;
                 String* s = string_new();
-                string_sprintf(s, "%lf", field->i);
+                string_sprintf(s, "%lf", field->f);
                 field->s = s;
                 break;
         }
