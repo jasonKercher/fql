@@ -212,8 +212,7 @@ void _evaluate_if_const(Column* col)
 
         union field new_field;
         if (col->field_type == FIELD_STRING) {
-                new_field.s = &func->ret_buf;
-                string_clear(new_field.s);
+                new_field.s = string_new();
         }
         func->caller(func, &new_field, NULL);
 
