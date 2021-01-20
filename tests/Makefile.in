@@ -87,8 +87,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-TESTS = check_libfql$(EXEEXT)
-check_PROGRAMS = check_libfql$(EXEEXT)
+TESTS = check_constants$(EXEEXT)
+check_PROGRAMS = check_constants$(EXEEXT)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -102,16 +102,18 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am_check_libfql_OBJECTS = check_libfql-check_libfql.$(OBJEXT)
-check_libfql_OBJECTS = $(am_check_libfql_OBJECTS)
-check_libfql_DEPENDENCIES = $(top_builddir)/lib/libfql.la
+am_check_constants_OBJECTS = check_constants-check_common.$(OBJEXT) \
+	check_constants-check_constants.$(OBJEXT)
+check_constants_OBJECTS = $(am_check_constants_OBJECTS)
+check_constants_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-check_libfql_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_libfql_CFLAGS) \
-	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+check_constants_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(check_constants_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
+	-o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -127,7 +129,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/check_libfql-check_libfql.Po
+am__depfiles_remade = ./$(DEPDIR)/check_constants-check_common.Po \
+	./$(DEPDIR)/check_constants-check_constants.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -147,8 +150,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(check_libfql_SOURCES)
-DIST_SOURCES = $(check_libfql_SOURCES)
+SOURCES = $(check_constants_SOURCES)
+DIST_SOURCES = $(check_constants_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -507,9 +510,12 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-check_libfql_SOURCES = check_libfql.c $(top_builddir)/lib/include/fql.h
-check_libfql_CFLAGS = @CHECK_CFLAGS@
-check_libfql_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+check_constants_SOURCES = $(top_builddir)/lib/include/fql.h \
+			check_common.h check_common.c \
+			check_constants.h check_constants.c
+
+check_constants_CFLAGS = @CHECK_CFLAGS@
+check_constants_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 all: all-am
 
 .SUFFIXES:
@@ -553,9 +559,9 @@ clean-checkPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
-check_libfql$(EXEEXT): $(check_libfql_OBJECTS) $(check_libfql_DEPENDENCIES) $(EXTRA_check_libfql_DEPENDENCIES) 
-	@rm -f check_libfql$(EXEEXT)
-	$(AM_V_CCLD)$(check_libfql_LINK) $(check_libfql_OBJECTS) $(check_libfql_LDADD) $(LIBS)
+check_constants$(EXEEXT): $(check_constants_OBJECTS) $(check_constants_DEPENDENCIES) $(EXTRA_check_constants_DEPENDENCIES) 
+	@rm -f check_constants$(EXEEXT)
+	$(AM_V_CCLD)$(check_constants_LINK) $(check_constants_OBJECTS) $(check_constants_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -563,7 +569,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_libfql-check_libfql.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_constants-check_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_constants-check_constants.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -592,19 +599,33 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-check_libfql-check_libfql.o: check_libfql.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libfql_CFLAGS) $(CFLAGS) -MT check_libfql-check_libfql.o -MD -MP -MF $(DEPDIR)/check_libfql-check_libfql.Tpo -c -o check_libfql-check_libfql.o `test -f 'check_libfql.c' || echo '$(srcdir)/'`check_libfql.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_libfql-check_libfql.Tpo $(DEPDIR)/check_libfql-check_libfql.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_libfql.c' object='check_libfql-check_libfql.o' libtool=no @AMDEPBACKSLASH@
+check_constants-check_common.o: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_constants_CFLAGS) $(CFLAGS) -MT check_constants-check_common.o -MD -MP -MF $(DEPDIR)/check_constants-check_common.Tpo -c -o check_constants-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_constants-check_common.Tpo $(DEPDIR)/check_constants-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_constants-check_common.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libfql_CFLAGS) $(CFLAGS) -c -o check_libfql-check_libfql.o `test -f 'check_libfql.c' || echo '$(srcdir)/'`check_libfql.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_constants_CFLAGS) $(CFLAGS) -c -o check_constants-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
 
-check_libfql-check_libfql.obj: check_libfql.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libfql_CFLAGS) $(CFLAGS) -MT check_libfql-check_libfql.obj -MD -MP -MF $(DEPDIR)/check_libfql-check_libfql.Tpo -c -o check_libfql-check_libfql.obj `if test -f 'check_libfql.c'; then $(CYGPATH_W) 'check_libfql.c'; else $(CYGPATH_W) '$(srcdir)/check_libfql.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_libfql-check_libfql.Tpo $(DEPDIR)/check_libfql-check_libfql.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_libfql.c' object='check_libfql-check_libfql.obj' libtool=no @AMDEPBACKSLASH@
+check_constants-check_common.obj: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_constants_CFLAGS) $(CFLAGS) -MT check_constants-check_common.obj -MD -MP -MF $(DEPDIR)/check_constants-check_common.Tpo -c -o check_constants-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_constants-check_common.Tpo $(DEPDIR)/check_constants-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_constants-check_common.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_libfql_CFLAGS) $(CFLAGS) -c -o check_libfql-check_libfql.obj `if test -f 'check_libfql.c'; then $(CYGPATH_W) 'check_libfql.c'; else $(CYGPATH_W) '$(srcdir)/check_libfql.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_constants_CFLAGS) $(CFLAGS) -c -o check_constants-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+
+check_constants-check_constants.o: check_constants.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_constants_CFLAGS) $(CFLAGS) -MT check_constants-check_constants.o -MD -MP -MF $(DEPDIR)/check_constants-check_constants.Tpo -c -o check_constants-check_constants.o `test -f 'check_constants.c' || echo '$(srcdir)/'`check_constants.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_constants-check_constants.Tpo $(DEPDIR)/check_constants-check_constants.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_constants.c' object='check_constants-check_constants.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_constants_CFLAGS) $(CFLAGS) -c -o check_constants-check_constants.o `test -f 'check_constants.c' || echo '$(srcdir)/'`check_constants.c
+
+check_constants-check_constants.obj: check_constants.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_constants_CFLAGS) $(CFLAGS) -MT check_constants-check_constants.obj -MD -MP -MF $(DEPDIR)/check_constants-check_constants.Tpo -c -o check_constants-check_constants.obj `if test -f 'check_constants.c'; then $(CYGPATH_W) 'check_constants.c'; else $(CYGPATH_W) '$(srcdir)/check_constants.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_constants-check_constants.Tpo $(DEPDIR)/check_constants-check_constants.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_constants.c' object='check_constants-check_constants.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_constants_CFLAGS) $(CFLAGS) -c -o check_constants-check_constants.obj `if test -f 'check_constants.c'; then $(CYGPATH_W) 'check_constants.c'; else $(CYGPATH_W) '$(srcdir)/check_constants.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -805,9 +826,9 @@ recheck: all $(check_PROGRAMS)
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
-check_libfql.log: check_libfql$(EXEEXT)
-	@p='check_libfql$(EXEEXT)'; \
-	b='check_libfql'; \
+check_constants.log: check_constants$(EXEEXT)
+	@p='check_constants$(EXEEXT)'; \
+	b='check_constants'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -905,7 +926,8 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
 	mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/check_libfql-check_libfql.Po
+		-rm -f ./$(DEPDIR)/check_constants-check_common.Po
+	-rm -f ./$(DEPDIR)/check_constants-check_constants.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -951,7 +973,8 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/check_libfql-check_libfql.Po
+		-rm -f ./$(DEPDIR)/check_constants-check_common.Po
+	-rm -f ./$(DEPDIR)/check_constants-check_constants.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
