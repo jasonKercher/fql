@@ -65,8 +65,9 @@ void process_activate(Dnode* proc_node)
         /* root processes own most data. Here, we enter
          * fifo data into this root process.
          */
-        Vec** rec = vec_begin(proc->fifo_in0->buf);
-        fifo_add(proc->fifo_in0, rec);
+        //Vec** rec = vec_begin(proc->fifo_in0->buf);
+        //fifo_add(proc->fifo_in0, rec);
+        fifo_advance(proc->fifo_in0);
 }
 
 /* Trigger appropiate roots to read the next record */
@@ -123,7 +124,7 @@ int process_step(Plan* plan)
                 ret = _exec_one_pass(plan, proc_graph);
         } while (!plan->rows_affected && ret && ret != FQL_FAIL);
 
-        return ret;
+        return (ret > 0) ? 1 : ret;
 }
 
 int process_exec_plan(Plan* plan)

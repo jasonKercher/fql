@@ -76,7 +76,8 @@ int fifo_add(Fifo* f, void* data)
         if (f->is_full) {
                 return 1;
         }
-        vec_set(f->buf, f->head++, data);
+        vec_set(f->buf, f->head, data);
+        ++f->head;
         f->head %= f->buf->size;
         f->is_full = (f->head == f->tail);
          

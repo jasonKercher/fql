@@ -1,4 +1,3 @@
-#include "check_constants.h"
 #include "check_common.h"
 
 START_TEST(test_const_literals)

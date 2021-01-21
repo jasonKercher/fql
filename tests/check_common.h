@@ -4,6 +4,7 @@
 #define EPSILON .001
 
 #include <stdlib.h>
+#include <check.h>
 #include "../lib/include/fql.h"
 
 extern struct fql_handle* fql;

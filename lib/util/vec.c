@@ -16,7 +16,7 @@ Vec* vec_init(Vec* vec, size_t elem_size)
         *vec = (Vec) {
                  NULL           /* data */
                 ,0              /* size */
-                ,0              /* _alloc */
+                ,2              /* _alloc */
                 ,elem_size      /* _elem_s */
         };
 
@@ -67,14 +67,14 @@ void* vec_end(const Vec* vec)
         return vec_at(vec, vec->size);
 }
 
-/** Allocate size + 1 for iterator end **/
-void vec_reserve(Vec* vec, size_t size)
+/** Allocate alloc + 1 for iterator end **/
+void vec_reserve(Vec* vec, size_t alloc)
 {
-        if (vec->_alloc > ++size) {
+        if (vec->_alloc > ++alloc) {
                 return;
         }
-        realloc_(vec->data, size * vec->_elem_size);
-        vec->_alloc = size;
+        realloc_(vec->data, alloc * vec->_elem_size);
+        vec->_alloc = alloc;
 }
 
 void vec_resize(Vec* vec, size_t size)
