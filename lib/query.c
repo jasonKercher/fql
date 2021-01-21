@@ -53,7 +53,10 @@ void query_free(void* generic_query)
 {
         Query* query = generic_query;
 
-        /* TODO: leaking here */
+        Source* it = vec_begin(query->sources);
+        for (; it != vec_end(query->sources); ++it) {
+                source_destroy(it);
+        }
         vec_free(query->sources);
 
         logic_tree_free(query->where);

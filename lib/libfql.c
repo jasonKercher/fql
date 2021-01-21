@@ -40,6 +40,9 @@ struct fql_handle* fql_init(struct fql_handle* fql)
 
 void fql_free(struct fql_handle* fql)
 {
+        vec_free(fql->plan_vec);
+        vec_free(fql->api_vec);
+        free_(fql->query_str);
         free_(fql);
 }
 
@@ -156,8 +159,13 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 {
         int ret = process_step(vec_begin(fql->plan_vec));
         if (ret == 0) {
+                Plan* plan = vec_begin(fql->plan_vec);
+                plan_destroy(plan);
                 vec_remove(fql->plan_vec, 0);
-                queue_dequeue(&fql->query_list);
+
+                Query* query = queue_dequeue(&fql->query_list);
+                query_free(query);
+
                 vec_resize(fql->api_vec, 0);
                 _api_connect(fql);
         }

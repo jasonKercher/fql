@@ -44,7 +44,7 @@ Dgraph* dgraph_init(Dgraph* dgraph)
                 ,NULL                   /* newest */
                 ,fifo_new_(Dnode*, 5)   /* _trav */
                 ,vec_new_(Dnode*)       /* _roots */
-                ,0                      /* _trav_idx */
+                ,0                      /* _root_idx */
                 ,false                  /* _roots_good */
         };
 
@@ -54,13 +54,18 @@ Dgraph* dgraph_init(Dgraph* dgraph)
 void dgraph_shallow_free(Dgraph* graph)
 {
         vec_free(graph->nodes);
+        vec_free(graph->_roots);
         fifo_free(graph->_trav);
         free_(graph);
 }
 
 void dgraph_free(Dgraph* graph)
 {
-        /* TODO: free the individual nodes */
+        unsigned i = 0;
+        Dnode** node = vec_begin(graph->nodes);
+        for (; i < graph->nodes->size; ++i) {
+                dnode_free(node[i]);
+        }
         dgraph_shallow_free(graph);
 }
 
@@ -88,6 +93,7 @@ void dgraph_extend(Dgraph* dest, Dgraph* src)
 void* dgraph_remove(Dgraph* graph, Dnode** node)
 {
         void* data = (*node)->data;
+        dnode_free(*node);
         vec_erase(graph->nodes, node);
         graph->_roots_good = false;
         return data;

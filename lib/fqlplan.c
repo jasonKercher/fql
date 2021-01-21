@@ -58,9 +58,14 @@ Plan* plan_init(Plan* plan, int source_total)
 
 void plan_free(void* generic_plan)
 {
+        plan_destroy(generic_plan);
+        free_(generic_plan);
+}
+
+void plan_destroy(void* generic_plan)
+{
         Plan* plan = generic_plan;
-        /* TODO lol */
-        free_(plan);
+        dgraph_free(plan->processes);
 }
 
 /* build process nodes from logic graph
@@ -117,12 +122,13 @@ void _from(Plan* plan, Query* query)
                 return;
         }
 
-        String* action_msg = string_new();
+        String action_msg;
+        string_init(&action_msg);
         Source* src = vec_begin(query->sources);
 
-        string_sprintf(action_msg, "%s: %s", src->table->reader->file_name, "stream read");
+        string_sprintf(&action_msg, "%s: %s", src->table->reader->file_name, "stream read");
 
-        Process* from_proc = process_new(action_msg->data, ++plan->source_count);
+        Process* from_proc = process_new(action_msg.data, ++plan->source_count);
         from_proc->action = &fql_read;
         from_proc->proc_data = src->table->reader;
 
@@ -159,13 +165,13 @@ void _from(Plan* plan, Query* query)
 
                 plan->current->out[0] = join_proc_node;
 
-                string_sprintf(action_msg,
+                string_sprintf(&action_msg,
                                "%s: %s",
                                src->table->reader->file_name,
                                "mmap read");
 
                 /* Root node only will only have one source */
-                Process* read_proc = process_new(action_msg->data, 1);
+                Process* read_proc = process_new(action_msg.data, 1);
                 read_proc->proc_data = src->table->reader;
                 read_proc->action = &fql_read;
                 read_proc->is_secondary = true;
@@ -325,9 +331,9 @@ void _make_pipes(Plan* plan)
 
 }
 
-Plan* plan_build(Query* query)
+Plan* plan_build(Plan* plan, Query* query)
 {
-        Plan* plan = plan_new(query->sources->size);
+        //Plan* plan = plan_new(query->sources->size);
 
         /* Query */
         _from(plan, query);
@@ -350,7 +356,9 @@ int build_plans(Vec* plans, Queue* query_list)
 
         for (; node; node = node->next) {
                 Query* query = node->data;
-                vec_push_back(plans, plan_build(query));
+                Plan* plan = vec_add_one(plans);
+                plan_init(plan, query->sources->size);
+                plan_build(plan, query);
         }
 
         return 0;

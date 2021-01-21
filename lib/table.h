@@ -61,6 +61,7 @@ struct source* source_init(struct source*,
                            enum source_type,
                            enum join_type);
 void source_free(struct source*);
+void source_destroy(struct source*);
 
 
 

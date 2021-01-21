@@ -33,6 +33,7 @@ Schema* schema_init(Schema* schema)
 void schema_free(void* generic_schema)
 {
         Schema* schema = generic_schema;
+        vec_free(schema->columns);
         if (schema->col_map != NULL) {
                 hmap_free(schema->col_map);
         }
@@ -192,10 +193,11 @@ int schema_resolve_source(Source* source)
         }
         reader_assign(table->reader);
 
-        Vec* rec = vec_new_(StringView);
-        table->reader->get_record_fn(table->reader->reader_data, rec, 0);
+        Vec rec;
+        vec_init_(&rec, StringView);
+        table->reader->get_record_fn(table->reader->reader_data, &rec, 0);
 
-        schema_assign_header(table, rec);
+        schema_assign_header(table, &rec);
 
         return FQL_GOOD;
 }

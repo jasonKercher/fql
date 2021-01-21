@@ -71,10 +71,12 @@ Source* source_init(Source* src,
 
 void source_free(Source* source)
 {
-        if (source == NULL)
-                return;
+        source_destroy(source);
+        free_(source);
+}
 
+void source_destroy(Source* source)
+{
         vec_free(source->validation_list);
         table_free(source->table);
-        free_(source);
 }
