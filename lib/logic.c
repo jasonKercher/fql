@@ -9,10 +9,10 @@ Logic* logic_new()
         Logic* new_logic = NULL;
         malloc_(new_logic, sizeof(*new_logic));
 
-        return logic_init(new_logic);
+        return logic_construct(new_logic);
 }
 
-Logic* logic_init(Logic* logic)
+Logic* logic_construct(Logic* logic)
 {
         *logic = (Logic) {
                  {NULL, NULL}   /* col */

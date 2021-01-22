@@ -24,10 +24,10 @@ Query* query_new()
         Query* new_query = NULL;
         malloc_(new_query, sizeof(*new_query));
 
-        return query_init(new_query);
+        return query_construct(new_query);
 }
 
-Query* query_init(Query* query)
+Query* query_construct(Query* query)
 {
         *query = (Query) {
                  schema_new()           /* table */
@@ -57,15 +57,11 @@ void query_free(void* generic_query)
         for (; it != vec_end(query->sources); ++it) {
                 source_destroy(it);
         }
+        op_free(query->op);
         vec_free(query->sources);
-
         logic_tree_free(query->where);
-
-        /* TODO: leaking here */
         vec_free(query->groups);
         queue_free_data(&query->having);
-
-        //table_free(query->table);
         schema_free(query->schema);
         free_(query->limit);
         free_(query->expr);
@@ -186,7 +182,7 @@ void query_add_source(Query* query,
 
         stack_free_data(source_stack);
 
-        source_init(vec_add_one(query->sources),
+        source_construct(vec_add_one(query->sources),
                     new_table,
                     alias,
                     type,

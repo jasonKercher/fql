@@ -32,7 +32,7 @@ struct libcsv_reader {
 };
 
 struct libcsv_reader* libcsv_reader_new(size_t);
-struct libcsv_reader* libcsv_reader_init(struct libcsv_reader*, size_t);
+struct libcsv_reader* libcsv_reader_construct(struct libcsv_reader*, size_t);
 void libcsv_reader_free(void*);
 int libcsv_get_record(void* reader_data, Vec* rec, unsigned char);
 
@@ -49,7 +49,7 @@ struct mmapcsv_data {
 };
 
 struct mmapcsv_data* mmapcsv_new(size_t);
-struct mmapcsv_data* mmapcsv_init(struct mmapcsv_data*, size_t);
+struct mmapcsv_data* mmapcsv_construct(struct mmapcsv_data*, size_t);
 int mmapcsv_open(struct mmapcsv_data*, const char* file_name);
 int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char);
 void mmapcsv_free(void*);
@@ -73,7 +73,7 @@ struct reader {
 typedef struct reader Reader;
 
 struct reader* reader_new();
-struct reader* reader_init(struct reader*);
+struct reader* reader_construct(struct reader*);
 void reader_free(struct reader*);
 
 void reader_assign(struct reader*);

@@ -6,10 +6,10 @@ Fifo* fifo_new(size_t elem_size, size_t buf_size)
         Fifo* new_fifo = NULL;
         malloc_(new_fifo, sizeof(*new_fifo));
 
-        return fifo_init(new_fifo, elem_size, buf_size);
+        return fifo_construct(new_fifo, elem_size, buf_size);
 }
 
-Fifo* fifo_init(Fifo* fifo, size_t elem_size, size_t buf_size)
+Fifo* fifo_construct(Fifo* fifo, size_t elem_size, size_t buf_size)
 {
         *fifo = (Fifo) {
                  vec_new(elem_size)     /* buf */
@@ -80,7 +80,7 @@ int fifo_add(Fifo* f, void* data)
         ++f->head;
         f->head %= f->buf->size;
         f->is_full = (f->head == f->tail);
-         
+
         return 0;
 }
 

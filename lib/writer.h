@@ -17,7 +17,7 @@ struct libcsv_writer {
 };
 
 struct libcsv_writer* libcsv_writer_new();
-struct libcsv_writer* libcsv_writer_init(struct libcsv_writer*);
+struct libcsv_writer* libcsv_writer_construct(struct libcsv_writer*);
 void libcsv_writer_free(void*);
 int libcsv_write_record(void* writer_data, struct vec*);
 
@@ -39,7 +39,7 @@ struct writer {
 typedef struct writer Writer;
 
 struct writer* writer_new();
-struct writer* writer_init(struct writer*);
+struct writer* writer_construct(struct writer*);
 void writer_free(struct writer*);
 
 void writer_assign(struct writer*);

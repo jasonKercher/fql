@@ -37,7 +37,7 @@ typedef struct function Function;
 struct function* function_new(const char*, enum field_type*);
 int function_op_resolve(Function* func, enum field_type*);
 struct function* function_new_op(enum expr_operator);
-struct function* function_init(struct function*, const char*, enum field_type*);
+struct function* function_construct(struct function*, const char*, enum field_type*);
 void function_free(Function* func);
 
 int function_validate(struct function*);

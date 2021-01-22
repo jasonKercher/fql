@@ -29,7 +29,7 @@ struct logic {
 typedef struct logic Logic;
 
 struct logic* logic_new();
-struct logic* logic_init(struct logic*);
+struct logic* logic_construct(struct logic*);
 void logic_free(struct logic*);
 
 void logic_assign_process(struct logic*, struct process*);

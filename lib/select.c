@@ -9,10 +9,10 @@ Select* select_new()
         Select* new_select = NULL;
         malloc_(new_select, sizeof(*new_select));
 
-        return select_init(new_select);
+        return select_construct(new_select);
 }
 
-Select* select_init(Select* select)
+Select* select_construct(Select* select)
 {
         *select = (Select) {
                  OP_SELECT              /* oper_type */
@@ -29,9 +29,6 @@ void select_free(Select* select)
 {
         if (select == NULL) {
                 return;
-        }
-        if (select->writer->free_fn != NULL) {
-                select->writer->free_fn(select->writer->writer_data);
         }
         writer_free(select->writer);
         schema_free(select->schema);
@@ -75,7 +72,7 @@ void select_apply_process(Select* select, Plan* plan)
         vec_resize(raw_rec, col_vec->size);
         String* s = vec_begin(raw_rec);
         for (; s != vec_end(raw_rec); ++s) {
-                string_init(s);
+                string_construct(s);
         }
 
         proc = plan->op_false->data;

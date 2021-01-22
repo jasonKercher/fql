@@ -5,9 +5,9 @@ Pmap* pmap_new(size_t limit, unsigned props)
         return hmap_new(limit, props);
 }
 
-Pmap* pmap_init(Pmap* pmap, size_t limit, unsigned props)
+Pmap* pmap_construct(Pmap* pmap, size_t limit, unsigned props)
 {
-        return hmap_init(pmap, limit, props);
+        return hmap_construct(pmap, limit, props);
 }
 
 void pmap_free(Pmap* pmap)

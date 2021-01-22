@@ -17,7 +17,7 @@ struct column;
 struct query;
 
 struct schema* schema_new();
-struct schema* schema_init(struct schema*);
+struct schema* schema_construct(struct schema*);
 void schema_free(void*);
 
 int schema_assign_columns_limited(Vec* columns, Vec* sources, int);

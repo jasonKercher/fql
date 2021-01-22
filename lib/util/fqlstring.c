@@ -27,9 +27,9 @@ void string_copy_from_stringview(String* s, struct stringview* sv)
         ((char*) s->data)[s->size] = '\0';
 }
 
-String* string_init(String* string)
+String* string_construct(String* string)
 {
-        string = vec_init(string, 1);
+        string = vec_construct(string, 1);
         char* s = string->data;
         s[0] = '\0';
         return string;
@@ -47,20 +47,25 @@ String* string_take(char* src)
         String* new_string = NULL;
         malloc_(new_string, sizeof(*new_string));
 
+        return string_construct_take(new_string, src);
+}
+
+String* string_construct_take(String* s, char* src)
+{
         int len = strlen(src);
 
         /* I'm making an assumption about _alloc here.
          * I don't know how much space is allocated,
          * but it is >= len + 1
          */
-        *new_string = (String) {
+        *s = (String) {
                  src            /* data */
                 ,len            /* size */
                 ,len + 1        /* _alloc */
                 ,1              /* _elem_s */
         };
 
-        return new_string;
+        return s;
 }
 
 void string_append_stringview(String* dest, struct stringview* sv)

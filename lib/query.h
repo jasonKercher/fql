@@ -55,7 +55,7 @@ struct query {
 typedef struct query Query;
 
 struct query* query_new();
-struct query* query_init(struct query*);
+struct query* query_construct(struct query*);
 void query_free(void*);
 
 void query_add_constant(Query*, const char*, int);

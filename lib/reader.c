@@ -16,10 +16,10 @@ struct libcsv_reader* libcsv_reader_new(size_t buflen)
         struct libcsv_reader* new_data = NULL;
         malloc_(new_data, sizeof(*new_data));
 
-        return libcsv_reader_init(new_data, buflen);
+        return libcsv_reader_construct(new_data, buflen);
 }
 
-struct libcsv_reader* libcsv_reader_init(struct libcsv_reader* csv_data, size_t buflen)
+struct libcsv_reader* libcsv_reader_construct(struct libcsv_reader* csv_data, size_t buflen)
 {
         *csv_data = (struct libcsv_reader) {
                  csv_reader_new()
@@ -108,10 +108,10 @@ struct mmapcsv_data* mmapcsv_new(size_t buflen)
         struct mmapcsv_data* new_data = NULL;
         malloc_(new_data, sizeof(*new_data));
 
-        return mmapcsv_init(new_data, buflen);
+        return mmapcsv_construct(new_data, buflen);
 }
 
-struct mmapcsv_data* mmapcsv_init(struct mmapcsv_data* csv_data, size_t buflen)
+struct mmapcsv_data* mmapcsv_construct(struct mmapcsv_data* csv_data, size_t buflen)
 {
         *csv_data = (struct mmapcsv_data) {
                  csv_reader_new()       /* csv_handle */
@@ -245,10 +245,10 @@ Reader* reader_new()
         Reader* new_reader = NULL;
         malloc_(new_reader, sizeof(*new_reader));
 
-        return reader_init(new_reader);
+        return reader_construct(new_reader);
 }
 
-Reader* reader_init(Reader* reader)
+Reader* reader_construct(Reader* reader)
 {
         *reader = (Reader) {
                  READ_UNDEFINED /* type */

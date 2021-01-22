@@ -7,10 +7,10 @@ Hmap* hmap_new(size_t limit, unsigned props)
         Hmap* new_map = NULL;
         malloc_(new_map, sizeof(*new_map));
 
-        return hmap_init(new_map, limit, props);
+        return hmap_construct(new_map, limit, props);
 }
 
-Hmap* hmap_init(Hmap* m, size_t limit, unsigned props)
+Hmap* hmap_construct(Hmap* m, size_t limit, unsigned props)
 {
         struct hsearch_data* new_tab = NULL;
         malloc_(new_tab, sizeof(*new_tab));

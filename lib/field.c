@@ -80,6 +80,6 @@ int field_to_stringview(StringView* ret, union field* field, enum field_type* ty
                 return FQL_FAIL;
         }
 
-        stringview_init_from_string(ret, field->s);
+        stringview_construct_from_string(ret, field->s);
         return FQL_GOOD;
 }

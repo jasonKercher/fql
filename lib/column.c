@@ -9,10 +9,10 @@ Column* column_new(enum expr_type expr, void* data, const char* table_name)
         Column* new_column = NULL;
         malloc_(new_column, sizeof(*new_column));
 
-        return column_init(new_column, expr, data, table_name);
+        return column_construct(new_column, expr, data, table_name);
 }
 
-Column* column_init(Column* col, enum expr_type expr, void* data, const char* table_name)
+Column* column_construct(Column* col, enum expr_type expr, void* data, const char* table_name)
 {
         *col = (Column) {
                  expr                   /* expr */
@@ -46,6 +46,17 @@ Column* column_init(Column* col, enum expr_type expr, void* data, const char* ta
 void column_free(void* generic_col)
 {
         Column* col = generic_col;
+
+        if (col->expr == EXPR_COLUMN_NAME || (
+                        col->expr == EXPR_CONST &&
+                        col->field_type == FIELD_STRING)
+           ) {
+                string_free(col->field.s);
+        }
+        else if (col->expr == EXPR_FUNCTION) {
+                function_free(col->field.fn);
+        }
+
         free_(col);
 }
 
@@ -135,7 +146,7 @@ int column_get_int(long* ret, Column* col, Vec* recs)
         {
                 /* this is a rather unfortunate necessity */
                 String s;
-                string_init(&s);
+                string_construct(&s);
                 Vec** rec = vec_at(recs, col->src_idx);
                 StringView* sv = vec_at(*rec, col->data_source->location);
                 string_copy_from_stringview(&s, sv);
@@ -180,7 +191,7 @@ int column_get_float(double* ret, Column* col, Vec* recs)
         {
                 /* this is a rather unfortunate necessity */
                 String s;
-                string_init(&s);
+                string_construct(&s);
                 Vec** rec = vec_at(recs, col->src_idx);
                 StringView* sv = vec_at(*rec, col->data_source->location);
                 string_copy_from_stringview(&s, sv);

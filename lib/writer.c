@@ -8,15 +8,15 @@ struct libcsv_writer* libcsv_writer_new()
         struct libcsv_writer* new_data = NULL;
         malloc_(new_data, sizeof(*new_data));
 
-        return libcsv_writer_init(new_data);
+        return libcsv_writer_construct(new_data);
 }
 
-struct libcsv_writer* libcsv_writer_init(struct libcsv_writer* writer)
+struct libcsv_writer* libcsv_writer_construct(struct libcsv_writer* writer)
 {
         *writer = (struct libcsv_writer) {
-                 csv_writer_new()
-                ,csv_record_new()
-                ,vec_new_(char*)
+                 csv_writer_new()       /* csv_handle */
+                ,csv_record_new()       /* csv_rec */
+                ,vec_new_(char*)        /* fields */
         };
         return writer;
 }
@@ -30,7 +30,7 @@ void libcsv_writer_free(void* writer_data)
         struct libcsv_writer* data = writer_data;
         csv_writer_free(data->csv_handle);
         csv_record_free(data->csv_rec);
-
+        vec_free(data->fields);
         free_(data);
 }
 
@@ -59,18 +59,18 @@ Writer* writer_new()
         Writer* new_writer = NULL;
         malloc_(new_writer, sizeof(*new_writer));
 
-        return writer_init(new_writer);
+        return writer_construct(new_writer);
 }
 
-Writer* writer_init(Writer* writer)
+Writer* writer_construct(Writer* writer)
 {
         *writer = (Writer) {
-                 WRITE_UNDEFINED
-                ,NULL
-                ,NULL
-                ,NULL
-                ,vec_new_(String)
-                ,""
+                 WRITE_UNDEFINED        /* type */
+                ,NULL                   /* writer_data */
+                ,NULL                   /* write_record_fn */
+                ,NULL                   /* free_fn */
+                ,vec_new_(String)       /* raw_rec */
+                ,""                     /* file_name */
         };
 
         /* TODO: This should not be here. This should
@@ -90,6 +90,11 @@ void writer_free(Writer* writer)
         if (writer->free_fn) {
                 writer->free_fn(writer->writer_data);
         }
+        String* s = vec_begin(writer->raw_rec);
+        for (; s != vec_end(writer->raw_rec); ++s) {
+                string_destroy(s);
+        }
+        vec_free(writer->raw_rec);
         free_(writer);
 }
 

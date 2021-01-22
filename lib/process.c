@@ -16,10 +16,10 @@ Process* process_new(const char* action, int width)
         Process* new_proc = NULL;
         malloc_(new_proc, sizeof(*new_proc));
 
-        return process_init(new_proc, action, width);
+        return process_construct(new_proc, action, width);
 }
 
-Process* process_init(Process* proc, const char* action, int width)
+Process* process_construct(Process* proc, const char* action, int width)
 {
         *proc = (Process) {
                  &fql_no_op                     /* action */
@@ -37,8 +37,44 @@ Process* process_init(Process* proc, const char* action, int width)
         return proc;
 }
 
+void process_node_free(Dnode* proc_node)
+{
+        if (!proc_node->is_root) {
+                process_free(proc_node->data);
+                return;
+        }
+        Process* proc = proc_node->data;
+        if (proc->fifo_in0 != NULL) {
+                Vec** it = vec_begin(proc->fifo_in0->buf);
+                for (; it != vec_end(proc->fifo_in0->buf); ++it) {
+                        Vec** it2 = vec_begin(*it);
+                        for (; it2 != vec_end(*it); ++it2) {
+                                vec_free(*it2);
+                        }
+                        vec_free(*it);
+                }
+        }
+        if (proc->fifo_in1 != NULL) {
+                Vec** it = vec_begin(proc->fifo_in1->buf);
+                for (; it != vec_end(proc->fifo_in1->buf); ++it) {
+                        Vec** it2 = vec_begin(*it);
+                        for (; it2 != vec_end(*it); ++it2) {
+                                vec_free(*it2);
+                        }
+                        vec_free(*it);
+                }
+        }
+        process_free(proc_node->data);
+}
+
 void process_free(Process* proc)
 {
+        if (proc->fifo_in0 != NULL) {
+                fifo_free(proc->fifo_in0);
+        }
+        if (proc->fifo_in1 != NULL) {
+                fifo_free(proc->fifo_in1);
+        }
         string_free(proc->action_msg);
         free_(proc);
 }
@@ -47,26 +83,23 @@ void process_activate(Dnode* proc_node)
 {
         Process* proc = proc_node->data;
         proc->fifo_in0 = fifo_new_(Vec*, UCHAR_MAX);
+        if (!proc_node->is_root) {
+                return;
+        }
+
         Vec* buf = proc->fifo_in0->buf;
         Vec** recs = vec_begin(buf);
         for (; recs != vec_end(buf); ++recs) {
                 *recs = vec_new_(Vec*);
                 vec_resize(*recs, proc->fifo_width);
+
+                /* If root, it will own the vector of StringViews */
                 Vec** rec = vec_begin(*recs);
                 for (; rec != vec_end(*recs); ++rec) {
                         *rec = vec_new_(StringView);
                 }
         }
 
-        if (!proc_node->is_root) {
-                return;
-        }
-
-        /* root processes own most data. Here, we enter
-         * fifo data into this root process.
-         */
-        //Vec** rec = vec_begin(proc->fifo_in0->buf);
-        //fifo_add(proc->fifo_in0, rec);
         fifo_advance(proc->fifo_in0);
 }
 

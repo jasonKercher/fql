@@ -16,7 +16,7 @@ struct dnode {
 typedef struct dnode Dnode;
 
 struct dnode* dnode_new(void*);
-struct dnode* dnode_init(struct dnode*, void*);
+struct dnode* dnode_construct(struct dnode*, void*);
 void* dnode_free(struct dnode*);
 
 struct dgraph {
@@ -30,7 +30,7 @@ struct dgraph {
 typedef struct dgraph Dgraph;
 
 struct dgraph* dgraph_new();
-struct dgraph* dgraph_init(struct dgraph*);
+struct dgraph* dgraph_construct(struct dgraph*);
 void dgraph_shallow_free(struct dgraph*);
 void dgraph_free(struct dgraph*);
 

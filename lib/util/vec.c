@@ -8,10 +8,10 @@ Vec* vec_new(size_t elem_size)
         Vec* new_vec = NULL;
         malloc_(new_vec, sizeof(*new_vec));
 
-        return vec_init(new_vec, elem_size);
+        return vec_construct(new_vec, elem_size);
 }
 
-Vec* vec_init(Vec* vec, size_t elem_size)
+Vec* vec_construct(Vec* vec, size_t elem_size)
 {
         *vec = (Vec) {
                  NULL           /* data */

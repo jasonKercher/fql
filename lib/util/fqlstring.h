@@ -20,11 +20,12 @@ struct stringview;
 typedef Vec String;
 
 String* string_new();
-String* string_init(String*);
+String* string_construct(String*);
 String* string_from_char_ptr(const char*);
 String* string_from_stringview(struct stringview*);
 void string_copy_from_stringview(String* s, struct stringview*);
 String* string_take(char*);
+String* string_construct_take(String*, char*);
 #define string_destroy(s_) { vec_destroy(s_); }
 #define string_free(s_) { vec_free(s_); }
 #define string_get(s_) { vec_begin(s_); }

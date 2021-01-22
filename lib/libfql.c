@@ -16,10 +16,10 @@ struct fql_handle* fql_new()
         struct fql_handle* new_handle;
         malloc_(new_handle, sizeof(*new_handle));
 
-        return fql_init(new_handle);
+        return fql_construct(new_handle);
 }
 
-struct fql_handle* fql_init(struct fql_handle* fql)
+struct fql_handle* fql_construct(struct fql_handle* fql)
 {
         *fql = (struct fql_handle) {
                  NULL                       /* queries */
@@ -136,6 +136,9 @@ void _api_connect(struct fql_handle* fql)
 
 int fql_make_plans(struct fql_handle* fql, const char* query_str)
 {
+        if (fql->query_str) {
+                free_(fql->query_str);
+        }
         fql->query_str = strdup(query_str);
 
         analyze_query(fql);

@@ -31,8 +31,8 @@ typedef struct vec Vec;
 
 struct vec* vec_new(size_t);
 #define vec_new_(T_) vec_new(sizeof(T_))
-struct vec* vec_init(struct vec*, size_t);
-#define vec_init_(v_, T_) vec_init(v_, sizeof(T_))
+struct vec* vec_construct(struct vec*, size_t);
+#define vec_construct_(v_, T_) vec_construct(v_, sizeof(T_))
 void vec_destroy(struct vec*);
 void vec_free(struct vec*);
 

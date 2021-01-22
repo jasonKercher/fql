@@ -28,10 +28,10 @@ Plan* plan_new(int source_total)
         Plan* new_plan = NULL;
         malloc_(new_plan, sizeof(*new_plan));
 
-        return plan_init(new_plan, source_total);
+        return plan_construct(new_plan, source_total);
 }
 
-Plan* plan_init(Plan* plan, int source_total)
+Plan* plan_construct(Plan* plan, int source_total)
 {
         *plan = (Plan) {
                  dgraph_new()                                      /* processes */
@@ -46,7 +46,6 @@ Plan* plan_init(Plan* plan, int source_total)
          * of the current number of sources as the plan is built.
          * Setting the member (source_count) to 0 is correct here.
          */
-
         Process* start = process_new("start", 0);
         start->is_passive = true;
         plan->current = dgraph_add_data(plan->processes, start);
@@ -65,6 +64,10 @@ void plan_free(void* generic_plan)
 void plan_destroy(void* generic_plan)
 {
         Plan* plan = generic_plan;
+        Dnode** it = vec_begin(plan->processes->nodes);
+        for (; it != vec_end(plan->processes->nodes); ++it) {
+                process_node_free(*it);
+        }
         dgraph_free(plan->processes);
 }
 
@@ -123,7 +126,7 @@ void _from(Plan* plan, Query* query)
         }
 
         String action_msg;
-        string_init(&action_msg);
+        string_construct(&action_msg);
         Source* src = vec_begin(query->sources);
 
         string_sprintf(&action_msg, "%s: %s", src->table->reader->file_name, "stream read");
@@ -196,6 +199,8 @@ void _from(Plan* plan, Query* query)
                         plan->current = join_proc_node;
                 }
         }
+
+        string_destroy(&action_msg);
 }
 
 void _where(Plan* plan, Query* query)
@@ -357,7 +362,7 @@ int build_plans(Vec* plans, Queue* query_list)
         for (; node; node = node->next) {
                 Query* query = node->data;
                 Plan* plan = vec_add_one(plans);
-                plan_init(plan, query->sources->size);
+                plan_construct(plan, query->sources->size);
                 plan_build(plan, query);
         }
 

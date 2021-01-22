@@ -7,10 +7,10 @@ Dnode* dnode_new(void* data)
         Dnode* new_node = NULL;
         malloc_(new_node, sizeof(*new_node));
 
-        return dnode_init(new_node, data);
+        return dnode_construct(new_node, data);
 }
 
-Dnode* dnode_init(Dnode* node, void* data)
+Dnode* dnode_construct(Dnode* node, void* data)
 {
         *node = (Dnode) {
                  data           /* data */
@@ -34,10 +34,10 @@ Dgraph* dgraph_new()
         Dgraph* new_dgraph = NULL;
         malloc_(new_dgraph, sizeof(*new_dgraph));
 
-        return dgraph_init(new_dgraph);
+        return dgraph_construct(new_dgraph);
 }
 
-Dgraph* dgraph_init(Dgraph* dgraph)
+Dgraph* dgraph_construct(Dgraph* dgraph)
 {
         *dgraph = (Dgraph) {
                  vec_new_(Dnode*)       /* nodes */

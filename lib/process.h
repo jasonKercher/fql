@@ -27,7 +27,8 @@ struct process {
 typedef struct process Process;
 
 struct process* process_new(const char* action, int width);
-struct process* process_init(struct process*, const char*, int width);
+struct process* process_construct(struct process*, const char*, int width);
+void process_node_free(struct dnode* proc_node);
 void process_free(struct process*);
 
 void process_activate(Dnode* proc_node);

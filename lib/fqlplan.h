@@ -18,7 +18,7 @@ struct fql_plan {
 typedef struct fql_plan Plan;
 
 struct fql_plan* plan_new(int);
-struct fql_plan* plan_init(struct fql_plan*, int);
+struct fql_plan* plan_construct(struct fql_plan*, int);
 void plan_free(void*);
 void plan_destroy(void*);
 

@@ -27,7 +27,7 @@ struct fql_field {
 struct fql_handle;
 
 struct fql_handle* fql_new();
-struct fql_handle* fql_init(struct fql_handle*);
+struct fql_handle* fql_construct(struct fql_handle*);
 void fql_free(struct fql_handle*);
 
 int fql_field_count(struct fql_handle*);

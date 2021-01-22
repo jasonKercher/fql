@@ -8,10 +8,10 @@ Table* table_new()
         Table* new_table = NULL;
         malloc_(new_table, sizeof(*new_table));
 
-        return table_init(new_table);
+        return table_construct(new_table);
 }
 
-Table* table_init(Table* table)
+Table* table_construct(Table* table)
 {
         *table = (Table) {
                  reader_new() /* reader */
@@ -42,10 +42,10 @@ Source* source_new(Table* table,
         Source* new_source = NULL;
         malloc_(new_source, sizeof(*new_source));
 
-        return source_init(new_source, table, alias, source_type, join_type);
+        return source_construct(new_source, table, alias, source_type, join_type);
 }
 
-Source* source_init(Source* src,
+Source* source_construct(Source* src,
                     Table* table,
                     const char* alias,
                     enum source_type source_type,
@@ -77,6 +77,10 @@ void source_free(Source* source)
 
 void source_destroy(Source* source)
 {
+        Column** it = vec_begin(source->validation_list);
+        for (; it != vec_end(source->validation_list); ++it) {
+                column_free(*it);
+        }
         vec_free(source->validation_list);
         table_free(source->table);
 }

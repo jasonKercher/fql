@@ -53,3 +53,15 @@ void op_connect_api(void* op, Vec* api)
                 ;
         }
 }
+
+void op_free(void* op)
+{
+        enum op* type = op;
+
+        switch (*type) {
+        case OP_SELECT:
+                select_free(op);
+        default:
+                ;
+        }
+}

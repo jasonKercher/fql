@@ -16,10 +16,10 @@ Schema* schema_new()
         Schema* new_schema = NULL;
         malloc_(new_schema, sizeof(*new_schema));
 
-        return schema_init(new_schema);
+        return schema_construct(new_schema);
 }
 
-Schema* schema_init(Schema* schema)
+Schema* schema_construct(Schema* schema)
 {
         *schema = (Schema) {
                  vec_new_(Column*)      /* columns */
@@ -33,6 +33,12 @@ Schema* schema_init(Schema* schema)
 void schema_free(void* generic_schema)
 {
         Schema* schema = generic_schema;
+
+        Column** it = vec_begin(schema->columns);
+        for (; it != vec_end(schema->columns); ++it) {
+                column_free(*it);
+        }
+
         vec_free(schema->columns);
         if (schema->col_map != NULL) {
                 hmap_free(schema->col_map);
@@ -194,10 +200,11 @@ int schema_resolve_source(Source* source)
         reader_assign(table->reader);
 
         Vec rec;
-        vec_init_(&rec, StringView);
+        vec_construct_(&rec, StringView);
         table->reader->get_record_fn(table->reader->reader_data, &rec, 0);
 
         schema_assign_header(table, &rec);
+        vec_destroy(&rec);
 
         return FQL_GOOD;
 }

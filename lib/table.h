@@ -22,7 +22,7 @@ struct table {
 typedef struct table Table;
 
 struct table* table_new();
-struct table* table_init(struct table*);
+struct table* table_construct(struct table*);
 void table_free(struct table*);
 
 
@@ -55,7 +55,7 @@ struct source* source_new(struct table*,
                           const char* alias,
                           enum source_type,
                           enum join_type);
-struct source* source_init(struct source*,
+struct source* source_construct(struct source*,
                            struct table*,
                            const char* alias,
                            enum source_type,

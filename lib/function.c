@@ -15,7 +15,7 @@ Function* function_new(const char* func_name, enum field_type* type)
         Function* new_func = NULL;
         malloc_(new_func, sizeof(*new_func));
 
-        return function_init(new_func, func_name, type);
+        return function_construct(new_func, func_name, type);
 }
 
 Function* function_new_op(enum expr_operator op)
@@ -33,7 +33,7 @@ Function* function_new_op(enum expr_operator op)
                 ,2                      /* arg_max */
         };
 
-        string_init(&new_func->ret_buf);
+        string_construct(&new_func->ret_buf);
 
         return new_func;
 }
@@ -188,7 +188,7 @@ int function_op_resolve(Function* func, enum field_type* type)
         return FQL_GOOD;
 }
 
-Function* function_init(Function* func, const char* func_name, enum field_type* type)
+Function* function_construct(Function* func, const char* func_name, enum field_type* type)
 {
         *func = (Function) {
                  &not_implemented       /* caller */
@@ -200,7 +200,7 @@ Function* function_init(Function* func, const char* func_name, enum field_type* 
         };
 
         strncpy_(func->name, func_name, FUNC_NAME_MAX);
-        string_init(&func->ret_buf);
+        string_construct(&func->ret_buf);
 
         func->arg_min = 0;
         func->arg_max = 0;
@@ -291,6 +291,10 @@ Function* function_init(Function* func, const char* func_name, enum field_type* 
 
 void function_free(Function* func)
 {
+        Column** it = vec_begin(func->args);
+        for (; it != vec_end(func->args); ++it) {
+                column_free(*it);
+        }
         vec_free(func->args);
         string_destroy(&func->ret_buf);
         free_(func);

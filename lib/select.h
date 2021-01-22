@@ -25,7 +25,7 @@ struct select {
 typedef struct select Select;
 
 struct select* select_new();
-struct select* select_init(struct select*);
+struct select* select_construct(struct select*);
 void select_free(struct select*);
 
 void select_add_column(struct select*, struct column*);
