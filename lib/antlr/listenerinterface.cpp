@@ -25,7 +25,12 @@ void ListenerInterface::enterSelect_list(TSqlParser::Select_listContext * ctx)
 }
 void ListenerInterface::exitSelect_list(TSqlParser::Select_listContext * ctx)
 {
+        if (_on_asterisk) {
+                query_add_asterisk(_query, _table_name);
+                _on_asterisk = false;
+        }
         _query->mode = MODE_UNDEFINED;
+        _table_name[0] = '\0';
 }
 
 void ListenerInterface::enterGroup_by_item(TSqlParser::Group_by_itemContext * ctx)
@@ -39,7 +44,7 @@ void ListenerInterface::exitGroup_by_item(TSqlParser::Group_by_itemContext * ctx
 
 void ListenerInterface::enterAsterisk(TSqlParser::AsteriskContext * ctx)
 {
-
+        _on_asterisk = true;
 }
 void ListenerInterface::exitAsterisk(TSqlParser::AsteriskContext * ctx) { }
 

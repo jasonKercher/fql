@@ -132,6 +132,16 @@ void vec_set(Vec* vec, size_t n, void* src)
         memcpy(dest, src, vec->_elem_size);
 }
 
+void vec_insert(Vec* vec, size_t n, void* src)
+{
+        vec_add_one(vec);
+        char* dest = vec_at(vec, n);
+        size_t shift_size = vec->_elem_size * (vec->size - n);
+
+        memmove(dest + vec->_elem_size, dest, shift_size);
+        vec_set(vec, n, src);
+}
+
 void vec_push_back(Vec* vec, void* item)
 {
         memcpy(vec_add_one(vec), item, vec->_elem_size);

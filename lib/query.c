@@ -121,6 +121,14 @@ void query_add_column(Query* query, char* col_name, const char* table_id)
         col->field_type = FIELD_STRING;
 }
 
+void query_add_asterisk(Query* query, const char* table_id)
+{
+        Column* col = column_new(EXPR_ASTERISK, NULL, table_id);
+        if (_distribute_column(query, col)) {
+                fprintf(stderr, "Unhandled asterisk\n");
+        }
+}
+
 void query_add_constant(Query* query, const char* s, int len)
 {
         Column* col = column_new(EXPR_CONST, NULL, "");

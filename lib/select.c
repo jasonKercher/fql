@@ -51,8 +51,50 @@ void select_use_non_api(Select* select)
         select->select_fn = &select_record;
 }
 
-void select_apply_process(Select* select, Plan* plan)
+int _insert_all_columns(Vec* col_vec, Source* src, unsigned src_idx, unsigned* col_idx)
 {
+        Vec* src_col_vec = src->table->schema->columns;
+
+        Column** it = vec_begin(src_col_vec);
+        for (; it != vec_end(src_col_vec); ++it) {
+                String* col_name = string_from_string((*it)->field.s);
+                Column* new_col = column_new(EXPR_COLUMN_NAME, col_name, "");
+                new_col->data_source = *it;
+                new_col->src_idx = src_idx;
+                vec_insert(col_vec, *col_idx, &new_col);
+                ++(*col_idx);
+        }
+
+        return src->table->schema->columns->size;
+}
+
+void _expand_asterisks(Query* query)
+{
+        Select* select = query->op;
+        Vec* col_vec = select->schema->columns;
+        Column** cols = vec_begin(col_vec);
+        unsigned i = 0;
+
+        for (; i < col_vec->size; ++i) {
+                if (cols[i]->expr != EXPR_ASTERISK) {
+                        continue;
+                }
+
+                Source* srcs = vec_begin(query->sources);
+                unsigned j = 0;
+                for (; j < query->sources->size; ++j) {
+                        if (cols[i]->table_name[0] == '\0' ||
+                            istring_eq(srcs[j].alias, cols[i]->table_name)) {
+                                vec_remove(col_vec, i);
+                                _insert_all_columns(col_vec, &srcs[j], j, &i);
+                        }
+                }
+        }
+}
+
+void select_apply_process(Query* query, Plan* plan)
+{
+        Select* select = query->op;
         Process* proc = plan->op_true->data;
         proc->action = &fql_select;
         proc->proc_data = select;
@@ -66,6 +108,8 @@ void select_apply_process(Select* select, Plan* plan)
                 }
                 column_cat_description(*col, proc->action_msg);
         }
+
+        _expand_asterisks(query);
 
         /* Initialize the raw strings used for writing */
         Vec* raw_rec = select->writer->raw_rec;

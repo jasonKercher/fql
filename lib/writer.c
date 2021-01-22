@@ -29,7 +29,7 @@ void libcsv_writer_free(void* writer_data)
 
         struct libcsv_writer* data = writer_data;
         csv_writer_free(data->csv_handle);
-        csv_record_free(data->csv_rec);
+        csv_record_free_not_fields(data->csv_rec);
         vec_free(data->fields);
         free_(data);
 }

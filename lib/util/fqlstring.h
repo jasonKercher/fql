@@ -21,6 +21,7 @@ typedef Vec String;
 
 String* string_new();
 String* string_construct(String*);
+String* string_from_string(String*);
 String* string_from_char_ptr(const char*);
 String* string_from_stringview(struct stringview*);
 void string_copy_from_stringview(String* s, struct stringview*);

@@ -108,6 +108,9 @@ void column_cat_description(Column* col, String* msg)
 
                 }
                 break;
+        case EXPR_ASTERISK:
+                string_cat(msg, "*");
+                break;
         case EXPR_SOURCE:
                 string_cat(msg, "TABLE SOURCE");
                 break;

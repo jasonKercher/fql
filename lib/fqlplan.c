@@ -237,7 +237,7 @@ void _having(Plan* plan, Query* query) { }
 void _operation(Plan* plan, Query* query)
 {
         plan->current->out[0] = plan->op_true;
-        op_apply_process(query->op, plan);
+        op_apply_process(query, plan);
 }
 
 void _limit(Plan* plan, Query* query) { }

@@ -12,6 +12,7 @@ enum expr_type {
         EXPR_NONE,
         EXPR_COLUMN_NAME,
         EXPR_CONST,
+        EXPR_ASTERISK,
         EXPR_FUNCTION,
         EXPR_SOURCE,
         EXPR_SUBQUERY,

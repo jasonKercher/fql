@@ -18,13 +18,13 @@ Vec* op_get_validation_list(void* op)
         return NULL;
 }
 
-void op_apply_process(void* op, Plan* plan)
+void op_apply_process(Query* query, Plan* plan)
 {
-        enum op* type = op;
+        enum op* type = query->op;
 
         switch (*type) {
         case OP_SELECT:
-                select_apply_process(op, plan);
+                select_apply_process(query, plan);
         default:
                 ;
         }

@@ -18,7 +18,7 @@ enum op {
 };
 
 struct vec* op_get_validation_list(void* op);
-void op_apply_process(void* op, struct fql_plan*);
+void op_apply_process(struct query*, struct fql_plan*);
 void op_connect_api(void* op, struct vec*);
 void op_use_non_api(void* op);
 void op_free(void* op);

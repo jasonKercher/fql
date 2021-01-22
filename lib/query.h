@@ -60,6 +60,7 @@ void query_free(void*);
 
 void query_add_constant(Query*, const char*, int);
 void query_add_column(struct query*, char*, const char* table);
+void query_add_asterisk(struct query*, const char* table);
 void query_add_source(struct query*, struct stack**, const char*);
 void query_apply_table_alias(struct query*, const char*);
 

@@ -13,6 +13,19 @@ String* string_new()
         return new_string;
 }
 
+String* string_construct(String* string)
+{
+        string = vec_construct(string, 1);
+        char* s = string->data;
+        s[0] = '\0';
+        return string;
+}
+
+String* string_from_string(String* src)
+{
+        return string_from_char_ptr(src->data);
+}
+
 String* string_from_stringview(struct stringview* sv)
 {
         String* new_string = string_new();
@@ -25,14 +38,6 @@ void string_copy_from_stringview(String* s, struct stringview* sv)
         vec_resize(s, sv->len);
         memcpy(s->data, sv->data, sv->len);
         ((char*) s->data)[s->size] = '\0';
-}
-
-String* string_construct(String* string)
-{
-        string = vec_construct(string, 1);
-        char* s = string->data;
-        s[0] = '\0';
-        return string;
 }
 
 String* string_from_char_ptr(const char* src)
