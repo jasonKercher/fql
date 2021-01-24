@@ -10,7 +10,7 @@
 #include "util/dgraph.h"
 
 struct process;
-typedef int (process_fn)(struct process*);
+typedef int (process_fn)(struct dgraph*, struct process*);
 
 struct process {
         process_fn* action;             /* function pointer for process */
@@ -37,8 +37,9 @@ int process_step(Plan* plan);
 int process_exec_plan(struct fql_plan*);
 void process_non_api(struct process* plan);
 
-int fql_read(struct process*);
-int fql_select(struct process*);
-int fql_no_op(struct process*);
+int fql_read(struct dgraph*, struct process*);
+int fql_select(struct dgraph*, struct process*);
+int fql_logic(struct dgraph*, struct process*);
+int fql_no_op(struct dgraph*, struct process*);
 
 #endif /* PROCESS_H */

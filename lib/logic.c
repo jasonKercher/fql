@@ -16,9 +16,10 @@ Logic* logic_construct(Logic* logic)
 {
         *logic = (Logic) {
                  {NULL, NULL}   /* col */
+                ,NULL           /* proc_node */
+                ,NULL           /* proc */
                 ,0              /* data_type */
                 ,COMP_NOT_SET   /* comp_type */
-                ,NULL           /* proc */
         };
 
         return logic;

@@ -3,7 +3,18 @@
 #include "process.h"
 #include "select.h"
 
-int fql_read(Process* proc)
+/* Trigger appropiate roots to read the next record */
+void _recycle_rec(Dgraph* proc_graph, int width)
+{
+        int i = 0;
+        for (; i < width; ++i) {
+                Dnode** root_node = vec_at(proc_graph->_roots, i);
+                Process* root = (*root_node)->data;
+                fifo_advance(root->fifo_in0);
+        }
+}
+
+int fql_read(Dgraph* proc_graph, Process* proc)
 {
         Reader* reader = proc->proc_data;
         struct libcsv_data* data = reader->reader_data;
@@ -29,21 +40,42 @@ int fql_read(Process* proc)
         return 1;
 }
 
-int fql_select(Process* proc)
+int fql_select(Dgraph* proc_graph, Process* proc)
 {
         if (fifo_is_empty(proc->fifo_in0)) {
                 return 0;
         }
 
-        Select* select = proc->proc_data;
-
         Vec** rec = fifo_get(proc->fifo_in0);
-        return select->select_fn(proc->proc_data, *rec);
+        Select* select = proc->proc_data;
+        int ret = select->select_fn(select, *rec);
 
         /* I suppose select should always be a leaf? */
+        _recycle_rec(proc_graph, proc->fifo_width);
+
+        return ret;
 }
 
-int fql_no_op(Process* proc)
+int fql_logic(Dgraph* proc_graph, Process* proc)
+{
+        if (fifo_is_empty(proc->fifo_in0)) {
+                return 0;
+        }
+
+        Vec** recs = fifo_get(proc->fifo_in0);
+        Logic* logic = proc->proc_data;
+        if (logic->logic_fn(logic, *recs)) {
+                fifo_add(proc->fifo_out1, recs);
+        } else if (proc->fifo_out0 != NULL) {
+                fifo_add(proc->fifo_out0, recs);
+        } else {
+                _recycle_rec(proc_graph, proc->fifo_width);
+        }
+        
+        return 1;
+}
+
+int fql_no_op(Dgraph* proc_graph, Process* proc)
 {
         fprintf(stderr, "No-op: %s\n", (char*) proc->action_msg->data);
         if (proc->fifo_out0 == NULL) {

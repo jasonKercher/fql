@@ -103,17 +103,6 @@ void process_activate(Dnode* proc_node)
         fifo_advance(proc->fifo_in0);
 }
 
-/* Trigger appropiate roots to read the next record */
-void _recycle_recs(Dgraph* proc_graph, Process* proc)
-{
-        int i = 0;
-        for (; i < proc->fifo_width; ++i) {
-                Dnode** root_node = vec_at(proc_graph->_roots, i);
-                Process* root = (*root_node)->data;
-                fifo_advance(root->fifo_in0);
-        }
-}
-
 /* returns number of processes that executed or FQL_FAIL
  * 0 should not happen unless we EOF
  */
@@ -127,19 +116,15 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
                 if (fifo_is_empty(proc->fifo_in0)) {
                         continue;
                 }
-                int ret = proc->action(proc);
+                int ret = proc->action(proc_graph, proc);
                 if (ret == FQL_FAIL) {
                         return FQL_FAIL;
                 }
 
-                run_count += ret;
-                /* is leaf? */
-                if (proc_node->out[0] == NULL && proc_node->out[1] == NULL) {
-                        if (proc_node == plan->op_true) {
-                                ++plan->rows_affected;
-                        }
-                        _recycle_recs(proc_graph, proc);
+                if (proc_node == plan->op_true) {
+                        ++plan->rows_affected;
                 }
+                run_count += ret;
         }
 
         return run_count;

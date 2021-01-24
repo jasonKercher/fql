@@ -12,15 +12,14 @@ extern "C" {
 #include "column.h"
 
 struct select;
-
-typedef int(*select_record_fn)(struct select*, struct vec*);
+typedef int(*select_fn)(struct select*, struct vec*);
 
 struct select {
         enum op oper_type;
         struct vec* api;
         struct schema* schema;
         struct writer* writer;
-        select_record_fn select_fn;
+        select_fn select_fn;
 };
 typedef struct select Select;
 

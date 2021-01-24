@@ -20,11 +20,16 @@ enum comparison {
         ,COMP_NOT_NULL
 };
 
+struct logic;
+typedef _Bool(*logic_fn)(struct logic*, struct vec*);
+
 struct logic {
         struct column* col[2];
+        struct dnode* proc_node;
+        logic_fn logic_fn;
         int data_type;
         enum comparison comp_type;
-        struct dnode* proc_node;
+        
 };
 typedef struct logic Logic;
 

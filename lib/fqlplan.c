@@ -88,6 +88,7 @@ Dnode* _logic_to_process(Dgraph* proc_graph,
         for (; it != vec_end(logic_graph->nodes); ++it) {
                 Logic* logic = (*it)->data;
                 Process* proc = process_new("", source_count);
+                proc->action = &fql_logic;
                 logic_assign_process(logic, proc);
 
                 Dnode* proc_node = dnode_new(proc);
