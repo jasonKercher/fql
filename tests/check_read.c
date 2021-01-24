@@ -84,6 +84,76 @@ START_TEST(test_read_t1)
 }
 END_TEST
 
+START_TEST(test_read_t1_asterisk)
+{
+        struct fql_field* fields = NULL;
+        int plan_count = 0;
+        int field_count = 0;
+        int rows = 0;
+
+        /* standard select */
+        plan_count = fql_make_plans(fql, "select * from t1");
+        ck_assert_int_eq(plan_count, 1);
+
+        field_count = fql_field_count(fql);
+        ck_assert_int_eq(field_count, 3);
+
+        rows = fql_step(fql, &fields);
+        ck_assert_int_eq(rows, 1);
+        ck_assert_int_eq(fields[0].type, FQL_STRING);
+        ck_assert_int_eq(fields[1].type, FQL_STRING);
+        ck_assert_int_eq(fields[2].type, FQL_STRING);
+
+        ck_assert_str_eq(fields[0].data.s, "44b72d44");
+        ck_assert_str_eq(fields[1].data.s, "70");
+        ck_assert_str_eq(fields[2].data.s, "30279");
+
+        rows = fql_step(fql, &fields);
+        ck_assert_str_eq(fields[0].data.s, "b8e63822");
+        ck_assert_str_eq(fields[1].data.s, "cb");
+        ck_assert_str_eq(fields[2].data.s, "38922");
+
+        rows = fql_step(fql, &fields);
+        ck_assert_str_eq(fields[0].data.s, "46a1bad3");
+        ck_assert_str_eq(fields[1].data.s, "5f");
+        ck_assert_str_eq(fields[2].data.s, "30119");
+
+        rows = fql_step(fql, &fields);
+        ck_assert_str_eq(fields[0].data.s, "8ab25d8f");
+        ck_assert_str_eq(fields[1].data.s, "f8");
+        ck_assert_str_eq(fields[2].data.s, "75882");
+
+        rows = fql_step(fql, &fields);
+        ck_assert_str_eq(fields[0].data.s, "282a4957");
+        ck_assert_str_eq(fields[1].data.s, "6c");
+        ck_assert_str_eq(fields[2].data.s, "121263");
+
+        rows = fql_step(fql, &fields);
+        ck_assert_str_eq(fields[0].data.s, "3138b3f8");
+        ck_assert_str_eq(fields[1].data.s, "b0");
+        ck_assert_str_eq(fields[2].data.s, "154715");
+
+        rows = fql_step(fql, &fields);
+        ck_assert_str_eq(fields[0].data.s, "18e25713");
+        ck_assert_str_eq(fields[1].data.s, "1e");
+        ck_assert_str_eq(fields[2].data.s, "100092");
+
+        rows = fql_step(fql, &fields);
+        ck_assert_str_eq(fields[0].data.s, "c1519b0d");
+        ck_assert_str_eq(fields[1].data.s, "c8");
+        ck_assert_str_eq(fields[2].data.s, "87082");
+
+        rows = fql_step(fql, &fields);
+        ck_assert_str_eq(fields[0].data.s, "6ed156a7");
+        ck_assert_str_eq(fields[1].data.s, "ae");
+        ck_assert_str_eq(fields[2].data.s, "229701");
+
+        rows = fql_step(fql, &fields);
+        ck_assert_int_eq(rows, 0);
+        ck_assert_int_eq(fql_field_count(fql), 0);
+}
+END_TEST
+
 
 START_TEST(test_read_const)
 {
@@ -276,6 +346,7 @@ Suite* fql_read_suite(void)
         tcase_add_checked_fixture(tc_read, fql_setup, fql_teardown);
 
         tcase_add_test(tc_read, test_read_t1);
+        tcase_add_test(tc_read, test_read_t1_asterisk);
         tcase_add_test(tc_read, test_read_const);
         tcase_add_test(tc_read, test_read_operators);
         tcase_add_test(tc_read, test_read_functions);

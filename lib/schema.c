@@ -160,6 +160,7 @@ void schema_assign_header(Table* table, Vec* rec)
 
                 new_col->location = i;
                 new_col->table = table;
+                new_col->field_type = FIELD_STRING;
 
                 /* add to hash map for easy searching */
                 hmap_set(table->schema->col_map, column_name->data, new_col);

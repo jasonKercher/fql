@@ -61,6 +61,7 @@ int _insert_all_columns(Vec* col_vec, Source* src, unsigned src_idx, unsigned* c
                 Column* new_col = column_new(EXPR_COLUMN_NAME, col_name, "");
                 new_col->data_source = *it;
                 new_col->src_idx = src_idx;
+                new_col->field_type = (*it)->field_type;
                 vec_insert(col_vec, *col_idx, &new_col);
                 ++(*col_idx);
         }
