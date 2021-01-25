@@ -75,7 +75,7 @@ void _add_validation_column(Query* query, Column* col)
          * select 'hello'
          * where 1 = 0
          * There is no need to validate anything here
-         * since columns are either variables or 
+         * since columns are either variables or
          * constants that will optimize away.
          */
         if (vec_empty(query->sources)) {
@@ -141,7 +141,7 @@ void query_add_asterisk(Query* query, const char* table_id)
         }
 }
 
-void query_add_constant(Query* query, const char* s, int len)
+int query_add_constant(Query* query, const char* s, int len)
 {
         Column* col = column_new(EXPR_CONST, NULL, "");
 
@@ -155,18 +155,24 @@ void query_add_constant(Query* query, const char* s, int len)
         } else {
                 if (strhaschar(s, '.')) {
                         type = FIELD_FLOAT;
-                        str2double(&col->field.f, s);
+                        if (str2double(&col->field.f, s)) {
+                                return FQL_FAIL;
+                        }
                 } else {
                         type = FIELD_INT;
-                        str2long(&col->field.i, s);
+                        if (str2long(&col->field.i, s)) {
+                                return FQL_FAIL;
+                        }
                 }
         }
 
         col->field_type = type;
         if (_distribute_column(query, col)) {
                 fprintf(stderr, "Unhandled constant expression: %d\n", query->mode);
-                return;
+                return FQL_FAIL;
         }
+
+        return FQL_GOOD;
 }
 
 
