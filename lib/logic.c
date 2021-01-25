@@ -19,7 +19,7 @@ Logic* logic_construct(Logic* logic)
                  {NULL, NULL}   /* col */
                 ,NULL           /* proc_node */
                 ,NULL           /* proc */
-                ,0              /* data_type */
+                ,FIELD_UNDEFINED/* data_type */
                 ,COMP_NOT_SET   /* comp_type */
         };
 
@@ -48,6 +48,10 @@ void logic_assign_process(Logic* logic, Process* proc)
         if (logic->col[0] == NULL) {
                 return;
         }
+
+        logic->data_type = field_determine_type(logic->col[0]->field_type,
+                                                logic->col[1]->field_type);
+        logic->logic_fn = logic_matrix[logic->comp_type][logic->data_type];
 
         column_cat_description(logic->col[0], proc->action_msg);
         switch (logic->comp_type) {
@@ -97,8 +101,8 @@ void logic_add_column(Logic* logic, struct column* col)
                 return;
         }
         logic->col[1] = col;
-        logic->data_type = field_determine_type(logic->col[0]->field_type, col->field_type);
-        logic->logic_fn = logic_matrix[logic->comp_type][logic->data_type];
+        //logic->data_type = field_determine_type(logic->col[0]->field_type, col->field_type);
+        //logic->logic_fn = logic_matrix[logic->comp_type][logic->data_type];
 }
 
 void logic_set_comparison(Logic* logic, const char* op)
