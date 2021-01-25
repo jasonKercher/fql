@@ -81,7 +81,8 @@ int schema_resolve_file(Table* table)
         for (; node; node = node->next) {
                 if (string_eq(node->data, base)) {
                         ++matches;
-                        strcpy(table->reader->file_name, node->data);
+                        string_sprintf(&table->reader->file_name, 
+                                       "%s/%s", dir, node->data);
                 }
         }
 
@@ -93,7 +94,8 @@ int schema_resolve_file(Table* table)
         for (node = files; node; node = node->next) {
                 if (istring_eq(node->data, base)) {
                         ++matches;
-                        strcpy(table->reader->file_name, node->data);
+                        string_sprintf(&table->reader->file_name, 
+                                       "%s/%s", dir, node->data);
                 }
         }
 
@@ -111,7 +113,8 @@ int schema_resolve_file(Table* table)
                 getnoext(file_noext, node->data);
                 if (string_eq(file_noext, base)) {
                         ++matches;
-                        strcpy(table->reader->file_name, node->data);
+                        string_sprintf(&table->reader->file_name, 
+                                       "%s/%s", dir, node->data);
                 }
         }
 
@@ -127,7 +130,8 @@ int schema_resolve_file(Table* table)
                 getnoext(file_noext, node->data);
                 if (istring_eq(file_noext, base)) {
                         ++matches;
-                        strcpy(table->reader->file_name, node->data);
+                        string_sprintf(&table->reader->file_name, 
+                                       "%s/%s", dir, node->data);
                 }
         }
 

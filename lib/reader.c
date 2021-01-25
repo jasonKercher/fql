@@ -255,8 +255,10 @@ Reader* reader_construct(Reader* reader)
                 ,NULL           /* reader_data */
                 ,NULL           /* get_record_fn */
                 ,NULL           /* free_fn */
-                ,""             /* file_name */
+                ,{ 0 }          /* file_name */
         };
+
+        string_construct(&reader->file_name);
 
         return reader;
 }
@@ -266,6 +268,7 @@ void reader_free(Reader* reader)
         if (reader == NULL) {
                 return;
         }
+        string_destroy(&reader->file_name);
         if (reader->free_fn) {
                 reader->free_fn(reader->reader_data);
         }
@@ -282,7 +285,7 @@ void reader_assign(Reader* reader)
                 reader->reader_data = data;
                 reader->get_record_fn = &libcsv_get_record;
                 reader->free_fn = &libcsv_reader_free;
-                ret = csv_reader_open(data->csv_handle, reader->file_name);
+                ret = csv_reader_open(data->csv_handle, reader->file_name.data);
                 break;
         }
         case READ_MMAPCSV:
@@ -291,7 +294,7 @@ void reader_assign(Reader* reader)
                 reader->reader_data = data;
                 reader->get_record_fn = &mmapcsv_get_record;
                 reader->free_fn = &mmapcsv_free;
-                ret = mmapcsv_open(data, reader->file_name);
+                ret = mmapcsv_open(data, reader->file_name.data);
                 break;
         }
         case READ_SUBQUERY:

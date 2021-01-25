@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-#include <limits.h>
-
 #include "util/vec.h"
 #include "util/pmap.h"
 #include "util/fqlstring.h"
@@ -68,7 +66,7 @@ struct reader {
         void* reader_data;
         read_fn get_record_fn;
         generic_data_fn free_fn;
-        char file_name[PATH_MAX];
+        String file_name;
 };
 typedef struct reader Reader;
 

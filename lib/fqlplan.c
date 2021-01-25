@@ -130,7 +130,10 @@ void _from(Plan* plan, Query* query)
         string_construct(&action_msg);
         Source* src = vec_begin(query->sources);
 
-        string_sprintf(&action_msg, "%s: %s", src->table->reader->file_name, "stream read");
+        string_sprintf(&action_msg,
+                       "%s: %s",
+                       src->table->reader->file_name.data,
+                       "stream read");
 
         Process* from_proc = process_new(action_msg.data, ++plan->source_count);
         from_proc->action = &fql_read;
@@ -171,7 +174,7 @@ void _from(Plan* plan, Query* query)
 
                 string_sprintf(&action_msg,
                                "%s: %s",
-                               src->table->reader->file_name,
+                               src->table->reader->file_name.data,
                                "mmap read");
 
                 /* Root node only will only have one source */
