@@ -2,6 +2,19 @@
 #include "fql.h"
 #include "util/util.h"
 
+enum field_type field_determine_type(enum field_type t0, enum field_type t1)
+{
+        if (t0 == t1) {
+                return t0;
+        } else if (t0 == FIELD_STRING) {
+                return t1;
+        } else if (t1 == FIELD_STRING) {
+                return t0;
+        }
+        return FIELD_FLOAT;
+}
+
+
 int field_to_int(long* ret, union field* field, enum field_type* type)
 {
         switch (*type) {

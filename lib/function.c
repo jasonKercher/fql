@@ -38,25 +38,6 @@ Function* function_new_op(enum expr_operator op)
         return new_func;
 }
 
-enum field_type _determine_type(Function* fn)
-{
-        Column** args = fn->args->data;
-        Column* col0 = args[0];
-        Column* col1 = col0;
-        if (fn->args->size == 2) {
-                col1 = args[1];
-        }
-
-        if (col0->field_type == col1->field_type) {
-                return col0->field_type;
-        } else if (col0->field_type == FIELD_STRING) {
-                return col1->field_type;
-        } else if (col1->field_type == FIELD_STRING) {
-                return col0->field_type;
-        }
-        return FIELD_FLOAT;
-}
-
 int _invalid_type(Function* fn)
 {
         fprintf(stderr, "Invalid type for %s operation\n", fn->name);
@@ -68,117 +49,48 @@ int function_op_resolve(Function* func, enum field_type* type)
         if (func->op == OPERATOR_NONE) {
                 return FQL_GOOD;
         }
-        *type = _determine_type(func);
+
+        Column** args = func->args->data;
+        Column* col0 = args[0];
+        Column* col1 = col0;
+        if (func->args->size == 2) {
+                col1 = args[1];
+        }
+
+        *type = field_determine_type(col0->field_type, col1->field_type);
+
+        func->caller = scalar_matrix[func->op][*type];
+        if (func->caller == NULL) {
+                return _invalid_type(func);
+        }
 
         switch (func->op) {
         case OPERATOR_PLUS:
                 strncpy_(func->name, "PLUS", FUNC_NAME_MAX);
-                switch (*type) {
-                case FIELD_INT:
-                        func->caller = &fql_op_plus_i;
-                        break;
-                case FIELD_FLOAT:
-                        func->caller = &fql_op_plus_f;
-                        break;
-                case FIELD_STRING:
-                        func->caller = &fql_op_plus_s;
-                        break;
-                default:
-                        return _invalid_type(func);
-                }
                 break;
         case OPERATOR_MINUS:
                 strncpy_(func->name, "MINUS", FUNC_NAME_MAX);
-                switch (*type) {
-                case FIELD_INT:
-                        func->caller = &fql_op_minus_i;
-                        break;
-                case FIELD_FLOAT:
-                        func->caller = &fql_op_minus_f;
-                        break;
-                default:
-                        return _invalid_type(func);
-                }
                 break;
         case OPERATOR_MULTIPY:
                 strncpy_(func->name, "MULTIPLY", FUNC_NAME_MAX);
-                switch (*type) {
-                case FIELD_INT:
-                        func->caller = &fql_op_mult_i;
-                        break;
-                case FIELD_FLOAT:
-                        func->caller = &fql_op_mult_f;
-                        break;
-                default:
-                        return _invalid_type(func);
-                }
                 break;
         case OPERATOR_DIVIDE:
                 strncpy_(func->name, "DIVIDE", FUNC_NAME_MAX);
-                switch (*type) {
-                case FIELD_INT:
-                        func->caller = &fql_op_divi_i;
-                        break;
-                case FIELD_FLOAT:
-                        func->caller = &fql_op_divi_f;
-                        break;
-                default:
-                        return _invalid_type(func);
-                }
                 break;
         case OPERATOR_MODULE:
                 strncpy_(func->name, "MODULE", FUNC_NAME_MAX);
-                switch (*type) {
-                case FIELD_INT:
-                        func->caller = &fql_op_mod_i;
-                        break;
-                // TODO: sql server can do this... C cannot
-                //case FIELD_FLOAT:
-                //        func->caller = &fql_op_mod_f;
-                //        break;
-                default:
-                        return _invalid_type(func);
-                }
                 break;
         case OPERATOR_BIT_OR:
                 strncpy_(func->name, "BIT_OR", FUNC_NAME_MAX);
-                switch (*type) {
-                case FIELD_INT:
-                        func->caller = &fql_op_bit_or;
-                        break;
-                default:
-                        return _invalid_type(func);
-                }
                 break;
         case OPERATOR_BIT_AND:
                 strncpy_(func->name, "BIT_AND", FUNC_NAME_MAX);
-                switch (*type) {
-                case FIELD_INT:
-                        func->caller = &fql_op_bit_and;
-                        break;
-                default:
-                        return _invalid_type(func);
-                }
                 break;
         case OPERATOR_BIT_XOR:
                 strncpy_(func->name, "BIT_XOR", FUNC_NAME_MAX);
-                switch (*type) {
-                case FIELD_INT:
-                        func->caller = &fql_op_bit_xor;
-                        break;
-                default:
-                        return _invalid_type(func);
-                }
                 break;
         case OPERATOR_BIT_NOT:
                 strncpy_(func->name, "BIT_NOT", FUNC_NAME_MAX);
-                switch (*type) {
-                case FIELD_INT:
-                        func->caller = &fql_op_bit_not;
-                        break;
-                default:
-                        return _invalid_type(func);
-                }
                 break;
         default:
                 ;
@@ -193,6 +105,7 @@ Function* function_construct(Function* func, const char* func_name, enum field_t
         *func = (Function) {
                  &not_implemented       /* caller */
                 ,vec_new_(Column*)      /* args */
+                ,{ 0 }                  /* ret_buf */
                 ,""                     /* name */
                 ,OPERATOR_NONE          /* op */
                 ,0                      /* arg_min */

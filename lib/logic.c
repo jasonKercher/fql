@@ -1,6 +1,7 @@
 #include "logic.h"
 
 #include "column.h"
+#include "field.h"
 #include "util/util.h"
 #include <string.h>
 
@@ -32,6 +33,8 @@ void logic_free(Logic* logic)
 
 void logic_assign_process(Logic* logic, Process* proc)
 {
+        proc->proc_data = logic;
+
         if (logic->comp_type == COMP_TRUE) {
                 string_cpy(proc->action_msg, "End Logic: TRUE");
                 proc->is_passive = true;
@@ -91,9 +94,11 @@ void logic_add_column(Logic* logic, struct column* col)
 {
         if (logic->col[0] == NULL) {
                 logic->col[0] = col;
-        } else {
-                logic->col[1] = col;
+                return;
         }
+        logic->col[1] = col;
+        logic->data_type = field_determine_type(logic->col[0]->field_type, col->field_type);
+        logic->logic_fn = logic_matrix[logic->comp_type][logic->data_type];
 }
 
 void logic_set_comparison(Logic* logic, const char* op)

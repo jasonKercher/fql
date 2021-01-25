@@ -64,14 +64,20 @@ int fql_logic(Dgraph* proc_graph, Process* proc)
 
         Vec** recs = fifo_get(proc->fifo_in0);
         Logic* logic = proc->proc_data;
-        if (logic->logic_fn(logic, *recs)) {
-                fifo_add(proc->fifo_out1, recs);
+
+        int ret = logic->logic_fn(logic, *recs);
+        if (ret == FQL_FAIL) {
+                return FQL_FAIL;
+        }
+
+        if (ret) {
+                fifo_add(proc->fifo_out1, recs);  /* true */
         } else if (proc->fifo_out0 != NULL) {
-                fifo_add(proc->fifo_out0, recs);
+                fifo_add(proc->fifo_out0, recs);  /* false */
         } else {
                 _recycle_rec(proc_graph, proc->fifo_width);
         }
-        
+
         return 1;
 }
 

@@ -314,24 +314,22 @@ void _make_pipes(Plan* plan)
 
         for (; nodes != vec_end(node_vec); ++nodes) {
                 Process* proc = (*nodes)->data;
-                if ((*nodes)->out[0] == NULL) {
-                        continue;
-                }
-                Process* proc0 = (*nodes)->out[0]->data;
-                proc->fifo_out0 = (proc->is_secondary) ? proc0->fifo_in1 : proc0->fifo_in0;
-                if (proc->fifo_out0 == NULL) {
-                        fprintf (stderr, "fifo missing for `%s'\n", proc0->action_msg->data);
-                        exit(EXIT_FAILURE);
+                if ((*nodes)->out[0] != NULL) {
+                        Process* proc0 = (*nodes)->out[0]->data;
+                        proc->fifo_out0 = (proc->is_secondary) ? proc0->fifo_in1 : proc0->fifo_in0;
+                        if (proc->fifo_out0 == NULL) {
+                                fprintf (stderr, "fifo missing for `%s'\n", proc0->action_msg->data);
+                                exit(EXIT_FAILURE);
+                        }
                 }
 
-                if ((*nodes)->out[1] == NULL) {
-                        continue;
-                }
-                Process* proc1 = (*nodes)->out[1]->data;
-                proc->fifo_out1 = (proc->is_secondary) ? proc1->fifo_in1 : proc1->fifo_in0;
-                if (proc->fifo_out1 == NULL) {
-                        fprintf (stderr, "fifo missing for `%s'\n", proc1->action_msg->data);
-                        exit(EXIT_FAILURE);
+                if ((*nodes)->out[1] != NULL) {
+                        Process* proc1 = (*nodes)->out[1]->data;
+                        proc->fifo_out1 = (proc->is_secondary) ? proc1->fifo_in1 : proc1->fifo_in0;
+                        if (proc->fifo_out1 == NULL) {
+                                fprintf (stderr, "fifo missing for `%s'\n", proc1->action_msg->data);
+                                exit(EXIT_FAILURE);
+                        }
                 }
         }
 

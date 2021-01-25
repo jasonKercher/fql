@@ -9,10 +9,10 @@ extern "C" {
 #define FQL_GOOD 0
 
 enum fql_type {
-       FQL_UNDEFINED,
-       FQL_STRING,
+       FQL_UNDEFINED = -1,
        FQL_INT,
        FQL_FLOAT,
+       FQL_STRING,
 };
 
 struct fql_field {

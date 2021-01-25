@@ -6,11 +6,12 @@
 #include "util/stringview.h"
 
 /** data type **/
+#define FIELD_TYPE_COUNT 3
 enum field_type {
-        FIELD_UNDEFINED,
-        FIELD_STRING,
+        FIELD_UNDEFINED = -1,
         FIELD_INT,
         FIELD_FLOAT,
+        FIELD_STRING,
 };
 
 struct function;
@@ -22,6 +23,7 @@ union field {
         long i;
 };
 
+enum field_type field_determine_type(enum field_type, enum field_type);
 int field_to_int(long*, union field*, enum field_type*);
 int field_to_float(double*, union field*, enum field_type*);
 int field_to_stringview(struct stringview*, union field*, enum field_type*);
