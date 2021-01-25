@@ -70,6 +70,18 @@ void query_free(void* generic_query)
 
 void _add_validation_column(Query* query, Column* col)
 {
+        /* If sources are empty we arrived here by way of
+         * some retarded query like:
+         * select 'hello'
+         * where 1 = 0
+         * There is no need to validate anything here
+         * since columns are either variables or 
+         * constants that will optimize away.
+         */
+        if (vec_empty(query->sources)) {
+                return;
+        }
+
         Source* src = vec_back(query->sources);
         vec_push_back(src->validation_list, &col);
 }
