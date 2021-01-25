@@ -15,7 +15,7 @@ Dnode* dnode_construct(Dnode* node, void* data)
         *node = (Dnode) {
                  data           /* data */
                 ,{NULL, NULL}   /* out */
-                ,false          /* was_visited */
+                ,0              /* visit_count */
                 ,false          /* is_root */
         };
 
@@ -99,6 +99,38 @@ void* dgraph_remove(Dgraph* graph, Dnode** node)
         return data;
 }
 
+Dnode** _guess_root(Dgraph* graph)
+{
+        /* reset */
+        Dnode** it = vec_begin(graph->nodes);
+        for (; it != vec_end(graph->nodes); ++it) {
+                (*it)->visit_count = 0;
+        }
+
+        /* get counts */ 
+        it = vec_begin(graph->nodes);
+        for (; it != vec_end(graph->nodes); ++it) {
+                if ((*it)->out[0] != NULL) {
+                        ++(*it)->out[0]->visit_count;
+                }
+                if ((*it)->out[1] != NULL) {
+                        ++(*it)->out[1]->visit_count;
+                }
+        }
+
+        /* find min */
+        it = vec_begin(graph->nodes);
+        Dnode** min = it++;
+        for (; it != vec_end(graph->nodes); ++it) {
+                if ((*it)->visit_count < (*min)->visit_count) {
+                        min = it;
+                }
+        }
+        (*min)->is_root = true;
+
+        return min;
+}
+
 Vec* dgraph_get_roots(Dgraph* graph)
 {
         if (graph->_roots_good) {
@@ -113,11 +145,9 @@ Vec* dgraph_get_roots(Dgraph* graph)
                 }
         }
 
-        /* If no roots found, use first node */
+        /* If no roots found, try to figure it out */
         if (vec_empty(graph->_roots)) {
-                Dnode** new_root = vec_begin(graph->nodes);
-                (*new_root)->is_root = true;
-                vec_push_back(graph->_roots, new_root);
+                vec_push_back(graph->_roots, _guess_root(graph));
         }
         graph->_roots_good = true;
         return graph->_roots;
@@ -133,14 +163,14 @@ void dgraph_traverse_reset(Dgraph* graph)
         graph->_root_idx = 1;
 
         int i = 0;
-        Dnode** node = vec_begin(graph->nodes);
-        for (; node != vec_end(graph->nodes); ++node) {
-                (*node)->was_visited = false;
+        Dnode** it = vec_begin(graph->nodes);
+        for (; it != vec_end(graph->nodes); ++it) {
+                (*it)->visit_count = 0;
         }
 
         /* Start at first discovered root */
-        node = vec_begin(graph->_roots);
-        fifo_add(graph->_trav, node);
+        it = vec_begin(graph->_roots);
+        fifo_add(graph->_trav, it);
 }
 
 Dnode* dgraph_traverse(Dgraph* graph)
@@ -156,12 +186,12 @@ Dnode* dgraph_traverse(Dgraph* graph)
         }
 
         Dnode** node = fifo_get(graph->_trav);
-        (*node)->was_visited = true;
+        ++(*node)->visit_count;
 
-        if ((*node)->out[0] != NULL && !(*node)->out[0]->was_visited) {
+        if ((*node)->out[0] != NULL && !(*node)->out[0]->visit_count) {
                 fifo_add(graph->_trav, &(*node)->out[0]);
         }
-        if ((*node)->out[1] != NULL && !(*node)->out[1]->was_visited) {
+        if ((*node)->out[1] != NULL && !(*node)->out[1]->visit_count) {
                 fifo_add(graph->_trav, &(*node)->out[1]);
         }
 

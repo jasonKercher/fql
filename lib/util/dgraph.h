@@ -10,7 +10,7 @@
 struct dnode {
         void* data;
         struct dnode* out[2];
-        _Bool was_visited;
+        int visit_count;
         _Bool is_root;
 };
 typedef struct dnode Dnode;

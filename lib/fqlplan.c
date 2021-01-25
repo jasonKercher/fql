@@ -293,11 +293,6 @@ void _clear_passive(Plan* plan)
 
 void _activate_procs(Plan* plan)
 {
-        /* In case we don't have a root process,
-         * this will assign them.
-         */
-        dgraph_get_roots(plan->processes);
-
         Vec* node_vec = plan->processes->nodes;
         Dnode** nodes = vec_begin(node_vec);
 
@@ -306,9 +301,9 @@ void _activate_procs(Plan* plan)
         }
 }
 
-/* Run through processes and link up fifos. Input fifos are
- * owned by the process. Output fifos are just links to other
- * processes' fifos.
+/* Run through processes and link up fifos. Input fifos are owned 
+ * by the process. Output fifos are just links to other processes' 
+ * fifos. This would read better if I called them pipes...
  */
 void _make_pipes(Plan* plan)
 {
@@ -350,7 +345,14 @@ Plan* plan_build(Plan* plan, Query* query)
         _operation(plan, query);
         _limit(plan, query);
 
+        /* In case we don't have root process(es),
+         * this will assign *one*.
+         */
+        //dgraph_get_roots(plan->processes);
         _clear_passive(plan);
+
+        /* Reset root vec after passive removed */
+        dgraph_get_roots(plan->processes);
         _activate_procs(plan);
         _make_pipes(plan);
 
