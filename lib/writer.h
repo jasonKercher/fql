@@ -2,6 +2,7 @@
 #define WRITER_H
 
 #include "util/vec.h"
+#include "util/fqlstring.h"
 #include "util/util.h"
 
 typedef struct csv_writer csv_writer;
@@ -34,7 +35,7 @@ struct writer {
         write_fn write_record_fn;
         generic_data_fn free_fn;
         struct vec* raw_rec;
-        char file_name[PATH_MAX];
+        String file_name;
 };
 typedef struct writer Writer;
 

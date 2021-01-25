@@ -16,8 +16,10 @@ Table* table_construct(Table* table)
         *table = (Table) {
                  reader_new() /* reader */
                 ,schema_new() /* schema */
-                ,""           /* name */
+                ,{ 0 }        /* name */
         };
+
+        string_construct(&table->name);
 
         return table;
 }
@@ -46,24 +48,24 @@ Source* source_new(Table* table,
 }
 
 Source* source_construct(Source* src,
-                    Table* table,
-                    const char* alias,
-                    enum source_type source_type,
-                    enum join_type join_type)
+                         Table* table,
+                         const char* alias,
+                         enum source_type source_type,
+                         enum join_type join_type)
 {
         *src = (Source) {
                  table                  /* table */
                 ,NULL                   /* condition */
                 ,vec_new_(Column*)      /* validation_list */
-                ,""                     /* alias */
+                ,{ 0 }                  /* alias */
                 ,source_type            /* source_type */
                 ,join_type              /* join_type */
         };
 
         if (alias[0] == '\0') {
-                strncpy_(src->alias, table->name, TABLE_NAME_MAX);
+                string_construct_from_string(&src->alias, &table->name);
         } else {
-                strncpy_(src->alias, alias, TABLE_NAME_MAX);
+                string_construct_from_char_ptr(&src->alias, alias);
         }
 
         return src;
@@ -81,6 +83,7 @@ void source_destroy(Source* source)
         for (; it != vec_end(source->validation_list); ++it) {
                 column_free(*it);
         }
+        string_destroy(&source->alias);
         vec_free(source->validation_list);
         table_free(source->table);
 }

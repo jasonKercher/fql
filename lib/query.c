@@ -188,7 +188,7 @@ void query_add_source(Query* query,
         char* table_name = stack_pop(source_stack);
         if (table_name != NULL) {
                 type = SOURCE_TABLE;
-                strncpy_(new_table->name, table_name, TABLE_NAME_MAX);
+                string_cpy(&new_table->name, table_name);
                 free_(table_name);
 
                 char* schema_name = stack_pop(source_stack);
@@ -212,7 +212,7 @@ void query_add_source(Query* query,
 void query_apply_table_alias(Query* query, const char* alias)
 {
         Source* source = vec_back(query->sources);
-        strncpy_(source->alias, alias, TABLE_NAME_MAX);
+        string_cpy(&source->alias, alias);
 }
 
 void _add_function(Query* query, Function* func, enum field_type type)

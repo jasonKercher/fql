@@ -54,24 +54,25 @@ void schema_add_column(Schema* schema, Column* col)
 void schema_apply_column_alias(Schema* schema, const char* alias)
 {
         Column* col = vec_back(schema->columns);
-        strncpy_(col->alias, alias, COLUMN_NAME_MAX);
+        string_cpy(&col->alias, alias);
 }
 
 
 int schema_resolve_file(Table* table)
 {
-        /* TODO: could overflow here
-         * Usage of PATH_MAX here is kind of silly,
-         * but I'm too lazy to allocate these correctly.
-         */
-        char table_name_dir[PATH_MAX] = "";
-        char table_name_base[PATH_MAX] = "";
+        String table_name_base;
+        String table_name_dir;
+        String file_noext;
 
-        strcpy(table_name_base, table->name);
-        strcpy(table_name_dir, table->name);
+        string_construct(&table_name_base);
+        string_construct(&table_name_dir);
+        string_construct(&file_noext);
 
-        char* dir = dirname(table_name_dir);
-        char* base = basename(table_name_base);
+        string_copy(&table_name_base, &table->name);
+        string_copy(&table_name_dir, &table->name);
+
+        char* dir = dirname(table_name_dir.data);
+        char* base = basename(table_name_base.data);
 
         Queue* files = dir_list_files(dir);
         Queue* node = files;
@@ -81,7 +82,7 @@ int schema_resolve_file(Table* table)
         for (; node; node = node->next) {
                 if (string_eq(node->data, base)) {
                         ++matches;
-                        string_sprintf(&table->reader->file_name, 
+                        string_sprintf(&table->reader->file_name,
                                        "%s/%s", dir, node->data);
                 }
         }
@@ -94,32 +95,31 @@ int schema_resolve_file(Table* table)
         for (node = files; node; node = node->next) {
                 if (istring_eq(node->data, base)) {
                         ++matches;
-                        string_sprintf(&table->reader->file_name, 
+                        string_sprintf(&table->reader->file_name,
                                        "%s/%s", dir, node->data);
                 }
         }
 
         if (matches > 1) {
-                fprintf(stderr, "%s: ambiguous file name\n", table->name);
+                fprintf(stderr, "%s: ambiguous file name\n", table->name.data);
                 return FQL_FAIL;
         } else if (matches) {
                 goto success_return;
         }
 
-        char file_noext[PATH_MAX] = "";
-
         /* Match file without extension */
         for (node = files; node; node = node->next) {
-                getnoext(file_noext, node->data);
-                if (string_eq(file_noext, base)) {
+                string_resize(&file_noext, strlen(node->data));
+                getnoext(file_noext.data, node->data);
+                if (string_eq(file_noext.data, base)) {
                         ++matches;
-                        string_sprintf(&table->reader->file_name, 
+                        string_sprintf(&table->reader->file_name,
                                        "%s/%s", dir, node->data);
                 }
         }
 
         if (matches > 1) {
-                fprintf(stderr, "%s: ambiguous file name\n", table->name);
+                fprintf(stderr, "%s: ambiguous file name\n", table->name.data);
                 return FQL_FAIL;
         } else if (matches) {
                 goto success_return;
@@ -127,26 +127,30 @@ int schema_resolve_file(Table* table)
 
         /* Match file without extension ignoring case */
         for (node = files; node; node = node->next) {
-                getnoext(file_noext, node->data);
-                if (istring_eq(file_noext, base)) {
+                string_resize(&file_noext, strlen(node->data));
+                getnoext(file_noext.data, node->data);
+                if (istring_eq(file_noext.data, base)) {
                         ++matches;
-                        string_sprintf(&table->reader->file_name, 
+                        string_sprintf(&table->reader->file_name,
                                        "%s/%s", dir, node->data);
                 }
         }
 
         if (matches > 1) {
-                fprintf(stderr, "%s: ambiguous file name\n", table->name);
+                fprintf(stderr, "%s: ambiguous file name\n", table->name.data);
                 return FQL_FAIL;
         } else if (matches) {
                 goto success_return;
         }
 
-        fprintf(stderr, "%s: unable to find matching file\n", table->name);
+        fprintf(stderr, "%s: unable to find matching file\n", table->name.data);
         return FQL_FAIL;
 
 success_return:
         queue_free_data(&files);
+        string_destroy(&table_name_base);
+        string_destroy(&table_name_dir);
+        string_destroy(&file_noext);
         return FQL_GOOD;
 }
 
@@ -255,19 +259,19 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
 
                 for (; j <= limit; ++j) {
                         Source* search_src = vec_at(sources, j);
-                        if ((*it)->table_name[0] == '\0' ||
-                            istring_eq((*it)->table_name, search_src->alias)) {
+                        if (string_empty(&(*it)->table_name) ||
+                            istring_eq((*it)->table_name.data, search_src->alias.data)) {
                                 matches += column_try_assign_source(*it, search_src, j);
                         }
                 }
 
                 if (matches > 1) {
-                        fprintf(stderr, "%s: ambiguous column\n", (*it)->alias);
+                        fprintf(stderr, "%s: ambiguous column\n", (*it)->alias.data);
                         return FQL_FAIL;
                 }
 
                 if (matches == 0) {
-                        fprintf(stderr, "%s: cannot find column\n", (*it)->alias);
+                        fprintf(stderr, "%s: cannot find column\n", (*it)->alias.data);
                         return FQL_FAIL;
                 }
         }

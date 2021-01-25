@@ -70,8 +70,10 @@ Writer* writer_construct(Writer* writer)
                 ,NULL                   /* write_record_fn */
                 ,NULL                   /* free_fn */
                 ,vec_new_(String)       /* raw_rec */
-                ,""                     /* file_name */
+                ,{ 0 }                  /* file_name */
         };
+
+        string_construct(&writer->file_name);
 
         /* TODO: This should not be here. This should
          *       be dependant on output schema
@@ -90,6 +92,7 @@ void writer_free(Writer* writer)
         if (writer->free_fn) {
                 writer->free_fn(writer->writer_data);
         }
+        string_destroy(&writer->file_name);
         String* s = vec_begin(writer->raw_rec);
         for (; s != vec_end(writer->raw_rec); ++s) {
                 string_destroy(s);

@@ -18,26 +18,25 @@ Column* column_construct(Column* col, enum expr_type expr, void* data, const cha
                  expr                   /* expr */
                 ,NULL                   /* table */
                 ,NULL                   /* data_source */
-                ,""                     /* alias */
-                ,""                     /* table_name */
+                ,{ 0 }                  /* alias */
+                ,{ 0 }                  /* table_name */
                 ,FIELD_UNDEFINED        /* field_type */
                 ,NULL                   /* field */
                 ,0                      /* location */
                 ,0                      /* width */
         };
 
-        strncpy_(col->table_name, table_name, TABLE_NAME_MAX);
+        string_construct_from_char_ptr(&col->table_name, table_name);
 
         switch (expr) {
         case EXPR_COLUMN_NAME:
-                strncpy_(col->alias, ((String*) data)->data, COLUMN_NAME_MAX);
+                string_construct_from_string(&col->alias, data);
                 col->field.s = data;
                 break;
         case EXPR_FUNCTION:
                 col->field.fn = data;
-                break;
         default:
-                ;
+                string_construct(&col->alias);
         }
 
         return col;
@@ -52,11 +51,12 @@ void column_free(void* generic_col)
                         col->field_type == FIELD_STRING)
            ) {
                 string_free(col->field.s);
-        }
-        else if (col->expr == EXPR_FUNCTION) {
+        } else if (col->expr == EXPR_FUNCTION) {
                 function_free(col->field.fn);
         }
 
+        string_destroy(&col->alias);
+        string_destroy(&col->table_name);
         free_(col);
 }
 
@@ -128,7 +128,7 @@ void column_cat_description(Column* col, String* msg)
 
 int column_try_assign_source(Column* col, Source* src, int idx)
 {
-        col->data_source = hmap_get(src->table->schema->col_map, col->alias);
+        col->data_source = hmap_get(src->table->schema->col_map, col->alias.data);
         if (col->data_source) {
                 col->src_idx = idx;
                 return 1;

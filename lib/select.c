@@ -84,8 +84,8 @@ void _expand_asterisks(Query* query)
                 Source* srcs = vec_begin(query->sources);
                 unsigned j = 0;
                 for (; j < query->sources->size; ++j) {
-                        if (cols[i]->table_name[0] == '\0' ||
-                            istring_eq(srcs[j].alias, cols[i]->table_name)) {
+                        if (string_empty(&cols[i]->table_name) ||
+                            istring_eq(srcs[j].alias.data, cols[i]->table_name.data)) {
                                 vec_remove(col_vec, i);
                                 _insert_all_columns(col_vec, &srcs[j], j, &i);
                         }

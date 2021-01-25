@@ -6,6 +6,9 @@
 
 String* string_new()
 {
+        /* don't call string_construct since
+         * vec_new will call vec_construct
+         */
         String* new_string = vec_new_(char);
         char* s = new_string->data;
         s[0] = '\0';
@@ -23,7 +26,16 @@ String* string_construct(String* string)
 
 String* string_from_string(String* src)
 {
-        return string_from_char_ptr(src->data);
+        String* new_string = string_new();
+        string_copy(new_string, src);
+        return new_string;
+}
+
+String* string_construct_from_string(String* dest, String* src)
+{
+        string_construct(dest);
+        string_copy(dest, src);
+        return dest;
 }
 
 String* string_from_stringview(struct stringview* sv)
@@ -33,18 +45,18 @@ String* string_from_stringview(struct stringview* sv)
         return new_string;
 }
 
-void string_copy_from_stringview(String* s, struct stringview* sv)
-{
-        vec_resize(s, sv->len);
-        memcpy(s->data, sv->data, sv->len);
-        ((char*) s->data)[s->size] = '\0';
-}
-
 String* string_from_char_ptr(const char* src)
 {
         String* new_string = vec_new_(char);
         string_cpy(new_string, src);
         return new_string;
+}
+
+String* string_construct_from_char_ptr(String* s, const char* cp)
+{
+        string_construct(s);
+        string_cpy(s, cp);
+        return s;
 }
 
 String* string_take(char* src)
@@ -71,6 +83,13 @@ String* string_construct_take(String* s, char* src)
         };
 
         return s;
+}
+
+void string_copy_from_stringview(String* s, struct stringview* sv)
+{
+        vec_resize(s, sv->len);
+        memcpy(s->data, sv->data, sv->len);
+        ((char*) s->data)[s->size] = '\0';
 }
 
 void string_append_stringview(String* dest, struct stringview* sv)
@@ -117,3 +136,14 @@ void string_sprintf(String* s, const char* fmt, ...)
         vsnprintf(s->data, len+1, fmt, args2);
         va_end(args2);
 }
+
+void string_copy(String* dest, String* src)
+{
+        vec_resize(dest, src->size);
+        memcpy(dest->data, src->data, src->size);
+        ((char*) dest->data)[dest->size] = '\0';
+}
+
+
+
+

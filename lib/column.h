@@ -24,8 +24,8 @@ struct column {
         enum expr_type expr;
         struct table* table;
         struct column* data_source;
-        char alias[COLUMN_NAME_MAX];
-        char table_name[TABLE_NAME_MAX];
+        String alias;
+        String table_name;
         enum field_type field_type;
         union field field;
         unsigned location;

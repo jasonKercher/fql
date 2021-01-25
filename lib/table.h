@@ -17,7 +17,7 @@ extern "C" {
 struct table {
         struct reader* reader;
         struct schema* schema;
-        char name[TABLE_NAME_MAX];
+        String name;
 };
 typedef struct table Table;
 
@@ -45,7 +45,7 @@ struct source {
         struct table* table;
         struct logic_tree* condition;
         struct vec* validation_list;
-        char alias[TABLE_NAME_MAX];
+        String alias;
         enum source_type source_type;
         enum join_type join_type;
 };
