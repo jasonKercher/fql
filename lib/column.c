@@ -20,18 +20,21 @@ Column* column_construct(Column* col, enum expr_type expr, void* data, const cha
                 ,NULL                   /* data_source */
                 ,{ 0 }                  /* alias */
                 ,{ 0 }                  /* table_name */
+                ,{ 0 }                  /* buf */
                 ,FIELD_UNDEFINED        /* field_type */
                 ,NULL                   /* field */
                 ,0                      /* location */
                 ,0                      /* width */
         };
 
+        string_construct(&col->buf);
         string_construct_from_char_ptr(&col->table_name, table_name);
 
         switch (expr) {
         case EXPR_COLUMN_NAME:
-                string_construct_from_string(&col->alias, data);
-                col->field.s = data;
+                string_construct_from_char_ptr(&col->alias, data);
+                //string_copy(&col->buf, &col->alias);
+                //col->field.s = data;
                 break;
         case EXPR_FUNCTION:
                 col->field.fn = data;
@@ -46,17 +49,19 @@ void column_free(void* generic_col)
 {
         Column* col = generic_col;
 
-        if (col->expr == EXPR_COLUMN_NAME || (
-                        col->expr == EXPR_CONST &&
-                        col->field_type == FIELD_STRING)
-           ) {
-                string_free(col->field.s);
-        } else if (col->expr == EXPR_FUNCTION) {
+        //if (col->expr == EXPR_COLUMN_NAME || (
+        //                col->expr == EXPR_CONST &&
+        //                col->field_type == FIELD_STRING)
+        //   ) {
+        //        string_free(col->field.s);
+        //} else if (col->expr == EXPR_FUNCTION) {
+        if (col->expr == EXPR_FUNCTION) {
                 function_free(col->field.fn);
         }
 
         string_destroy(&col->alias);
         string_destroy(&col->table_name);
+        string_destroy(&col->buf);
         free_(col);
 }
 
@@ -64,7 +69,7 @@ void column_cat_description(Column* col, String* msg)
 {
         switch (col->expr) {
         case EXPR_COLUMN_NAME:
-                string_append(msg, col->field.s);
+                string_append(msg, &col->alias);
                 break;
         case EXPR_FUNCTION:
         {
@@ -148,16 +153,16 @@ int column_get_int(long* ret, Column* col, Vec* recs)
         case EXPR_COLUMN_NAME:
         {
                 /* this is a rather unfortunate necessity */
-                String s;
-                string_construct(&s);
+                //String s;
+                //string_construct(&s);
                 Vec** rec = vec_at(recs, col->src_idx);
                 StringView* sv = vec_at(*rec, col->data_source->location);
-                string_copy_from_stringview(&s, sv);
-                if (str2long(ret, s.data)) {
-                        string_destroy(&s);
+                string_copy_from_stringview(&col->buf, sv);
+                if (str2long(ret, col->buf.data)) {
+                        //string_destroy(&s);
                         return FQL_FAIL;
                 }
-                string_destroy(&s);
+                //string_destroy(&s);
                 return FQL_GOOD;
         }
         case EXPR_FUNCTION:
@@ -165,7 +170,8 @@ int column_get_int(long* ret, Column* col, Vec* recs)
                 Function* func = col->field.fn;
                 union field new_field;
                 if (col->field_type == FIELD_STRING) {
-                        new_field.s = &func->ret_buf;
+                        //new_field.s = &func->ret_buf;
+                        new_field.s = &col->buf;
                         string_clear(new_field.s);
                 }
                 func->caller(func, &new_field, recs);
@@ -193,16 +199,16 @@ int column_get_float(double* ret, Column* col, Vec* recs)
         case EXPR_COLUMN_NAME:
         {
                 /* this is a rather unfortunate necessity */
-                String s;
-                string_construct(&s);
+                //String s;
+                //string_construct(&s);
                 Vec** rec = vec_at(recs, col->src_idx);
                 StringView* sv = vec_at(*rec, col->data_source->location);
-                string_copy_from_stringview(&s, sv);
-                if (str2double(ret, s.data)) {
-                        string_destroy(&s);
+                string_copy_from_stringview(&col->buf, sv);
+                if (str2double(ret, col->buf.data)) {
+                        //string_destroy(&s);
                         return FQL_FAIL;
                 }
-                string_destroy(&s);
+                //string_destroy(&s);
                 return FQL_GOOD;
         }
         case EXPR_FUNCTION:
@@ -210,7 +216,8 @@ int column_get_float(double* ret, Column* col, Vec* recs)
                 Function* func = col->field.fn;
                 union field new_field;
                 if (col->field_type == FIELD_STRING) {
-                        new_field.s = &func->ret_buf;
+                        //new_field.s = &func->ret_buf;
+                        new_field.s = &col->buf;
                         string_clear(new_field.s);
                 }
                 func->caller(func, &new_field, recs);
@@ -247,7 +254,8 @@ int column_get_stringview(StringView* ret, Column* col, Vec* recs)
                 Function* func = col->field.fn;
                 union field new_field;
                 if (col->field_type == FIELD_STRING) {
-                        new_field.s = &func->ret_buf;
+                        //new_field.s = &func->ret_buf;
+                        new_field.s = &col->buf;
                         string_clear(new_field.s);
                 }
                 func->caller(func, &new_field, recs);

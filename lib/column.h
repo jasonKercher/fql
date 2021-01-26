@@ -26,6 +26,7 @@ struct column {
         struct column* data_source;
         String alias;
         String table_name;
+        String buf;
         enum field_type field_type;
         union field field;
         unsigned location;

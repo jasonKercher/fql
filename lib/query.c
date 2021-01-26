@@ -119,8 +119,7 @@ int _distribute_column(Query* query, Column* col)
 
 void query_add_column(Query* query, char* col_name, const char* table_id)
 {
-        String* col_name_str = string_take(col_name);
-        Column* col = column_new(EXPR_COLUMN_NAME, col_name_str, table_id);
+        Column* col = column_new(EXPR_COLUMN_NAME, col_name, table_id);
         if (_distribute_column(query, col)) {
                 fprintf(stderr, "Unhandled COLUMN_NAME: %s\n", col_name);
                 free_(col_name);

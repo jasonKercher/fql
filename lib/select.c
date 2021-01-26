@@ -57,8 +57,8 @@ int _insert_all_columns(Vec* col_vec, Source* src, unsigned src_idx, unsigned* c
 
         Column** it = vec_begin(src_col_vec);
         for (; it != vec_end(src_col_vec); ++it) {
-                String* col_name = string_from_string((*it)->field.s);
-                Column* new_col = column_new(EXPR_COLUMN_NAME, col_name, "");
+                //String* col_name = string_from_string(&(*it)->alias);
+                Column* new_col = column_new(EXPR_COLUMN_NAME, &(*it)->alias.data, "");
                 new_col->data_source = *it;
                 new_col->src_idx = src_idx;
                 new_col->field_type = (*it)->field_type;

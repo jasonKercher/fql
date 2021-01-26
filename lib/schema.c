@@ -162,8 +162,10 @@ void schema_assign_header(Table* table, Vec* rec)
 
         StringView* fields = rec->data;
         for (; i < rec->size; ++i) {
-                String* column_name = string_from_stringview(&fields[i]);
-                Column* new_col = column_new(EXPR_COLUMN_NAME, column_name, "");
+                String col_str;
+                /* no need to destroy this. column_new takes ownership */
+                string_construct_from_stringview(&col_str, &fields[i]);
+                Column* new_col = column_new(EXPR_COLUMN_NAME, col_str.data, "");
                 schema_add_column(table->schema, new_col);
 
                 new_col->location = i;
@@ -171,7 +173,7 @@ void schema_assign_header(Table* table, Vec* rec)
                 new_col->field_type = FIELD_STRING;
 
                 /* add to hash map for easy searching */
-                hmap_set(table->schema->col_map, column_name->data, new_col);
+                hmap_set(table->schema->col_map, col_str.data, new_col);
         }
 }
 
@@ -230,7 +232,9 @@ void _evaluate_if_const(Column* col)
 
         union field new_field;
         if (col->field_type == FIELD_STRING) {
-                new_field.s = string_new();
+                //new_field.s = &func->ret_buf;
+                new_field.s = &col->buf;
+                string_clear(new_field.s);
         }
         func->caller(func, &new_field, NULL);
 

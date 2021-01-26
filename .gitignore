@@ -1,3 +1,5 @@
+core*
+
 fql
 .gdb_history
 .clangd/
@@ -6,6 +8,9 @@ fql
 
 # temp files
 *.temp
+
+# vim swap file
+*.swp
 
 # doc files
 Doxyfile

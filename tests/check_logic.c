@@ -135,18 +135,26 @@ START_TEST(test_logic_const)
 }
 END_TEST
 
+START_TEST(test_logic_function)
+{
+        assert_select_1(fql_make_plans(fql, "select 1 where left('hello', 2) = 'he    '"));
+        assert_select_1(fql_make_plans(fql, "select 1 where 1000 + 233 < right('hi1234', 4)"));
+        assert_nothing( fql_make_plans(fql, "select 1 where 100 * -1 > 0 / 1000"));
+}
 
-Suite* fql_read_suite(void)
+Suite* fql_logic_suite(void)
 {
         Suite* s;
-        s = suite_create("read");
+        s = suite_create("logic");
 
-        TCase* tc_read = tcase_create("read");
-        tcase_add_checked_fixture(tc_read, fql_setup, fql_teardown);
+        TCase* tc_logic = tcase_create("logic");
+        tcase_add_checked_fixture(tc_logic, fql_setup, fql_teardown);
 
-        tcase_add_test(tc_read, test_logic_const);
+        tcase_add_test(tc_logic, test_logic_const);
+        tcase_add_test(tc_logic, test_logic_function);
+        //tcase_add_test(tc_logic, test_logic_on_read);
 
-        suite_add_tcase(s, tc_read);
+        suite_add_tcase(s, tc_logic);
 
         return s;
 }
@@ -154,13 +162,13 @@ Suite* fql_read_suite(void)
 int main(void)
 {
         int number_failed;
-        Suite* read_suite = fql_read_suite();
-        SRunner* read_runner = srunner_create(read_suite);
-        srunner_set_fork_status (read_runner, CK_NOFORK);
+        Suite* logic_suite = fql_logic_suite();
+        SRunner* logic_runner = srunner_create(logic_suite);
+        srunner_set_fork_status (logic_runner, CK_NOFORK);
 
-        srunner_run_all(read_runner, CK_VERBOSE);
-        number_failed = srunner_ntests_failed(read_runner);
-        srunner_free(read_runner);
+        srunner_run_all(logic_runner, CK_VERBOSE);
+        number_failed = srunner_ntests_failed(logic_runner);
+        srunner_free(logic_runner);
 
         return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

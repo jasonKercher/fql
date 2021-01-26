@@ -26,14 +26,14 @@ Function* function_new_op(enum expr_operator op)
         *new_func = (Function) {
                  &not_implemented       /* caller */
                 ,vec_new_(Column*)      /* args */
-                ,{ 0 }                  /* ret_buf */
+                //,{ 0 }                  /* ret_buf */
                 ,""                     /* name */
                 ,op                     /* operator */
                 ,2                      /* arg_min */
                 ,2                      /* arg_max */
         };
 
-        string_construct(&new_func->ret_buf);
+        //string_construct(&new_func->ret_buf);
 
         return new_func;
 }
@@ -105,7 +105,7 @@ Function* function_construct(Function* func, const char* func_name, enum field_t
         *func = (Function) {
                  &not_implemented       /* caller */
                 ,vec_new_(Column*)      /* args */
-                ,{ 0 }                  /* ret_buf */
+                //,{ 0 }                  /* ret_buf */
                 ,""                     /* name */
                 ,OPERATOR_NONE          /* op */
                 ,0                      /* arg_min */
@@ -113,7 +113,7 @@ Function* function_construct(Function* func, const char* func_name, enum field_t
         };
 
         strncpy_(func->name, func_name, FUNC_NAME_MAX);
-        string_construct(&func->ret_buf);
+        //string_construct(&func->ret_buf);
 
         func->arg_min = 0;
         func->arg_max = 0;
@@ -209,7 +209,7 @@ void function_free(Function* func)
                 column_free(*it);
         }
         vec_free(func->args);
-        string_destroy(&func->ret_buf);
+        //string_destroy(&func->ret_buf);
         free_(func);
 }
 

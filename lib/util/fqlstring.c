@@ -45,6 +45,13 @@ String* string_from_stringview(struct stringview* sv)
         return new_string;
 }
 
+String* string_construct_from_stringview(String* s, struct stringview* sv)
+{
+        string_construct(s); 
+        string_copy_from_stringview(s, sv);
+        return s;
+}
+
 String* string_from_char_ptr(const char* src)
 {
         String* new_string = vec_new_(char);

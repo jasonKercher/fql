@@ -218,6 +218,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
                 query_add_column(_query, token, _table_name);
                 /* consume table designation */
                 _table_name[0] = '\0';
+                free_(token);
                 break;
         case TOK_COLUMN_ALIAS:
                 select_apply_column_alias((struct select*)_query->op, token);

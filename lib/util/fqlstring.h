@@ -27,6 +27,7 @@ String* string_construct_from_string(String*, String*);
 String* string_from_char_ptr(const char*);
 String* string_construct_from_char_ptr(String*, const char*);
 String* string_from_stringview(struct stringview*);
+String* string_construct_from_stringview(String*, struct stringview*);
 String* string_take(char*);
 String* string_construct_take(String*, char*);
 
