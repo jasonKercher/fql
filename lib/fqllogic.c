@@ -51,8 +51,8 @@ int _fql_stringview_compare(StringView* sv0, StringView* sv1)
         const unsigned char *s1 = (unsigned char*) sv1->data;
 
         int ret = 0;
-       
-        /* I'm going to neglect '\0'. What could go wrong? */ 
+
+        /* I'm going to neglect '\0'. What could go wrong? */
         int i = 0;
         for (; ret == 0 && i < short_sv->len; ++i) {
                 ret = tolower (s0[i]) - tolower (s1[i]);
@@ -134,7 +134,7 @@ int fql_logic_gt_s(Logic* logic, Vec* recs)
 {
         StringView sv0, sv1;
         get_stringviews(sv0, sv1);
-        return (_fql_stringview_compare(&sv0, &sv1) < 0);
+        return (_fql_stringview_compare(&sv0, &sv1) > 0);
 }
 
 int fql_logic_ge_i(Logic* logic, Vec* recs)
@@ -157,7 +157,7 @@ int fql_logic_ge_s(Logic* logic, Vec* recs)
 {
         StringView sv0, sv1;
         get_stringviews(sv0, sv1);
-        return (_fql_stringview_compare(&sv0, &sv1) <= 0);
+        return (_fql_stringview_compare(&sv0, &sv1) >= 0);
 }
 
 int fql_logic_lt_i(Logic* logic, Vec* recs)
@@ -180,7 +180,7 @@ int fql_logic_lt_s(Logic* logic, Vec* recs)
 {
         StringView sv0, sv1;
         get_stringviews(sv0, sv1);
-        return (_fql_stringview_compare(&sv0, &sv1) > 0);
+        return (_fql_stringview_compare(&sv0, &sv1) < 0);
 }
 
 int fql_logic_le_i(Logic* logic, Vec* recs)
@@ -203,7 +203,7 @@ int fql_logic_le_s(Logic* logic, Vec* recs)
 {
         StringView sv0, sv1;
         get_stringviews(sv0, sv1);
-        return (_fql_stringview_compare(&sv0, &sv1) >= 0);
+        return (_fql_stringview_compare(&sv0, &sv1) <= 0);
 }
 
 int fql_logic_like(Logic* logic, Vec* recs)

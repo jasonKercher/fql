@@ -87,8 +87,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-TESTS = check_constants$(EXEEXT) check_read$(EXEEXT)
-check_PROGRAMS = check_constants$(EXEEXT) check_read$(EXEEXT)
+TESTS = check_constants$(EXEEXT) check_read$(EXEEXT) \
+	check_logic$(EXEEXT)
+check_PROGRAMS = check_constants$(EXEEXT) check_read$(EXEEXT) \
+	check_logic$(EXEEXT)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -114,6 +116,13 @@ check_constants_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(check_constants_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
+am_check_logic_OBJECTS = check_logic-check_common.$(OBJEXT) \
+	check_logic-check_logic.$(OBJEXT)
+check_logic_OBJECTS = $(am_check_logic_OBJECTS)
+check_logic_DEPENDENCIES = $(top_builddir)/lib/libfql.la
+check_logic_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_logic_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_check_read_OBJECTS = check_read-check_common.$(OBJEXT) \
 	check_read-check_read.$(OBJEXT)
 check_read_OBJECTS = $(am_check_read_OBJECTS)
@@ -138,6 +147,8 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/check_constants-check_common.Po \
 	./$(DEPDIR)/check_constants-check_constants.Po \
+	./$(DEPDIR)/check_logic-check_common.Po \
+	./$(DEPDIR)/check_logic-check_logic.Po \
 	./$(DEPDIR)/check_read-check_common.Po \
 	./$(DEPDIR)/check_read-check_read.Po
 am__mv = mv -f
@@ -159,8 +170,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(check_constants_SOURCES) $(check_read_SOURCES)
-DIST_SOURCES = $(check_constants_SOURCES) $(check_read_SOURCES)
+SOURCES = $(check_constants_SOURCES) $(check_logic_SOURCES) \
+	$(check_read_SOURCES)
+DIST_SOURCES = $(check_constants_SOURCES) $(check_logic_SOURCES) \
+	$(check_read_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -531,6 +544,12 @@ check_read_SOURCES = $(top_builddir)/lib/include/fql.h \
 
 check_read_CFLAGS = @CHECK_CFLAGS@
 check_read_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+check_logic_SOURCES = $(top_builddir)/lib/include/fql.h \
+			check_common.h check_common.c \
+			check_logic.c
+
+check_logic_CFLAGS = @CHECK_CFLAGS@
+check_logic_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 all: all-am
 
 .SUFFIXES:
@@ -578,6 +597,10 @@ check_constants$(EXEEXT): $(check_constants_OBJECTS) $(check_constants_DEPENDENC
 	@rm -f check_constants$(EXEEXT)
 	$(AM_V_CCLD)$(check_constants_LINK) $(check_constants_OBJECTS) $(check_constants_LDADD) $(LIBS)
 
+check_logic$(EXEEXT): $(check_logic_OBJECTS) $(check_logic_DEPENDENCIES) $(EXTRA_check_logic_DEPENDENCIES) 
+	@rm -f check_logic$(EXEEXT)
+	$(AM_V_CCLD)$(check_logic_LINK) $(check_logic_OBJECTS) $(check_logic_LDADD) $(LIBS)
+
 check_read$(EXEEXT): $(check_read_OBJECTS) $(check_read_DEPENDENCIES) $(EXTRA_check_read_DEPENDENCIES) 
 	@rm -f check_read$(EXEEXT)
 	$(AM_V_CCLD)$(check_read_LINK) $(check_read_OBJECTS) $(check_read_LDADD) $(LIBS)
@@ -590,6 +613,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_constants-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_constants-check_constants.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_logic-check_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_logic-check_logic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_read-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_read-check_read.Po@am__quote@ # am--include-marker
 
@@ -647,6 +672,34 @@ check_constants-check_constants.obj: check_constants.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_constants.c' object='check_constants-check_constants.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_constants_CFLAGS) $(CFLAGS) -c -o check_constants-check_constants.obj `if test -f 'check_constants.c'; then $(CYGPATH_W) 'check_constants.c'; else $(CYGPATH_W) '$(srcdir)/check_constants.c'; fi`
+
+check_logic-check_common.o: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_logic_CFLAGS) $(CFLAGS) -MT check_logic-check_common.o -MD -MP -MF $(DEPDIR)/check_logic-check_common.Tpo -c -o check_logic-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_logic-check_common.Tpo $(DEPDIR)/check_logic-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_logic-check_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_logic_CFLAGS) $(CFLAGS) -c -o check_logic-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+
+check_logic-check_common.obj: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_logic_CFLAGS) $(CFLAGS) -MT check_logic-check_common.obj -MD -MP -MF $(DEPDIR)/check_logic-check_common.Tpo -c -o check_logic-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_logic-check_common.Tpo $(DEPDIR)/check_logic-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_logic-check_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_logic_CFLAGS) $(CFLAGS) -c -o check_logic-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+
+check_logic-check_logic.o: check_logic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_logic_CFLAGS) $(CFLAGS) -MT check_logic-check_logic.o -MD -MP -MF $(DEPDIR)/check_logic-check_logic.Tpo -c -o check_logic-check_logic.o `test -f 'check_logic.c' || echo '$(srcdir)/'`check_logic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_logic-check_logic.Tpo $(DEPDIR)/check_logic-check_logic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_logic.c' object='check_logic-check_logic.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_logic_CFLAGS) $(CFLAGS) -c -o check_logic-check_logic.o `test -f 'check_logic.c' || echo '$(srcdir)/'`check_logic.c
+
+check_logic-check_logic.obj: check_logic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_logic_CFLAGS) $(CFLAGS) -MT check_logic-check_logic.obj -MD -MP -MF $(DEPDIR)/check_logic-check_logic.Tpo -c -o check_logic-check_logic.obj `if test -f 'check_logic.c'; then $(CYGPATH_W) 'check_logic.c'; else $(CYGPATH_W) '$(srcdir)/check_logic.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_logic-check_logic.Tpo $(DEPDIR)/check_logic-check_logic.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_logic.c' object='check_logic-check_logic.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_logic_CFLAGS) $(CFLAGS) -c -o check_logic-check_logic.obj `if test -f 'check_logic.c'; then $(CYGPATH_W) 'check_logic.c'; else $(CYGPATH_W) '$(srcdir)/check_logic.c'; fi`
 
 check_read-check_common.o: check_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_read_CFLAGS) $(CFLAGS) -MT check_read-check_common.o -MD -MP -MF $(DEPDIR)/check_read-check_common.Tpo -c -o check_read-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
@@ -889,6 +942,13 @@ check_read.log: check_read$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+check_logic.log: check_logic$(EXEEXT)
+	@p='check_logic$(EXEEXT)'; \
+	b='check_logic'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .test.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -984,6 +1044,8 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/check_constants-check_common.Po
 	-rm -f ./$(DEPDIR)/check_constants-check_constants.Po
+	-rm -f ./$(DEPDIR)/check_logic-check_common.Po
+	-rm -f ./$(DEPDIR)/check_logic-check_logic.Po
 	-rm -f ./$(DEPDIR)/check_read-check_common.Po
 	-rm -f ./$(DEPDIR)/check_read-check_read.Po
 	-rm -f Makefile
@@ -1033,6 +1095,8 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/check_constants-check_common.Po
 	-rm -f ./$(DEPDIR)/check_constants-check_constants.Po
+	-rm -f ./$(DEPDIR)/check_logic-check_common.Po
+	-rm -f ./$(DEPDIR)/check_logic-check_logic.Po
 	-rm -f ./$(DEPDIR)/check_read-check_common.Po
 	-rm -f ./$(DEPDIR)/check_read-check_read.Po
 	-rm -f Makefile
