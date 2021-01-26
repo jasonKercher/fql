@@ -84,6 +84,48 @@ START_TEST(test_read_t1)
 }
 END_TEST
 
+START_TEST(test_read_non_cwd)
+{
+        struct fql_field* fields = NULL;
+        int plan_count = 0;
+        int field_count = 0;
+        int rows = 0;
+
+        /*  parent directory */
+        plan_count = fql_make_plans(fql, "select foo from [../parent]");
+        ck_assert_int_eq(plan_count, 1);
+
+        field_count = fql_field_count(fql);
+        ck_assert_int_eq(field_count, 1);
+
+        rows = fql_step(fql, &fields);
+        ck_assert_int_eq(rows, 1);
+        ck_assert_int_eq(fields[0].type, FQL_STRING);
+        ck_assert_str_eq(fields[0].data.s, "parent directory");
+
+        rows = fql_step(fql, &fields);
+        ck_assert_int_eq(rows, 0);
+        ck_assert_int_eq(fql_field_count(fql), 0);
+
+
+        /* Sub directory */
+        plan_count = fql_make_plans(fql, "select foo from [sub/sub]");
+        ck_assert_int_eq(plan_count, 1);
+
+        field_count = fql_field_count(fql);
+        ck_assert_int_eq(field_count, 1);
+
+        rows = fql_step(fql, &fields);
+        ck_assert_int_eq(rows, 1);
+        ck_assert_int_eq(fields[0].type, FQL_STRING);
+        ck_assert_str_eq(fields[0].data.s, "sub directory");
+
+        rows = fql_step(fql, &fields);
+        ck_assert_int_eq(rows, 0);
+        ck_assert_int_eq(fql_field_count(fql), 0);
+}
+END_TEST
+
 START_TEST(test_read_t1_asterisk)
 {
         struct fql_field* fields = NULL;
@@ -346,6 +388,7 @@ Suite* fql_read_suite(void)
         tcase_add_checked_fixture(tc_read, fql_setup, fql_teardown);
 
         tcase_add_test(tc_read, test_read_t1);
+        tcase_add_test(tc_read, test_read_non_cwd);
         tcase_add_test(tc_read, test_read_t1_asterisk);
         tcase_add_test(tc_read, test_read_const);
         tcase_add_test(tc_read, test_read_operators);
