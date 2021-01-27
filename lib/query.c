@@ -208,10 +208,10 @@ void query_add_source(Query* query,
         stack_free_data(source_stack);
 
         source_construct(vec_add_one(query->sources),
-                    new_table,
-                    alias,
-                    type,
-                    query->join);
+                         new_table,
+                         alias,
+                         type,
+                         query->join);
 }
 
 void query_apply_table_alias(Query* query, const char* alias)

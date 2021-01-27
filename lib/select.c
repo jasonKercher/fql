@@ -86,6 +86,7 @@ void _expand_asterisks(Query* query)
                 for (; j < query->sources->size; ++j) {
                         if (string_empty(&cols[i]->table_name) ||
                             istring_eq(srcs[j].alias.data, cols[i]->table_name.data)) {
+                                column_free(cols[i]);
                                 vec_remove(col_vec, i);
                                 _insert_all_columns(col_vec, &srcs[j], j, &i);
                         }

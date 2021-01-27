@@ -29,6 +29,7 @@ void table_free(Table* table)
         if (table == NULL)
                 return;
 
+        string_destroy(&table->name);
         reader_free(table->reader);
         schema_free(table->schema);
         free_(table);

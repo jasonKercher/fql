@@ -163,7 +163,6 @@ void schema_assign_header(Table* table, Vec* rec)
         StringView* fields = rec->data;
         for (; i < rec->size; ++i) {
                 String col_str;
-                /* no need to destroy this. column_new takes ownership */
                 string_construct_from_stringview(&col_str, &fields[i]);
                 Column* new_col = column_new(EXPR_COLUMN_NAME, col_str.data, "");
                 schema_add_column(table->schema, new_col);
@@ -174,6 +173,8 @@ void schema_assign_header(Table* table, Vec* rec)
 
                 /* add to hash map for easy searching */
                 hmap_set(table->schema->col_map, col_str.data, new_col);
+
+                string_destroy(&col_str);
         }
 }
 
