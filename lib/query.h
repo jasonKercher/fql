@@ -35,7 +35,7 @@ enum logic_mode {
 struct query {
         struct schema* schema;          /* output table */
         struct vec* sources;            /* struct source */
-        struct logic_tree* where;       /* struct logic */
+        struct logicgroup* where;       /* struct logicgroup */
         struct vec* groups;             /* struct expression */
         struct queue* having;           /* struct expression */
         struct expression* limit;       /* TOP */
@@ -44,7 +44,7 @@ struct query {
         /* All the variables below are temporaries for
          * tracking the query as antlr traverses it
          */
-        struct stack* logic_stack;      /* used to build logic trees */
+        struct stack* logic_stack;      /* used to build logic groups */
         struct stack* function_stack;   /* used to track function nesting */
 
         struct expression* expr;

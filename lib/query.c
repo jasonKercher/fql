@@ -9,16 +9,6 @@
 #include "util/dgraph.h"
 #include "util/util.h"
 
-struct logic_builder {
-        LogicTree* ltree;
-        Dnode* current;
-        Dnode* next_not;
-        Vec* truths;
-        Vec* falses;
-        _Bool sublogic_exit;
-};
-
-
 Query* query_new()
 {
         Query* new_query = NULL;
@@ -59,7 +49,7 @@ void query_free(void* generic_query)
         }
         op_free(query->op);
         vec_free(query->sources);
-        logic_tree_free(query->where);
+        //logic_tree_free(query->where);
         vec_free(query->groups);
         queue_free_data(&query->having);
         schema_free(query->schema);
@@ -88,8 +78,11 @@ void _add_validation_column(Query* query, Column* col)
 
 void _add_logic_column(Query* query, Column* col)
 {
-        struct logic_builder* builder = query->logic_stack->data;
-        logic_add_column(builder->current->data, col);
+        LogicGroup* lg = query->logic_stack->data;
+        if (lg->condition == NULL) {
+                lg->condition = logic_new();
+        }
+        logic_add_column(lg->condition, col);
 }
 
 int _distribute_column(Query* query, Column* col)
@@ -256,158 +249,71 @@ void query_exit_function(Query* query)
 
 /*** Scroll below this comment at your own risk ***/
 
-struct logic_builder* logic_builder_new()
-{
-        struct logic_builder* builder = NULL;
-        malloc_(builder, sizeof(*builder));
-
-        *builder = (struct logic_builder) {
-                 logic_tree_new()       /* tree */
-                ,NULL                   /* current */
-                ,NULL                   /* next_not */
-                ,vec_new_(Dnode*)       /* truths */
-                ,vec_new_(Dnode*)       /* falses */
-                ,false                  /* sublogic_exit */
-        };
-
-        return builder;
-}
-
 void query_set_logic_comparison(Query* query, const char* op)
 {
-        struct logic_builder* builder = query->logic_stack->data;
-        logic_set_comparison(builder->current->data, op);
+        LogicGroup* lg = query->logic_stack->data;
+        Logic* logic = lg->condition;
+        logic_set_comparison(logic, op);
 }
 
-void _assign_logic(Query* query, struct logic_builder* builder)
+void _assign_logic(Query* query, LogicGroup* lg)
 {
-        /* remove stranded nodes */
-        Vec* nodes = builder->ltree->tree->nodes;
-        Dnode** node = vec_begin(nodes);
-        while ((void*)node != vec_end(nodes)) {
-                Logic* logic = (*node)->data;
-                if (logic->comp_type == COMP_NOT_SET) {
-                        dnode_free(*node);
-                        vec_erase(nodes, node);
-                } else {
-                        ++node;
-                }
-        }
-
         switch (query->logic_mode) {
         case LOGIC_JOIN: {
                 Source* src = vec_back(query->sources);
-                src->condition = builder->ltree;
+                src->condition = lg;
                 break;
         }
         case LOGIC_WHERE:
-                query->where = builder->ltree;
+                query->where = lg;
                 break;
         case LOGIC_UNDEFINED:
-                /* TODO - report error */;
+                fprintf(stderr, "Unexpected logic mode assigning group\n");
         }
+}
+
+void _add_item(Query* query, enum logicgroup_type type)
+{
+        LogicGroup* lg = logicgroup_new(type);
+        LogicGroup* parent = query->logic_stack->data;
+        vec_push_back(&parent->items, &lg);
+        stack_push(&query->logic_stack, lg);
 }
 
 void enter_search(Query* query)
 {
-        query->mode = MODE_SEARCH;
-
-        struct logic_builder* upper = logic_builder_new();
-        stack_push(&query->logic_stack, upper);
-
-        if (query->logic_stack->next == NULL) {
-                upper->next_not = dgraph_add_data(upper->ltree->tree, logic_new());
-
-                Logic* new_false = logic_new();
-                new_false->comp_type = COMP_FALSE;
-                //upper->ltree->end_false = dnode_new(new_false);
-                upper->ltree->end_false = dgraph_add_data(upper->ltree->tree, new_false);
-
-                Logic* new_true = logic_new();
-                new_true->comp_type = COMP_TRUE;
-                upper->ltree->end_true = dgraph_add_data(upper->ltree->tree, new_true);
-        } else {
-                struct logic_builder* lower = query->logic_stack->next->data;
-                dgraph_add_data(upper->ltree->tree, lower->current);
-                upper->next_not = lower->current;
-                upper->ltree->end_true = lower->next_not->data;
+        if (query->logic_stack == NULL) {
+                stack_push(&query->logic_stack, logicgroup_new(LG_ROOT));
+                return;
         }
+
+        _add_item(query, LG_ROOT);
 }
 
 void exit_search(Query* query)
 {
-        struct logic_builder* upper = stack_pop(&query->logic_stack);
-
+        LogicGroup* lg = stack_pop(&query->logic_stack);
         if (query->logic_stack == NULL) {
-                Dnode** it = vec_begin(upper->falses);
-                for (; it != vec_end(upper->falses); ++it) {
-                        (*it)->out[false] = upper->ltree->end_false;
-                }
-                _assign_logic(query, upper);
-                return;
+                _assign_logic(query, lg);
         }
-
-        struct logic_builder* lower = query->logic_stack->data;
-        lower->current = upper->current;
-        lower->sublogic_exit = true;
-
-        vec_extend(lower->falses, upper->falses);
-        vec_free(upper->falses);
 }
 
 void enter_search_and(Query* query)
 {
-        struct logic_builder* builder = query->logic_stack->data;
-        Dnode** it = vec_begin(builder->falses);
-        for (; it != vec_end(builder->falses); ++it) {
-                (*it)->out[false] = builder->next_not;
-        }
-
-        vec_resize(builder->falses, 0);
+        _add_item(query, LG_AND);
 }
 
 void exit_search_and(Query* query)
 {
-        struct logic_builder* builder = query->logic_stack->data;
-        vec_push_back(builder->truths, &builder->current);
-
-        if (query->logic_stack->next != NULL) {
-                struct logic_builder* lower = query->logic_stack->next->data;
-                vec_extend(lower->truths, builder->truths);
-                vec_resize(builder->truths, 0);
-                return;
-        }
-
-        Dnode** it = vec_begin(builder->truths);
-        for (; it != vec_end(builder->truths); ++it) {
-                (*it)->out[true] = builder->ltree->end_true;
-        }
-        vec_resize(builder->truths, 0);
+        stack_pop(&query->logic_stack);
 }
 
 void enter_search_not(Query* query)
 {
-        struct logic_builder* builder = query->logic_stack->data;
-        if (builder->sublogic_exit) {
-                builder->sublogic_exit = false;
-                vec_resize(builder->truths, 0);
-        }
-
-        builder->current = builder->next_not;
-        builder->next_not = dgraph_add_data(builder->ltree->tree, logic_new());
+        _add_item(query, LG_NOT);
 }
 
 void exit_search_not(Query* query)
 {
-        struct logic_builder* builder = query->logic_stack->data;
-
-        Dnode** it = vec_begin(builder->truths);
-        for (; it != vec_end(builder->truths); ++it) {
-                (*it)->out[true] = builder->next_not;
-        }
-        if (builder->sublogic_exit) {
-                return;
-        }
-        builder->current->out[true] = builder->next_not;
-        vec_push_back(builder->falses, &builder->current);
+        stack_pop(&query->logic_stack);
 }

@@ -16,11 +16,11 @@ Logic* logic_new()
 Logic* logic_construct(Logic* logic)
 {
         *logic = (Logic) {
-                 {NULL, NULL}   /* col */
-                ,NULL           /* proc_node */
-                ,NULL           /* proc */
-                ,FIELD_UNDEFINED/* data_type */
-                ,COMP_NOT_SET   /* comp_type */
+                 {NULL, NULL}    /* col */
+                //,NULL            /* proc_node */
+                ,NULL            /* proc */
+                ,FIELD_UNDEFINED /* data_type */
+                ,COMP_NOT_SET    /* comp_type */
         };
 
         return logic;
@@ -33,21 +33,7 @@ void logic_free(Logic* logic)
 
 void logic_assign_process(Logic* logic, Process* proc)
 {
-        proc->proc_data = logic;
-
-        if (logic->comp_type == COMP_TRUE) {
-                string_cpy(proc->action_msg, "End Logic: TRUE");
-                proc->is_passive = true;
-                return;
-        }
-        if (logic->comp_type == COMP_FALSE) {
-                string_cpy(proc->action_msg, "End Logic: FALSE");
-                proc->is_passive = true;
-                return;
-        }
-        if (logic->col[0] == NULL) {
-                return;
-        }
+        //proc->proc_data = logic;
 
         logic->data_type = field_determine_type(logic->col[0]->field_type,
                                                 logic->col[1]->field_type);
@@ -101,8 +87,6 @@ void logic_add_column(Logic* logic, struct column* col)
                 return;
         }
         logic->col[1] = col;
-        //logic->data_type = field_determine_type(logic->col[0]->field_type, col->field_type);
-        //logic->logic_fn = logic_matrix[logic->comp_type][logic->data_type];
 }
 
 void logic_set_comparison(Logic* logic, const char* op)
@@ -129,26 +113,57 @@ void logic_set_comparison(Logic* logic, const char* op)
                 logic->comp_type = COMP_NOT_NULL;
 }
 
-LogicTree* logic_tree_new()
+LogicGroup* logicgroup_new(enum logicgroup_type type)
 {
-        LogicTree* new_tree = NULL;
-        malloc_(new_tree, sizeof(*new_tree));
+        LogicGroup* new_lg = NULL;
+        malloc_(new_lg, sizeof(*new_lg));
 
-        *new_tree = (LogicTree) {
-                 dgraph_new()    /* tree */
-                ,NULL            /* end_true */
-                ,NULL            /* end_false */
+        return logicgroup_construct(new_lg, type);
+}
+
+LogicGroup* logicgroup_construct(LogicGroup* lg, enum logicgroup_type type)
+{
+        *lg = (LogicGroup) {
+                 type   /* type */
+                ,{ 0 }  /* items */
+                ,NULL   /* condition */
         };
 
-        //new_tree->end_true->comp_type = COMP_TRUE
+        vec_construct_(&lg->items, LogicGroup*);
 
-        return new_tree;
+        return lg;
 }
 
-void logic_tree_free(LogicTree* tree)
+void logicgroup_free(LogicGroup* lg)
 {
-        /* TODO - recursively free logic tree */
-
-        free_(tree);
+        unsigned i = 0;
+        for (; i < lg->items.size; ++i) {
+                LogicGroup** lg_item = vec_at(&lg->items, i);
+                logicgroup_free(*lg_item);
+        }
+        vec_destroy(&lg->items);
+        free_(lg);
 }
 
+int logicgroup_eval(LogicGroup* lg, Vec* recs)
+{
+        LogicGroup** it = vec_begin(&lg->items);
+        if (lg->type == LG_NOT && lg->condition != NULL) {
+                return lg->condition->logic_fn(lg->condition, recs);
+        }
+
+        int ret = 0;
+        for (; it != vec_end(&lg->items); ++it) {
+                ret = logicgroup_eval(*it, recs);
+                if (ret == 0 && lg->type == LG_AND) {
+                        return 0;
+                }
+                if (ret == 1 && (*it)->type == LG_AND) {
+                        return 1;
+                }
+                if (ret == FQL_FAIL) {
+                        return FQL_FAIL;
+                }
+        }
+        return ret;
+}

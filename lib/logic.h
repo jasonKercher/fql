@@ -30,7 +30,7 @@ typedef int(*logic_fn)(struct logic*, struct vec*);
 
 struct logic {
         struct column* col[2];
-        struct dnode* proc_node;
+        //struct dnode* proc_node;
         logic_fn logic_fn;
         enum field_type data_type;
         enum comparison comp_type;
@@ -39,21 +39,35 @@ typedef struct logic Logic;
 
 struct logic* logic_new();
 struct logic* logic_construct(struct logic*);
+void logic_destroy(struct logic*);
 void logic_free(struct logic*);
 
 void logic_assign_process(struct logic*, struct process*);
 void logic_add_column(struct logic*, struct column*);
 void logic_set_comparison(struct logic* logic, const char* op);
 
-struct logic_tree {
-        struct dgraph* tree;
-        struct dnode* end_true;
-        struct dnode* end_false;
-};
-typedef struct logic_tree LogicTree;
 
-struct logic_tree* logic_tree_new();
-void logic_tree_free(struct logic_tree*);
+enum logicgroup_type {
+        LG_UNDEFINED = -1,
+        LG_ROOT,
+        LG_AND,
+        LG_NOT,
+};
+
+struct logicgroup {
+        enum logicgroup_type type;
+        struct vec items;               /* LogicGroup* */
+        struct logic* condition;        /* always NULL unless LG_NOT */
+};
+typedef struct logicgroup LogicGroup;
+
+struct logicgroup* logicgroup_new(enum logicgroup_type);
+struct logicgroup* logicgroup_construct(struct logicgroup*, enum logicgroup_type);
+void logicgroup_free(struct logicgroup*);
+
+
+int logicgroup_eval(struct logicgroup*, struct vec*);
+
 
 /* logic functions */
 int fql_logic_eq_i(struct logic*, struct vec*);

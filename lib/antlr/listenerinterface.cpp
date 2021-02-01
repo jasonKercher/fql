@@ -359,6 +359,7 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 
 void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContext * ctx)
 {
+        _query->mode = MODE_SEARCH;
         if (_query->logic_mode == LOGIC_UNDEFINED) {
                 _query->logic_mode = LOGIC_WHERE;
         }

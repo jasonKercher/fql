@@ -43,7 +43,7 @@ enum join_type {
 
 struct source {
         struct table* table;
-        struct logic_tree* condition;
+        struct logicgroup* condition;
         struct vec* validation_list;
         String alias;
         enum source_type source_type;

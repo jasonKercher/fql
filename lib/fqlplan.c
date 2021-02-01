@@ -20,9 +20,6 @@
  * where each node represents a process
  */
 
-
-/* Constructor (private)
- */
 Plan* plan_new(int source_total)
 {
         Plan* new_plan = NULL;
@@ -75,50 +72,71 @@ void plan_destroy(void* generic_plan)
  * assign processes for true and false
  * return beginning process
  */
-Dnode* _logic_to_process(Dgraph* proc_graph,
-                         Dgraph* logic_graph,
-                         Dnode** proc_node_true,
-                         Dnode** proc_node_false,
-                         int source_count)
+void _logic_to_process(Process* logic_proc, LogicGroup* lg)
 {
-        Dnode* return_node = NULL;
-
-        /* build all process nodes */
-        Dnode** it = vec_begin(logic_graph->nodes);
-        for (; it != vec_end(logic_graph->nodes); ++it) {
-                Logic* logic = (*it)->data;
-                Process* proc = process_new("", source_count);
-                proc->action = &fql_logic;
-                logic_assign_process(logic, proc);
-
-                Dnode* proc_node = dnode_new(proc);
-                if (return_node == NULL) {
-                        return_node = proc_node;
+        switch (lg->type) {
+        case LG_ROOT:
+                string_cat(logic_proc->action_msg, "("); 
+                break;
+        case LG_AND:
+                string_cat(logic_proc->action_msg, "AND("); 
+                break;
+        case LG_NOT:
+                string_cat(logic_proc->action_msg, "IFNOT("); 
+                if (lg->condition != NULL) {
+                        logic_assign_process(lg->condition, logic_proc);
                 }
-                dgraph_add_node(proc_graph, proc_node);
-                logic->proc_node = proc_node;
-                if (logic->comp_type == COMP_TRUE) {
-                        *proc_node_true = proc_node;
-                } else {
-                        *proc_node_false = proc_node;
-                }
+                break;
+        default:
+                fprintf(stderr, "Unexpected logic group %d\n", lg->type);
+                return;
         }
 
-        /* link process all nodes */
-        for (it = vec_begin(logic_graph->nodes); it != vec_end(logic_graph->nodes); ++it) {
-                Logic* logic = (*it)->data;
-                if ((*it)->out[0] != NULL) {
-                        logic->proc_node->out[0] = ((Logic*)(*it)->out[0]->data)->proc_node;
-                }
-                if ((*it)->out[1] != NULL) {
-                        logic->proc_node->out[1] = ((Logic*)(*it)->out[1]->data)->proc_node;
-                }
+        LogicGroup** it = vec_begin(&lg->items);
+        for (; it != vec_end(&lg->items); ++it) {
+                _logic_to_process(logic_proc, *it);
         }
 
-        return return_node;
+        string_cat(logic_proc->action_msg, ")"); 
 }
 
+void _logicgroup_process(Plan* plan, LogicGroup* lg)
+{
+        Process* logic_proc = process_new("", plan->source_count);
+        logic_proc->action = &fql_logic;
+        logic_proc->proc_data = lg;
+        _logic_to_process(logic_proc, lg);
+        Dnode* logic_node = dgraph_add_data(plan->processes, logic_proc);
+                
+        plan->current->out[0] = logic_node;
+        logic_node->out[0] = plan->op_false;
 
+        Process* logic_true = process_new("JOIN True", plan->source_count);
+        logic_true->is_passive = true;
+        Dnode* logic_true_node = dgraph_add_data(plan->processes, logic_true);
+
+        logic_node->out[1] = logic_true_node;
+
+        plan->current = logic_true_node;
+}
+
+Process* _new_join_proc(enum join_type type, int source_count)
+{
+        switch (type) {
+        case JOIN_INNER:
+                return process_new("INNER JOIN", source_count);
+        case JOIN_LEFT:
+                return process_new("LEFT JOIN", source_count);
+        case JOIN_RIGHT:
+                return process_new("RIGHT JOIN", source_count);
+        case JOIN_FULL:
+                return process_new("FULL JOIN", source_count);
+        case JOIN_CROSS:
+                return process_new("CROSS JOIN", source_count);
+        case JOIN_FROM:
+                return process_new("unexpected: JOIN_FROM", source_count);
+        }
+}
 
 void _from(Plan* plan, Query* query)
 {
@@ -146,27 +164,7 @@ void _from(Plan* plan, Query* query)
         plan->current = from_node;
 
         for (++src; src != vec_end(query->sources); ++src) {
-                Process* join_proc = NULL;
-
-                switch (src->join_type) {
-                case JOIN_INNER:
-                        join_proc = process_new("INNER JOIN", ++plan->source_count);
-                        break;
-                case JOIN_LEFT:
-                        join_proc = process_new("LEFT JOIN", ++plan->source_count);
-                        break;
-                case JOIN_RIGHT:
-                        join_proc = process_new("RIGHT JOIN", ++plan->source_count);
-                        break;
-                case JOIN_FULL:
-                        join_proc = process_new("FULL JOIN", ++plan->source_count);
-                        break;
-                case JOIN_CROSS:
-                        join_proc = process_new("CROSS JOIN", ++plan->source_count);
-                        break;
-                case JOIN_FROM:
-                        join_proc = process_new("unexpected: JOIN_FROM", ++plan->source_count);
-                }
+                Process* join_proc = _new_join_proc(src->join_type, ++plan->source_count);
 
                 Dnode* join_proc_node = dgraph_add_data(plan->processes, join_proc);
 
@@ -186,21 +184,10 @@ void _from(Plan* plan, Query* query)
                 Dnode* read_node = dgraph_add_data(plan->processes, read_proc);
                 read_node->is_root = true;
                 read_node->out[0] = join_proc_node;
+                plan->current = join_proc_node;
 
                 if (src->condition != NULL) {
-                        Dnode* proc_true = NULL;
-                        Dnode* proc_false = NULL;
-
-                        join_proc_node->out[0] = _logic_to_process(plan->processes,
-                                                                   src->condition->tree,
-                                                                   &proc_true,
-                                                                   &proc_false,
-                                                                   plan->source_count
-                                                                   );
-                        plan->current = proc_true;
-                        proc_false->out[0] = plan->op_false;
-                } else {
-                        plan->current = join_proc_node;
+                        _logicgroup_process(plan, src->condition);
                 }
         }
 
@@ -213,16 +200,7 @@ void _where(Plan* plan, Query* query)
                 return;
         }
 
-        Dnode* proc_true = NULL;
-        Dnode* proc_false = NULL;
-
-        plan->current->out[0] = _logic_to_process(plan->processes,
-                                                  query->where->tree,
-                                                  &proc_true,
-                                                  &proc_false,
-                                                  plan->source_count);
-        plan->current = proc_true;
-        proc_false->out[0] = plan->op_false;
+        _logicgroup_process(plan, query->where);
 }
 
 void _group(Plan* plan, Query* query)
@@ -301,8 +279,8 @@ void _activate_procs(Plan* plan)
         }
 }
 
-/* Run through processes and link up fifos. Input fifos are owned 
- * by the process. Output fifos are just links to other processes' 
+/* Run through processes and link up fifos. Input fifos are owned
+ * by the process. Output fifos are just links to other processes'
  * fifos. This would read better if I called them pipes...
  */
 void _make_pipes(Plan* plan)
