@@ -73,24 +73,28 @@ void _expand_asterisks(Query* query)
 {
         Select* select = query->op;
         Vec* col_vec = select->schema->columns;
-        Column** cols = vec_begin(col_vec);
         unsigned i = 0;
 
         for (; i < col_vec->size; ++i) {
-                if (cols[i]->expr != EXPR_ASTERISK) {
+                Column** col = vec_at(col_vec, i);
+                if ((*col)->expr != EXPR_ASTERISK) {
                         continue;
                 }
 
                 Source* srcs = vec_begin(query->sources);
                 unsigned j = 0;
+                unsigned asterisk_index = i++;
                 for (; j < query->sources->size; ++j) {
-                        if (string_empty(&cols[i]->table_name) ||
-                            istring_eq(srcs[j].alias.data, cols[i]->table_name.data)) {
-                                column_free(cols[i]);
-                                vec_remove(col_vec, i);
+                        Column** asterisk_col = vec_at(col_vec, asterisk_index);
+                        if (string_empty(&(*col)->table_name) ||
+                            istring_eq(srcs[j].alias.data, ((*asterisk_col)->table_name.data))) {
                                 _insert_all_columns(col_vec, &srcs[j], j, &i);
                         }
                 }
+
+                Column** asterisk_col = vec_at(col_vec, asterisk_index);
+                column_free(*asterisk_col);
+                vec_remove(col_vec, asterisk_index);
         }
 }
 

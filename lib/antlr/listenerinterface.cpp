@@ -25,12 +25,7 @@ void ListenerInterface::enterSelect_list(TSqlParser::Select_listContext * ctx)
 }
 void ListenerInterface::exitSelect_list(TSqlParser::Select_listContext * ctx)
 {
-        if (_on_asterisk) {
-                query_add_asterisk(_query, _table_name);
-                _on_asterisk = false;
-        }
         _query->mode = MODE_UNDEFINED;
-        _table_name[0] = '\0';
 }
 
 void ListenerInterface::enterGroup_by_item(TSqlParser::Group_by_itemContext * ctx)
@@ -61,7 +56,14 @@ void ListenerInterface::enterSelect_list_elem(TSqlParser::Select_list_elemContex
 {
         _current_list = TOK_COLUMN_NAME;
 }
-void ListenerInterface::exitSelect_list_elem(TSqlParser::Select_list_elemContext * ctx) { }
+void ListenerInterface::exitSelect_list_elem(TSqlParser::Select_list_elemContext * ctx) 
+{
+        if (_on_asterisk) {
+                query_add_asterisk(_query, _table_name);
+                _on_asterisk = false;
+        }
+        _table_name[0] = '\0';
+}
 
 void ListenerInterface::enterTable_sources(TSqlParser::Table_sourcesContext * ctx)
 {
