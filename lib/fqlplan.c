@@ -36,7 +36,7 @@ Plan* plan_construct(Plan* plan, int source_total)
                 ,dnode_new(process_new("OP_FALSE", source_total))  /* op_false */
                 ,NULL                                              /* current */
                 ,0                                                 /* rows_affected */
-                ,0                                                 /* source_count */
+                ,source_total                                      /* source_count */
         };
 
         /* source_count is a temporary variable used to keep track
@@ -76,13 +76,13 @@ void _logic_to_process(Process* logic_proc, LogicGroup* lg)
 {
         switch (lg->type) {
         case LG_ROOT:
-                string_cat(logic_proc->action_msg, "("); 
+                string_cat(logic_proc->action_msg, "(");
                 break;
         case LG_AND:
-                string_cat(logic_proc->action_msg, "AND("); 
+                string_cat(logic_proc->action_msg, "AND(");
                 break;
         case LG_NOT:
-                string_cat(logic_proc->action_msg, "IFNOT("); 
+                string_cat(logic_proc->action_msg, "NOT(");
                 if (lg->condition != NULL) {
                         logic_assign_process(lg->condition, logic_proc);
                 }
@@ -97,7 +97,7 @@ void _logic_to_process(Process* logic_proc, LogicGroup* lg)
                 _logic_to_process(logic_proc, *it);
         }
 
-        string_cat(logic_proc->action_msg, ")"); 
+        string_cat(logic_proc->action_msg, ")");
 }
 
 void _logicgroup_process(Plan* plan, LogicGroup* lg)
@@ -107,11 +107,11 @@ void _logicgroup_process(Plan* plan, LogicGroup* lg)
         logic_proc->proc_data = lg;
         _logic_to_process(logic_proc, lg);
         Dnode* logic_node = dgraph_add_data(plan->processes, logic_proc);
-                
+
         plan->current->out[0] = logic_node;
         logic_node->out[0] = plan->op_false;
 
-        Process* logic_true = process_new("JOIN True", plan->source_count);
+        Process* logic_true = process_new("Logic True", plan->source_count);
         logic_true->is_passive = true;
         Dnode* logic_true_node = dgraph_add_data(plan->processes, logic_true);
 
@@ -153,7 +153,7 @@ void _from(Plan* plan, Query* query)
                        src->table->reader->file_name.data,
                        "stream read");
 
-        Process* from_proc = process_new(action_msg.data, ++plan->source_count);
+        Process* from_proc = process_new(action_msg.data, plan->source_count);
         from_proc->action = &fql_read;
         from_proc->proc_data = src->table->reader;
 
@@ -164,7 +164,9 @@ void _from(Plan* plan, Query* query)
         plan->current = from_node;
 
         for (++src; src != vec_end(query->sources); ++src) {
-                Process* join_proc = _new_join_proc(src->join_type, ++plan->source_count);
+                Process* join_proc = _new_join_proc(src->join_type, plan->source_count);
+                process_add_second_input(join_proc);
+                join_proc->action = &fql_cartesian_join;
 
                 Dnode* join_proc_node = dgraph_add_data(plan->processes, join_proc);
 
@@ -176,7 +178,7 @@ void _from(Plan* plan, Query* query)
                                "mmap read");
 
                 /* Root node only will only have one source */
-                Process* read_proc = process_new(action_msg.data, 1);
+                Process* read_proc = process_new(action_msg.data, plan->source_count);
                 read_proc->proc_data = src->table->reader;
                 read_proc->action = &fql_read;
                 read_proc->is_secondary = true;
@@ -295,7 +297,6 @@ void _make_pipes(Plan* plan)
                         proc->fifo_out0 = (proc->is_secondary) ? proc0->fifo_in1 : proc0->fifo_in0;
                         if (proc->fifo_out0 == NULL) {
                                 fprintf (stderr, "fifo missing for `%s'\n", proc0->action_msg->data);
-                                exit(EXIT_FAILURE);
                         }
                 }
 
@@ -304,7 +305,6 @@ void _make_pipes(Plan* plan)
                         proc->fifo_out1 = (proc->is_secondary) ? proc1->fifo_in1 : proc1->fifo_in0;
                         if (proc->fifo_out1 == NULL) {
                                 fprintf (stderr, "fifo missing for `%s'\n", proc1->action_msg->data);
-                                exit(EXIT_FAILURE);
                         }
                 }
         }

@@ -32,6 +32,7 @@ void process_node_free(struct dnode* proc_node);
 void process_free(struct process*);
 
 void process_activate(Dnode* proc_node);
+void process_add_second_input(struct process*);
 int process_step(Plan* plan);
 //int process_exec_plans(struct fql_plan*, int);
 int process_exec_plan(struct fql_plan*);
@@ -40,6 +41,8 @@ void process_non_api(struct process* plan);
 int fql_read(struct dgraph*, struct process*);
 int fql_select(struct dgraph*, struct process*);
 int fql_logic(struct dgraph*, struct process*);
+int fql_cartesian_join(struct dgraph*, struct process*);
+//int fql_hash_join(struct dgraph*, struct process*);
 int fql_no_op(struct dgraph*, struct process*);
 
 #endif /* PROCESS_H */

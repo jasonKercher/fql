@@ -1,5 +1,6 @@
 #include "fifo.h"
 #include "util.h"
+#include <stdbool.h>
 
 Fifo* fifo_new(size_t elem_size, size_t buf_size)
 {
@@ -15,6 +16,8 @@ Fifo* fifo_construct(Fifo* fifo, size_t elem_size, size_t buf_size)
                  vec_new(elem_size)     /* buf */
                 ,0                      /* head */
                 ,0                      /* tail */
+                ,false                  /* is_full */
+                ,true                   /* is_open */
         };
 
         vec_resize(fifo->buf, buf_size);
@@ -59,16 +62,21 @@ _Bool fifo_is_empty(Fifo* f)
 
 void* fifo_get(Fifo* f)
 {
-        void* data = vec_at(f->buf, f->tail++);
-        f->tail %= f->buf->size;
-        f->is_full = false;
-
+        void* data = fifo_peek(f);
+        fifo_consume(f);
         return data;
 }
 
 void* fifo_peek(Fifo* f)
 {
         return vec_at(f->buf, f->tail);
+}
+
+void fifo_consume(Fifo* f)
+{
+        ++f->tail;
+        f->tail %= f->buf->size;
+        f->is_full = false;
 }
 
 int fifo_add(Fifo* f, void* data)

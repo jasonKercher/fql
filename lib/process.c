@@ -87,13 +87,13 @@ void process_activate(Dnode* proc_node)
                 return;
         }
 
+        /* If root, it will own the vector of StringViews */
         Vec* buf = proc->fifo_in0->buf;
         Vec** recs = vec_begin(buf);
         for (; recs != vec_end(buf); ++recs) {
                 *recs = vec_new_(Vec*);
                 vec_resize(*recs, proc->fifo_width);
 
-                /* If root, it will own the vector of StringViews */
                 Vec** rec = vec_begin(*recs);
                 for (; rec != vec_end(*recs); ++rec) {
                         *rec = vec_new_(StringView);
@@ -101,6 +101,11 @@ void process_activate(Dnode* proc_node)
         }
 
         fifo_advance(proc->fifo_in0);
+}
+
+void process_add_second_input(Process* proc)
+{
+        proc->fifo_in1 = fifo_new_(Vec*, UCHAR_MAX);
 }
 
 /* returns number of processes that executed or FQL_FAIL

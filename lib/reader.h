@@ -33,6 +33,7 @@ struct libcsv_reader* libcsv_reader_new(size_t);
 struct libcsv_reader* libcsv_reader_construct(struct libcsv_reader*, size_t);
 void libcsv_reader_free(void*);
 int libcsv_get_record(void* reader_data, Vec* rec, unsigned char);
+void libcsv_reset(void*);
 
 struct mmapcsv_data {
         csv_reader* csv_handle;
@@ -48,9 +49,10 @@ struct mmapcsv_data {
 
 struct mmapcsv_data* mmapcsv_new(size_t);
 struct mmapcsv_data* mmapcsv_construct(struct mmapcsv_data*, size_t);
+void mmapcsv_free(void*);
 int mmapcsv_open(struct mmapcsv_data*, const char* file_name);
 int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char);
-void mmapcsv_free(void*);
+void mmapcsv_reset(void*);
 
 typedef int (*read_fn)(void*, struct vec* rec, unsigned char idx);
 
@@ -66,6 +68,7 @@ struct reader {
         void* reader_data;
         read_fn get_record_fn;
         generic_data_fn free_fn;
+        generic_data_fn reset_fn;
         String file_name;
 };
 typedef struct reader Reader;

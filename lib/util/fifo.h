@@ -13,6 +13,7 @@ struct fifo {
         size_t head;
         size_t tail;
         _Bool is_full;
+        _Bool is_open;
 };
 typedef struct fifo Fifo;
 
@@ -27,6 +28,7 @@ _Bool fifo_is_empty(struct fifo*);
 _Bool fifo_is_full(struct fifo*);
 void* fifo_get(struct fifo*);
 void* fifo_peek(struct fifo*);
+void fifo_consume(struct fifo*);
 int fifo_add(struct fifo*, void*);
 int fifo_advance(struct fifo*);
 
