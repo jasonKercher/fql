@@ -86,7 +86,7 @@ void _expand_asterisks(Query* query)
                 unsigned asterisk_index = i++;
                 for (; j < query->sources->size; ++j) {
                         Column** asterisk_col = vec_at(col_vec, asterisk_index);
-                        if (string_empty(&(*col)->table_name) ||
+                        if (string_empty(&(*asterisk_col)->table_name) ||
                             istring_eq(srcs[j].alias.data, ((*asterisk_col)->table_name.data))) {
                                 _insert_all_columns(col_vec, &srcs[j], j, &i);
                         }
