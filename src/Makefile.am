@@ -1,7 +1,10 @@
-AM_CPPFLAGS = -I$(srcdir)/../lib/include -I$(srcdir)/../lib/util/
-bin_PROGRAMS = fql
+AM_CPPFLAGS = -I$(srcdir)/../lib/include -I$(srcdir)/util
+bin_PROGRAMS = fql stdcsv
 fql_SOURCES = fql.c
 fql_LDADD = ../lib/libfql.la -lreadline -lcsv
 
-#  -lantlr4-runtime -lcsv
+stdcsv_SOURCES = stdcsv.c
+stdcsv_LDADD = ../libcsv/libcsv.la
+
+
 

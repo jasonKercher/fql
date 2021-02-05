@@ -1,6 +1,6 @@
-SUBDIRS = docs antlr util
+SUBDIRS = docs antlr
 
-AM_CPPFLAGS = -Iinclude
+AM_CPPFLAGS = -Iinclude -I$(srcdir)/util/
 include_HEADERS = include/fql.h
 lib_LTLIBRARIES = libfql.la
 libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
@@ -17,4 +17,4 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					select.h select.c \
 					function.h function.c fqlfunctions.c \
 					field.h field.c
-libfql_la_LIBADD = antlr/libantlr.la util/libutil.la -lantlr4-runtime -lcsv
+libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la -lantlr4-runtime -lcsv

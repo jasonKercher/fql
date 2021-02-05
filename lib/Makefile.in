@@ -132,7 +132,7 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libfql_la_DEPENDENCIES = antlr/libantlr.la util/libutil.la
+libfql_la_DEPENDENCIES = antlr/libantlr.la ../util/libutil.la
 am_libfql_la_OBJECTS = libfql.lo fqlplan.lo process.lo fqlprocesses.lo \
 	query.lo table.lo schema.lo column.lo operation.lo reader.lo \
 	libcsvread.lo mmapcsvread.lo writer.lo logic.lo fqllogic.lo \
@@ -384,8 +384,8 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-SUBDIRS = docs antlr util
-AM_CPPFLAGS = -Iinclude
+SUBDIRS = docs antlr
+AM_CPPFLAGS = -Iinclude -I$(srcdir)/util/
 include_HEADERS = include/fql.h
 lib_LTLIBRARIES = libfql.la
 libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
@@ -403,7 +403,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					function.h function.c fqlfunctions.c \
 					field.h field.c
 
-libfql_la_LIBADD = antlr/libantlr.la util/libutil.la -lantlr4-runtime -lcsv
+libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la -lantlr4-runtime -lcsv
 all: all-recursive
 
 .SUFFIXES:

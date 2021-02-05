@@ -16593,7 +16593,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 ac_config_headers="$ac_config_headers config.h"
 
-ac_config_files="$ac_config_files Makefile lib/Makefile lib/antlr/Makefile lib/antlr/gen/Makefile lib/util/Makefile lib/docs/Makefile src/Makefile"
+ac_config_files="$ac_config_files Makefile libcsv/Makefile lib/Makefile lib/antlr/Makefile lib/antlr/gen/Makefile util/Makefile lib/docs/Makefile libcsv/docs/Makefile src/Makefile"
 
 
 # Check
@@ -16867,7 +16867,7 @@ else
 fi
 
 if test -z "$HAVE_DOXYGEN_TRUE"; then :
-  ac_config_files="$ac_config_files lib/docs/Doxyfile"
+  ac_config_files="$ac_config_files lib/docs/Doxyfile libcsv/docs/Doxyfile"
 
 fi
 
@@ -17993,14 +17993,17 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "libcsv/Makefile") CONFIG_FILES="$CONFIG_FILES libcsv/Makefile" ;;
     "lib/Makefile") CONFIG_FILES="$CONFIG_FILES lib/Makefile" ;;
     "lib/antlr/Makefile") CONFIG_FILES="$CONFIG_FILES lib/antlr/Makefile" ;;
     "lib/antlr/gen/Makefile") CONFIG_FILES="$CONFIG_FILES lib/antlr/gen/Makefile" ;;
-    "lib/util/Makefile") CONFIG_FILES="$CONFIG_FILES lib/util/Makefile" ;;
+    "util/Makefile") CONFIG_FILES="$CONFIG_FILES util/Makefile" ;;
     "lib/docs/Makefile") CONFIG_FILES="$CONFIG_FILES lib/docs/Makefile" ;;
+    "libcsv/docs/Makefile") CONFIG_FILES="$CONFIG_FILES libcsv/docs/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
     "lib/docs/Doxyfile") CONFIG_FILES="$CONFIG_FILES lib/docs/Doxyfile" ;;
+    "libcsv/docs/Doxyfile") CONFIG_FILES="$CONFIG_FILES libcsv/docs/Doxyfile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

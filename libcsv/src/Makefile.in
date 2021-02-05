@@ -88,8 +88,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = fql$(EXEEXT) stdcsv$(EXEEXT)
-subdir = src
+bin_PROGRAMS = stdcsv$(EXEEXT)
+subdir = csv/src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
@@ -104,16 +104,13 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_fql_OBJECTS = fql.$(OBJEXT)
-fql_OBJECTS = $(am_fql_OBJECTS)
-fql_DEPENDENCIES = ../lib/libfql.la
+am_stdcsv_OBJECTS = stdcsv.$(OBJEXT)
+stdcsv_OBJECTS = $(am_stdcsv_OBJECTS)
+stdcsv_DEPENDENCIES = ../lib/libcsv.la
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-am_stdcsv_OBJECTS = stdcsv.$(OBJEXT)
-stdcsv_OBJECTS = $(am_stdcsv_OBJECTS)
-stdcsv_DEPENDENCIES = ../libcsv/libcsv.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -129,7 +126,7 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/fql.Po ./$(DEPDIR)/stdcsv.Po
+am__depfiles_remade = ./$(DEPDIR)/stdcsv.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -149,8 +146,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(fql_SOURCES) $(stdcsv_SOURCES)
-DIST_SOURCES = $(fql_SOURCES) $(stdcsv_SOURCES)
+SOURCES = $(stdcsv_SOURCES)
+DIST_SOURCES = $(stdcsv_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -304,11 +301,9 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = -I$(srcdir)/../lib/include -I$(srcdir)/util
-fql_SOURCES = fql.c
-fql_LDADD = ../lib/libfql.la -lreadline -lcsv
+AM_CPPFLAGS = -I$(srcdir)/../lib/include
 stdcsv_SOURCES = stdcsv.c
-stdcsv_LDADD = ../libcsv/libcsv.la
+stdcsv_LDADD = ../lib/libcsv.la
 all: all-am
 
 .SUFFIXES:
@@ -322,9 +317,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign src/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign csv/src/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign src/Makefile
+	  $(AUTOMAKE) --foreign csv/src/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -392,10 +387,6 @@ clean-binPROGRAMS:
 	echo " rm -f" $$list; \
 	rm -f $$list
 
-fql$(EXEEXT): $(fql_OBJECTS) $(fql_DEPENDENCIES) $(EXTRA_fql_DEPENDENCIES) 
-	@rm -f fql$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(fql_OBJECTS) $(fql_LDADD) $(LIBS)
-
 stdcsv$(EXEEXT): $(stdcsv_OBJECTS) $(stdcsv_DEPENDENCIES) $(EXTRA_stdcsv_DEPENDENCIES) 
 	@rm -f stdcsv$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(stdcsv_OBJECTS) $(stdcsv_LDADD) $(LIBS)
@@ -406,7 +397,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fql.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stdcsv.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -569,8 +559,7 @@ clean: clean-am
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/fql.Po
-	-rm -f ./$(DEPDIR)/stdcsv.Po
+		-rm -f ./$(DEPDIR)/stdcsv.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -616,8 +605,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/fql.Po
-	-rm -f ./$(DEPDIR)/stdcsv.Po
+		-rm -f ./$(DEPDIR)/stdcsv.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
