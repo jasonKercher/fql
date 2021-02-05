@@ -58,7 +58,7 @@ int csv_append_line(struct csv_reader* this, struct csv_record *rec, size_t line
 /**
  * Simple CSV parsing. Disregard all quotes.
  */
-int csv_parse_none(struct csv_reader*, struct csv_record* rec, const char** line, size_t* lineIdx);
+int csv_parse_none(struct csv_reader*, struct csv_record* rec, const char** line, size_t* lineIdx, unsigned char_limit);
 
 /**
  * Parse line respecting quotes. Quotes within
@@ -66,13 +66,13 @@ int csv_parse_none(struct csv_reader*, struct csv_record* rec, const char** line
  * Leading spaces will cause the field to not
  * be treated as qualified.
  */
-int csv_parse_weak(struct csv_reader*, struct csv_record* rec, const char** line, size_t* lineIdx);
+int csv_parse_weak(struct csv_reader*, struct csv_record* rec, const char** line, size_t* lineIdx, unsigned char_limit);
 
 /**
  * Parse line according to RFC-4180 guidelines.
  * More info: https://tools.ietf.org/html/rfc4180
  */
-int csv_parse_rfc4180(struct csv_reader* this, struct csv_record* rec, const char** line, size_t* lineIdx);
+int csv_parse_rfc4180(struct csv_reader* this, struct csv_record* rec, const char** line, size_t* lineIdx, unsigned char_limit);
 
 
 struct csv_reader* csv_reader_new()
@@ -254,10 +254,12 @@ int csv_nparse_to(struct csv_reader *this, struct csv_record *rec, const char* l
         if (!this->_in->delimLen)
                 csv_determine_delimiter(this, line);
 
-        if (strlen(line) >= rec->_in->bufsize) {
+        unsigned line_len = (char_limit == UINT_MAX) ? strlen(line) : char_limit;
+
+        if (line_len >= rec->_in->bufsize) {
                 increase_buffer_to(&rec->_in->buffer,
                                    &rec->_in->bufsize,
-                                   strlen(line)+1);
+                                   line_len+1);
         }
 
         rec->_in->bufidx = 0;
@@ -275,13 +277,13 @@ int csv_nparse_to(struct csv_reader *this, struct csv_record *rec, const char* l
                 case QUOTE_ALL:
                         /* Not seeing a point to implementing this for reading. */
                 case QUOTE_RFC4180:
-                        ret = csv_parse_rfc4180(this, rec, &line, &lineIdx);
+                        ret = csv_parse_rfc4180(this, rec, &line, &lineIdx, char_limit);
                         break;
                 case QUOTE_WEAK:
-                        ret = csv_parse_weak(this, rec, &line, &lineIdx);
+                        ret = csv_parse_weak(this, rec, &line, &lineIdx, char_limit);
                         break;
                 case QUOTE_NONE:
-                        ret = csv_parse_none(this, rec, &line, &lineIdx);
+                        ret = csv_parse_none(this, rec, &line, &lineIdx, char_limit);
                         break;
                 }
 
@@ -335,7 +337,7 @@ int csv_append_line(struct csv_reader* this, struct csv_record *rec, size_t line
         return ret;
 }
 
-int csv_parse_rfc4180(struct csv_reader* this, struct csv_record* rec, const char** line, size_t* lineIdx)
+int csv_parse_rfc4180(struct csv_reader* this, struct csv_record* rec, const char** line, size_t* lineIdx, unsigned char_limit)
 {
         uint delimIdx = 0;
         uint lastDelimIdx = 0;
@@ -348,7 +350,7 @@ int csv_parse_rfc4180(struct csv_reader* this, struct csv_record* rec, const cha
         int firstChar = true;
 
         while (true) {
-                for (; (*line)[*lineIdx] != '\0' && delimIdx != this->_in->delimLen; ++(*lineIdx)) {
+                for (; *lineIdx < char_limit && (*line)[*lineIdx] != '\0' && delimIdx != this->_in->delimLen; ++(*lineIdx)) {
                         skip = false;
                         if (qualified) {
                                 qualified = ((*line)[*lineIdx] != '"');
@@ -416,7 +418,7 @@ int csv_parse_rfc4180(struct csv_reader* this, struct csv_record* rec, const cha
         return CSV_GOOD;
 }
 
-int csv_parse_weak(struct csv_reader* this, struct csv_record* rec, const char** line, size_t* lineIdx)
+int csv_parse_weak(struct csv_reader* this, struct csv_record* rec, const char** line, size_t* lineIdx, unsigned char_limit)
 {
         uint delimIdx = 0;
         uint lastDelimIdx = 0;
@@ -429,7 +431,7 @@ int csv_parse_weak(struct csv_reader* this, struct csv_record* rec, const char**
         ++(*lineIdx);
 
         while (true) {
-                for (; (*line)[*lineIdx] != '\0' && delimIdx != this->_in->delimLen; ++(*lineIdx)) {
+                for (; *lineIdx < char_limit && (*line)[*lineIdx] != '\0' && delimIdx != this->_in->delimLen; ++(*lineIdx)) {
                         if (onQuote && (*line)[*lineIdx] == this->delimiter[delimIdx]) {
                                 ++delimIdx;
                         } else {
@@ -485,7 +487,7 @@ int csv_parse_weak(struct csv_reader* this, struct csv_record* rec, const char**
         return CSV_GOOD;
 }
 
-int csv_parse_none(struct csv_reader* this, struct csv_record* rec, const char** line, size_t* lineIdx)
+int csv_parse_none(struct csv_reader* this, struct csv_record* rec, const char** line, size_t* lineIdx, unsigned char_limit)
 {
         uint delimIdx = 0;
         uint lastDelimIdx = 0;
@@ -493,7 +495,7 @@ int csv_parse_none(struct csv_reader* this, struct csv_record* rec, const char**
         int appendField = false;
         int firstChar = true;
 
-        for (; (*line)[*lineIdx] != '\0' && delimIdx != this->_in->delimLen; ++(*lineIdx)) {
+        for (; *lineIdx < char_limit && (*line)[*lineIdx] != '\0' && delimIdx != this->_in->delimLen; ++(*lineIdx)) {
                 if ((*line)[*lineIdx] == this->delimiter[delimIdx])
                         ++delimIdx;
                 else if (delimIdx != 0)

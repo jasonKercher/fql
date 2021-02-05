@@ -28,13 +28,12 @@ int fql_read(Dgraph* proc_graph, Process* proc)
         }
 
         Reader* reader = proc->proc_data;
-        struct libcsv_data* data = reader->reader_data;
         Vec** recs = fifo_peek(proc->fifo_in0);
         /* We can assume recs is of size 1 */
         Vec** rec = vec_begin(*recs);
         size_t tail = proc->fifo_in0->tail;
         tail = (tail) ? tail-1 : proc->fifo_in0->buf->size;
-        int ret = reader->get_record_fn(data, *rec, tail);
+        int ret = reader->get_record_fn(reader->reader_data, *rec, tail);
 
         switch (ret) {
         case FQL_GOOD:
@@ -97,14 +96,17 @@ int fql_logic(Dgraph* proc_graph, Process* proc)
 
 int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
 {
-        if (fifo_is_empty(proc->fifo_in0) || fifo_is_empty(proc->fifo_in1)) {
+        if (fifo_is_empty(proc->fifo_in0)) {
                 return 0;
         }
 
         Vec** recs = fifo_peek(proc->fifo_in0);
 
         /* Re-open fifo if eof reached and consume */
-        if (fifo_is_empty(proc->fifo_in1) && !proc->fifo_in1->is_open) {
+        if (fifo_is_empty(proc->fifo_in1)) { 
+                if (proc->fifo_in1->is_open) {
+                        return 0;
+                }
                 _recycle_rec(proc_graph, proc->fifo_width - 1);
                 fifo_consume(proc->fifo_in0);
                 proc->fifo_in1->is_open = true;

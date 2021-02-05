@@ -45,6 +45,7 @@ struct mmapcsv_data {
         char* mp;
         size_t file_size;
         int fd;
+        _Bool eof;
 };
 
 struct mmapcsv_data* mmapcsv_new(size_t);

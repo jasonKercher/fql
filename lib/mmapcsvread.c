@@ -26,6 +26,7 @@ struct mmapcsv_data* mmapcsv_construct(struct mmapcsv_data* csv_data, size_t buf
                 ,0                      /* mp */
                 ,0                      /* file_size */
                 ,0                      /* fd */
+                ,false                  /* eof */
         };
 
         vec_reserve(csv_data->csv_recs, buflen);
@@ -107,16 +108,23 @@ int mmapcsv_getline(struct mmapcsv_data* data)
                         ++data->mp;
                 }
         }
-        return FQL_FAIL;  /* EOF?? */
+
+        data->eof = true;
+        return EOF;
 }
 
 int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
 {
         struct mmapcsv_data* data = reader_data;
+        if (data->eof) {
+                mmapcsv_reset(data);
+        }
+
         csv_record** csv_rec = vec_at(data->csv_recs, idx);
 
-        if (mmapcsv_getline(data)) {
-                return FQL_FAIL;
+        int ret = mmapcsv_getline(data);
+        if (ret) {
+                return ret;
         }
 
         /* lol. lets just call everything data */
