@@ -36,6 +36,7 @@ Plan* plan_construct(Plan* plan, int source_total)
                 ,dnode_new(process_new("OP_FALSE", source_total))  /* op_false */
                 ,NULL                                              /* current */
                 ,0                                                 /* rows_affected */
+                ,0                                                 /* source_count */
                 ,source_total                                      /* source_count */
         };
 
@@ -153,7 +154,8 @@ void _from(Plan* plan, Query* query)
                        src->table->reader->file_name.data,
                        "stream read");
 
-        Process* from_proc = process_new(action_msg.data, plan->source_count);
+        ++plan->source_count;
+        Process* from_proc = process_new(action_msg.data, plan->source_total);
         from_proc->action = &fql_read;
         from_proc->proc_data = src->table->reader;
 
@@ -164,7 +166,7 @@ void _from(Plan* plan, Query* query)
         plan->current = from_node;
 
         for (++src; src != vec_end(query->sources); ++src) {
-                Process* join_proc = _new_join_proc(src->join_type, plan->source_count);
+                Process* join_proc = _new_join_proc(src->join_type, ++plan->source_count);
                 process_add_second_input(join_proc);
                 join_proc->action = &fql_cartesian_join;
 
@@ -178,7 +180,7 @@ void _from(Plan* plan, Query* query)
                                "mmap read");
 
                 /* Root node only will only have one source */
-                Process* read_proc = process_new(action_msg.data, plan->source_count);
+                Process* read_proc = process_new(action_msg.data, 1);
                 read_proc->proc_data = src->table->reader;
                 read_proc->action = &fql_read;
                 read_proc->is_secondary = true;

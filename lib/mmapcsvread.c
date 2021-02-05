@@ -98,7 +98,7 @@ int mmapcsv_getline(struct mmapcsv_data* data)
                 case '\r':
                         data->current.len = data->mp - data->current.data;
                         if (data->mp - data->mmap_base + 1 < data->file_size &&
-                            *(++data)->mp == '\n') {
+                            *(++data->mp) == '\n') {
                                 ++data->mp;
                         }
                         vec_push_back(data->raw, &data->current);

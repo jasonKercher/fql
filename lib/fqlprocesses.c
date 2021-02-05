@@ -97,7 +97,7 @@ int fql_logic(Dgraph* proc_graph, Process* proc)
 
 int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
 {
-        if (fifo_is_empty(proc->fifo_in0)) {
+        if (fifo_is_empty(proc->fifo_in0) || fifo_is_empty(proc->fifo_in1)) {
                 return 0;
         }
 
