@@ -151,5 +151,6 @@ int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
 void mmapcsv_reset(void* reader_data)
 {
         struct mmapcsv_data* data = reader_data;
+        data->eof = false;
         data->mp = data->mmap_base;
 }

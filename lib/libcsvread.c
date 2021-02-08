@@ -53,7 +53,6 @@ int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
 {
         struct libcsv_reader* csv = reader_data;
         if (csv->eof) {
-                csv->eof = false;
                 csv_reader_reset(csv->csv_handle);
         }
 
@@ -97,5 +96,7 @@ int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
 
 void libcsv_reset(void* reader_data)
 {
+        struct libcsv_reader* csv = reader_data;
+        csv->eof = false;
         csv_reader_reset(reader_data);
 }
