@@ -39,6 +39,8 @@ struct csv_write_internal;
 struct csv_record {
         struct csv_internal* _in;
         char** fields;
+        const char* extra;
+        unsigned extra_len;
         int size;
 };
 

@@ -81,6 +81,7 @@ struct csv_record* csv_record_clone(struct csv_record* rec)
         *new_rec = (struct csv_record) {
                 NULL,
                 NULL,
+                NULL,
                 rec->size
         };
 
