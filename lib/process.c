@@ -118,7 +118,12 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
         int run_count = 0;
         while ((proc_node = dgraph_traverse(proc_graph))) {
                 proc = proc_node->data;
-                if (fifo_is_empty(proc->fifo_in0)) {
+                /* Check to see that there is something to process
+                 * as well as a place for it to go.
+                 */
+                if (fifo_is_empty(proc->fifo_in0) ||
+                    (proc->fifo_out0 && !fifo_is_receivable(proc->fifo_out0)) ||
+                    (proc->fifo_out1 && !fifo_is_receivable(proc->fifo_out1))) {
                         continue;
                 }
                 int ret = proc->action(proc_graph, proc);

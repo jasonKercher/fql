@@ -48,6 +48,17 @@ int str2double(double* ret, const char* s)
         return 0;
 }
 
+int charncount(const char* s, char c, unsigned n)
+{
+        int count = 0;
+        int i = 0;
+        for(; s[i] != '\0' && i < n; ++i)
+                if (s[i] == c)
+                        ++count;
+
+        return count;
+}
+
 int charcount(const char* s, char c)
 {
         int count = 0;

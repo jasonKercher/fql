@@ -23,7 +23,7 @@ void _recycle_specific(Dgraph* proc_graph, int width)
 
 int fql_read(Dgraph* proc_graph, Process* proc)
 {
-        if (!proc->fifo_out0->is_open || fifo_is_empty(proc->fifo_in0)) {
+        if (!proc->fifo_out0->is_open) {
                 return 0;
         }
 
@@ -55,10 +55,6 @@ int fql_read(Dgraph* proc_graph, Process* proc)
 
 int fql_select(Dgraph* proc_graph, Process* proc)
 {
-        if (fifo_is_empty(proc->fifo_in0)) {
-                return 0;
-        }
-
         Vec** rec = fifo_get(proc->fifo_in0);
         Select* select = proc->proc_data;
         int ret = select->select_fn(select, *rec);
@@ -71,10 +67,6 @@ int fql_select(Dgraph* proc_graph, Process* proc)
 
 int fql_logic(Dgraph* proc_graph, Process* proc)
 {
-        if (fifo_is_empty(proc->fifo_in0)) {
-                return 0;
-        }
-
         Vec** recs = fifo_get(proc->fifo_in0);
         LogicGroup* lg = proc->proc_data;
 
@@ -96,14 +88,10 @@ int fql_logic(Dgraph* proc_graph, Process* proc)
 
 int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
 {
-        if (fifo_is_empty(proc->fifo_in0)) {
-                return 0;
-        }
-
         Vec** recs = fifo_peek(proc->fifo_in0);
 
         /* Re-open fifo if eof reached and consume */
-        if (fifo_is_empty(proc->fifo_in1)) { 
+        if (fifo_is_empty(proc->fifo_in1)) {
                 if (proc->fifo_in1->is_open) {
                         return 0;
                 }
@@ -129,9 +117,6 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
 int fql_no_op(Dgraph* proc_graph, Process* proc)
 {
         fprintf(stderr, "No-op: %s\n", (char*) proc->action_msg->data);
-        if (proc->fifo_out0 == NULL) {
-                return 0;
-        }
         Vec** rec = fifo_get(proc->fifo_in0);
         fifo_add(proc->fifo_out0, rec);
         return 0;

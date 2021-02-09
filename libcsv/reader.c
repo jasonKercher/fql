@@ -41,7 +41,7 @@ struct csv_internal {
  * these delimiters are found, use comma. If this->delimiter was set
  * externally, simply update this->_in->delimLen and return.
  */
-void csv_determine_delimiter(struct csv_reader*, const char* header);
+void csv_determine_delimiter(struct csv_reader*, const char* header, unsigned char_limit);
 
 /**
  * csv_record_grow allocates space for the fields
@@ -252,7 +252,7 @@ int csv_parse_to(struct csv_reader *this, struct csv_record *rec, const char* li
 int csv_nparse_to(struct csv_reader *this, struct csv_record *rec, const char* line, unsigned char_limit, unsigned field_limit)
 {
         if (!this->_in->delimLen)
-                csv_determine_delimiter(this, line);
+                csv_determine_delimiter(this, line, char_limit);
 
         unsigned line_len = (char_limit == UINT_MAX) ? strlen(line) : char_limit;
 
@@ -403,7 +403,7 @@ int csv_parse_rfc4180(struct csv_reader* this, struct csv_record* rec, const cha
 
         if (delimIdx == this->_in->delimLen) {
                 /* Handle Trailing delimiter */
-                if (!((*line)[*lineIdx]))
+                if (!((*line)[*lineIdx]) || *lineIdx == char_limit)
                         appendField = true;
                 rec->_in->bufidx -= this->_in->delimLen;
         }
@@ -473,7 +473,7 @@ int csv_parse_weak(struct csv_reader* this, struct csv_record* rec, const char**
 
         if (delimIdx == this->_in->delimLen) {
                 /* Handle Trailing delimiter */
-                if (!((*line)[*lineIdx]))
+                if (!((*line)[*lineIdx]) || *lineIdx == char_limit)
                         appendField = true;
                 rec->_in->bufidx -= this->_in->delimLen;
         }
@@ -520,7 +520,7 @@ int csv_parse_none(struct csv_reader* this, struct csv_record* rec, const char**
 
         if (delimIdx == this->_in->delimLen) {
                 /* Handle Trailing delimiter */
-                if (!((*line)[*lineIdx]))
+                if (!((*line)[*lineIdx]) || *lineIdx == char_limit)
                         appendField = true;
                 rec->_in->bufidx -= this->_in->delimLen;
         }
@@ -534,7 +534,7 @@ int csv_parse_none(struct csv_reader* this, struct csv_record* rec, const char**
         return CSV_GOOD;
 }
 
-void csv_determine_delimiter(struct csv_reader* this, const char* header)
+void csv_determine_delimiter(struct csv_reader* this, const char* header, unsigned char_limit)
 {
         uint delimLen = strlen(this->delimiter);
         if (delimLen) {
@@ -548,7 +548,7 @@ void csv_determine_delimiter(struct csv_reader* this, const char* header)
         int count = 0;
         int maxCount = 0;
         for (; i < strlen(delims); ++i) {
-                count = charcount(header, delims[i]);
+                count = charncount(header, delims[i], char_limit);
                 if (count > maxCount) {
                         sel = i;
                         maxCount = count;

@@ -60,6 +60,15 @@ _Bool fifo_is_empty(Fifo* f)
         return (!f->is_full && (f->head == f->tail));
 }
 
+_Bool fifo_is_receivable(Fifo* f)
+{
+        return (f->is_open && !fifo_is_full(f));
+}
+
+_Bool fifo_has_data(Fifo* f)
+{
+        return (f->is_open && fifo_available(f));
+}
 void* fifo_get(Fifo* f)
 {
         void* data = fifo_peek(f);

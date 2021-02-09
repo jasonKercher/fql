@@ -107,6 +107,7 @@ int str2double(double*, const char* s);
  *      - Number of occurences.
  */
 int charcount(const char* s, char c);
+int charncount(const char* s, char c, unsigned n);
 
 /**
  * strhaschar checks whether a char c exists within string s.
