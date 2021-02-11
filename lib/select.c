@@ -134,7 +134,7 @@ void select_apply_column_alias(Select* select, const char* alias)
         schema_apply_column_alias(select->schema, alias);
 }
 
-int select_record_api(Select* select, struct vec* rec)
+int select_record_api(Select* select, struct vec* recs)
 {
         Writer* writer = select->writer;
 
@@ -148,7 +148,7 @@ int select_record_api(Select* select, struct vec* rec)
                 case FIELD_STRING:
                 {
                         StringView sv;
-                        if (column_get_stringview(&sv, cols[i], rec)) {
+                        if (column_get_stringview(&sv, cols[i], recs)) {
                                 return FQL_FAIL;
                         }
                         /* Even though the we are not using the
@@ -163,13 +163,13 @@ int select_record_api(Select* select, struct vec* rec)
                 }
                 case FIELD_INT:
                         field->type = FQL_INT;
-                        if (column_get_int(&field->data.i, cols[i], rec)) {
+                        if (column_get_int(&field->data.i, cols[i], recs)) {
                                 return FQL_FAIL;
                         }
                         break;
                 case FIELD_FLOAT:
                         field->type = FQL_FLOAT;
-                        if (column_get_float(&field->data.f, cols[i], rec)) {
+                        if (column_get_float(&field->data.f, cols[i], recs)) {
                                 return FQL_FAIL;
                         }
                 default:
@@ -180,7 +180,7 @@ int select_record_api(Select* select, struct vec* rec)
         return 1;
 }
 
-int select_record(Select* select, struct vec* rec)
+int select_record(Select* select, struct vec* recs)
 {
         Writer* writer = select->writer;
 
@@ -190,7 +190,7 @@ int select_record(Select* select, struct vec* rec)
         int i = 0;
         for (; i < col_vec->size; ++i) {
                 StringView sv;
-                if (column_get_stringview(&sv, cols[i], rec)) {
+                if (column_get_stringview(&sv, cols[i], recs)) {
                         return FQL_FAIL;
                 }
                 String* s = vec_at(writer->raw_rec, i);

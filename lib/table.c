@@ -39,18 +39,20 @@ void table_free(Table* table)
 
 Source* source_new(Table* table,
                    const char* alias,
+                   size_t idx,
                    enum source_type source_type,
                    enum join_type join_type)
 {
         Source* new_source = NULL;
         malloc_(new_source, sizeof(*new_source));
 
-        return source_construct(new_source, table, alias, source_type, join_type);
+        return source_construct(new_source, table, alias, idx, source_type, join_type);
 }
 
 Source* source_construct(Source* src,
                          Table* table,
                          const char* alias,
+                         size_t idx,
                          enum source_type source_type,
                          enum join_type join_type)
 {
@@ -59,8 +61,10 @@ Source* source_construct(Source* src,
                 ,NULL                   /* condition */
                 ,vec_new_(Column*)      /* validation_list */
                 ,{ 0 }                  /* alias */
+                ,idx
                 ,source_type            /* source_type */
                 ,join_type              /* join_type */
+
         };
 
         if (alias[0] == '\0') {

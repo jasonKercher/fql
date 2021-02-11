@@ -49,7 +49,7 @@ void libcsv_reader_free(void* reader_data)
         free_(csv_data);
 }
 
-int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
+int libcsv_get_record(void* reader_data, Record* rec, unsigned char idx)
 {
         struct libcsv_reader* csv = reader_data;
         if (csv->eof) {
@@ -72,9 +72,9 @@ int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
         /* This should really never change unless we
          * want this to mean something (like NULLs).
          */
-        vec_resize(rec, (*csv_rec)->size);
+        vec_resize(&rec->fields, (*csv_rec)->size);
 
-        StringView* sv = vec_begin(rec);
+        StringView* sv = vec_begin(&rec->fields);
         char** fields = (*csv_rec)->fields;
 
         int i = 0;
@@ -90,6 +90,9 @@ int libcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
                         sv[i].len = strlen(fields[i]);
                 }
         }
+
+        rec->extra.data = (*csv_rec)->extra;
+        rec->extra.len = (*csv_rec)->extra_len;
 
         return FQL_GOOD;
 }

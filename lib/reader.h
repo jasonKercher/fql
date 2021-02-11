@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "record.h"
 #include "util/vec.h"
 #include "util/pmap.h"
 #include "util/fqlstring.h"
@@ -32,7 +33,7 @@ struct libcsv_reader {
 struct libcsv_reader* libcsv_reader_new(size_t);
 struct libcsv_reader* libcsv_reader_construct(struct libcsv_reader*, size_t);
 void libcsv_reader_free(void*);
-int libcsv_get_record(void* reader_data, Vec* rec, unsigned char);
+int libcsv_get_record(void* reader_data, Record* rec, unsigned char);
 void libcsv_reset(void*);
 
 struct mmapcsv_data {
@@ -52,10 +53,10 @@ struct mmapcsv_data* mmapcsv_new(size_t);
 struct mmapcsv_data* mmapcsv_construct(struct mmapcsv_data*, size_t);
 void mmapcsv_free(void*);
 int mmapcsv_open(struct mmapcsv_data*, const char* file_name);
-int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char);
+int mmapcsv_get_record(void* reader_data, struct record* rec, unsigned char);
 void mmapcsv_reset(void*);
 
-typedef int (*read_fn)(void*, struct vec* rec, unsigned char idx);
+typedef int (*read_fn)(void*, struct record* rec, unsigned char idx);
 
 enum read_type {
         READ_UNDEFINED,

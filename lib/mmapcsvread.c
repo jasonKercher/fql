@@ -113,7 +113,7 @@ int mmapcsv_getline(struct mmapcsv_data* data)
         return EOF;
 }
 
-int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
+int mmapcsv_get_record(void* reader_data, Record* rec, unsigned char idx)
 {
         struct mmapcsv_data* data = reader_data;
         if (data->eof) {
@@ -130,9 +130,9 @@ int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
         /* lol. lets just call everything data */
         csv_nparse(data->csv_handle, *csv_rec, data->current.data, data->current.len);
 
-        vec_resize(rec, (*csv_rec)->size);
+        vec_resize(&rec->fields, (*csv_rec)->size);
 
-        StringView* sv = vec_begin(rec);
+        StringView* sv = vec_begin(&rec->fields);
         char** fields = (*csv_rec)->fields;
 
         int i = 0;
@@ -144,6 +144,9 @@ int mmapcsv_get_record(void* reader_data, Vec* rec, unsigned char idx)
                         sv[i].len = strlen(fields[i]);
                 }
         }
+
+        rec->extra.data = (*csv_rec)->extra;
+        rec->extra.len = (*csv_rec)->extra_len;
 
         return FQL_GOOD;
 }

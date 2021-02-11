@@ -204,7 +204,8 @@ void query_add_source(Query* query,
                          new_table,
                          alias,
                          type,
-                         query->join);
+                         query->join,
+                         query->sources->size - 1);
 }
 
 void query_apply_table_alias(Query* query, const char* alias)

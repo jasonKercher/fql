@@ -136,7 +136,7 @@ libfql_la_DEPENDENCIES = antlr/libantlr.la ../util/libutil.la
 am_libfql_la_OBJECTS = libfql.lo fqlplan.lo process.lo fqlprocesses.lo \
 	query.lo table.lo schema.lo column.lo operation.lo reader.lo \
 	libcsvread.lo mmapcsvread.lo writer.lo logic.lo fqllogic.lo \
-	select.lo function.lo fqlfunctions.lo field.lo
+	select.lo function.lo fqlfunctions.lo record.lo field.lo
 libfql_la_OBJECTS = $(am_libfql_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -164,9 +164,9 @@ am__depfiles_remade = ./$(DEPDIR)/column.Plo ./$(DEPDIR)/field.Plo \
 	./$(DEPDIR)/libfql.Plo ./$(DEPDIR)/logic.Plo \
 	./$(DEPDIR)/mmapcsvread.Plo ./$(DEPDIR)/operation.Plo \
 	./$(DEPDIR)/process.Plo ./$(DEPDIR)/query.Plo \
-	./$(DEPDIR)/reader.Plo ./$(DEPDIR)/schema.Plo \
-	./$(DEPDIR)/select.Plo ./$(DEPDIR)/table.Plo \
-	./$(DEPDIR)/writer.Plo
+	./$(DEPDIR)/reader.Plo ./$(DEPDIR)/record.Plo \
+	./$(DEPDIR)/schema.Plo ./$(DEPDIR)/select.Plo \
+	./$(DEPDIR)/table.Plo ./$(DEPDIR)/writer.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -401,6 +401,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					logic.h logic.c fqllogic.c \
 					select.h select.c \
 					function.h function.c fqlfunctions.c \
+					record.h record.c \
 					field.h field.c
 
 libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la -lantlr4-runtime -lcsv
@@ -497,6 +498,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/process.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/query.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/reader.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/record.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/schema.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/select.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/table.Plo@am__quote@ # am--include-marker
@@ -772,6 +774,7 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/process.Plo
 	-rm -f ./$(DEPDIR)/query.Plo
 	-rm -f ./$(DEPDIR)/reader.Plo
+	-rm -f ./$(DEPDIR)/record.Plo
 	-rm -f ./$(DEPDIR)/schema.Plo
 	-rm -f ./$(DEPDIR)/select.Plo
 	-rm -f ./$(DEPDIR)/table.Plo
@@ -836,6 +839,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/process.Plo
 	-rm -f ./$(DEPDIR)/query.Plo
 	-rm -f ./$(DEPDIR)/reader.Plo
+	-rm -f ./$(DEPDIR)/record.Plo
 	-rm -f ./$(DEPDIR)/schema.Plo
 	-rm -f ./$(DEPDIR)/select.Plo
 	-rm -f ./$(DEPDIR)/table.Plo

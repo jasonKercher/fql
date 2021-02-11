@@ -46,6 +46,7 @@ struct source {
         struct logicgroup* condition;
         struct vec* validation_list;
         String alias;
+        size_t idx;
         enum source_type source_type;
         enum join_type join_type;
 };
@@ -53,11 +54,13 @@ typedef struct source Source;
 
 struct source* source_new(struct table*,
                           const char* alias,
+                          size_t idx,
                           enum source_type,
                           enum join_type);
 struct source* source_construct(struct source*,
                            struct table*,
                            const char* alias,
+                           size_t idx,
                            enum source_type,
                            enum join_type);
 void source_free(struct source*);

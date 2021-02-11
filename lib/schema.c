@@ -154,14 +154,14 @@ success_return:
         return FQL_GOOD;
 }
 
-void schema_assign_header(Table* table, Vec* rec)
+void schema_assign_header(Table* table, Record* rec)
 {
         int i = 0;
 
-        table->schema->col_map = hmap_new(rec->size * 2, HMAP_NOCASE);
+        table->schema->col_map = hmap_new(rec->fields.size * 2, HMAP_NOCASE);
 
-        StringView* fields = rec->data;
-        for (; i < rec->size; ++i) {
+        StringView* fields = rec->fields.data;
+        for (; i < rec->fields.size; ++i) {
                 String col_str;
                 string_construct_from_stringview(&col_str, &fields[i]);
                 Column* new_col = column_new(EXPR_COLUMN_NAME, col_str.data, "");
@@ -211,12 +211,12 @@ int schema_resolve_source(Source* source)
         }
         reader_assign(table->reader);
 
-        Vec rec;
-        vec_construct_(&rec, StringView);
+        Record rec;
+        record_construct(&rec);
         table->reader->get_record_fn(table->reader->reader_data, &rec, 0);
 
         schema_assign_header(table, &rec);
-        vec_destroy(&rec);
+        record_destroy(&rec);
 
         return FQL_GOOD;
 }

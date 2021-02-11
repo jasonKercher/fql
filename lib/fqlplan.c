@@ -169,6 +169,7 @@ void _from(Plan* plan, Query* query)
                 Process* join_proc = _new_join_proc(src->join_type, ++plan->source_count);
                 process_add_second_input(join_proc);
                 join_proc->action = &fql_cartesian_join;
+                join_proc->proc_data = src;
 
                 Dnode* join_proc_node = dgraph_add_data(plan->processes, join_proc);
 
