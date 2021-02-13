@@ -113,9 +113,9 @@ int mmapcsv_getline(struct mmapcsv_data* data)
         return EOF;
 }
 
-int mmapcsv_get_record(void* reader_data, Record* rec, unsigned char idx)
+int mmapcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
 {
-        struct mmapcsv_data* data = reader_data;
+        struct mmapcsv_data* data = reader->reader_data;
         if (data->eof) {
                 mmapcsv_reset(data);
         }
@@ -128,7 +128,7 @@ int mmapcsv_get_record(void* reader_data, Record* rec, unsigned char idx)
         }
 
         /* lol. lets just call everything data */
-        csv_nparse(data->csv_handle, *csv_rec, data->current.data, data->current.len);
+        csv_nparse_to(data->csv_handle, *csv_rec, data->current.data, data->current.len, reader->max_col_idx);
 
         vec_resize(&rec->fields, (*csv_rec)->size);
 

@@ -131,6 +131,9 @@ int column_try_assign_source(Column* col, Source* src, int idx)
         col->data_source = hmap_get(src->table->schema->col_map, col->alias.data);
         if (col->data_source) {
                 col->src_idx = idx;
+                if (col->data_source->location > src->table->reader->max_col_idx) {
+                        src->table->reader->max_col_idx = col->data_source->location;
+                }
                 return 1;
         }
 

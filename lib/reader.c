@@ -28,6 +28,7 @@ Reader* reader_construct(Reader* reader)
                 ,NULL           /* free_fn */
                 ,NULL           /* reset_fn */
                 ,{ 0 }          /* file_name */
+                ,0              /* max_col_idx */
         };
 
         string_construct(&reader->file_name);

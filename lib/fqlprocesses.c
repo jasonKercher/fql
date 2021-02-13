@@ -34,7 +34,7 @@ int fql_read(Dgraph* proc_graph, Process* proc)
         Record** rec = vec_begin(*recs);
         size_t tail = proc->fifo_in0->tail;
         tail = (tail) ? tail-1 : proc->fifo_in0->buf->size;
-        int ret = reader->get_record_fn(reader->reader_data, *rec, tail);
+        int ret = reader->get_record_fn(reader, *rec, tail);
 
         switch (ret) {
         case FQL_GOOD:

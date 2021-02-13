@@ -49,16 +49,16 @@ void libcsv_reader_free(void* reader_data)
         free_(csv_data);
 }
 
-int libcsv_get_record(void* reader_data, Record* rec, unsigned char idx)
+int libcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
 {
-        struct libcsv_reader* csv = reader_data;
+        struct libcsv_reader* csv = reader->reader_data;
         if (csv->eof) {
                 csv_reader_reset(csv->csv_handle);
         }
 
         csv_record** csv_rec = vec_at(csv->csv_recs, idx);
 
-        int ret = csv_get_record(csv->csv_handle, *csv_rec);
+        int ret = csv_get_record_to(csv->csv_handle, *csv_rec, reader->max_col_idx);
         switch (ret) {
         case CSV_GOOD:
                 break;

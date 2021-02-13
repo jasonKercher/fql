@@ -12,6 +12,34 @@ extern "C" {
 #include "util/stringview.h"
 #include "util/util.h"
 
+struct reader;
+
+typedef int (*read_fn)(struct reader*, struct record* rec, unsigned char idx);
+
+enum read_type {
+        READ_UNDEFINED,
+        READ_LIBCSV,
+        READ_MMAPCSV,
+        READ_SUBQUERY,
+};
+
+struct reader {
+        enum read_type type;
+        void* reader_data;
+        read_fn get_record_fn;
+        generic_data_fn free_fn;
+        generic_data_fn reset_fn;
+        String file_name;
+        size_t max_col_idx;
+};
+typedef struct reader Reader;
+
+struct reader* reader_new();
+struct reader* reader_construct(struct reader*);
+void reader_free(struct reader*);
+
+void reader_assign(struct reader*);
+
 /**
  * Reader types own the data that is passed from
  * process to process. The records pass a vector
@@ -33,7 +61,7 @@ struct libcsv_reader {
 struct libcsv_reader* libcsv_reader_new(size_t);
 struct libcsv_reader* libcsv_reader_construct(struct libcsv_reader*, size_t);
 void libcsv_reader_free(void*);
-int libcsv_get_record(void* reader_data, Record* rec, unsigned char);
+int libcsv_get_record(struct reader*, struct record* rec, unsigned char);
 void libcsv_reset(void*);
 
 struct mmapcsv_data {
@@ -53,33 +81,8 @@ struct mmapcsv_data* mmapcsv_new(size_t);
 struct mmapcsv_data* mmapcsv_construct(struct mmapcsv_data*, size_t);
 void mmapcsv_free(void*);
 int mmapcsv_open(struct mmapcsv_data*, const char* file_name);
-int mmapcsv_get_record(void* reader_data, struct record* rec, unsigned char);
+int mmapcsv_get_record(struct reader*, struct record* rec, unsigned char);
 void mmapcsv_reset(void*);
-
-typedef int (*read_fn)(void*, struct record* rec, unsigned char idx);
-
-enum read_type {
-        READ_UNDEFINED,
-        READ_LIBCSV,
-        READ_MMAPCSV,
-        READ_SUBQUERY,
-};
-
-struct reader {
-        enum read_type type;
-        void* reader_data;
-        read_fn get_record_fn;
-        generic_data_fn free_fn;
-        generic_data_fn reset_fn;
-        String file_name;
-};
-typedef struct reader Reader;
-
-struct reader* reader_new();
-struct reader* reader_construct(struct reader*);
-void reader_free(struct reader*);
-
-void reader_assign(struct reader*);
 
 #ifdef __cplusplus
 }

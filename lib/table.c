@@ -61,7 +61,7 @@ Source* source_construct(Source* src,
                 ,NULL                   /* condition */
                 ,vec_new_(Column*)      /* validation_list */
                 ,{ 0 }                  /* alias */
-                ,idx
+                ,idx                    /* idx */
                 ,source_type            /* source_type */
                 ,join_type              /* join_type */
 
