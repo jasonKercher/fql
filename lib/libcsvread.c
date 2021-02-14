@@ -58,7 +58,7 @@ int libcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
 
         csv_record** csv_rec = vec_at(csv->csv_recs, idx);
 
-        int ret = csv_get_record_to(csv->csv_handle, *csv_rec, reader->max_col_idx);
+        int ret = csv_get_record_to(csv->csv_handle, *csv_rec, reader->max_col_idx+1);
         switch (ret) {
         case CSV_GOOD:
                 break;

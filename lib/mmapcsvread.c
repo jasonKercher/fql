@@ -128,7 +128,7 @@ int mmapcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
         }
 
         /* lol. lets just call everything data */
-        csv_nparse_to(data->csv_handle, *csv_rec, data->current.data, data->current.len, reader->max_col_idx);
+        csv_nparse_to(data->csv_handle, *csv_rec, data->current.data, data->current.len, reader->max_col_idx+1);
 
         vec_resize(&rec->fields, (*csv_rec)->size);
 
