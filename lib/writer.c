@@ -33,20 +33,22 @@ int libcsv_write_record(void* writer_data, Vec* col_vec, Vec* recs)
         int i = 0;
         for (; i < col_vec->size; ++i) {
                 StringView sv;
-                if (i == 0) {
+                if (i > 0) {
                         fputs(handle->delimiter, handle->file);
                 }
 
                 if (cols[i]->expr == EXPR_ASTERISK) {
                         int quote_store = handle->quotes;
                         handle->quotes = QUOTE_NONE;
-                        Record* rec = vec_at(recs, cols[i]->src_idx);
-                        csv_nwrite_field(handle, rec->raw.data, rec->raw.len);
+                        Record** rec = vec_at(recs, cols[i]->src_idx);
+                        csv_nwrite_field(handle, (*rec)->raw.data, (*rec)->raw.len);
                         handle->quotes = quote_store;
                 }
-                else if (column_get_stringview(&sv, cols[i], recs)) {
+                else {
+                        if (column_get_stringview(&sv, cols[i], recs)) {
+                                return FQL_FAIL;
+                        }
                         csv_nwrite_field(handle, sv.data, sv.len);
-                        return FQL_FAIL;
                 }
         }
 
