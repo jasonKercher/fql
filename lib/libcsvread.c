@@ -1,5 +1,5 @@
 #include "reader.h"
-#include <csv.h>
+#include "csv.h"
 #include "fql.h"
 
 struct libcsv_reader* libcsv_reader_new(size_t buflen)
@@ -91,8 +91,8 @@ int libcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
                 }
         }
 
-        rec->extra.data = (*csv_rec)->extra;
-        rec->extra.len = (*csv_rec)->extra_len;
+        rec->raw.data = (*csv_rec)->raw;
+        rec->raw.len = (*csv_rec)->raw_len;
 
         return FQL_GOOD;
 }

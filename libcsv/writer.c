@@ -10,7 +10,6 @@
  * Internal Structure
  */
 struct csv_write_internal {
-        FILE* file;
         char* buffer;
         struct charnode* tmp_node;
         char tempname[PATH_MAX];
@@ -31,7 +30,8 @@ struct csv_writer* csv_writer_new()
 
         malloc_(this, sizeof(*this));
         *this = (struct csv_writer) {
-                NULL
+                 NULL
+                ,stdout
                 ,","
                 ,"\n"
                 ,QUOTE_RFC4180
@@ -39,8 +39,7 @@ struct csv_writer* csv_writer_new()
 
         malloc_(this->_in, sizeof(*this->_in));
         *this->_in = (struct csv_write_internal) {
-                stdout  /* file */
-                ,NULL   /* buffer */
+                 NULL   /* buffer */
                 ,NULL   /* tmp_node */
                 ,""     /* tempname */
                 ,""     /* filename */
@@ -63,65 +62,67 @@ void csv_writer_free(struct csv_writer* this)
         free_(this);
 }
 
-void csv_write_record(struct csv_writer* this, struct csv_record* rec)
+void csv_nwrite_field(struct csv_writer* this, const char* field, unsigned char_limit)
 {
-        int i = 0;
         uint writeIndex = 0;
         int quoteCurrentField = 0;
         uint delimIdx = 0;
-        char* c = NULL;
+        const char* c = NULL;
 
-        for (i = 0; i < rec->size; ++i) {
-                if (i)
-                        fputs(this->delimiter, this->_in->file);
+        quoteCurrentField = (this->quotes == QUOTE_ALL);
+        writeIndex = 0;
+        for (c = field; *c && c - field < char_limit; ++c) {
+                if (writeIndex + 3 > this->_in->bufferSize)
+                        increase_buffer(&this->_in->buffer, &this->_in->bufferSize);
+                this->_in->buffer[writeIndex++] = *c;
+                if (*c == '"' && this->quotes >= QUOTE_RFC4180) {
+                        this->_in->buffer[writeIndex++] = '"';
+                        quoteCurrentField = true;
+                }
+                if (this->quotes && !quoteCurrentField) {
+                        if (strhaschar("\"\n\r", *c))
+                                quoteCurrentField = 1;
+                        else if (*c == this->delimiter[delimIdx])
+                                ++delimIdx;
+                        else
+                                delimIdx = (*c == this->delimiter[0]) ? 1 : 0;
 
-                quoteCurrentField = (this->quotes == QUOTE_ALL);
-                writeIndex = 0;
-                for (c = rec->fields[i]; *c; ++c) {
-                        if (writeIndex + 3 > this->_in->bufferSize)
-                                increase_buffer(&this->_in->buffer, &this->_in->bufferSize);
-                        this->_in->buffer[writeIndex++] = *c;
-                        if (*c == '"' && this->quotes >= QUOTE_RFC4180) {
-                                this->_in->buffer[writeIndex++] = '"';
+                        if (delimIdx == this->_in->delimLen)
                                 quoteCurrentField = true;
-                        }
-                        if (this->quotes && !quoteCurrentField) {
-                                if (strhaschar("\"\n\r", *c))
-                                        quoteCurrentField = 1;
-                                else if (*c == this->delimiter[delimIdx])
-                                        ++delimIdx;
-                                else
-                                        delimIdx = (*c == this->delimiter[0]) ? 1 : 0;
-
-                                if (delimIdx == this->_in->delimLen)
-                                        quoteCurrentField = true;
-                        }
                 }
-                this->_in->buffer[writeIndex] = '\0';
-                if (quoteCurrentField)
-                        fprintf(this->_in->file, "\"%s\"", this->_in->buffer);
-                else
-                        fputs(this->_in->buffer, this->_in->file);
         }
+        this->_in->buffer[writeIndex] = '\0';
+        if (quoteCurrentField)
+                fprintf(this->file, "\"%s\"", this->_in->buffer);
+        else
+                fputs(this->_in->buffer, this->file);
+}
 
-        if (rec->extra) {
+void csv_write_field(struct csv_writer* this, const char* field)
+{
+        csv_nwrite_field(this, field, UINT_MAX);
+}
+
+void csv_write_record(struct csv_writer* this, struct csv_record* rec)
+{
+        int i = 0;
+        for (; i < rec->size; ++i) {
                 if (i)
-                        fputs(this->delimiter, this->_in->file);
-                for (i = 0; i < rec->extra_len; ++i) {
-                        fputc(rec->extra[i], this->_in->file);
-                }
+                        fputs(this->delimiter, this->file);
+                csv_write_field(this, rec->fields[i]);
         }
-        fputs(this->line_terminator, this->_in->file);
+
+        fputs(this->line_terminator, this->file);
 }
 
 int csv_writer_reset(struct csv_writer* this)
 {
-        FAIL_IF(this->_in->file == stdout, "Cannot reset stdout");
-        FAIL_IF(!this->_in->file, "No file to reset");
-        FAIL_IF(fclose(this->_in->file) == EOF, this->_in->tempname);
-        //this->_in->file = NULL;
-        this->_in->file = fopen(this->_in->tempname, "w");
-        FAIL_IF(!this->_in->file, this->_in->tempname);
+        FAIL_IF(this->file == stdout, "Cannot reset stdout");
+        FAIL_IF(!this->file, "No file to reset");
+        FAIL_IF(fclose(this->file) == EOF, this->_in->tempname);
+        //this->file = NULL;
+        this->file = fopen(this->_in->tempname, "w");
+        FAIL_IF(!this->file, this->_in->tempname);
 
         return 0;
 }
@@ -136,8 +137,8 @@ int csv_writer_mktmp(struct csv_writer* this)
         strcat(this->_in->tempname, "/csv_XXXXXX");
 
         int fd = mkstemp(this->_in->tempname);
-        this->_in->file = fdopen(fd, "w");
-        FAIL_IF(!this->_in->file, this->_in->tempname);
+        this->file = fdopen(fd, "w");
+        FAIL_IF(!this->file, this->_in->tempname);
 
         this->_in->tmp_node = tmp_push(this->_in->tempname);
 
@@ -146,7 +147,7 @@ int csv_writer_mktmp(struct csv_writer* this)
 
 int csv_writer_isopen(struct csv_writer* this)
 {
-        if (this->_in->file && this->_in->file != stdout)
+        if (this->file && this->file != stdout)
                 return true;
         return false;
 }
@@ -162,11 +163,11 @@ int csv_writer_open(struct csv_writer* this, const char* filename)
 
 int csv_writer_close(struct csv_writer* this)
 {
-        if (this->_in->file == stdout)
+        if (this->file == stdout)
                 return 0;
 
-        FAIL_IF(fclose(this->_in->file) == EOF, this->_in->tempname);
-        this->_in->file = NULL;
+        FAIL_IF(fclose(this->file) == EOF, this->_in->tempname);
+        this->file = NULL;
 
         if (this->_in->filename[0] != '\0') {
                 int ret = rename(this->_in->tempname, this->_in->filename);

@@ -6,7 +6,7 @@
 
 struct record {
         struct vec fields;
-        struct stringview extra;
+        struct stringview raw;
 };
 typedef struct record Record;
 

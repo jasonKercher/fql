@@ -39,8 +39,8 @@ struct csv_write_internal;
 struct csv_record {
         struct csv_internal* _in;
         char** fields;
-        const char* extra;
-        unsigned extra_len;
+        const char* raw;
+        unsigned raw_len;
         int size;
 };
 
@@ -61,6 +61,7 @@ struct csv_reader {
 
 struct csv_writer {
         struct csv_write_internal* _in;
+        FILE* file;
         char delimiter[32];
         char line_terminator[3];
         int quotes;
@@ -196,6 +197,13 @@ int csv_writer_close(struct csv_writer*);
  * in the writer struct
  */
 void csv_write_record(struct csv_writer*, struct csv_record*);
+
+/**
+ * Write a single field from a record.  This function
+ * will not print write delimiters or line endings.
+ */
+void csv_nwrite_field(struct csv_writer*, const char*, unsigned);
+void csv_write_field(struct csv_writer*, const char*);
 
 #ifdef __cplusplus
 }

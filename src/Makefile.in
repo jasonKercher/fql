@@ -106,14 +106,15 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_fql_OBJECTS = fql.$(OBJEXT)
 fql_OBJECTS = $(am_fql_OBJECTS)
-fql_DEPENDENCIES = ../lib/libfql.la
+fql_DEPENDENCIES = $(top_srcdir)/lib/libfql.la \
+	$(top_srcdir)/libcsv/libcsv.la
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
 am_stdcsv_OBJECTS = stdcsv.$(OBJEXT)
 stdcsv_OBJECTS = $(am_stdcsv_OBJECTS)
-stdcsv_DEPENDENCIES = ../libcsv/libcsv.la
+stdcsv_DEPENDENCIES = $(top_srcdir)/libcsv/libcsv.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -304,11 +305,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = -I$(srcdir)/../lib/include -I$(srcdir)/util
+AM_CPPFLAGS = -I$(top_srcdir)/lib/include -I$(top_srcdir)/util -I$(top_srcdir)/libcsv/include
 fql_SOURCES = fql.c
-fql_LDADD = ../lib/libfql.la -lreadline -lcsv
+fql_LDADD = $(top_srcdir)/lib/libfql.la $(top_srcdir)/libcsv/libcsv.la -lreadline
 stdcsv_SOURCES = stdcsv.c
-stdcsv_LDADD = ../libcsv/libcsv.la
+stdcsv_LDADD = $(top_srcdir)/libcsv/libcsv.la
 all: all-am
 
 .SUFFIXES:

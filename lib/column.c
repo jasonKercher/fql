@@ -26,6 +26,7 @@ Column* column_construct(Column* col, enum expr_type expr, void* data, const cha
                 ,NULL                   /* field */
                 ,0                      /* location */
                 ,0                      /* width */
+                ,0                      /* src_idx */
         };
 
         string_construct(&col->buf);

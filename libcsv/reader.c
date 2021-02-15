@@ -264,8 +264,8 @@ int csv_nparse_to(struct csv_reader *this, struct csv_record *rec, const char* l
 
         rec->_in->bufidx = 0;
         rec->size = 0;
-        rec->extra = NULL;
-        rec->extra_len = 0;
+        rec->raw = NULL;
+        rec->raw_len = 0;
         size_t lineIdx = 0;
         int ret = 0;
 
@@ -296,10 +296,8 @@ int csv_nparse_to(struct csv_reader *this, struct csv_record *rec, const char* l
                 }
         }
 
-        if (rec->size >= field_limit) {
-                rec->extra = &line[lineIdx];
-                rec->extra_len = (char_limit == UINT_MAX) ? strlen(rec->extra) : char_limit - lineIdx;
-        }
+        rec->raw = line; 
+        rec->raw_len = line_len;
 
         if (this->normal > 0) {
                 /* Append fields if we are short */

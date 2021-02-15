@@ -1,7 +1,7 @@
 #include "schema.h"
 
 #include <dirent.h>
-#include <csv.h>
+#include "csv.h"
 
 #include "fql.h"
 #include "column.h"
@@ -293,6 +293,11 @@ int schema_assign_columns(Vec* columns, Vec* sources)
                                              sources->size - 1);
 }
 
+int _asterisk_resolve(Vec* col_vec, Vec* sources)
+{
+        return FQL_GOOD;
+}
+
 int schema_resolve_query(Query* query)
 {
        Vec* sources = query->sources;
@@ -310,6 +315,7 @@ int schema_resolve_query(Query* query)
        }
 
        Vec* op_cols = op_get_validation_list(query->op);
+       _asterisk_resolve(op_cols, sources);
        if (schema_assign_columns(op_cols, sources)) {
                return FQL_FAIL;
        }

@@ -188,20 +188,7 @@ int select_record_api(Select* select, struct vec* recs)
 int select_record(Select* select, struct vec* recs)
 {
         Writer* writer = select->writer;
-
         Vec* col_vec = select->schema->columns;
 
-        Column** cols = vec_begin(col_vec);
-        int i = 0;
-        for (; i < col_vec->size; ++i) {
-                StringView sv;
-                if (column_get_stringview(&sv, cols[i], recs)) {
-                        return FQL_FAIL;
-                }
-                String* s = vec_at(writer->raw_rec, i);
-                string_copy_from_stringview(s, &sv);
-        }
-
-        writer->write_record_fn(writer->writer_data, writer->raw_rec);
-        return 1;
+        return writer->write_record_fn(writer->writer_data, col_vec, recs);
 }

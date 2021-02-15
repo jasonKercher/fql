@@ -1,55 +1,56 @@
 #include "writer.h"
 #include <csv.h>
 #include "fql.h"
+#include "column.h"
 #include "util/stringview.h"
 
-struct libcsv_writer* libcsv_writer_new()
-{
-        struct libcsv_writer* new_data = NULL;
-        malloc_(new_data, sizeof(*new_data));
-
-        return libcsv_writer_construct(new_data);
-}
-
-struct libcsv_writer* libcsv_writer_construct(struct libcsv_writer* writer)
-{
-        *writer = (struct libcsv_writer) {
-                 csv_writer_new()       /* csv_handle */
-                ,csv_record_new()       /* csv_rec */
-                ,vec_new_(char*)        /* fields */
-        };
-        return writer;
-}
-
+//struct libcsv_writer* libcsv_writer_new()
+//{
+//        struct libcsv_writer* new_data = NULL;
+//        malloc_(new_data, sizeof(*new_data));
+//
+//        return libcsv_writer_construct(new_data);
+//}
+//
+//struct libcsv_writer* libcsv_writer_construct(struct libcsv_writer* writer)
+//{
+//        *writer = (struct libcsv_writer) {
+//                 csv_writer_new()       /* csv_handle */
+//        };
+//        return writer;
+//}
+//
 void libcsv_writer_free(void* writer_data)
 {
-        if (writer_data == NULL) {
-                return;
-        }
-
-        struct libcsv_writer* data = writer_data;
-        csv_writer_free(data->csv_handle);
-        csv_record_free_not_fields(data->csv_rec);
-        vec_free(data->fields);
-        free_(data);
+        csv_writer_free(writer_data);
 }
 
-int libcsv_write_record(void* writer_data, Vec* string_rec)
+int libcsv_write_record(void* writer_data, Vec* col_vec, Vec* recs)
 {
-        struct libcsv_writer* writer = writer_data;
+        csv_writer* handle = writer_data;
 
-        vec_resize(writer->fields, string_rec->size);
-
-        String* s = vec_begin(string_rec);
+        Column** cols = vec_begin(col_vec);
         int i = 0;
-        for (; i < string_rec->size; ++i) {
-                vec_set(writer->fields, i, &s[i].data);
+        for (; i < col_vec->size; ++i) {
+                StringView sv;
+                if (i == 0) {
+                        fputs(handle->delimiter, handle->file);
+                }
+
+                if (cols[i]->expr == EXPR_ASTERISK) {
+                        int quote_store = handle->quotes;
+                        handle->quotes = QUOTE_NONE;
+                        Record* rec = vec_at(recs, cols[i]->src_idx);
+                        csv_nwrite_field(handle, rec->raw.data, rec->raw.len);
+                        handle->quotes = quote_store;
+                }
+                else if (column_get_stringview(&sv, cols[i], recs)) {
+                        csv_nwrite_field(handle, sv.data, sv.len);
+                        return FQL_FAIL;
+                }
         }
 
-        writer->csv_rec->fields = writer->fields->data;
-        writer->csv_rec->size = string_rec->size;
-
-        csv_write_record(writer->csv_handle, writer->csv_rec);
+        fputs(handle->line_terminator, handle->file);
 
         return FQL_GOOD;
 }
@@ -107,7 +108,7 @@ void writer_assign(Writer* writer)
         switch(writer->type) {
         case WRITE_LIBCSV:
         {
-                struct libcsv_writer* data = libcsv_writer_new();
+                csv_writer* data = csv_writer_new();
                 writer->writer_data = data;
                 writer->write_record_fn = &libcsv_write_record;
                 writer->free_fn = &libcsv_writer_free;
