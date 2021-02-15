@@ -28,8 +28,7 @@ struct select* select_construct(struct select*);
 void select_free(struct select*);
 
 void select_add_column(struct select*, struct column*);
-void select_connect_api(struct select*, struct vec*);
-void select_use_non_api(struct select*);
+void select_connect_api(struct query*, struct vec*);
 void select_apply_process(struct query*, struct fql_plan*);
 void select_apply_column_alias(struct select*, const char* alias);
 

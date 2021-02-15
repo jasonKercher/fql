@@ -19,7 +19,7 @@ Select* select_construct(Select* select)
                 ,NULL                   /* api */
                 ,schema_new()           /* schema */
                 ,writer_new()           /* writer */
-                ,&select_record_api     /* select_record_fn */
+                ,&select_record         /* select_record_fn */
         };
 
         return select;
@@ -40,15 +40,14 @@ void select_add_column(Select* select, Column* col)
         schema_add_column(select->schema, col);
 }
 
-void select_connect_api(struct select* select, Vec* api)
+void _resize_raw_rec(Vec* raw_rec, unsigned size)
 {
-        vec_resize(api, select->schema->columns->size);
-        select->api = api;
-}
-
-void select_use_non_api(Select* select)
-{
-        select->select_fn = &select_record;
+        unsigned org_size = raw_rec->size;
+        vec_resize(raw_rec, size);
+        String* s = vec_at(raw_rec, org_size);
+        for (; s != vec_end(raw_rec); ++s) {
+                string_construct(s);
+        }
 }
 
 int _insert_all_columns(Vec* col_vec, Source* src, unsigned src_idx, unsigned* col_idx)
@@ -96,6 +95,17 @@ void _expand_asterisks(Query* query)
                 column_free(*asterisk_col);
                 vec_remove(col_vec, asterisk_index);
         }
+
+        _resize_raw_rec(select->writer->raw_rec, col_vec->size);
+}
+
+void select_connect_api(Query* query, Vec* api)
+{
+        Select* select = query->op;
+        select->select_fn = &select_record_api;
+        _expand_asterisks(query);
+        vec_resize(api, select->schema->columns->size);
+        select->api = api;
 }
 
 void select_apply_process(Query* query, Plan* plan)
@@ -115,16 +125,11 @@ void select_apply_process(Query* query, Plan* plan)
                 column_cat_description(*col, proc->action_msg);
         }
 
-        _expand_asterisks(query);
+        //_expand_asterisks(query);
+
+        _resize_raw_rec(select->writer->raw_rec, col_vec->size);
 
         /* Initialize the raw strings used for writing */
-        Vec* raw_rec = select->writer->raw_rec;
-        vec_resize(raw_rec, col_vec->size);
-        String* s = vec_begin(raw_rec);
-        for (; s != vec_end(raw_rec); ++s) {
-                string_construct(s);
-        }
-
         proc = plan->op_false->data;
         proc->is_passive = true;
 }

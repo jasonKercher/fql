@@ -213,7 +213,7 @@ int schema_resolve_source(Source* source)
 
         Record rec;
         record_construct(&rec);
-        table->reader->max_col_idx = UINT_MAX - 1;
+        table->reader->max_col_idx = INT_MAX;
         table->reader->get_record_fn(table->reader, &rec, 0);
         table->reader->max_col_idx = 0;
 

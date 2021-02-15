@@ -15,6 +15,7 @@ struct fql_plan {
         size_t rows_affected;
         int source_count;
         int source_total;
+        _Bool has_stepped;
 };
 typedef struct fql_plan Plan;
 

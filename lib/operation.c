@@ -30,30 +30,6 @@ void op_apply_process(Query* query, Plan* plan)
         }
 }
 
-void op_use_non_api(void* op)
-{
-        enum op* type = op;
-
-        switch (*type) {
-        case OP_SELECT:
-                select_use_non_api(op);
-        default:
-                ;
-        }
-}
-
-void op_connect_api(void* op, Vec* api)
-{
-        enum op* type = op;
-
-        switch (*type) {
-        case OP_SELECT:
-                select_connect_api(op, api);
-        default:
-                ;
-        }
-}
-
 void op_free(void* op)
 {
         enum op* type = op;

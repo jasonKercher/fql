@@ -38,6 +38,7 @@ Plan* plan_construct(Plan* plan, int source_total)
                 ,0                                                 /* rows_affected */
                 ,0                                                 /* source_count */
                 ,source_total                                      /* source_count */
+                ,false                                             /* has_stepped */
         };
 
         /* source_count is a temporary variable used to keep track

@@ -4,9 +4,8 @@
 #include "util/stack.h"
 #include "util/queue.h"
 #include "antlr/antlr.h"
-
 #include "fqlplan.h"
-
+#include "select.h"
 #include "table.h"
 #include "query.h"
 #include "schema.h"
@@ -46,8 +45,37 @@ void fql_free(struct fql_handle* fql)
         free_(fql);
 }
 
+int _api_connect(struct fql_handle* fql, Plan* plan)
+{
+        //if (!vec_empty(fql->api_vec) || vec_empty(fql->plan_vec)) {
+        //        return;
+        //}
+
+        Process* true_proc = plan->op_true->data;
+        if (true_proc->action != fql_select) {
+                fputs("Can only step through SELECT queries\n", stderr);
+                return FQL_FAIL;
+        }
+
+        select_connect_api(fql->query_list->data, fql->api_vec);
+
+        Dnode** it = vec_begin(plan->processes->nodes);
+        for (; it != vec_end(plan->processes->nodes); ++it) {
+                Process* proc = (*it)->data;
+                if (proc->action == fql_read) {
+                        Reader* reader = proc->proc_data;
+                        reader->max_col_idx = INT_MAX;
+                }
+        }
+
+        return FQL_GOOD;
+}
+
 int fql_field_count(struct fql_handle* fql)
 {
+        if (vec_empty(fql->api_vec) && !vec_empty(fql->plan_vec)) {
+                _api_connect(fql, vec_begin(fql->plan_vec));
+        }
         return fql->api_vec->size;
 }
 
@@ -96,7 +124,11 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
         int i = 0;
         for (; i < plan_count; ++i) {
                 Plan* plan = vec_at(fql->plan_vec, i);
-                process_non_api(plan->op_true->data);
+                if (plan->has_stepped) {
+                        fputs("Cannot execute plan that has been"
+                              " stepped through\n", stderr);
+                        return FQL_FAIL;
+                }
                 if (process_exec_plan(plan) == FQL_FAIL) {
                         return FQL_FAIL;
                 }
@@ -123,17 +155,6 @@ int fql_exec(struct fql_handle* fql, const char* query_str)
         return ret;
 }
 
-void _api_connect(struct fql_handle* fql)
-{
-        if (!vec_empty(fql->api_vec) || vec_empty(fql->plan_vec)) {
-                return;
-        }
-
-        Plan* plan = vec_begin(fql->plan_vec);
-        Process* proc = plan->op_true->data;
-        op_connect_api(proc->proc_data, fql->api_vec);
-}
-
 int fql_make_plans(struct fql_handle* fql, const char* query_str)
 {
         if (fql->query_str) {
@@ -153,16 +174,21 @@ int fql_make_plans(struct fql_handle* fql, const char* query_str)
                 print_plans(fql->plan_vec);
         }
 
-        _api_connect(fql);
-
         return fql->plan_vec->size;
 }
 
 int fql_step(struct fql_handle* fql, struct fql_field** fields)
 {
-        int ret = process_step(vec_begin(fql->plan_vec));
+        Plan* plan = vec_begin(fql->plan_vec);
+        if (!plan->has_stepped) {
+                if (vec_empty(fql->api_vec)) {
+                        _api_connect(fql, plan);
+                }
+                plan->has_stepped = true;
+        }
+
+        int ret = process_step(plan);
         if (ret == 0) {
-                Plan* plan = vec_begin(fql->plan_vec);
                 plan_destroy(plan);
                 vec_remove(fql->plan_vec, 0);
 
@@ -170,7 +196,6 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
                 query_free(query);
 
                 vec_resize(fql->api_vec, 0);
-                _api_connect(fql);
         }
 
         *fields = vec_begin(fql->api_vec);

@@ -5,6 +5,7 @@
 #include "fql.h"
 #include "operation.h"
 #include "reader.h"
+#include "record.h"
 #include "util/vec.h"
 #include "util/util.h"
 #include "util/dgraph.h"
@@ -94,9 +95,9 @@ void process_activate(Dnode* proc_node)
                 *recs = vec_new_(Vec*);
                 vec_resize(*recs, proc->fifo_width);
 
-                Vec** rec = vec_begin(*recs);
+                Record** rec = vec_begin(*recs);
                 for (; rec != vec_end(*recs); ++rec) {
-                        *rec = vec_new_(StringView);
+                        *rec = record_new();
                 }
         }
 
@@ -166,9 +167,4 @@ int process_exec_plan(Plan* plan)
         } while (ret && ret != FQL_FAIL);
 
         return ret;
-}
-
-void process_non_api(Process* proc)
-{
-        op_use_non_api(proc->proc_data);
 }
