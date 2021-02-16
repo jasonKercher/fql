@@ -104,6 +104,22 @@ void writer_free(Writer* writer)
         free_(writer);
 }
 
+void writer_set_delimiter(Writer* writer, const char* delim)
+{
+        int ret = 0;
+        switch(writer->type) {
+        case WRITE_LIBCSV:
+        {
+                csv_writer* data = writer->writer_data;
+                strncpy_(data->delimiter, delim, DELIM_LEN_MAX);
+                break;
+        }
+        default:
+                fprintf(stderr, "%d: unknown write_type\n", writer->type);
+        }
+}
+
+
 void writer_assign(Writer* writer)
 {
         int ret = 0;

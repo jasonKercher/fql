@@ -38,6 +38,7 @@ struct reader* reader_new();
 struct reader* reader_construct(struct reader*);
 void reader_free(struct reader*);
 
+char* reader_get_delim(struct reader*);
 void reader_assign(struct reader*);
 
 /**
@@ -61,6 +62,8 @@ struct libcsv_reader {
 struct libcsv_reader* libcsv_reader_new(size_t);
 struct libcsv_reader* libcsv_reader_construct(struct libcsv_reader*, size_t);
 void libcsv_reader_free(void*);
+
+char* libcsv_get_delim(struct libcsv_reader*);
 int libcsv_get_record(struct reader*, struct record* rec, unsigned char);
 void libcsv_reset(void*);
 
@@ -80,6 +83,8 @@ struct mmapcsv_data {
 struct mmapcsv_data* mmapcsv_new(size_t);
 struct mmapcsv_data* mmapcsv_construct(struct mmapcsv_data*, size_t);
 void mmapcsv_free(void*);
+
+char* mmapcsv_get_delim(struct mmapcsv_data*);
 int mmapcsv_open(struct mmapcsv_data*, const char* file_name);
 int mmapcsv_get_record(struct reader*, struct record* rec, unsigned char);
 void mmapcsv_reset(void*);

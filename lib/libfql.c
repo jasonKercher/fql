@@ -26,8 +26,8 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
                 ,vec_new_(struct fql_field) /* api_vec */
                 ,NULL                       /* query_str */
                 ,{
-                         ","    /* in_delim */
-                        ,","    /* out_delim */
+                         ""    /* in_delim */
+                        ,""    /* out_delim */
                         ,false  /* verbose */
                         ,false  /* dry_run */
                         ,false  /* override_warnings */
@@ -117,8 +117,6 @@ void fql_set_out_delim(struct fql_handle* fql, const char* delim)
 /**
  * Methods
  */
-
-
 int fql_exec_plans(struct fql_handle* fql, int plan_count)
 {
         int i = 0;
@@ -131,6 +129,7 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
                 }
                 if (process_exec_plan(plan) == FQL_FAIL) {
                         return FQL_FAIL;
+
                 }
         }
         return FQL_GOOD;
@@ -164,7 +163,7 @@ int fql_make_plans(struct fql_handle* fql, const char* query_str)
 
         analyze_query(fql);
 
-        if (schema_resolve(fql->query_list)) {
+        if (schema_resolve(fql)) {
                 return FQL_FAIL;
         }
 

@@ -25,6 +25,7 @@ Schema* schema_construct(Schema* schema)
                  vec_new_(Column*)      /* columns */
                 ,NULL                   /* col_map */
                 ,""                     /* name */
+                ,""                     /* delimiter */
         };
 
         return schema;
@@ -215,6 +216,8 @@ int schema_resolve_source(Source* source)
         record_construct(&rec);
         table->reader->max_col_idx = INT_MAX;
         table->reader->get_record_fn(table->reader, &rec, 0);
+        char* delim = reader_get_delim(table->reader);
+        strncpy_(table->schema->delimiter, delim, DELIM_LEN_MAX);
         table->reader->max_col_idx = 0;
 
         schema_assign_header(table, &rec);
@@ -337,8 +340,17 @@ int schema_resolve_query(Query* query)
                 if (schema_resolve_source(src)) {
                         return FQL_FAIL;
                 }
+
+                if (i == 0 &&
+                    query->schema->name[0] == '\0' &&
+                    query->schema->delimiter[0] == '\0') {
+                        strncpy_(query->schema->delimiter,
+                                 src->table->schema->delimiter,
+                                 DELIM_LEN_MAX);
+                }
+
                 if (schema_assign_columns_limited(src->validation_list,
-                                          sources, i)) {
+                                                  sources, i)) {
                         return FQL_FAIL;
                 }
         }
@@ -354,10 +366,16 @@ int schema_resolve_query(Query* query)
         return FQL_GOOD;
 }
 
-int schema_resolve(Queue* query_node)
+int schema_resolve(struct fql_handle* fql)
 {
+        Queue* query_node = fql->query_list;
         for (; query_node; query_node = query_node->next) {
                 Query* query = query_node->data;
+
+                strncpy_(query->schema->delimiter,
+                         fql->props.out_delim,
+                         DELIM_LEN_MAX);
+
                 if (schema_resolve_query(query)) {
                         return FQL_FAIL;
                 }

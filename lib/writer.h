@@ -39,6 +39,7 @@ struct writer* writer_new();
 struct writer* writer_construct(struct writer*);
 void writer_free(struct writer*);
 
+void writer_set_delimiter(struct writer*, const char*);
 void writer_assign(struct writer*);
 
 #endif  /* WRTIER_H */

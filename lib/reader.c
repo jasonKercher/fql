@@ -48,6 +48,22 @@ void reader_free(Reader* reader)
         free_(reader);
 }
 
+char* reader_get_delim(Reader* reader)
+{
+        switch (reader->type) {
+        case READ_LIBCSV:
+                return libcsv_get_delim(reader->reader_data);
+        case READ_MMAPCSV:
+                return mmapcsv_get_delim(reader->reader_data);
+        case READ_SUBQUERY:
+                fputs("Cannot retrieve delimiter from subquery\n", stderr);
+                return NULL;
+        default:
+                fprintf(stderr, "%d: unknown read_type\n", reader->type);
+                return NULL;
+        }
+}
+
 void reader_assign(Reader* reader)
 {
         int ret = 0;

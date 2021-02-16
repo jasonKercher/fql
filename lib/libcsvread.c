@@ -49,6 +49,11 @@ void libcsv_reader_free(void* reader_data)
         free_(csv_data);
 }
 
+char* libcsv_get_delim(struct libcsv_reader* csv)
+{
+        return csv->csv_handle->delimiter;
+}
+
 int libcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
 {
         struct libcsv_reader* csv = reader->reader_data;

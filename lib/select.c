@@ -50,9 +50,11 @@ void _resize_raw_rec(Vec* raw_rec, unsigned size)
         }
 }
 
-int _insert_all_columns(Vec* col_vec, Source* src, unsigned src_idx, unsigned* col_idx)
+int _expand_asterisk(Vec* col_vec, Source* src, unsigned src_idx, unsigned* col_idx)
 {
         Vec* src_col_vec = src->table->schema->columns;
+
+        src->table->reader->max_col_idx = INT_MAX;
 
         Column** it = vec_begin(src_col_vec);
         for (; it != vec_end(src_col_vec); ++it) {
@@ -68,7 +70,7 @@ int _insert_all_columns(Vec* col_vec, Source* src, unsigned src_idx, unsigned* c
         return src->table->schema->columns->size;
 }
 
-void _expand_asterisks(Query* query)
+void _expand_asterisks(Query* query, _Bool check_schema)
 {
         Select* select = query->op;
         Vec* col_vec = select->schema->columns;
@@ -81,8 +83,14 @@ void _expand_asterisks(Query* query)
                 }
 
                 Source* src = vec_at(query->sources, (*col)->src_idx);
+
+                if (check_schema &&
+                    string_eq(src->table->schema->delimiter, query->schema->delimiter)) {
+                        continue;
+                }
+
                 unsigned asterisk_index = i++;
-                _insert_all_columns(col_vec, src, (*col)->src_idx, &i);
+                _expand_asterisk(col_vec, src, (*col)->src_idx, &i);
 
                 Column** asterisk_col = vec_at(col_vec, asterisk_index);
                 column_free(*asterisk_col);
@@ -96,7 +104,7 @@ void select_connect_api(Query* query, Vec* api)
 {
         Select* select = query->op;
         select->select_fn = &select_record_api;
-        _expand_asterisks(query);
+        _expand_asterisks(query, false);
         vec_resize(api, select->schema->columns->size);
         select->api = api;
 }
@@ -109,6 +117,8 @@ void select_apply_process(Query* query, Plan* plan)
         proc->proc_data = select;
         string_strcpy(proc->action_msg, "SELECT ");
 
+        writer_set_delimiter(select->writer, query->schema->delimiter);
+
         Vec* col_vec = select->schema->columns;
         Column** col = vec_begin(col_vec);
         for (; col != vec_end(col_vec); ++col) {
@@ -118,9 +128,7 @@ void select_apply_process(Query* query, Plan* plan)
                 column_cat_description(*col, proc->action_msg);
         }
 
-        //_expand_asterisks(query);
-
-        _resize_raw_rec(select->writer->raw_rec, col_vec->size);
+        _expand_asterisks(query, true);
 
         /* Initialize the raw strings used for writing */
         proc = plan->op_false->data;

@@ -40,6 +40,11 @@ struct mmapcsv_data* mmapcsv_construct(struct mmapcsv_data* csv_data, size_t buf
         return csv_data;
 }
 
+char* mmapcsv_get_delim(struct mmapcsv_data* data)
+{
+        return data->csv_handle->delimiter;
+}
+
 int mmapcsv_open(struct mmapcsv_data* data, const char* file_name)
 {
         data->fd = open(file_name, O_RDONLY);
