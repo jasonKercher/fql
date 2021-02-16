@@ -1,7 +1,7 @@
 #ifndef STRINGVIEW_H
 #define STRINGVIEW_H
 
-#include "fqlstring.h"
+#include "stringy.h"
 
 /**
  * StringView is meant to be a read-only

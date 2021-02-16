@@ -42,37 +42,37 @@ void logic_assign_process(Logic* logic, Process* proc)
         column_cat_description(logic->col[0], proc->action_msg);
         switch (logic->comp_type) {
         case COMP_EQ:
-                string_cat(proc->action_msg, " = ");
+                string_strcat(proc->action_msg, " = ");
                 break;
         case COMP_NE:
-                string_cat(proc->action_msg, " != ");
+                string_strcat(proc->action_msg, " != ");
                 break;
         case COMP_GT:
-                string_cat(proc->action_msg, " > ");
+                string_strcat(proc->action_msg, " > ");
                 break;
         case COMP_GE:
-                string_cat(proc->action_msg, " >= ");
+                string_strcat(proc->action_msg, " >= ");
                 break;
         case COMP_LT:
-                string_cat(proc->action_msg, " < ");
+                string_strcat(proc->action_msg, " < ");
                 break;
         case COMP_LE:
-                string_cat(proc->action_msg, " <= ");
+                string_strcat(proc->action_msg, " <= ");
                 break;
         case COMP_LIKE:
-                string_cat(proc->action_msg, " LIKE ");
+                string_strcat(proc->action_msg, " LIKE ");
                 break;
         case COMP_NOT_LIKE:
-                string_cat(proc->action_msg, " NOT LIKE ");
+                string_strcat(proc->action_msg, " NOT LIKE ");
                 break;
         case COMP_NULL:
-                string_cat(proc->action_msg, " NULL ");
+                string_strcat(proc->action_msg, " NULL ");
                 break;
         case COMP_NOT_NULL:
-                string_cat(proc->action_msg, " NOT NULL ");
+                string_strcat(proc->action_msg, " NOT NULL ");
                 break;
         case COMP_NOT_SET:
-                string_cat(proc->action_msg, " <no comparison> ");
+                string_strcat(proc->action_msg, " <no comparison> ");
                 break;
         default:
                 break;

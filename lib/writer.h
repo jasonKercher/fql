@@ -2,7 +2,7 @@
 #define WRITER_H
 
 #include "util/vec.h"
-#include "util/fqlstring.h"
+#include "util/stringy.h"
 #include "util/util.h"
 
 typedef struct csv_writer csv_writer;

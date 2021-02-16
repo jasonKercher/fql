@@ -14,10 +14,11 @@ Record* record_construct(Record* rec)
 {
         *rec = (Record) {
                  { 0 }  /* fields */
-                ,{ 0 }  /* extra */
+                ,{ 0 }  /* raw */
         };
 
         vec_construct_(&rec->fields, StringView);
+        string_construct(&rec->raw);
         return rec;
 }
 

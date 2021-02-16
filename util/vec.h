@@ -4,16 +4,16 @@
 /**
  * Naive as fuck vector implementation
  *
- * vector is in contiguous memory is followed
+ * vector is in contiguous memory and followed
  * by at least one extra allocation that is
  * referred to by vec_end
  *
  * This used to be a small, elegant struct for
- * storing void*. Then, I wanted to have itertors.
+ * storing void*. Then, I wanted to have iterators.
  * Now, it's fugly...
  *
- * Also now... This vector owns the data it is
- * given. Don't keep references to its data
+ * Also now... if a vector owns the data it is
+ * given, don't keep references to its data
  * outside the vector, or realloc will fuck
  * your day all up.
  */

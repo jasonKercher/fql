@@ -78,13 +78,13 @@ void _logic_to_process(Process* logic_proc, LogicGroup* lg)
 {
         switch (lg->type) {
         case LG_ROOT:
-                string_cat(logic_proc->action_msg, "(");
+                string_strcat(logic_proc->action_msg, "(");
                 break;
         case LG_AND:
-                string_cat(logic_proc->action_msg, "AND(");
+                string_strcat(logic_proc->action_msg, "AND(");
                 break;
         case LG_NOT:
-                string_cat(logic_proc->action_msg, "NOT(");
+                string_strcat(logic_proc->action_msg, "NOT(");
                 if (lg->condition != NULL) {
                         logic_assign_process(lg->condition, logic_proc);
                 }
@@ -99,7 +99,7 @@ void _logic_to_process(Process* logic_proc, LogicGroup* lg)
                 _logic_to_process(logic_proc, *it);
         }
 
-        string_cat(logic_proc->action_msg, ")");
+        string_strcat(logic_proc->action_msg, ")");
 }
 
 void _logicgroup_process(Plan* plan, LogicGroup* lg)

@@ -2,11 +2,11 @@
 #define RECORD_H
 
 #include "util/vec.h"
-#include "util/stringview.h"
+#include "util/stringy.h"
 
 struct record {
         struct vec fields;
-        struct stringview raw;
+        String raw;
 };
 typedef struct record Record;
 

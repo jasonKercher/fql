@@ -5,7 +5,7 @@
 #include "table.h"
 #include "field.h"
 #include "util/stringview.h"
-#include "util/fqlstring.h"
+#include "util/stringy.h"
 
 /** Expression **/
 enum expr_type {

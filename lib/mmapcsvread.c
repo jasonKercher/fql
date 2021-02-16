@@ -118,6 +118,11 @@ int mmapcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
         struct mmapcsv_data* data = reader->reader_data;
         if (data->eof) {
                 mmapcsv_reset(data);
+                /* Skip header */
+                int ret = mmapcsv_getline(data);
+                if (ret) {
+                        return ret;
+                }
         }
 
         csv_record** csv_rec = vec_at(data->csv_recs, idx);
@@ -145,8 +150,7 @@ int mmapcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
                 }
         }
 
-        rec->raw.data = (*csv_rec)->raw;
-        rec->raw.len = (*csv_rec)->raw_len;
+        string_strncpy(&rec->raw, (*csv_rec)->raw, (*csv_rec)->raw_len);
 
         return FQL_GOOD;
 }

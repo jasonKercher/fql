@@ -4,7 +4,7 @@
 #define PROCESS_BUFFER_SIZE 256
 
 #include "fqlplan.h"
-#include "util/fqlstring.h"
+#include "util/stringy.h"
 #include "util/fifo.h"
 #include "util/queue.h"
 #include "util/dgraph.h"

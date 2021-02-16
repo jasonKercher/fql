@@ -70,7 +70,7 @@ void column_cat_description(Column* col, String* msg)
         case EXPR_FUNCTION:
         {
                 Function* func = col->field.fn;
-                string_cat(msg, func->name);
+                string_strcat(msg, func->name);
                 string_push_back(msg, '(');
 
                 Column** it = vec_begin(func->args);
@@ -94,35 +94,35 @@ void column_cat_description(Column* col, String* msg)
                 {
                         char buf[20];
                         sprintf(buf, "%ld", col->field.i);
-                        string_cat(msg, buf);
+                        string_strcat(msg, buf);
                         break;
                 }
                 case FIELD_FLOAT:
                 {
                         char buf[30];
                         sprintf(buf, "%lf", col->field.f);
-                        string_cat(msg, buf);
+                        string_strcat(msg, buf);
                         break;
                 }
                 default:
-                        string_cat(msg, "<<const>>");
+                        string_strcat(msg, "<<const>>");
 
                 }
                 break;
         case EXPR_ASTERISK:
-                string_cat(msg, "*");
+                string_strcat(msg, "*");
                 break;
         case EXPR_SOURCE:
-                string_cat(msg, "TABLE SOURCE");
+                string_strcat(msg, "TABLE SOURCE");
                 break;
         case EXPR_SUBQUERY:
-                string_cat(msg, "SUBQUERY");
+                string_strcat(msg, "SUBQUERY");
                 break;
         case EXPR_SUBQUERY_CONST:
-                string_cat(msg, "SUBQUERY CONST");
+                string_strcat(msg, "SUBQUERY CONST");
                 break;
         case EXPR_NONE:
-                string_cat(msg, "No expression");
+                string_strcat(msg, "No expression");
                 break;
         }
 }

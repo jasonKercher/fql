@@ -54,7 +54,7 @@ void schema_add_column(Schema* schema, Column* col)
 void schema_apply_column_alias(Schema* schema, const char* alias)
 {
         Column* col = vec_back(schema->columns);
-        string_cpy(&col->alias, alias);
+        string_strcpy(&col->alias, alias);
 }
 
 
@@ -293,34 +293,65 @@ int schema_assign_columns(Vec* columns, Vec* sources)
                                              sources->size - 1);
 }
 
-int _asterisk_resolve(Vec* col_vec, Vec* sources)
+int _asterisk_resolve(Vec* columns, Vec* sources)
 {
+        int i = 0;
+        for (; i < columns->size; ++i) {
+                Column** col = vec_at(columns, i);
+                if ((*col)->expr != EXPR_ASTERISK) {
+                        continue;
+                }
+                int matches = 0;
+                int j = 0;
+                for (; j < sources->size; ++j) {
+                        Source* search_src = vec_at(sources, j);
+                        if (string_empty(&(*col)->table_name) ||
+                            istring_eq((*col)->table_name.data, search_src->alias.data)) {
+                                if (matches > 0) {
+                                        Column* new_col = column_new(EXPR_ASTERISK, NULL, "");
+                                        new_col->src_idx = j;
+                                        vec_insert(columns, ++i, &new_col);
+                                } else {
+                                        (*col)->src_idx = j;
+                                }
+                                ++matches;
+                        }
+                }
+
+                if (matches == 0) {
+                        fprintf(stderr, "Could not locate table `%s'\n", (*col)->table_name.data);
+                        return FQL_FAIL;
+                }
+        }
+
         return FQL_GOOD;
 }
 
 int schema_resolve_query(Query* query)
 {
-       Vec* sources = query->sources;
+        Vec* sources = query->sources;
 
-       int i = 0;
-       for (; i < sources->size; ++i) {
-               Source* src = vec_at(query->sources, i);
-               if (schema_resolve_source(src)) {
-                       return FQL_FAIL;
-               }
-               if (schema_assign_columns_limited(src->validation_list,
-                                         sources, i)) {
-                       return FQL_FAIL;
-               }
-       }
+        int i = 0;
+        for (; i < sources->size; ++i) {
+                Source* src = vec_at(query->sources, i);
+                if (schema_resolve_source(src)) {
+                        return FQL_FAIL;
+                }
+                if (schema_assign_columns_limited(src->validation_list,
+                                          sources, i)) {
+                        return FQL_FAIL;
+                }
+        }
 
-       Vec* op_cols = op_get_validation_list(query->op);
-       _asterisk_resolve(op_cols, sources);
-       if (schema_assign_columns(op_cols, sources)) {
-               return FQL_FAIL;
-       }
+        Vec* op_cols = op_get_validation_list(query->op);
+        if (_asterisk_resolve(op_cols, sources)) {
+                return FQL_FAIL;
+        }
+        if (schema_assign_columns(op_cols, sources)) {
+                return FQL_FAIL;
+        }
 
-       return FQL_GOOD;
+        return FQL_GOOD;
 }
 
 int schema_resolve(Queue* query_node)

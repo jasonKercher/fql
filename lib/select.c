@@ -80,16 +80,9 @@ void _expand_asterisks(Query* query)
                         continue;
                 }
 
-                Source* srcs = vec_begin(query->sources);
-                unsigned j = 0;
+                Source* src = vec_at(query->sources, (*col)->src_idx);
                 unsigned asterisk_index = i++;
-                for (; j < query->sources->size; ++j) {
-                        Column** asterisk_col = vec_at(col_vec, asterisk_index);
-                        if (string_empty(&(*asterisk_col)->table_name) ||
-                            istring_eq(srcs[j].alias.data, ((*asterisk_col)->table_name.data))) {
-                                _insert_all_columns(col_vec, &srcs[j], j, &i);
-                        }
-                }
+                _insert_all_columns(col_vec, src, (*col)->src_idx, &i);
 
                 Column** asterisk_col = vec_at(col_vec, asterisk_index);
                 column_free(*asterisk_col);
@@ -114,13 +107,13 @@ void select_apply_process(Query* query, Plan* plan)
         Process* proc = plan->op_true->data;
         proc->action = &fql_select;
         proc->proc_data = select;
-        string_cpy(proc->action_msg, "SELECT ");
+        string_strcpy(proc->action_msg, "SELECT ");
 
         Vec* col_vec = select->schema->columns;
         Column** col = vec_begin(col_vec);
         for (; col != vec_end(col_vec); ++col) {
                 if (col != vec_begin(col_vec)) {
-                        string_cat(proc->action_msg, ",");
+                        string_strcat(proc->action_msg, ",");
                 }
                 column_cat_description(*col, proc->action_msg);
         }

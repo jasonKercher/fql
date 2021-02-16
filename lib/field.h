@@ -2,7 +2,7 @@
 #define FIELD_H
 
 #include "fql.h"
-#include "util/fqlstring.h"
+#include "util/stringy.h"
 #include "util/stringview.h"
 
 /** data type **/

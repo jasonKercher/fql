@@ -1,5 +1,5 @@
-#ifndef STRING_H
-#define STRING_H
+#ifndef STRINGY_H
+#define STRINGY_H
 
 #include <stdarg.h>
 #include "vec.h"
@@ -46,8 +46,9 @@ void string_append_stringview(String*, struct stringview*);
 
 /* char interface */
 void string_push_back(String*, char);
-void string_cat(String*, const char*);
-void string_cpy(String*, const char*);
+void string_strcat(String*, const char*);
+void string_strcpy(String*, const char*);
+void string_strncpy(String*, const char*, size_t);
 void string_sprintf(String* s, const char* fmt, ...);
 
 /* string iterface */
@@ -57,4 +58,4 @@ void string_copy(String* dest, String* src);
 
 
 
-#endif  /* STRING_H */
+#endif  /* STRINGY_H */

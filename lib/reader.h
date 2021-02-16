@@ -8,7 +8,7 @@ extern "C" {
 #include "record.h"
 #include "util/vec.h"
 #include "util/pmap.h"
-#include "util/fqlstring.h"
+#include "util/stringy.h"
 #include "util/stringview.h"
 #include "util/util.h"
 

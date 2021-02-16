@@ -1,4 +1,4 @@
-#include "fqlstring.h"
+#include "stringy.h"
 
 #include <string.h>
 #include "stringview.h"
@@ -47,7 +47,7 @@ String* string_from_stringview(struct stringview* sv)
 
 String* string_construct_from_stringview(String* s, struct stringview* sv)
 {
-        string_construct(s); 
+        string_construct(s);
         string_copy_from_stringview(s, sv);
         return s;
 }
@@ -55,14 +55,14 @@ String* string_construct_from_stringview(String* s, struct stringview* sv)
 String* string_from_char_ptr(const char* src)
 {
         String* new_string = vec_new_(char);
-        string_cpy(new_string, src);
+        string_strcpy(new_string, src);
         return new_string;
 }
 
 String* string_construct_from_char_ptr(String* s, const char* cp)
 {
         string_construct(s);
-        string_cpy(s, cp);
+        string_strcpy(s, cp);
         return s;
 }
 
@@ -94,9 +94,7 @@ String* string_construct_take(String* s, char* src)
 
 void string_copy_from_stringview(String* s, struct stringview* sv)
 {
-        vec_resize(s, sv->len);
-        memcpy(s->data, sv->data, sv->len);
-        ((char*) s->data)[s->size] = '\0';
+        string_strncpy(s, sv->data, sv->len);
 }
 
 void string_append_stringview(String* dest, struct stringview* sv)
@@ -115,7 +113,7 @@ void string_push_back(String* s, char c)
         back[1] = '\0';
 }
 
-void string_cat(String* dest, const char* src)
+void string_strcat(String* dest, const char* src)
 {
         int len = strlen(src);
         int index = dest->size;
@@ -124,11 +122,22 @@ void string_cat(String* dest, const char* src)
         memcpy(end, src, len + 1);
 }
 
-void string_cpy(String* dest, const char* src)
+void string_strcpy(String* dest, const char* src)
 {
-        int len = strlen(src);
+        size_t len = strlen(src);
         vec_resize(dest, len);
         memcpy(dest->data, src, len + 1);
+}
+
+void string_strncpy(String* dest, const char* src, size_t len)
+{
+        vec_resize(dest, len);
+        size_t i = 0;
+        for (; src[i] != '\0' && i < len; ++i) {
+                ((char*)dest->data)[i] = src[i];
+        }
+        vec_resize(dest, i);
+        ((char*) dest->data)[i] = '\0';
 }
 
 void string_sprintf(String* s, const char* fmt, ...)
@@ -150,7 +159,3 @@ void string_copy(String* dest, String* src)
         memcpy(dest->data, src->data, src->size);
         ((char*) dest->data)[dest->size] = '\0';
 }
-
-
-
-

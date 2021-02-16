@@ -104,7 +104,7 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libutil_la_LIBADD =
 am_libutil_la_OBJECTS = util.lo stack.lo queue.lo hmap.lo pmap.lo \
-	vec.lo fqlstring.lo fifo.lo stringview.lo dgraph.lo
+	vec.lo stringy.lo fifo.lo stringview.lo dgraph.lo
 libutil_la_OBJECTS = $(am_libutil_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -126,9 +126,9 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/dgraph.Plo ./$(DEPDIR)/fifo.Plo \
-	./$(DEPDIR)/fqlstring.Plo ./$(DEPDIR)/hmap.Plo \
-	./$(DEPDIR)/pmap.Plo ./$(DEPDIR)/queue.Plo \
-	./$(DEPDIR)/stack.Plo ./$(DEPDIR)/stringview.Plo \
+	./$(DEPDIR)/hmap.Plo ./$(DEPDIR)/pmap.Plo \
+	./$(DEPDIR)/queue.Plo ./$(DEPDIR)/stack.Plo \
+	./$(DEPDIR)/stringview.Plo ./$(DEPDIR)/stringy.Plo \
 	./$(DEPDIR)/util.Plo ./$(DEPDIR)/vec.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -306,15 +306,15 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libutil.la
 libutil_la_SOURCES = util.h util.c \
-					 stack.h stack.c \
-					 queue.h queue.c \
-					 hmap.h hmap.c \
-					 pmap.h pmap.c \
-					 vec.h vec.c \
-					 fqlstring.h fqlstring.c \
-					 fifo.h fifo.c \
-					 stringview.h stringview.c \
-					 dgraph.h dgraph.c
+		stack.h stack.c \
+		queue.h queue.c \
+		hmap.h hmap.c \
+		pmap.h pmap.c \
+		vec.h vec.c \
+		stringy.h stringy.c \
+		fifo.h fifo.c \
+		stringview.h stringview.c \
+		dgraph.h dgraph.c
 
 all: all-am
 
@@ -372,12 +372,12 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dgraph.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fifo.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fqlstring.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hmap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pmap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/queue.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stack.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stringview.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stringy.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/util.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vec.Plo@am__quote@ # am--include-marker
 
@@ -541,12 +541,12 @@ clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/dgraph.Plo
 	-rm -f ./$(DEPDIR)/fifo.Plo
-	-rm -f ./$(DEPDIR)/fqlstring.Plo
 	-rm -f ./$(DEPDIR)/hmap.Plo
 	-rm -f ./$(DEPDIR)/pmap.Plo
 	-rm -f ./$(DEPDIR)/queue.Plo
 	-rm -f ./$(DEPDIR)/stack.Plo
 	-rm -f ./$(DEPDIR)/stringview.Plo
+	-rm -f ./$(DEPDIR)/stringy.Plo
 	-rm -f ./$(DEPDIR)/util.Plo
 	-rm -f ./$(DEPDIR)/vec.Plo
 	-rm -f Makefile
@@ -596,12 +596,12 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/dgraph.Plo
 	-rm -f ./$(DEPDIR)/fifo.Plo
-	-rm -f ./$(DEPDIR)/fqlstring.Plo
 	-rm -f ./$(DEPDIR)/hmap.Plo
 	-rm -f ./$(DEPDIR)/pmap.Plo
 	-rm -f ./$(DEPDIR)/queue.Plo
 	-rm -f ./$(DEPDIR)/stack.Plo
 	-rm -f ./$(DEPDIR)/stringview.Plo
+	-rm -f ./$(DEPDIR)/stringy.Plo
 	-rm -f ./$(DEPDIR)/util.Plo
 	-rm -f ./$(DEPDIR)/vec.Plo
 	-rm -f Makefile
