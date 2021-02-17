@@ -30,7 +30,6 @@ typedef int(*logic_fn)(struct logic*, struct vec*);
 
 struct logic {
         struct column* col[2];
-        //struct dnode* proc_node;
         logic_fn logic_fn;
         enum field_type data_type;
         enum comparison comp_type;
@@ -57,14 +56,15 @@ enum logicgroup_type {
 struct logicgroup {
         enum logicgroup_type type;
         struct vec items;               /* LogicGroup* */
-        struct logic* condition;        /* always NULL unless LG_NOT */
+        struct vec* joinable;
+        struct logic* join_logic;
+        struct logic* condition;
 };
 typedef struct logicgroup LogicGroup;
 
 struct logicgroup* logicgroup_new(enum logicgroup_type);
 struct logicgroup* logicgroup_construct(struct logicgroup*, enum logicgroup_type);
 void logicgroup_free(struct logicgroup*);
-
 
 int logicgroup_eval(struct logicgroup*, struct vec*);
 

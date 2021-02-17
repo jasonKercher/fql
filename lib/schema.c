@@ -321,6 +321,7 @@ int _asterisk_resolve(Vec* columns, Vec* sources)
                         }
                 }
 
+
                 if (matches == 0) {
                         fprintf(stderr, "Could not locate table `%s'\n", (*col)->table_name.data);
                         return FQL_FAIL;
@@ -328,6 +329,59 @@ int _asterisk_resolve(Vec* columns, Vec* sources)
         }
 
         return FQL_GOOD;
+}
+
+enum join_side _get_join_side(Column* col, int right_idx)
+{
+        switch (col->expr) {
+        case EXPR_COLUMN_NAME:
+                return (col->src_idx < right_idx) ? SIDE_LEFT : SIDE_RIGHT;
+        case EXPR_FUNCTION:
+        {
+                Function* func = col->field.fn;
+                Column** it = vec_begin(func->args);
+                enum join_side side0 = SIDE_UNDEF;
+                for (; it != vec_end(func->args); ++it) {
+                        enum join_side side1 = _get_join_side(*it, right_idx);
+                        if (side0 == SIDE_UNDEF) {
+                                side0 = side1;
+                        } else if (side1 == SIDE_UNDEF) {
+                                continue;
+                        } else if (side0 != side1) {
+                                return SIDE_MIXED;
+                        }
+                }
+        }
+        default:
+                return SIDE_UNDEF;
+
+        }
+}
+
+void _resolve_join_conditions(Source* right_src, int right_idx)
+{
+        if (right_src->condition == NULL ||
+            right_src->condition->joinable == NULL) {
+                return;
+        }
+
+        Vec* joinable = right_src->condition->joinable;
+
+        Logic** it = vec_begin(joinable);
+        for (; it != vec_end(joinable); ++it) {
+                enum join_side side0 = _get_join_side((*it)->col[0], right_idx);
+                if (side0 == SIDE_MIXED) {
+                        continue;
+                }
+                enum join_side side1 = _get_join_side((*it)->col[1], right_idx);
+                if (side0 != side1) {
+                        right_src->condition->join_logic = *it;
+                        break;
+                }
+        }
+
+        /* No more need for this vector */
+        vec_free(right_src->condition->joinable);
 }
 
 int schema_resolve_query(Query* query)
@@ -352,6 +406,10 @@ int schema_resolve_query(Query* query)
                 if (schema_assign_columns_limited(src->validation_list,
                                                   sources, i)) {
                         return FQL_FAIL;
+                }
+
+                if (i > 0) {
+                        _resolve_join_conditions(src, i);
                 }
         }
 

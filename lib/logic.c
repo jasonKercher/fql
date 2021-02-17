@@ -17,7 +17,6 @@ Logic* logic_construct(Logic* logic)
 {
         *logic = (Logic) {
                  {NULL, NULL}    /* col */
-                //,NULL            /* proc_node */
                 ,NULL            /* proc */
                 ,FIELD_UNDEFINED /* data_type */
                 ,COMP_NOT_SET    /* comp_type */
@@ -33,8 +32,6 @@ void logic_free(Logic* logic)
 
 void logic_assign_process(Logic* logic, Process* proc)
 {
-        //proc->proc_data = logic;
-
         logic->data_type = field_determine_type(logic->col[0]->field_type,
                                                 logic->col[1]->field_type);
         logic->logic_fn = logic_matrix[logic->comp_type][logic->data_type];
@@ -126,6 +123,8 @@ LogicGroup* logicgroup_construct(LogicGroup* lg, enum logicgroup_type type)
         *lg = (LogicGroup) {
                  type   /* type */
                 ,{ 0 }  /* items */
+                ,NULL   /* joinable */
+                ,NULL   /* join_logic */
                 ,NULL   /* condition */
         };
 

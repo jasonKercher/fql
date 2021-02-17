@@ -45,6 +45,7 @@ struct query {
          * tracking the query as antlr traverses it
          */
         struct stack* logic_stack;      /* used to build logic groups */
+        struct vec* joinable;           /* Denotes a joinable condition */
         struct stack* function_stack;   /* used to track function nesting */
 
         struct expression* expr;

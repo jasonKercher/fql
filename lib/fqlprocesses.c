@@ -115,6 +115,11 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
         return 1;
 }
 
+int fql_hash_join(Dgraph* proc_graph, Process* proc)
+{
+        return 1;
+}
+
 int fql_no_op(Dgraph* proc_graph, Process* proc)
 {
         fprintf(stderr, "No-op: %s\n", (char*) proc->action_msg->data);

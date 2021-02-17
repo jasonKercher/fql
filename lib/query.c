@@ -287,6 +287,7 @@ void enter_search(Query* query)
 {
         if (query->logic_stack == NULL) {
                 stack_push(&query->logic_stack, logicgroup_new(LG_ROOT));
+                query->joinable = vec_new_(Logic*);
                 return;
         }
 
@@ -297,6 +298,13 @@ void exit_search(Query* query)
 {
         LogicGroup* lg = stack_pop(&query->logic_stack);
         if (query->logic_stack == NULL) {
+                if (vec_empty(query->joinable)) {
+                        vec_free(query->joinable);
+                } else {
+                        lg->joinable = query->joinable;
+                        query->joinable = NULL;
+                }
+
                 _assign_logic(query, lg);
         }
 }
@@ -318,5 +326,18 @@ void enter_search_not(Query* query)
 
 void exit_search_not(Query* query)
 {
-        stack_pop(&query->logic_stack);
+        LogicGroup* top = stack_pop(&query->logic_stack);
+
+        /* Pre-requisite test for joinability
+         * A complete test for joinablity cannot occur
+         * until all logic columns have been resolved
+         * to a source.
+         */
+        if (top->condition != NULL &&
+            top->condition->comp_type == COMP_EQ &&
+            top->condition->col[0]->expr != EXPR_CONST &&
+            top->condition->col[1]->expr != EXPR_CONST) {
+                vec_push_back(query->joinable, &top->condition);
+        }
+
 }

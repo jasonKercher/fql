@@ -15,6 +15,13 @@ struct schema {
 };
 typedef struct schema Schema;
 
+enum join_side {
+        SIDE_UNDEF,
+        SIDE_LEFT,
+        SIDE_RIGHT,
+        SIDE_MIXED,
+};
+
 struct column;
 struct query;
 

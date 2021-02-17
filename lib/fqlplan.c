@@ -172,6 +172,11 @@ void _from(Plan* plan, Query* query)
                 join_proc->action = &fql_cartesian_join;
                 join_proc->proc_data = src;
 
+                /** TODO: replace this with hash join assignment **/
+                if (src->condition->join_logic != NULL) {
+                        fputs("HASH JOIN POSSIBLE", stderr);
+                }
+
                 Dnode* join_proc_node = dgraph_add_data(plan->processes, join_proc);
 
                 plan->current->out[0] = join_proc_node;

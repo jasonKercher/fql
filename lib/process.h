@@ -41,7 +41,7 @@ int fql_read(struct dgraph*, struct process*);
 int fql_select(struct dgraph*, struct process*);
 int fql_logic(struct dgraph*, struct process*);
 int fql_cartesian_join(struct dgraph*, struct process*);
-//int fql_hash_join(struct dgraph*, struct process*);
+int fql_hash_join(struct dgraph*, struct process*);
 int fql_no_op(struct dgraph*, struct process*);
 
 #endif /* PROCESS_H */
