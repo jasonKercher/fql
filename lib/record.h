@@ -2,11 +2,13 @@
 #define RECORD_H
 
 #include "util/vec.h"
+#include "util/stringview.h"
 #include "util/stringy.h"
 
 struct record {
         struct vec fields;
-        String raw;
+        String rec_cpy;
+        StringView rec_raw;
 };
 typedef struct record Record;
 

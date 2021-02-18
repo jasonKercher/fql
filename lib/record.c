@@ -14,11 +14,12 @@ Record* record_construct(Record* rec)
 {
         *rec = (Record) {
                  { 0 }  /* fields */
-                ,{ 0 }  /* raw */
+                ,{ 0 }  /* rec_cpy */
+                ,{ 0 }  /* raw_rec */
         };
 
         vec_construct_(&rec->fields, StringView);
-        string_construct(&rec->raw);
+        string_construct(&rec->rec_cpy);
         return rec;
 }
 
@@ -30,5 +31,6 @@ void record_free(Record* rec)
 
 void record_destroy(Record* rec)
 {
+        string_destroy(&rec->rec_cpy);
         vec_destroy(&rec->fields);
 }

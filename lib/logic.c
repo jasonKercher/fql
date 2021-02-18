@@ -144,6 +144,34 @@ void logicgroup_free(LogicGroup* lg)
         free_(lg);
 }
 
+/* Essentially the same as logicgroup_eval. 
+ * Every logic is true except the one provided.
+ * The point is to determine if that logic MUST be
+ * true for the group to evaluate to true.
+ */
+int logic_can_be_false(LogicGroup* lg, Logic* check_logic)
+{
+        LogicGroup** it = vec_begin(&lg->items);
+        if (lg->type == LG_NOT && lg->condition != NULL) {
+                if (lg->condition == check_logic) {
+                        return 0;
+                }
+                return 1;
+        }
+
+        int ret = 0;
+        for (; it != vec_end(&lg->items); ++it) {
+                ret = logic_can_be_false(*it, check_logic);
+                if (ret == 0 && lg->type == LG_AND) {
+                        return 0;
+                }
+                if (ret == 1 && (*it)->type == LG_AND) {
+                        return 1;
+                }
+        }
+        return ret;
+}
+
 int logicgroup_eval(LogicGroup* lg, Vec* recs)
 {
         LogicGroup** it = vec_begin(&lg->items);

@@ -375,8 +375,10 @@ void _resolve_join_conditions(Source* right_src, int right_idx)
                 }
                 enum join_side side1 = _get_join_side((*it)->col[1], right_idx);
                 if (side0 != side1) {
-                        right_src->condition->join_logic = *it;
-                        break;
+                        if (!logic_can_be_false(right_src->condition, *it)) {
+                                right_src->condition->join_logic = *it;
+                                break;
+                        }
                 }
         }
 
