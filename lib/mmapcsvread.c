@@ -157,7 +157,7 @@ int mmapcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
 
         string_strncpy(&rec->rec_cpy, (*csv_rec)->raw, (*csv_rec)->raw_len);
         rec->rec_raw.data = (*csv_rec)->raw;
-        rec->rec_raw.len = (*csv_rec)->raw_len; 
+        rec->rec_raw.len = (*csv_rec)->raw_len;
 
         return FQL_GOOD;
 }

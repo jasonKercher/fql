@@ -169,14 +169,13 @@ void _from(Plan* plan, Query* query)
         for (++src; src != vec_end(query->sources); ++src) {
                 Process* join_proc = _new_join_proc(src->join_type, ++plan->source_count);
                 process_add_second_input(join_proc);
-                /** TODO: remove false **/
-                if (false && src->condition->join_logic != NULL) {
+                if (/* TODO */ false && src->condition->join_logic != NULL) {
                         join_proc->action = &fql_hash_join;
-                        join_proc->proc_data = NULL; /* TODO */
+                        source_hash_join_init(src);
                 } else {
                         join_proc->action = &fql_cartesian_join;
-                        join_proc->proc_data = src;
                 }
+                join_proc->proc_data = src;
 
 
                 Dnode* join_proc_node = dgraph_add_data(plan->processes, join_proc);

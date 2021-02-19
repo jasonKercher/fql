@@ -7,13 +7,13 @@ extern "C" {
 
 #include "util/stack.h"
 #include "util/hmap.h"
+#include "util/pmap.h"
 #include "schema.h"
 #include "reader.h"
 #include "fqlimits.h"
 
 
 /** Table **/
-
 struct table {
         struct reader* reader;
         struct schema* schema;
@@ -45,6 +45,7 @@ struct source {
         struct table* table;
         struct logicgroup* condition;
         struct vec* validation_list;
+        void* join_data;
         String alias;
         size_t idx;
         enum source_type source_type;
@@ -66,6 +67,19 @@ struct source* source_construct(struct source*,
 void source_free(struct source*);
 void source_destroy(struct source*);
 
+#define HASH_JOIN_MIN_SIZE 128
+
+struct hashjoin {
+        Pmap hash_data;
+        struct column* left_col;
+        struct column* right_col;
+        Vec* recs;
+        unsigned rec_idx;
+};
+
+struct hashjoin* hashjoin_new();
+void hashjoin_free(struct hashjoin*);
+void source_hash_join_init(struct source*);
 
 
 #ifdef __cplusplus

@@ -358,6 +358,7 @@ enum join_side _get_join_side(Column* col, int right_idx)
         }
 }
 
+
 void _resolve_join_conditions(Source* right_src, int right_idx)
 {
         if (right_src->condition == NULL ||
@@ -377,6 +378,15 @@ void _resolve_join_conditions(Source* right_src, int right_idx)
                 if (side0 != side1) {
                         if (!logic_can_be_false(right_src->condition, *it)) {
                                 right_src->condition->join_logic = *it;
+                                struct hashjoin* hj = hashjoin_new();
+                                if (side0 == SIDE_RIGHT) {
+                                        hj->right_col = (*it)->col[0];
+                                        hj->left_col = (*it)->col[1];
+                                } else {
+                                        hj->right_col = (*it)->col[1];
+                                        hj->left_col = (*it)->col[0];
+                                }
+                                right_src->join_data = hj;
                                 break;
                         }
                 }

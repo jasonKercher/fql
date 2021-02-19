@@ -3,6 +3,7 @@
 #include "process.h"
 #include "select.h"
 #include "record.h"
+#include "column.h"
 
 /* Trigger appropiate roots to read the next record */
 void _recycle_rec(Dgraph* proc_graph, int width)
@@ -115,8 +116,80 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
         return 1;
 }
 
+
+
+void _hash_join_right_side(Process* proc, Source* src)
+{
+        Vec** leftrecs = fifo_peek(proc->fifo_in0);
+
+        /* We can assume recs is of size 1 */
+        Vec** rightrecs = fifo_get(proc->fifo_in1);
+        Record** rightrec = vec_begin(*rightrecs);
+
+        /* We don't need anything on the left side,
+         * BUT we need a vector with the right side
+         * at the right index.
+         */
+        vec_set(*leftrecs, src->idx, rightrec);
+
+        struct hashjoin* hj = src->join_data;
+
+        StringView sv;
+        column_get_stringview(&sv, hj->right_col, *leftrecs);
+
+        pmap_set(&hj->hash_data, sv.data, (void*) (*rightrec)->rec_raw.data);
+}
+
+Record* _hash_join_left_side(Process* proc, Source* src)
+{
+        /* We can assume, nothing here requires right side */
+        Vec** leftrecs = fifo_peek(proc->fifo_in0);
+
+        struct hashjoin* hj = src->join_data;
+
+        if (hj->recs == NULL) {
+                StringView sv;
+                column_get_stringview(&sv, hj->left_col, *leftrecs);
+
+                hj->recs = pmap_get(&hj->hash_data, sv.data);
+                hj->rec_idx = 0;
+        }
+
+        char** rightrec_ptr = vec_at(hj->recs, hj->rec_idx++);
+        if (hj->rec_idx >= hj->recs->size) {
+                hj->recs = NULL;
+        }
+        //mmap_get_record_at();
+
+        /** TODO **/
+
+        return NULL;
+}
+
 int fql_hash_join(Dgraph* proc_graph, Process* proc)
 {
+        Source* src = proc->proc_data;
+
+        if (proc->fifo_in1->is_open) {
+                if (fifo_is_empty(proc->fifo_in1)) {
+                        return 0;
+                }
+                _hash_join_right_side(proc, src);
+                _recycle_specific(proc_graph, proc->fifo_width);
+                return 1;
+        }
+        Vec** leftrecs = fifo_get(proc->fifo_in0);
+
+        Record* rightrec = _hash_join_left_side(proc, src);
+        if (rightrec == NULL) {
+                return 1;
+        }
+
+        /* Set back rec as latest rec */
+        vec_set(*leftrecs, src->idx, rightrec);
+
+        fifo_add(proc->fifo_out0, leftrecs);
+
         return 1;
 }
 

@@ -38,13 +38,17 @@ typedef struct hmap Hmap;
 
 struct hmap* hmap_new(size_t limit, unsigned);
 struct hmap* hmap_construct(struct hmap*, size_t limit, unsigned);
+void hmap_destroy(struct hmap* m);
 void hmap_free(struct hmap* m);
-void* hmap_set(struct hmap* m, char* key, void* data);
+void* hmap_nset(struct hmap* m, const char* key, void* data, int);
+void* hmap_set(struct hmap* m, const char* key, void* data);
+void* hmap_nget(struct hmap* m, const char* key, int);
 void* hmap_get(struct hmap* m, const char* key);
 void* hmap_set_a(struct hmap* m, void* key, void* data);
 void* hmap_get_a(struct hmap* m, void* key);
 void* hmap_remove(struct hmap* m, const char* key);
 _Bool hmap_haskey(struct hmap* m, const char* key);
+int hmap_ninsert(struct hmap* m, const char* key, void* data, int);
 int hmap_insert(struct hmap* m, const char* key, void* data);
 ENTRY* hmap_get_entry(struct hmap* m, const char* key);
 

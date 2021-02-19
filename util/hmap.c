@@ -1,5 +1,6 @@
 #include "hmap.h"
 #include <limits.h>
+#include <search.h>
 #include <stdint.h>
 
 Hmap* hmap_new(size_t limit, unsigned props)
@@ -32,7 +33,80 @@ Hmap* hmap_construct(Hmap* m, size_t limit, unsigned props)
         return m;
 }
 
-int hmap_insert(Hmap* m, const char* key, void* data)
+void hmap_destroy(Hmap* m)
+{
+        hdestroy_r(m->tab);
+        free_(m->tab);
+        free_(m->_buffer);
+}
+
+void hmap_free(Hmap* m)
+{
+        hmap_destroy(m);
+        free_(m);
+}
+
+ENTRY* _get_entry(Hmap* m, const char* key, int char_limit)
+{
+        if (char_limit > HMAP_KEY_MAX) {
+                char_limit = HMAP_KEY_MAX;
+        }
+
+        ENTRY search_entry;
+        ENTRY* ret = NULL;
+
+        char key_cpy[HMAP_KEY_MAX] = "";
+        strncpy_(key_cpy, key, char_limit);
+
+        if ((m->props & HMAP_NOCASE)) {
+                string_to_lower(key_cpy);
+        }
+
+        search_entry.data = NULL;
+        search_entry.key = key_cpy;
+
+        int ret_val = hsearch_r(search_entry, FIND, &ret, m->tab);
+
+        if (ret_val)
+                return ret;
+
+        return NULL;
+
+}
+
+ENTRY* hmap_nget_entry(Hmap* m, const char* key, int char_limit)
+{
+        if (char_limit > HMAP_KEY_MAX) {
+                char_limit = HMAP_KEY_MAX;
+        }
+
+        return _get_entry(m, key, char_limit);
+}
+
+ENTRY* hmap_get_entry(Hmap* m, const char* key)
+{
+        return _get_entry(m, key, HMAP_KEY_MAX);
+}
+
+void* hmap_nget(Hmap* m, const char* key, int char_limit)
+{
+       ENTRY* ent = hmap_nget_entry(m, key, char_limit);
+       if (!ent)
+               return NULL;
+
+       return ent->data;
+}
+
+void* hmap_get(Hmap* m, const char* key)
+{
+       ENTRY* ent = hmap_get_entry(m, key);
+       if (!ent)
+               return NULL;
+
+       return ent->data;
+}
+
+int _insert(Hmap* m, const char* key, void* data, int char_limit)
 {
         int size = strlen(key) + 1;
         size = size > HMAP_KEY_MAX ? HMAP_KEY_MAX : size;
@@ -71,39 +145,39 @@ int hmap_insert(Hmap* m, const char* key, void* data)
         return 1;
 }
 
-ENTRY* hmap_get_entry(Hmap* m, const char* key)
+int hmap_ninsert(Hmap* m, const char* key, void* data, int char_limit)
 {
-        ENTRY search_entry;
-        ENTRY* ret = NULL;
-
-        char key_cpy[HMAP_KEY_MAX] = "";
-        strncpy_(key_cpy, key, HMAP_KEY_MAX);
-
-        if ((m->props & HMAP_NOCASE)) {
-                string_to_lower(key_cpy);
+        if (char_limit > HMAP_KEY_MAX) {
+                char_limit = HMAP_KEY_MAX;
         }
 
-        search_entry.data = NULL;
-        search_entry.key = key_cpy;
+        return _insert(m, key, data, char_limit);
+}
 
-        int ret_val = hsearch_r(search_entry, FIND, &ret, m->tab);
+int hmap_insert(Hmap* m, const char* key, void* data)
+{
+        return _insert(m, key, data, HMAP_KEY_MAX);
+}
 
-        if (ret_val)
-                return ret;
+void* hmap_nset(Hmap* m, const char* key, void* data, int char_limit)
+{
+        ENTRY* ent = hmap_nget_entry(m, key, char_limit);
+        if (ent && ent->data != HMAP_NONE) {
+                void* old_data = ent->data;
+                ent->data = data;
+                return old_data;
+        }
+
+        if (ent) {
+                ent->data = data;
+        } else {
+                hmap_ninsert(m, key, data, char_limit);
+        }
 
         return NULL;
 }
 
-void* hmap_get(Hmap* m, const char* key)
-{
-       ENTRY* ent = hmap_get_entry(m, key);
-       if (!ent)
-               return NULL;
-
-       return ent->data;
-}
-
-void* hmap_set(Hmap* m, char* key, void* data)
+void* hmap_set(Hmap* m, const char* key, void* data)
 {
         ENTRY* ent = hmap_get_entry(m, key);
         if (ent && ent->data != HMAP_NONE) {
@@ -174,10 +248,3 @@ void* hmap_remove(Hmap* m, const char* key)
         return data;
 }
 
-void hmap_free(Hmap* m)
-{
-        hdestroy_r(m->tab);
-        free_(m->tab);
-        free_(m->_buffer);
-        free_(m);
-}
