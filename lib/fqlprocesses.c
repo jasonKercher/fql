@@ -137,7 +137,7 @@ void _hash_join_right_side(Process* proc, Source* src)
         StringView sv;
         column_get_stringview(&sv, hj->right_col, *leftrecs);
 
-        pmap_set(&hj->hash_data, sv.data, (void*) (*rightrec)->rec_raw.data);
+        pmap_nset(&hj->hash_data, sv.data, (void*) (*rightrec)->rec_raw.data, sv.len);
 }
 
 Record* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
@@ -148,7 +148,7 @@ Record* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
                 StringView sv;
                 column_get_stringview(&sv, hj->left_col, leftrecs);
 
-                hj->recs = pmap_get(&hj->hash_data, sv.data);
+                hj->recs = pmap_nget(&hj->hash_data, sv.data, sv.len);
                 if (hj->recs == NULL) {
                         return NULL;
                 }

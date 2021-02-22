@@ -50,6 +50,7 @@ void* hmap_remove(struct hmap* m, const char* key);
 _Bool hmap_haskey(struct hmap* m, const char* key);
 int hmap_ninsert(struct hmap* m, const char* key, void* data, int);
 int hmap_insert(struct hmap* m, const char* key, void* data);
+ENTRY* hmap_nget_entry(struct hmap* m, const char* key, int char_limit);
 ENTRY* hmap_get_entry(struct hmap* m, const char* key);
 
 #ifdef __cplusplus
