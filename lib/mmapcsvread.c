@@ -162,6 +162,14 @@ int mmapcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
         return FQL_GOOD;
 }
 
+int mmapcsv_get_record_at(Reader* reader, Record* rec, unsigned char idx, char* location)
+{
+        struct mmapcsv_data* data = reader->reader_data;
+        data->eof = false;
+        data->mp = location;
+        return mmapcsv_get_record(reader, rec, idx);
+}
+
 void mmapcsv_reset(void* reader_data)
 {
         struct mmapcsv_data* data = reader_data;

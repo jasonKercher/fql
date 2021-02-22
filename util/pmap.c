@@ -35,7 +35,7 @@ Vec* pmap_set(Pmap* pmap, const char* key, void* data)
         }
 
         Vec* new_vec = vec_new_(void*);
-        vec_push_back(new_vec, data);
+        vec_push_back(new_vec, &data);
 
         if (ent) {
                 ent->data = new_vec;

@@ -87,6 +87,7 @@ void mmapcsv_free(void*);
 char* mmapcsv_get_delim(struct mmapcsv_data*);
 int mmapcsv_open(struct mmapcsv_data*, const char* file_name);
 int mmapcsv_get_record(struct reader*, struct record* rec, unsigned char);
+int mmapcsv_get_record_at(struct reader*, struct record* rec, unsigned char, char* rec_num);
 void mmapcsv_reset(void*);
 
 #ifdef __cplusplus

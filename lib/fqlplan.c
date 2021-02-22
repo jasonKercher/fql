@@ -169,7 +169,8 @@ void _from(Plan* plan, Query* query)
         for (++src; src != vec_end(query->sources); ++src) {
                 Process* join_proc = _new_join_proc(src->join_type, ++plan->source_count);
                 process_add_second_input(join_proc);
-                if (/* TODO */ false && src->condition->join_logic != NULL) {
+                //if (/* TODO */ false && src->condition->join_logic != NULL) {
+                if (src->condition->join_logic != NULL) {
                         join_proc->action = &fql_hash_join;
                         source_hash_join_init(src);
                 } else {
