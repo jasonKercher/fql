@@ -155,11 +155,11 @@ Record* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
                 hj->rec_idx = 0;
         }
 
-        char** rightrec_ptr = vec_at(hj->recs, hj->rec_idx++);
         if (hj->rec_idx >= hj->recs->size) {
                 hj->recs = NULL;
                 return NULL;
         }
+        char** rightrec_ptr = vec_at(hj->recs, hj->rec_idx++);
 
         /* Let's assume that this read never fails
          * because it has already parsed...
