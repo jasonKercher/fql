@@ -56,7 +56,7 @@ ENTRY* _get_entry(Hmap* m, const char* key, int char_limit)
         ENTRY* ret = NULL;
 
         char key_cpy[HMAP_KEY_MAX] = "";
-        strncpy_(key_cpy, key, char_limit);
+        strncpy_(key_cpy, key, char_limit+1);
 
         if ((m->props & HMAP_NOCASE)) {
                 string_to_lower(key_cpy);
@@ -108,8 +108,6 @@ void* hmap_get(Hmap* m, const char* key)
 
 int _insert(Hmap* m, const char* key, void* data, int char_limit)
 {
-        int size = strlen(key) + 1;
-        size = size > HMAP_KEY_MAX ? HMAP_KEY_MAX : size;
 
         /**
          * We cannot realloc here. realloc could invalidate
@@ -118,12 +116,12 @@ int _insert(Hmap* m, const char* key, void* data, int char_limit)
          * This is issue would be resolved by implementing
          * a custom hashmap instead of wrapping hsearch_r.
          */
-        if ((m->_bufhead - m->_buffer) + size > m->_bufsize) {
+        if ((m->_bufhead - m->_buffer) + char_limit > m->_bufsize) {
                 fputs("hmap buffer overflow\n", stderr);
                 exit(EXIT_FAILURE);
         }
 
-        strncpy_(m->_bufhead, key, size);
+        strncpy_(m->_bufhead, key, char_limit+1);
 
         ENTRY new_entry;
         ENTRY* ret = NULL;
@@ -135,7 +133,7 @@ int _insert(Hmap* m, const char* key, void* data, int char_limit)
         new_entry.key = m->_bufhead;
         new_entry.data = data;
 
-        m->_bufhead += size + 1;
+        m->_bufhead += char_limit + 2;
 
         if (!hsearch_r(new_entry, ENTER, &ret, m->tab)) {
                 perror("hsearch_r");
@@ -156,7 +154,9 @@ int hmap_ninsert(Hmap* m, const char* key, void* data, int char_limit)
 
 int hmap_insert(Hmap* m, const char* key, void* data)
 {
-        return _insert(m, key, data, HMAP_KEY_MAX);
+        int size = strlen(key);
+        size = size > HMAP_KEY_MAX ? HMAP_KEY_MAX : size;
+        return _insert(m, key, data, size);
 }
 
 void* hmap_nset(Hmap* m, const char* key, void* data, int char_limit)
