@@ -157,18 +157,17 @@ success_return:
 
 void schema_assign_header(Table* table, Record* rec)
 {
-        int i = 0;
-
         table->schema->col_map = hmap_new(rec->fields.size * 2, HMAP_NOCASE);
 
-        StringView* fields = rec->fields.data;
-        for (; i < rec->fields.size; ++i) {
+        int i = 0;
+        StringView* it = vec_begin(&rec->fields);
+        for (; it != vec_end(&rec->fields); ++it) {
                 String col_str;
-                string_construct_from_stringview(&col_str, &fields[i]);
+                string_construct_from_stringview(&col_str, it);
                 Column* new_col = column_new(EXPR_COLUMN_NAME, col_str.data, "");
                 schema_add_column(table->schema, new_col);
 
-                new_col->location = i;
+                new_col->location = i++;
                 new_col->table = table;
                 new_col->field_type = FIELD_STRING;
 

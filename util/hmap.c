@@ -48,15 +48,11 @@ void hmap_free(Hmap* m)
 
 ENTRY* _get_entry(Hmap* m, const char* key, int char_limit)
 {
-        if (char_limit > HMAP_KEY_MAX) {
-                char_limit = HMAP_KEY_MAX;
-        }
-
         ENTRY search_entry;
         ENTRY* ret = NULL;
 
         char key_cpy[HMAP_KEY_MAX] = "";
-        strncpy_(key_cpy, key, char_limit+1);
+        strncpy_(key_cpy, key, char_limit);
 
         if ((m->props & HMAP_NOCASE)) {
                 string_to_lower(key_cpy);
@@ -76,7 +72,7 @@ ENTRY* _get_entry(Hmap* m, const char* key, int char_limit)
 
 ENTRY* hmap_nget_entry(Hmap* m, const char* key, int char_limit)
 {
-        if (char_limit > HMAP_KEY_MAX) {
+        if (++char_limit > HMAP_KEY_MAX) {
                 char_limit = HMAP_KEY_MAX;
         }
 

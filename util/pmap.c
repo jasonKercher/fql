@@ -35,7 +35,7 @@ Vec* pmap_nset(Pmap* pmap, const char* key, void* data, int char_limit)
         ENTRY* ent = hmap_nget_entry(pmap, key, char_limit);
         if (ent && ent->data != HMAP_NONE) {
                 Vec* v = ent->data;
-                vec_push_back(v, data);
+                vec_push_back(v, &data);
                 return v;
         }
 
@@ -56,7 +56,7 @@ Vec* pmap_set(Pmap* pmap, const char* key, void* data)
         ENTRY* ent = hmap_get_entry(pmap, key);
         if (ent && ent->data != HMAP_NONE) {
                 Vec* v = ent->data;
-                vec_push_back(v, data);
+                vec_push_back(v, &data);
                 return v;
         }
 
