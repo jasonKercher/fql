@@ -140,6 +140,7 @@ int mmapcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
         /* lol. lets just call everything data */
         csv_nparse_to(data->csv_handle, *csv_rec, data->current.data, data->current.len, reader->max_col_idx+1);
 
+        /** TODO: move this to resolve source and push into fifo **/
         vec_resize(&rec->fields, (*csv_rec)->size);
 
         StringView* sv = vec_begin(&rec->fields);

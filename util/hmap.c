@@ -117,7 +117,7 @@ int _insert(Hmap* m, const char* key, void* data, int char_limit)
                 exit(EXIT_FAILURE);
         }
 
-        strncpy_(m->_bufhead, key, char_limit+1);
+        strncpy_(m->_bufhead, key, char_limit);
 
         ENTRY new_entry;
         ENTRY* ret = NULL;
@@ -141,7 +141,7 @@ int _insert(Hmap* m, const char* key, void* data, int char_limit)
 
 int hmap_ninsert(Hmap* m, const char* key, void* data, int char_limit)
 {
-        if (char_limit > HMAP_KEY_MAX) {
+        if (++char_limit > HMAP_KEY_MAX) {
                 char_limit = HMAP_KEY_MAX;
         }
 
@@ -151,7 +151,7 @@ int hmap_ninsert(Hmap* m, const char* key, void* data, int char_limit)
 int hmap_insert(Hmap* m, const char* key, void* data)
 {
         int size = strlen(key);
-        size = size > HMAP_KEY_MAX ? HMAP_KEY_MAX : size;
+        size = size > HMAP_KEY_MAX ? HMAP_KEY_MAX : size + 1;
         return _insert(m, key, data, size);
 }
 

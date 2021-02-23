@@ -67,7 +67,7 @@ struct logicgroup* logicgroup_construct(struct logicgroup*, enum logicgroup_type
 void logicgroup_free(struct logicgroup*);
 
 int logic_can_be_false(struct logicgroup*, struct logic*);
-int logicgroup_eval(struct logicgroup*, struct vec*);
+int logicgroup_eval(struct logicgroup*, struct vec*, struct logic* skip);
 
 
 /* logic functions */

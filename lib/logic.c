@@ -144,7 +144,7 @@ void logicgroup_free(LogicGroup* lg)
         free_(lg);
 }
 
-/* Essentially the same as logicgroup_eval. 
+/* Essentially the same as logicgroup_eval.
  * Every logic is true except the one provided.
  * The point is to determine if that logic MUST be
  * true for the group to evaluate to true.
@@ -172,16 +172,24 @@ int logic_can_be_false(LogicGroup* lg, Logic* check_logic)
         return ret;
 }
 
-int logicgroup_eval(LogicGroup* lg, Vec* recs)
+/* Evaluate the logic statement
+ * The skip argument is for logic that can
+ * be assumed true because it was evaluated
+ * prior to calling this function.
+ */
+int logicgroup_eval(LogicGroup* lg, Vec* recs, Logic* skip)
 {
         LogicGroup** it = vec_begin(&lg->items);
         if (lg->type == LG_NOT && lg->condition != NULL) {
+                if (lg->condition == skip) {
+                        return 1;
+                }
                 return lg->condition->logic_fn(lg->condition, recs);
         }
 
         int ret = 0;
         for (; it != vec_end(&lg->items); ++it) {
-                ret = logicgroup_eval(*it, recs);
+                ret = logicgroup_eval(*it, recs, skip);
                 if (ret == 0 && lg->type == LG_AND) {
                         return 0;
                 }

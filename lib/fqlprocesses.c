@@ -72,7 +72,7 @@ int fql_logic(Dgraph* proc_graph, Process* proc)
         Vec** recs = fifo_get(proc->fifo_in0);
         LogicGroup* lg = proc->proc_data;
 
-        int ret = logicgroup_eval(lg, *recs);
+        int ret = logicgroup_eval(lg, *recs, lg->condition);
         if (ret == FQL_FAIL) {
                 return FQL_FAIL;
         }
