@@ -88,6 +88,9 @@ void process_activate(Dnode* proc_node)
                 return;
         }
 
+        Reader* reader = proc->proc_data;
+        int field_count = reader->max_col_idx + 1;
+
         /* If root, it will own the vector of StringViews */
         Vec* buf = proc->fifo_in0->buf;
         Vec** recs = vec_begin(buf);
@@ -98,6 +101,12 @@ void process_activate(Dnode* proc_node)
                 Record** rec = vec_begin(*recs);
                 for (; rec != vec_end(*recs); ++rec) {
                         *rec = record_new();
+                        vec_resize(&(*rec)->fields, field_count);
+                }
+
+                if (proc->fifo_out0 != NULL) {
+                        fifo_add(proc->fifo_out0, *recs);
+                        fifo_consume(proc->fifo_out0);
                 }
         }
 
