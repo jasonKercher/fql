@@ -45,6 +45,7 @@ struct source {
         struct table* table;
         struct logicgroup* condition;
         struct vec* validation_list;
+        struct process* read_proc;
         void* join_data;
         String alias;
         size_t idx;
@@ -74,6 +75,7 @@ struct hashjoin {
         struct column* left_col;
         struct column* right_col;
         Vec* recs;
+        enum join_side state;
         unsigned rec_idx;
 };
 

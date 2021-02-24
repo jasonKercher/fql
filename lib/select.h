@@ -19,7 +19,7 @@ struct select {
         struct vec* api;
         struct schema* schema;
         struct writer* writer;
-        select_fn select_fn;
+        select_fn select__;
 };
 typedef struct select Select;
 

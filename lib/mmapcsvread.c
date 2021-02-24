@@ -118,16 +118,11 @@ int mmapcsv_getline(struct mmapcsv_data* data)
         return EOF;
 }
 
-int mmapcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
+int mmapcsv_get_record(Reader* reader, Record* rec, int idx)
 {
         struct mmapcsv_data* data = reader->reader_data;
         if (data->eof) {
-                mmapcsv_reset(data);
-                /* Skip header */
-                int ret = mmapcsv_getline(data);
-                if (ret) {
-                        return ret;
-                }
+                return mmapcsv_reset(reader, idx);
         }
 
         csv_record** csv_rec = vec_at(data->csv_recs, idx);
@@ -163,7 +158,7 @@ int mmapcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
         return FQL_GOOD;
 }
 
-int mmapcsv_get_record_at(Reader* reader, Record* rec, unsigned char idx, char* location)
+int mmapcsv_get_record_at(Reader* reader, Record* rec, int idx, char* location)
 {
         struct mmapcsv_data* data = reader->reader_data;
         data->eof = false;
@@ -171,9 +166,11 @@ int mmapcsv_get_record_at(Reader* reader, Record* rec, unsigned char idx, char* 
         return mmapcsv_get_record(reader, rec, idx);
 }
 
-void mmapcsv_reset(void* reader_data)
+int mmapcsv_reset(Reader* reader, int idx)
 {
-        struct mmapcsv_data* data = reader_data;
+        struct mmapcsv_data* data = reader->reader_data;
         data->eof = false;
         data->mp = data->mmap_base;
+        /* Skip header */
+        return mmapcsv_getline(data);
 }

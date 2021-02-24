@@ -24,9 +24,9 @@ Reader* reader_construct(Reader* reader)
         *reader = (Reader) {
                  READ_UNDEFINED /* type */
                 ,NULL           /* reader_data */
-                ,NULL           /* get_record_fn */
-                ,NULL           /* free_fn */
-                ,NULL           /* reset_fn */
+                ,NULL           /* get_record__ */
+                ,NULL           /* free__ */
+                ,NULL           /* reset__ */
                 ,{ 0 }          /* file_name */
                 ,0              /* max_col_idx */
         };
@@ -42,8 +42,8 @@ void reader_free(Reader* reader)
                 return;
         }
         string_destroy(&reader->file_name);
-        if (reader->free_fn) {
-                reader->free_fn(reader->reader_data);
+        if (reader->free__) {
+                reader->free__(reader->reader_data);
         }
         free_(reader);
 }
@@ -72,9 +72,9 @@ void reader_assign(Reader* reader)
         {
                 struct libcsv_reader* data = libcsv_reader_new(PROCESS_BUFFER_SIZE);
                 reader->reader_data = data;
-                reader->free_fn = &libcsv_reader_free;
-                reader->get_record_fn = &libcsv_get_record;
-                reader->reset_fn = &libcsv_reset;
+                reader->free__ = &libcsv_reader_free;
+                reader->get_record__ = &libcsv_get_record;
+                reader->reset__ = &libcsv_reset;
                 ret = csv_reader_open(data->csv_handle, reader->file_name.data);
                 break;
         }
@@ -82,9 +82,9 @@ void reader_assign(Reader* reader)
         {
                 struct mmapcsv_data* data = mmapcsv_new(PROCESS_BUFFER_SIZE);
                 reader->reader_data = data;
-                reader->free_fn = &mmapcsv_free;
-                reader->get_record_fn = &mmapcsv_get_record;
-                reader->reset_fn = &mmapcsv_reset;
+                reader->free__ = &mmapcsv_free;
+                reader->get_record__ = &mmapcsv_get_record;
+                reader->reset__ = &mmapcsv_reset;
                 ret = mmapcsv_open(data, reader->file_name.data);
                 break;
         }

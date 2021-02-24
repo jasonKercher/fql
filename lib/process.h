@@ -13,7 +13,7 @@ struct process;
 typedef int (process_fn)(struct dgraph*, struct process*);
 
 struct process {
-        process_fn* action;             /* function pointer for process */
+        process_fn* action__;             /* function pointer for process */
         Fifo* fifo_in0;                 /* ring buffer of records */
         Fifo* fifo_in1;                 /* optional second input */
         Fifo* fifo_out0;                /* default next process fifo */

@@ -70,8 +70,8 @@ Writer* writer_construct(Writer* writer)
         *writer = (Writer) {
                  WRITE_UNDEFINED        /* type */
                 ,NULL                   /* writer_data */
-                ,NULL                   /* write_record_fn */
-                ,NULL                   /* free_fn */
+                ,NULL                   /* write_record__ */
+                ,NULL                   /* free__ */
                 ,vec_new_(String)       /* raw_rec */
                 ,{ 0 }                  /* file_name */
         };
@@ -92,8 +92,8 @@ void writer_free(Writer* writer)
         if (writer == NULL) {
                 return;
         }
-        if (writer->free_fn) {
-                writer->free_fn(writer->writer_data);
+        if (writer->free__) {
+                writer->free__(writer->writer_data);
         }
         string_destroy(&writer->file_name);
         String* s = vec_begin(writer->raw_rec);
@@ -128,8 +128,8 @@ void writer_assign(Writer* writer)
         {
                 csv_writer* data = csv_writer_new();
                 writer->writer_data = data;
-                writer->write_record_fn = &libcsv_write_record;
-                writer->free_fn = &libcsv_writer_free;
+                writer->write_record__ = &libcsv_write_record;
+                writer->free__ = &libcsv_writer_free;
                 break;
         }
         default:

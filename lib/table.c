@@ -61,6 +61,7 @@ Source* source_construct(Source* src,
                  table                  /* table */
                 ,NULL                   /* condition */
                 ,vec_new_(Column*)      /* validation_list */
+                ,NULL                   /* read_proc */
                 ,NULL                   /* join_data */
                 ,{ 0 }                  /* alias */
                 ,idx                    /* idx */
@@ -104,9 +105,12 @@ struct hashjoin* hashjoin_new()
         malloc_(new_join, sizeof(*new_join));
 
         *new_join = (struct hashjoin) {
-                 { 0 }  /* hash_data */
-                ,NULL   /* left_col */
-                ,NULL   /* right_col */
+                 { 0 }          /* hash_data */
+                ,NULL           /* left_col */
+                ,NULL           /* right_col */
+                ,NULL           /* recs */
+                ,SIDE_RIGHT     /* state */
+                ,0              /* rec_idx */
         };
 
         return new_join;
@@ -135,7 +139,7 @@ size_t _guess_row_count(Source* src)
 
         int i = 0;
         for (; i < 10; ++i) {
-                if (reader->get_record_fn(reader, &rec, 0) != FQL_GOOD) {
+                if (reader->get_record__(reader, &rec, 0) != FQL_GOOD) {
                         break;
                 }
                 total_length += rec.rec_raw.len;
@@ -154,7 +158,7 @@ size_t _guess_row_count(Source* src)
                 avg_len = 1;
 
         struct mmapcsv_data* data = reader->reader_data;
-        reader->reset_fn(data);
+        reader->reset__(reader, 0);
 
         guess = data->file_size / avg_len;
 

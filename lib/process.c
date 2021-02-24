@@ -23,7 +23,7 @@ Process* process_new(const char* action, int width)
 Process* process_construct(Process* proc, const char* action, int width)
 {
         *proc = (Process) {
-                 &fql_no_op                     /* action */
+                 &fql_no_op                     /* action__ */
                 ,NULL                           /* fifo_in0 */
                 ,NULL                           /* fifo_in1 */
                 ,NULL                           /* fifo_out0 */
@@ -83,7 +83,7 @@ void process_free(Process* proc)
 void process_activate(Dnode* proc_node)
 {
         Process* proc = proc_node->data;
-        proc->fifo_in0 = fifo_new_(Vec*, UCHAR_MAX);
+        proc->fifo_in0 = fifo_new_(Vec*, 256);
         if (!proc_node->is_root) {
                 return;
         }
@@ -115,7 +115,7 @@ void process_activate(Dnode* proc_node)
 
 void process_add_second_input(Process* proc)
 {
-        proc->fifo_in1 = fifo_new_(Vec*, UCHAR_MAX);
+        proc->fifo_in1 = fifo_new_(Vec*, 256);
 }
 
 /* returns number of processes that executed or FQL_FAIL
@@ -136,7 +136,7 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
                     (proc->fifo_out1 && !fifo_is_receivable(proc->fifo_out1))) {
                         continue;
                 }
-                int ret = proc->action(proc_graph, proc);
+                int ret = proc->action__(proc_graph, proc);
                 if (ret == FQL_FAIL) {
                         return FQL_FAIL;
                 }

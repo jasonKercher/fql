@@ -54,25 +54,13 @@ char* libcsv_get_delim(struct libcsv_reader* csv)
         return csv->csv_handle->delimiter;
 }
 
-int libcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
+int libcsv_get_record(Reader* reader, Record* rec, int idx)
 {
         struct libcsv_reader* csv = reader->reader_data;
-        
+
         csv_record** csv_rec = vec_at(csv->csv_recs, idx);
         if (csv->eof) {
-                csv_reader_reset(csv->csv_handle);
-                /* Skip header */
-                int ret = csv_get_record_to(csv->csv_handle, *csv_rec, reader->max_col_idx+1);
-                switch (ret) {
-                case CSV_GOOD:
-                        break;
-                case CSV_FAIL:
-                        return FQL_FAIL;
-                default:
-                        csv->eof = true;
-                        return EOF;
-                }
-
+                return csv_reader_reset(csv->csv_handle);
         }
 
         int ret = csv_get_record_to(csv->csv_handle, *csv_rec, reader->max_col_idx+1);
@@ -110,14 +98,18 @@ int libcsv_get_record(Reader* reader, Record* rec, unsigned char idx)
 
         string_strncpy(&rec->rec_cpy, (*csv_rec)->raw, (*csv_rec)->raw_len);
         rec->rec_raw.data = (*csv_rec)->raw;
-        rec->rec_raw.len = (*csv_rec)->raw_len; 
+        rec->rec_raw.len = (*csv_rec)->raw_len;
 
         return FQL_GOOD;
 }
 
-void libcsv_reset(void* reader_data)
+int libcsv_reset(Reader* reader, int idx)
 {
-        struct libcsv_reader* csv = reader_data;
+        struct libcsv_reader* csv = reader->reader_data;
         csv->eof = false;
-        csv_reader_reset(reader_data);
+        csv_reader_reset(reader->reader_data);
+
+        /* Skip header */
+        csv_record** csv_rec = vec_at(csv->csv_recs, idx);
+        return csv_get_record_to(csv->csv_handle, *csv_rec, reader->max_col_idx+1);
 }

@@ -30,7 +30,7 @@ typedef int(*logic_fn)(struct logic*, struct vec*);
 
 struct logic {
         struct column* col[2];
-        logic_fn logic_fn;
+        logic_fn logic__;
         enum field_type data_type;
         enum comparison comp_type;
 };

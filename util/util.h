@@ -16,6 +16,7 @@ extern "C" {
 #include "queue.h"
 
 typedef void(*generic_data_fn)(void*);
+typedef int(*int_generic_data_fn)(void*);
 
 
 /**

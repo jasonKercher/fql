@@ -105,7 +105,7 @@ void _logic_to_process(Process* logic_proc, LogicGroup* lg)
 void _logicgroup_process(Plan* plan, LogicGroup* lg)
 {
         Process* logic_proc = process_new("", plan->source_count);
-        logic_proc->action = &fql_logic;
+        logic_proc->action__ = &fql_logic;
         logic_proc->proc_data = lg;
         _logic_to_process(logic_proc, lg);
         Dnode* logic_node = dgraph_add_data(plan->processes, logic_proc);
@@ -157,7 +157,8 @@ void _from(Plan* plan, Query* query)
 
         ++plan->source_count;
         Process* from_proc = process_new(action_msg.data, plan->source_total);
-        from_proc->action = &fql_read;
+        src->read_proc = from_proc;
+        from_proc->action__ = &fql_read;
         from_proc->proc_data = src->table->reader;
 
         Dnode* from_node = dgraph_add_data(plan->processes, from_proc);
@@ -171,10 +172,10 @@ void _from(Plan* plan, Query* query)
                 process_add_second_input(join_proc);
                 //if (/* TODO */ false && src->condition->join_logic != NULL) {
                 if (src->condition->join_logic != NULL) {
-                        join_proc->action = &fql_hash_join;
+                        join_proc->action__ = &fql_hash_join;
                         source_hash_join_init(src);
                 } else {
-                        join_proc->action = &fql_cartesian_join;
+                        join_proc->action__ = &fql_cartesian_join;
                 }
                 join_proc->proc_data = src;
 
@@ -190,8 +191,9 @@ void _from(Plan* plan, Query* query)
 
                 /* Root node only will only have one source */
                 Process* read_proc = process_new(action_msg.data, 1);
+                src->read_proc = read_proc;
                 read_proc->proc_data = src->table->reader;
-                read_proc->action = &fql_read;
+                read_proc->action__ = &fql_read;
                 read_proc->is_secondary = true;
 
                 Dnode* read_node = dgraph_add_data(plan->processes, read_proc);

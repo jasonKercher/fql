@@ -28,8 +28,8 @@ enum write_type {
 struct writer {
         enum write_type type;
         void* writer_data;
-        write_fn write_record_fn;
-        generic_data_fn free_fn;
+        write_fn write_record__;
+        generic_data_fn free__;
         struct vec* raw_rec;
         String file_name;
 };

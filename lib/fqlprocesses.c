@@ -34,8 +34,8 @@ int fql_read(Dgraph* proc_graph, Process* proc)
         /* We can assume recs is of size 1 */
         Record** rec = vec_begin(*recs);
         size_t tail = proc->fifo_in0->tail;
-        tail = (tail) ? tail-1 : proc->fifo_in0->buf->size;
-        int ret = reader->get_record_fn(reader, *rec, tail);
+        tail = (tail) ? tail-1 : proc->fifo_in0->buf->size-1;
+        int ret = reader->get_record__(reader, *rec, tail);
 
         switch (ret) {
         case FQL_GOOD:
@@ -59,7 +59,7 @@ int fql_select(Dgraph* proc_graph, Process* proc)
 {
         Vec** recs = fifo_get(proc->fifo_in0);
         Select* select = proc->proc_data;
-        int ret = select->select_fn(select, *recs);
+        int ret = select->select__(select, *recs);
 
         /* TODO: should not assume select is a leaf */
         _recycle_rec(proc_graph, proc->fifo_width);
@@ -168,7 +168,7 @@ Record* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
         /* We can assume recs is of size 1 */
         Record** rec = vec_begin(*rightrecs);
         size_t tail = proc->fifo_in1->tail;
-        tail = (tail) ? tail-1 : proc->fifo_in1->buf->size;
+        tail = (tail) ? tail-1 : proc->fifo_in1->buf->size-1;
 
         Reader* reader = src->table->reader;
         mmapcsv_get_record_at(reader, *rec, tail, *rightrec_ptr);
@@ -179,17 +179,26 @@ Record* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
 int fql_hash_join(Dgraph* proc_graph, Process* proc)
 {
         Source* src = proc->proc_data;
+        struct hashjoin* hj = src->join_data;
 
-        if (proc->fifo_in1->is_open) {
-                if (fifo_is_empty(proc->fifo_in1)) {
-                        return 0;
+        if (fifo_is_empty(proc->fifo_in1)) {
+                if (!proc->fifo_in1->is_open) {
+                        hj->state = SIDE_LEFT;
+                        proc->fifo_in1->is_open = true;
+                        src->read_proc->action__ = &fql_no_op;
+                        //_recycle_specific(proc_graph, proc->fifo_width);
+                        return 1;
                 }
+                return 0;
+        }
+
+        if (hj->state == SIDE_RIGHT) {
                 _hash_join_right_side(proc, src);
                 _recycle_specific(proc_graph, proc->fifo_width);
                 return 1;
         }
-        Vec** leftrecs = fifo_peek(proc->fifo_in0);
 
+        Vec** leftrecs = fifo_peek(proc->fifo_in0);
         Record* rightrec = _hash_join_left_side(proc, src, *leftrecs);
         if (rightrec == NULL) {
                 fifo_consume(proc->fifo_in0);
@@ -207,7 +216,7 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
 
 int fql_no_op(Dgraph* proc_graph, Process* proc)
 {
-        fprintf(stderr, "No-op: %s\n", (char*) proc->action_msg->data);
+        //fprintf(stderr, "No-op: %s\n", (char*) proc->action_msg->data);
         Vec** recs = fifo_get(proc->fifo_in0);
         fifo_add(proc->fifo_out0, recs);
         return 0;

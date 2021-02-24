@@ -34,7 +34,7 @@ void logic_assign_process(Logic* logic, Process* proc)
 {
         logic->data_type = field_determine_type(logic->col[0]->field_type,
                                                 logic->col[1]->field_type);
-        logic->logic_fn = logic_matrix[logic->comp_type][logic->data_type];
+        logic->logic__ = logic_matrix[logic->comp_type][logic->data_type];
 
         column_cat_description(logic->col[0], proc->action_msg);
         switch (logic->comp_type) {
@@ -184,7 +184,7 @@ int logicgroup_eval(LogicGroup* lg, Vec* recs, Logic* skip)
                 if (lg->condition == skip) {
                         return 1;
                 }
-                return lg->condition->logic_fn(lg->condition, recs);
+                return lg->condition->logic__(lg->condition, recs);
         }
 
         int ret = 0;

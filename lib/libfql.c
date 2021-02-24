@@ -52,7 +52,7 @@ int _api_connect(struct fql_handle* fql, Plan* plan)
         //}
 
         Process* true_proc = plan->op_true->data;
-        if (true_proc->action != fql_select) {
+        if (true_proc->action__ != fql_select) {
                 fputs("Can only step through SELECT queries\n", stderr);
                 return FQL_FAIL;
         }
@@ -62,7 +62,7 @@ int _api_connect(struct fql_handle* fql, Plan* plan)
         Dnode** it = vec_begin(plan->processes->nodes);
         for (; it != vec_end(plan->processes->nodes); ++it) {
                 Process* proc = (*it)->data;
-                if (proc->action == fql_read) {
+                if (proc->action__ == fql_read) {
                         Reader* reader = proc->proc_data;
                         reader->max_col_idx = INT_MAX;
                 }

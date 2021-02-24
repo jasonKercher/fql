@@ -19,7 +19,7 @@ Select* select_construct(Select* select)
                 ,NULL                   /* api */
                 ,schema_new()           /* schema */
                 ,writer_new()           /* writer */
-                ,&select_record         /* select_record_fn */
+                ,&select_record         /* select_record__ */
         };
 
         return select;
@@ -103,7 +103,7 @@ void _expand_asterisks(Query* query, _Bool check_schema)
 void select_connect_api(Query* query, Vec* api)
 {
         Select* select = query->op;
-        select->select_fn = &select_record_api;
+        select->select__ = &select_record_api;
         _expand_asterisks(query, false);
         vec_resize(api, select->schema->columns->size);
         select->api = api;
@@ -113,7 +113,7 @@ void select_apply_process(Query* query, Plan* plan)
 {
         Select* select = query->op;
         Process* proc = plan->op_true->data;
-        proc->action = &fql_select;
+        proc->action__ = &fql_select;
         proc->proc_data = select;
         string_strcpy(proc->action_msg, "SELECT ");
 
@@ -191,5 +191,5 @@ int select_record(Select* select, struct vec* recs)
         Writer* writer = select->writer;
         Vec* col_vec = select->schema->columns;
 
-        return writer->write_record_fn(writer->writer_data, col_vec, recs);
+        return writer->write_record__(writer->writer_data, col_vec, recs);
 }

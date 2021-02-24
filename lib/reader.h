@@ -14,7 +14,8 @@ extern "C" {
 
 struct reader;
 
-typedef int (*read_fn)(struct reader*, struct record* rec, unsigned char idx);
+typedef int (*read_fn)(struct reader*, struct record* rec, int idx);
+typedef int (*reset_fn)(struct reader*, int idx);
 
 enum read_type {
         READ_UNDEFINED,
@@ -26,9 +27,9 @@ enum read_type {
 struct reader {
         enum read_type type;
         void* reader_data;
-        read_fn get_record_fn;
-        generic_data_fn free_fn;
-        generic_data_fn reset_fn;
+        read_fn get_record__;
+        generic_data_fn free__;
+        reset_fn reset__;
         String file_name;
         size_t max_col_idx;
 };
@@ -64,8 +65,8 @@ struct libcsv_reader* libcsv_reader_construct(struct libcsv_reader*, size_t);
 void libcsv_reader_free(void*);
 
 char* libcsv_get_delim(struct libcsv_reader*);
-int libcsv_get_record(struct reader*, struct record* rec, unsigned char);
-void libcsv_reset(void*);
+int libcsv_get_record(struct reader*, struct record* rec, int idx);
+int libcsv_reset(struct reader*, int idx);
 
 struct mmapcsv_data {
         csv_reader* csv_handle;
@@ -86,9 +87,9 @@ void mmapcsv_free(void*);
 
 char* mmapcsv_get_delim(struct mmapcsv_data*);
 int mmapcsv_open(struct mmapcsv_data*, const char* file_name);
-int mmapcsv_get_record(struct reader*, struct record* rec, unsigned char);
-int mmapcsv_get_record_at(struct reader*, struct record* rec, unsigned char, char* rec_num);
-void mmapcsv_reset(void*);
+int mmapcsv_get_record(struct reader*, struct record* rec, int idx);
+int mmapcsv_get_record_at(struct reader*, struct record* rec, int idx, char* rec_loc);
+int mmapcsv_reset(struct reader*, int idx);
 
 #ifdef __cplusplus
 }
