@@ -26,6 +26,7 @@ extern "C" {
 #define HMAP_KEY_MAX 128
 
 #define HMAP_NOCASE 0x01
+#define HMAP_RTRIM  0x02
 
 struct hmap {
     struct hsearch_data* tab;

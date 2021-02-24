@@ -171,5 +171,5 @@ void source_hash_join_init(Source* src)
 
         struct hashjoin* join = src->join_data;
 
-        pmap_construct(&join->hash_data, guessed_row_count * 2, HMAP_NOCASE);
+        pmap_construct(&join->hash_data, guessed_row_count * 2, HMAP_NOCASE | HMAP_RTRIM);
 }

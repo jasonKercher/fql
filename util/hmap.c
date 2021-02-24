@@ -46,13 +46,34 @@ void hmap_free(Hmap* m)
         free_(m);
 }
 
+void _rtrim_strncpy(char* dest, const char* src, int char_limit)
+{
+        char* last_not_space = dest;
+
+        int i = 0;
+        for (;src[i] && i < char_limit - 1; ++i) {
+                dest[i] = src[i];
+                if (dest[i] != ' ') {
+                        last_not_space = &dest[i];
+                }
+        }
+
+        ++last_not_space;
+        *last_not_space = '\0';
+}
+
 ENTRY* _get_entry(Hmap* m, const char* key, int char_limit)
 {
         ENTRY search_entry;
         ENTRY* ret = NULL;
 
         char key_cpy[HMAP_KEY_MAX] = "";
-        strncpy_(key_cpy, key, char_limit);
+
+        if ((m->props & HMAP_RTRIM)) {
+                _rtrim_strncpy(key_cpy, key, char_limit);
+        } else {
+                strncpy_(key_cpy, key, char_limit);
+        }
 
         if ((m->props & HMAP_NOCASE)) {
                 string_to_lower(key_cpy);
@@ -117,7 +138,11 @@ int _insert(Hmap* m, const char* key, void* data, int char_limit)
                 exit(EXIT_FAILURE);
         }
 
-        strncpy_(m->_bufhead, key, char_limit);
+        if ((m->props & HMAP_RTRIM)) {
+                _rtrim_strncpy(m->_bufhead, key, char_limit);
+        } else {
+                strncpy_(m->_bufhead, key, char_limit);
+        }
 
         ENTRY new_entry;
         ENTRY* ret = NULL;
