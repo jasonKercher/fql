@@ -5,6 +5,7 @@
 #include "vec.h"
 
 /**
+ * Circular Buffer
  *
  */
 
@@ -12,7 +13,6 @@ struct fifo {
         Vec* buf;
         size_t head;
         size_t tail;
-        _Bool is_full;
         _Bool is_open;
 };
 typedef struct fifo Fifo;

@@ -88,8 +88,11 @@ void process_activate(Dnode* proc_node)
                 return;
         }
 
-        Reader* reader = proc->proc_data;
-        int field_count = reader->max_col_idx + 1;
+        int field_count = 1;
+        if (proc->action__ == &fql_read) {
+                Reader* reader = proc->proc_data;
+                field_count = reader->max_col_idx + 1;
+        }
 
         /* If root, it will own the vector of StringViews */
         Vec* buf = proc->fifo_in0->buf;
