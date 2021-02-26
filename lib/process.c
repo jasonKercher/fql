@@ -1,7 +1,6 @@
 #include "process.h"
 
 #include <stdbool.h>
-
 #include "fql.h"
 #include "operation.h"
 #include "reader.h"
@@ -23,7 +22,8 @@ Process* process_new(const char* action, int width)
 Process* process_construct(Process* proc, const char* action, int width)
 {
         *proc = (Process) {
-                 &fql_no_op                     /* action__ */
+                 0                              /* thread */
+                ,&fql_no_op                     /* action__ */
                 ,NULL                           /* fifo_in0 */
                 ,NULL                           /* fifo_in1 */
                 ,NULL                           /* fifo_out0 */
@@ -179,4 +179,89 @@ int process_exec_plan(Plan* plan)
         } while (ret && ret != FQL_FAIL);
 
         return ret;
+}
+
+void _close_proc(Process* proc)
+{
+        if (proc->fifo_out0 != NULL) {
+                proc->fifo_out0->is_open = true;
+        }
+        if (proc->fifo_out1 != NULL) {
+                proc->fifo_out1->is_open = true;
+        }
+}
+
+void* _thread_exec(void* data)
+{
+        struct thread_data* tdata = data;
+        Process* proc = tdata->proc;
+
+        while (true) {
+                if (fifo_is_empty(proc->fifo_in0)) {
+                        fifo_wait_for_add(proc->fifo_in0);
+                        if (fifo_is_empty(proc->fifo_in0)) {
+                                _close_proc(proc);
+                                break;
+                        }
+                }
+                if (proc->fifo_in1) {
+                        if (!fifo_is_empty(proc->fifo_in1)) {
+                                fifo_wait_for_add(proc->fifo_in1);
+                        }
+                }
+                if (proc->fifo_out0) {
+                        while (!fifo_is_receivable(proc->fifo_out0)) {
+                                fifo_wait_for_get(proc->fifo_out0);
+                        }
+                }
+                if (proc->fifo_out1) {
+                        while (!fifo_is_receivable(proc->fifo_out1)) {
+                                fifo_wait_for_get(proc->fifo_out0);
+                        }
+                }
+                int ret = proc->action__(tdata->proc_graph, proc);
+                if (ret == FQL_FAIL) {
+                        break;
+                }
+        }
+
+        pthread_exit(NULL);
+        return NULL;
+}
+
+int process_exec_plan_thread(Plan* plan)
+{
+        Dgraph* proc_graph = plan->processes;
+
+        pthread_attr_t attr;
+        pthread_attr_init(&attr);
+        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+
+        Vec tdata_vec = { 0 };
+        vec_construct_(&tdata_vec, struct thread_data);
+        vec_resize(&tdata_vec, proc_graph->nodes->size);
+
+        int i = 0;
+
+        for (; i < tdata_vec.size; ++i) {
+                struct thread_data* tdata = vec_at(&tdata_vec, i);
+                tdata->proc = *(Process**)vec_at(proc_graph->nodes, i);
+                if (pthread_create(&tdata->proc->thread, &attr, _thread_exec, tdata)) {
+                        return FQL_FAIL;
+                }
+        }
+
+        pthread_attr_destroy(&attr);
+
+        void* status = NULL;
+        for (i = 0; i < tdata_vec.size; ++i) {
+                struct thread_data* tdata = vec_at(&tdata_vec, i);
+                if (pthread_join(tdata->proc->thread, &status)) {
+                        return FQL_FAIL;
+                }
+        }
+
+        pthread_exit(NULL);
+
+        return FQL_GOOD;
 }

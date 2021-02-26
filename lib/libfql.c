@@ -26,8 +26,8 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
                 ,vec_new_(struct fql_field) /* api_vec */
                 ,NULL                       /* query_str */
                 ,{
-                         ""    /* in_delim */
-                        ,""    /* out_delim */
+                         ""     /* in_delim */
+                        ,""     /* out_delim */
                         ,false  /* verbose */
                         ,false  /* dry_run */
                         ,false  /* override_warnings */
@@ -129,7 +129,6 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
                 }
                 if (process_exec_plan(plan) == FQL_FAIL) {
                         return FQL_FAIL;
-
                 }
         }
         return FQL_GOOD;

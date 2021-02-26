@@ -143,6 +143,9 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+libfql_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(libfql_la_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -405,7 +408,8 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					record.h record.c \
 					field.h field.c
 
-libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la ../libcsv/libcsv.la -lantlr4-runtime
+libfql_la_LDFLAGS = -lantlr4-runtime -pthread
+libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la ../libcsv/libcsv.la 
 all: all-recursive
 
 .SUFFIXES:
@@ -476,7 +480,7 @@ clean-libLTLIBRARIES:
 	}
 
 libfql.la: $(libfql_la_OBJECTS) $(libfql_la_DEPENDENCIES) $(EXTRA_libfql_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK) -rpath $(libdir) $(libfql_la_OBJECTS) $(libfql_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libfql_la_LINK) -rpath $(libdir) $(libfql_la_OBJECTS) $(libfql_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

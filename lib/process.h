@@ -4,6 +4,7 @@
 #define PROCESS_BUFFER_SIZE 256
 
 #include "fqlplan.h"
+#include <pthread.h>
 #include "util/stringy.h"
 #include "util/fifo.h"
 #include "util/queue.h"
@@ -13,7 +14,8 @@ struct process;
 typedef int (process_fn)(struct dgraph*, struct process*);
 
 struct process {
-        process_fn* action__;             /* function pointer for process */
+        pthread_t thread;               /* pthread handle */
+        process_fn* action__;           /* function pointer for process */
         Fifo* fifo_in0;                 /* ring buffer of records */
         Fifo* fifo_in1;                 /* optional second input */
         Fifo* fifo_out0;                /* default next process fifo */
@@ -25,6 +27,11 @@ struct process {
         _Bool is_passive;               /* denotes process that does nothing */
 };
 typedef struct process Process;
+
+struct thread_data {
+        struct process* proc;
+        struct dgraph* proc_graph;
+};
 
 struct process* process_new(const char* action, int width);
 struct process* process_construct(struct process*, const char*, int width);
