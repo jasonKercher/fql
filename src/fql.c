@@ -36,6 +36,9 @@ void parseargs(struct fql_handle* handle, char c)
         case 'v':
                 fql_set_verbose(handle, 1);
                 break;
+        case 't':
+                fql_set_threading(handle, 1);
+                break;
         default:
                 abort();
         }
@@ -73,13 +76,14 @@ int main (int argc, char **argv)
                 {"print-plan", no_argument, 0, 'p'},
                 {"in-delimiter", required_argument, 0, 's'},
                 {"out-delimiter", required_argument, 0, 'S'},
+                {"threading", no_argument, 0, 't'},
                 {"verbose", no_argument, 0, 'v'},
                 {0, 0, 0, 0}
         };
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        while ( (c = getopt_long (argc, argv, "hdOps:S:v",
+        while ( (c = getopt_long (argc, argv, "hdOps:S:tv",
                                         long_options, &option_index)) != -1)
                         parseargs(handle, c);
 

@@ -17,6 +17,7 @@ struct fql_handle {
                 int dry_run;
                 int override_warnings;
                 int print_plan;
+                int threading;
         } props;
 };
 

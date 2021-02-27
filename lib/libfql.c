@@ -32,6 +32,7 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
                         ,false  /* dry_run */
                         ,false  /* override_warnings */
                         ,false  /* print_plan */
+                        ,false  /* threading */
                 }  /* props */
         };
         return fql;
@@ -113,6 +114,10 @@ void fql_set_out_delim(struct fql_handle* fql, const char* delim)
         strncpy_(fql->props.out_delim, delim, 32);
 }
 
+void fql_set_threading(struct fql_handle* fql, int threading)
+{
+        fql->props.threading = threading;
+}
 
 /**
  * Methods
@@ -127,7 +132,15 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
                               " stepped through\n", stderr);
                         return FQL_FAIL;
                 }
-                if (process_exec_plan(plan) == FQL_FAIL) {
+
+                int ret = 0;
+                if (fql->props.threading) {
+                        ret = process_exec_plan_thread(plan);
+                } else {
+                        ret = process_exec_plan(plan);
+                }
+                
+                if (ret == FQL_FAIL) {
                         return FQL_FAIL;
                 }
         }

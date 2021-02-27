@@ -43,6 +43,7 @@ void process_add_second_input(struct process*);
 int process_step(Plan* plan);
 //int process_exec_plans(struct fql_plan*, int);
 int process_exec_plan(struct fql_plan*);
+int process_exec_plan_thread(struct fql_plan* plan);
 
 int fql_read(struct dgraph*, struct process*);
 int fql_select(struct dgraph*, struct process*);
