@@ -44,6 +44,8 @@ int fql_read(Dgraph* proc_graph, Process* proc)
                 return FQL_FAIL;
         default: /* eof */
                 proc->fifo_out0->is_open = false;
+                proc->fifo_in0->is_open = false;
+                fifo_consume(proc->fifo_in0);
                 return 0;
         }
 

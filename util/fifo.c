@@ -182,23 +182,23 @@ int fifo_advance(Fifo* f)
 void fifo_wait_for_add(Fifo* f)
 {
         pthread_mutex_lock(&f->head_mutex);
-        pthread_mutex_lock(&f->tail_mutex);
-        pthread_mutex_lock(&f->open_mutex);
+        //pthread_mutex_lock(&f->tail_mutex);
+        //pthread_mutex_lock(&f->open_mutex);
         while (f->is_open && f->head == f->tail) {
-                pthread_cond_wait(&f->cond_add, &f->tail_mutex);
+                pthread_cond_wait(&f->cond_add, &f->head_mutex);
         }
-        pthread_mutex_unlock(&f->open_mutex);
-        pthread_mutex_unlock(&f->tail_mutex);
+        //pthread_mutex_unlock(&f->open_mutex);
+        //pthread_mutex_unlock(&f->tail_mutex);
         pthread_mutex_unlock(&f->head_mutex);
 }
 
 void fifo_wait_for_get(Fifo* f)
 {
-        pthread_mutex_lock(&f->head_mutex);
+        //pthread_mutex_lock(&f->head_mutex);
         pthread_mutex_lock(&f->tail_mutex);
         while ((f->head + 1) % f->buf->size == f->tail) {
-                pthread_cond_wait(&f->cond_get, &f->head_mutex);
+                pthread_cond_wait(&f->cond_get, &f->tail_mutex);
         }
         pthread_mutex_unlock(&f->tail_mutex);
-        pthread_mutex_unlock(&f->head_mutex);
+        //pthread_mutex_unlock(&f->head_mutex);
 }

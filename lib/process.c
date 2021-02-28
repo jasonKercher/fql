@@ -184,10 +184,10 @@ int process_exec_plan(Plan* plan)
 void _close_proc(Process* proc)
 {
         if (proc->fifo_out0 != NULL) {
-                proc->fifo_out0->is_open = true;
+                fifo_close(proc->fifo_out0); 
         }
         if (proc->fifo_out1 != NULL) {
-                proc->fifo_out1->is_open = true;
+                fifo_close(proc->fifo_out1); 
         }
 }
 
@@ -198,6 +198,10 @@ void* _thread_exec(void* data)
 
         while (true) {
                 if (fifo_is_empty(proc->fifo_in0)) {
+                        if (!proc->fifo_in0->is_open) {
+                                _close_proc(proc);
+                                break;
+                        }
                         fifo_wait_for_add(proc->fifo_in0);
                         if (fifo_is_empty(proc->fifo_in0)) {
                                 _close_proc(proc);
@@ -245,7 +249,9 @@ int process_exec_plan_thread(Plan* plan)
 
         for (; i < tdata_vec.size; ++i) {
                 struct thread_data* tdata = vec_at(&tdata_vec, i);
-                tdata->proc = *(Process**)vec_at(proc_graph->nodes, i);
+                Dnode** proc_node = vec_at(proc_graph->nodes, i);
+                tdata->proc = (*proc_node)->data;
+                tdata->proc_graph = proc_graph;
                 if (pthread_create(&tdata->proc->thread, &attr, _thread_exec, tdata)) {
                         return FQL_FAIL;
                 }
