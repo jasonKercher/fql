@@ -67,9 +67,9 @@ void fifo_close(Fifo* fifo)
 
 _Bool fifo_is_open(Fifo* fifo)
 {
-        pthread_mutex_lock(&fifo->open_mutex);
+        //pthread_mutex_lock(&fifo->open_mutex);
         _Bool ret = fifo->is_open;
-        pthread_mutex_unlock(&fifo->open_mutex);
+        //pthread_mutex_unlock(&fifo->open_mutex);
 
         return ret;
 }
@@ -88,34 +88,34 @@ void fifo_resize(Fifo* fifo, size_t n)
 
 size_t fifo_available(Fifo* f)
 {
-        pthread_mutex_lock(&f->head_mutex);
-        pthread_mutex_lock(&f->tail_mutex);
+        //pthread_mutex_lock(&f->head_mutex);
+        //pthread_mutex_lock(&f->tail_mutex);
         size_t available = f->head - f->tail;
         if (f->head < f->tail) {
                 available += f->buf->size;
         }
-        pthread_mutex_unlock(&f->tail_mutex);
-        pthread_mutex_unlock(&f->head_mutex);
+        //pthread_mutex_unlock(&f->tail_mutex);
+        //pthread_mutex_unlock(&f->head_mutex);
         return available;
 }
 
 _Bool fifo_is_full(Fifo* f)
 {
-        pthread_mutex_lock(&f->head_mutex);
-        pthread_mutex_lock(&f->tail_mutex);
+        //pthread_mutex_lock(&f->head_mutex);
+        //pthread_mutex_lock(&f->tail_mutex);
         _Bool is_full = ((f->head + 1) % f->buf->size == f->tail);
-        pthread_mutex_unlock(&f->tail_mutex);
-        pthread_mutex_unlock(&f->head_mutex);
+        //pthread_mutex_unlock(&f->tail_mutex);
+        //pthread_mutex_unlock(&f->head_mutex);
         return is_full;
 }
 
 _Bool fifo_is_empty(Fifo* f)
 {
-        pthread_mutex_lock(&f->head_mutex);
-        pthread_mutex_lock(&f->tail_mutex);
+        //pthread_mutex_lock(&f->head_mutex);
+        //pthread_mutex_lock(&f->tail_mutex);
         _Bool is_empty = (f->head == f->tail);
-        pthread_mutex_unlock(&f->tail_mutex);
-        pthread_mutex_unlock(&f->head_mutex);
+        //pthread_mutex_unlock(&f->tail_mutex);
+        //pthread_mutex_unlock(&f->head_mutex);
         return is_empty;
 }
 
@@ -141,9 +141,9 @@ void* fifo_get(Fifo* f)
 
 void* fifo_peek(Fifo* f)
 {
-        pthread_mutex_lock(&f->tail_mutex);
+        //pthread_mutex_lock(&f->tail_mutex);
         void* data = vec_at(f->buf, f->tail);
-        pthread_mutex_unlock(&f->tail_mutex);
+        //pthread_mutex_unlock(&f->tail_mutex);
         return data;
 }
 
