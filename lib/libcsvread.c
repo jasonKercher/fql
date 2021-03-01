@@ -14,20 +14,19 @@ struct libcsv_reader* libcsv_reader_construct(struct libcsv_reader* csv_data, si
 {
         *csv_data = (struct libcsv_reader) {
                  csv_reader_new()
-                ,vec_new_(csv_record*)
+                ,fifo_new_(csv_record*, 256)
                 ,false
         };
-
-        vec_reserve(csv_data->csv_recs, buflen);
 
         /* TODO: (libcsv) Would be nice if we could stack
          *       these or put them in contiguous memory.
          */
-        int i = 0;
-        for (; i < buflen; ++i) {
-                csv_record* rec = csv_record_new();
-                vec_push_back(csv_data->csv_recs, &rec);
+        Vec* buf = csv_data->csv_recs->buf;
+        csv_record** it = vec_begin(buf);
+        for (; it != vec_end(buf); ++it) {
+                *it = csv_record_new();
         }
+        fifo_advance(csv_data->csv_recs);
 
         return csv_data;
 }
@@ -40,11 +39,12 @@ void libcsv_reader_free(void* reader_data)
         struct libcsv_reader* csv_data = reader_data;
         csv_reader_free(csv_data->csv_handle);
 
-        csv_record** recs = csv_data->csv_recs->data;
-        for (; recs != vec_end(csv_data->csv_recs); ++recs) {
-                csv_record_free(*recs);
+        Vec* buf = csv_data->csv_recs->buf;
+        csv_record** it = vec_begin(buf);
+        for (; it != vec_end(buf); ++it) {
+                csv_record_free(*it);
         }
-        vec_free(csv_data->csv_recs);
+        fifo_free(csv_data->csv_recs);
 
         free_(csv_data);
 }
@@ -54,15 +54,15 @@ char* libcsv_get_delim(struct libcsv_reader* csv)
         return csv->csv_handle->delimiter;
 }
 
-int libcsv_get_record(Reader* reader, Record* rec, int idx)
+int libcsv_get_record(Reader* reader, Record* rec)
 {
         struct libcsv_reader* csv = reader->reader_data;
 
-        csv_record** csv_rec = vec_at(csv->csv_recs, idx);
         if (csv->eof) {
                 return csv_reader_reset(csv->csv_handle);
         }
 
+        csv_record** csv_rec = fifo_peek(csv->csv_recs);
         int ret = csv_get_record_to(csv->csv_handle, *csv_rec, reader->max_col_idx+1);
         switch (ret) {
         case CSV_GOOD:
@@ -73,6 +73,9 @@ int libcsv_get_record(Reader* reader, Record* rec, int idx)
                 csv->eof = true;
                 return EOF;
         }
+
+        fifo_consume(csv->csv_recs);
+        fifo_advance(csv->csv_recs);
 
         /* This should really never change unless we
          * want this to mean something (like NULLs).
@@ -103,13 +106,13 @@ int libcsv_get_record(Reader* reader, Record* rec, int idx)
         return FQL_GOOD;
 }
 
-int libcsv_reset(Reader* reader, int idx)
+int libcsv_reset(Reader* reader)
 {
         struct libcsv_reader* csv = reader->reader_data;
         csv->eof = false;
         csv_reader_reset(reader->reader_data);
 
         /* Skip header */
-        csv_record** csv_rec = vec_at(csv->csv_recs, idx);
+        csv_record** csv_rec = fifo_peek(csv->csv_recs);
         return csv_get_record_to(csv->csv_handle, *csv_rec, reader->max_col_idx+1);
 }

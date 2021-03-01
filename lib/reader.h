@@ -10,12 +10,13 @@ extern "C" {
 #include "util/pmap.h"
 #include "util/stringy.h"
 #include "util/stringview.h"
+#include "util/fifo.h"
 #include "util/util.h"
 
 struct reader;
 
-typedef int (*read_fn)(struct reader*, struct record* rec, int idx);
-typedef int (*reset_fn)(struct reader*, int idx);
+typedef int (*read_fn)(struct reader*, struct record* rec);
+typedef int (*reset_fn)(struct reader*);
 
 enum read_type {
         READ_UNDEFINED,
@@ -56,7 +57,7 @@ typedef struct csv_reader csv_reader;
 
 struct libcsv_reader {
         csv_reader* csv_handle;
-        struct vec* csv_recs; /* vec_(csv_record*) */
+        struct fifo* csv_recs; 
         _Bool eof;
 };
 
@@ -65,12 +66,12 @@ struct libcsv_reader* libcsv_reader_construct(struct libcsv_reader*, size_t);
 void libcsv_reader_free(void*);
 
 char* libcsv_get_delim(struct libcsv_reader*);
-int libcsv_get_record(struct reader*, struct record* rec, int idx);
-int libcsv_reset(struct reader*, int idx);
+int libcsv_get_record(struct reader*, struct record* rec);
+int libcsv_reset(struct reader*);
 
 struct mmapcsv_data {
         csv_reader* csv_handle;
-        struct vec* csv_recs; /* vec_(csv_record*) */
+        struct fifo* csv_recs; /* vec_(csv_record*) */
         struct stringview current;
         struct vec* raw;
         Pmap* rec_map;
@@ -87,9 +88,9 @@ void mmapcsv_free(void*);
 
 char* mmapcsv_get_delim(struct mmapcsv_data*);
 int mmapcsv_open(struct mmapcsv_data*, const char* file_name);
-int mmapcsv_get_record(struct reader*, struct record* rec, int idx);
-int mmapcsv_get_record_at(struct reader*, struct record* rec, int idx, char* rec_loc);
-int mmapcsv_reset(struct reader*, int idx);
+int mmapcsv_get_record(struct reader*, struct record* rec);
+int mmapcsv_get_record_at(struct reader*, struct record* rec, char* rec_loc);
+int mmapcsv_reset(struct reader*);
 
 #ifdef __cplusplus
 }

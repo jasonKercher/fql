@@ -24,7 +24,7 @@ struct fifo {
 };
 typedef struct fifo Fifo;
 
-struct fifo* fifo_new(size_t, size_t);
+struct fifo* fifo_new(size_t elem_size, size_t buf_size);
 #define fifo_new_(T_, n_) fifo_new(sizeof(T_), n_)
 struct fifo* fifo_construct(struct fifo*, size_t, size_t);
 void fifo_free(struct fifo*);

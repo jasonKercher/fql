@@ -139,7 +139,7 @@ size_t _guess_row_count(Source* src)
 
         int i = 0;
         for (; i < 10; ++i) {
-                if (reader->get_record__(reader, &rec, 0) != FQL_GOOD) {
+                if (reader->get_record__(reader, &rec) != FQL_GOOD) {
                         break;
                 }
                 total_length += rec.rec_raw.len;
@@ -158,7 +158,7 @@ size_t _guess_row_count(Source* src)
                 avg_len = 1;
 
         struct mmapcsv_data* data = reader->reader_data;
-        reader->reset__(reader, 0);
+        reader->reset__(reader);
 
         guess = data->file_size / avg_len;
 

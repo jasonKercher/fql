@@ -214,7 +214,7 @@ int schema_resolve_source(Source* source)
         Record rec;
         record_construct(&rec);
         table->reader->max_col_idx = INT_MAX;
-        table->reader->get_record__(table->reader, &rec, 0);
+        table->reader->get_record__(table->reader, &rec);
         char* delim = reader_get_delim(table->reader);
         strncpy_(table->schema->delimiter, delim, DELIM_LEN_MAX);
         table->reader->max_col_idx = 0;

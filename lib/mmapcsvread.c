@@ -18,7 +18,7 @@ struct mmapcsv_data* mmapcsv_construct(struct mmapcsv_data* csv_data, size_t buf
 {
         *csv_data = (struct mmapcsv_data) {
                  csv_reader_new()       /* csv_handle */
-                ,vec_new_(csv_record*)  /* csv_recs */
+                ,fifo_new_(csv_record*, 256)
                 ,{ NULL, 0 }            /* current */
                 ,vec_new_(StringView)   /* raw */
                 ,NULL                   /* rec_map */
@@ -29,13 +29,15 @@ struct mmapcsv_data* mmapcsv_construct(struct mmapcsv_data* csv_data, size_t buf
                 ,false                  /* eof */
         };
 
-        vec_reserve(csv_data->csv_recs, buflen);
-
-        int i = 0;
-        for (; i < buflen; ++i) {
-                csv_record* rec = csv_record_new();
-                vec_push_back(csv_data->csv_recs, &rec);
+        /* TODO: (libcsv) Would be nice if we could stack
+         *       these or put them in contiguous memory.
+         */
+        Vec* buf = csv_data->csv_recs->buf;
+        csv_record** it = vec_begin(buf);
+        for (; it != vec_end(buf); ++it) {
+                *it = csv_record_new();
         }
+        fifo_advance(csv_data->csv_recs);
 
         return csv_data;
 }
@@ -77,16 +79,18 @@ void mmapcsv_free(void* reader_data)
         struct mmapcsv_data* data = reader_data;
         csv_reader_free(data->csv_handle);
 
-        csv_record** recs = data->csv_recs->data;
-        for (; recs != vec_end(data->csv_recs); ++ recs) {
-                csv_record_free(*recs);
+        Vec* buf = data->csv_recs->buf;
+        csv_record** it = vec_begin(buf);
+        for (; it != vec_end(buf); ++it) {
+                csv_record_free(*it);
         }
-        vec_free(data->csv_recs);
+        fifo_free(data->csv_recs);
 
         if (munmap(data->mmap_base, data->file_size)) {
                 perror("munmap");
         }
         close(data->fd);
+        free_(data);
 }
 
 int mmapcsv_getline(struct mmapcsv_data* data)
@@ -118,24 +122,34 @@ int mmapcsv_getline(struct mmapcsv_data* data)
         return EOF;
 }
 
-int mmapcsv_get_record(Reader* reader, Record* rec, int idx)
+int mmapcsv_get_record(Reader* reader, Record* rec)
 {
         struct mmapcsv_data* data = reader->reader_data;
         if (data->eof) {
-                return mmapcsv_reset(reader, idx);
+                return mmapcsv_reset(reader);
         }
 
-        csv_record** csv_rec = vec_at(data->csv_recs, idx);
-
+        csv_record** csv_rec = fifo_peek(data->csv_recs);
         int ret = mmapcsv_getline(data);
         if (ret) {
                 return ret;
         }
 
         /* lol. lets just call everything data */
-        csv_nparse_to(data->csv_handle, *csv_rec, data->current.data, data->current.len, reader->max_col_idx+1);
+        ret = csv_nparse_to(data->csv_handle, *csv_rec, data->current.data, data->current.len, reader->max_col_idx+1);
+        switch (ret) {
+        case CSV_GOOD:
+                break;
+        case CSV_FAIL:
+                return FQL_FAIL;
+        }
 
-        /** TODO: move this to resolve source and push into fifo **/
+        fifo_consume(data->csv_recs);
+        fifo_advance(data->csv_recs);
+
+        /* This should really never change unless we
+         * want this to mean something (like NULLs).
+         */
         vec_resize(&rec->fields, (*csv_rec)->size);
 
         StringView* sv = vec_begin(&rec->fields);
@@ -158,15 +172,15 @@ int mmapcsv_get_record(Reader* reader, Record* rec, int idx)
         return FQL_GOOD;
 }
 
-int mmapcsv_get_record_at(Reader* reader, Record* rec, int idx, char* location)
+int mmapcsv_get_record_at(Reader* reader, Record* rec, char* location)
 {
         struct mmapcsv_data* data = reader->reader_data;
         data->eof = false;
         data->mp = location;
-        return mmapcsv_get_record(reader, rec, idx);
+        return mmapcsv_get_record(reader, rec);
 }
 
-int mmapcsv_reset(Reader* reader, int idx)
+int mmapcsv_reset(Reader* reader)
 {
         struct mmapcsv_data* data = reader->reader_data;
         data->eof = false;

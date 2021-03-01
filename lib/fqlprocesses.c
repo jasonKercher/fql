@@ -49,9 +49,7 @@ int fql_read(Dgraph* proc_graph, Process* proc)
         Vec** recs = fifo_peek(proc->fifo_in0);
         /* We can assume recs is of size 1 */
         Record** rec = vec_begin(*recs);
-        size_t tail = proc->fifo_in0->tail;
-        tail = (tail) ? tail-1 : proc->fifo_in0->buf->size-1;
-        int ret = reader->get_record__(reader, *rec, tail);
+        int ret = reader->get_record__(reader, *rec);
 
         switch (ret) {
         case FQL_GOOD:
@@ -186,11 +184,9 @@ Record* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
         Vec** rightrecs = fifo_get(proc->fifo_in1);
         /* We can assume recs is of size 1 */
         Record** rec = vec_begin(*rightrecs);
-        size_t tail = proc->fifo_in1->tail;
-        tail = (tail) ? tail-1 : proc->fifo_in1->buf->size-1;
 
         Reader* reader = src->table->reader;
-        mmapcsv_get_record_at(reader, *rec, tail, *rightrec_ptr);
+        mmapcsv_get_record_at(reader, *rec, *rightrec_ptr);
 
         return *rec;
 }
