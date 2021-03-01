@@ -54,7 +54,7 @@ int _expand_asterisk(Vec* col_vec, Source* src, unsigned src_idx, unsigned* col_
 {
         Vec* src_col_vec = src->table->schema->columns;
 
-        src->table->reader->max_col_idx = INT_MAX;
+        src->table->reader->max_col_idx = src_col_vec->size - 1;
 
         Column** it = vec_begin(src_col_vec);
         for (; it != vec_end(src_col_vec); ++it) {

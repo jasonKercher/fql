@@ -44,6 +44,7 @@ int process_step(Plan* plan);
 //int process_exec_plans(struct fql_plan*, int);
 int process_exec_plan(struct fql_plan*);
 int process_exec_plan_thread(struct fql_plan* plan);
+void process_close(struct process*);
 
 int fql_read(struct dgraph*, struct process*);
 int fql_select(struct dgraph*, struct process*);

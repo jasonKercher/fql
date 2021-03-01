@@ -8,26 +8,44 @@
 /* Trigger appropiate roots to read the next record */
 void _recycle_rec(Dgraph* proc_graph, int width)
 {
+        if (width == 0) {
+                Dnode** root_node = vec_begin(proc_graph->_roots);
+                process_close((*root_node)->data);
+                return;
+        }
         int i = 0;
         for (; i < width; ++i) {
                 Dnode** root_node = vec_at(proc_graph->_roots, i);
                 Process* root = (*root_node)->data;
-                fifo_advance(root->fifo_in0);
+                if (root->action__ == fql_read) {
+                        fifo_advance(root->fifo_in0);
+                } else {
+                        process_close(root);
+                }
         }
 }
 
 void _recycle_specific(Dgraph* proc_graph, int width)
 {
+        if (width == 0) {
+                Dnode** root_node = vec_begin(proc_graph->_roots);
+                process_close((*root_node)->data);
+                return;
+        }
         Dnode** root_node = vec_at(proc_graph->_roots, width - 1);
         Process* root = (*root_node)->data;
-        fifo_advance(root->fifo_in0);
+        if (root->action__ == fql_read) {
+                fifo_advance(root->fifo_in0);
+        } else {
+                process_close(root);
+        }
 }
 
 int fql_read(Dgraph* proc_graph, Process* proc)
 {
-        if (!proc->fifo_out0->is_open) {
-                return 0;
-        }
+        //if (!proc->fifo_out0->is_open) {
+        //        return 0;
+        //}
 
         Reader* reader = proc->proc_data;
         Vec** recs = fifo_peek(proc->fifo_in0);
@@ -63,7 +81,6 @@ int fql_select(Dgraph* proc_graph, Process* proc)
         Select* select = proc->proc_data;
         int ret = select->select__(select, *recs);
 
-        /* TODO: should not assume select is a leaf */
         _recycle_rec(proc_graph, proc->fifo_width);
 
         return ret;
@@ -183,22 +200,36 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
         Source* src = proc->proc_data;
         struct hashjoin* hj = src->join_data;
 
-        if (fifo_is_empty(proc->fifo_in1)) {
+        if (fifo_is_empty(proc->fifo_in1) && hj->state == SIDE_RIGHT) {
                 if (!proc->fifo_in1->is_open) {
                         hj->state = SIDE_LEFT;
-                        proc->fifo_in1->is_open = true;
-                        src->read_proc->action__ = &fql_no_op;
-                        //_recycle_specific(proc_graph, proc->fifo_width);
+                        //proc->fifo_in1->is_open = true;
+                        //src->read_proc->action__ = &fql_no_op;
+                        _recycle_specific(proc_graph, proc->fifo_width);
                         return 1;
+                } else {
+                        return 0;
                 }
-                return 0;
         }
 
         if (hj->state == SIDE_RIGHT) {
+                //if (fifo_is_empty(proc->fifo_in1)) {
+                //        return 0;
+                //}
                 _hash_join_right_side(proc, src);
                 _recycle_specific(proc_graph, proc->fifo_width);
                 return 1;
         }
+
+        /* The right side read process killed itself
+         * when it hit EOF. Run it manually as no-op
+         * here just to push any available records.
+         */
+        Process* right_side_read_proc = src->read_proc;
+        if (fifo_is_empty(right_side_read_proc->fifo_in0)) {
+                return 0;
+        }
+        fql_no_op(proc_graph, right_side_read_proc);
 
         Vec** leftrecs = fifo_peek(proc->fifo_in0);
         Record* rightrec = _hash_join_left_side(proc, src, *leftrecs);

@@ -121,6 +121,17 @@ void process_add_second_input(Process* proc)
         proc->fifo_in1 = fifo_new_(Vec*, 256);
 }
 
+void process_close(Process* proc)
+{
+        if (proc->fifo_out0 != NULL) {
+                fifo_close(proc->fifo_out0); 
+        }
+        if (proc->fifo_out1 != NULL) {
+                fifo_close(proc->fifo_out1); 
+        }
+        fifo_close(proc->fifo_in0);
+}
+
 /* returns number of processes that executed or FQL_FAIL
  * 0 should not happen unless we EOF
  */
@@ -131,6 +142,17 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
         int run_count = 0;
         while ((proc_node = dgraph_traverse(proc_graph))) {
                 proc = proc_node->data;
+                if (!proc->fifo_in0->is_open) {
+                        process_close(proc);
+                        break;
+                }
+                //fifo_wait_for_add(proc->fifo_in0);
+                //if (fifo_is_empty(proc->fifo_in0)) {
+                //        process_close(proc);
+                //        break;
+                //}
+                ++run_count;
+
                 /* Check to see that there is something to process
                  * as well as a place for it to go.
                  */
@@ -147,7 +169,7 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
                 if (proc_node == plan->op_true) {
                         ++plan->rows_affected;
                 }
-                run_count += ret;
+                //run_count += ret;
         }
 
         return run_count;
@@ -181,30 +203,20 @@ int process_exec_plan(Plan* plan)
         return ret;
 }
 
-void _close_proc(Process* proc)
-{
-        if (proc->fifo_out0 != NULL) {
-                fifo_close(proc->fifo_out0); 
-        }
-        if (proc->fifo_out1 != NULL) {
-                fifo_close(proc->fifo_out1); 
-        }
-}
-
 void* _thread_exec(void* data)
 {
         struct thread_data* tdata = data;
         Process* proc = tdata->proc;
 
         while (true) {
+                if (!proc->fifo_in0->is_open) {
+                        process_close(proc);
+                        break;
+                }
                 if (fifo_is_empty(proc->fifo_in0)) {
-                        if (!proc->fifo_in0->is_open) {
-                                _close_proc(proc);
-                                break;
-                        }
                         fifo_wait_for_add(proc->fifo_in0);
                         if (fifo_is_empty(proc->fifo_in0)) {
-                                _close_proc(proc);
+                                process_close(proc);
                                 break;
                         }
                 }
