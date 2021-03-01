@@ -30,9 +30,14 @@ Fifo* fifo_construct(Fifo* fifo, size_t elem_size, size_t buf_size)
         };
 
         vec_resize(fifo->buf, buf_size);
-        pthread_mutex_init(&fifo->head_mutex, NULL);
-        pthread_mutex_init(&fifo->tail_mutex, NULL);
-        pthread_mutex_init(&fifo->open_mutex, NULL);
+
+        pthread_mutexattr_t attr;
+        pthread_mutexattr_init(&attr);
+        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ERRORCHECK);
+
+        pthread_mutex_init(&fifo->head_mutex, &attr);
+        pthread_mutex_init(&fifo->tail_mutex, &attr);
+        pthread_mutex_init(&fifo->open_mutex, &attr);
         pthread_cond_init(&fifo->cond_add, NULL);
         pthread_cond_init(&fifo->cond_get, NULL);
 
@@ -52,24 +57,24 @@ void fifo_free(Fifo* fifo)
 
 void fifo_close(Fifo* fifo)
 {
+        pthread_mutex_lock(&fifo->open_mutex);
         pthread_mutex_lock(&fifo->head_mutex);
         pthread_mutex_lock(&fifo->tail_mutex);
-        pthread_mutex_lock(&fifo->open_mutex);
         fifo->is_open = false;
 
         pthread_cond_broadcast(&fifo->cond_add);
         pthread_cond_broadcast(&fifo->cond_get);
 
         pthread_mutex_unlock(&fifo->open_mutex);
-        pthread_mutex_unlock(&fifo->tail_mutex);
         pthread_mutex_unlock(&fifo->head_mutex);
+        pthread_mutex_unlock(&fifo->tail_mutex);
 }
 
 _Bool fifo_is_open(Fifo* fifo)
 {
-        //pthread_mutex_lock(&fifo->open_mutex);
+        pthread_mutex_lock(&fifo->open_mutex);
         _Bool ret = fifo->is_open;
-        //pthread_mutex_unlock(&fifo->open_mutex);
+        pthread_mutex_unlock(&fifo->open_mutex);
 
         return ret;
 }
@@ -88,14 +93,14 @@ void fifo_resize(Fifo* fifo, size_t n)
 
 size_t fifo_available(Fifo* f)
 {
-        //pthread_mutex_lock(&f->head_mutex);
-        //pthread_mutex_lock(&f->tail_mutex);
+        pthread_mutex_lock(&f->head_mutex);
+        pthread_mutex_lock(&f->tail_mutex);
         size_t available = f->head - f->tail;
         if (f->head < f->tail) {
                 available += f->buf->size;
         }
-        //pthread_mutex_unlock(&f->tail_mutex);
-        //pthread_mutex_unlock(&f->head_mutex);
+        pthread_mutex_unlock(&f->tail_mutex);
+        pthread_mutex_unlock(&f->head_mutex);
         return available;
 }
 
@@ -111,11 +116,11 @@ _Bool fifo_is_full(Fifo* f)
 
 _Bool fifo_is_empty(Fifo* f)
 {
-        //pthread_mutex_lock(&f->head_mutex);
-        //pthread_mutex_lock(&f->tail_mutex);
+        pthread_mutex_lock(&f->head_mutex);
+        pthread_mutex_lock(&f->tail_mutex);
         _Bool is_empty = (f->head == f->tail);
-        //pthread_mutex_unlock(&f->tail_mutex);
-        //pthread_mutex_unlock(&f->head_mutex);
+        pthread_mutex_unlock(&f->tail_mutex);
+        pthread_mutex_unlock(&f->head_mutex);
         return is_empty;
 }
 

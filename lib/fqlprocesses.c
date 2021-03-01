@@ -8,6 +8,7 @@
 /* Trigger appropiate roots to read the next record */
 void _recycle_rec(Dgraph* proc_graph, int width)
 {
+        /* width == 0 means constant expression */
         if (width == 0) {
                 Dnode** root_node = vec_begin(proc_graph->_roots);
                 process_close((*root_node)->data);
@@ -17,16 +18,15 @@ void _recycle_rec(Dgraph* proc_graph, int width)
         for (; i < width; ++i) {
                 Dnode** root_node = vec_at(proc_graph->_roots, i);
                 Process* root = (*root_node)->data;
-                if (root->action__ == fql_read) {
+                if (root->action__ == fql_read && fifo_is_open(root->fifo_in0)) {
                         fifo_advance(root->fifo_in0);
-                } else {
-                        process_close(root);
                 }
         }
 }
 
 void _recycle_specific(Dgraph* proc_graph, int width)
 {
+        /* width == 0 means constant expression */
         if (width == 0) {
                 Dnode** root_node = vec_begin(proc_graph->_roots);
                 process_close((*root_node)->data);
@@ -34,10 +34,8 @@ void _recycle_specific(Dgraph* proc_graph, int width)
         }
         Dnode** root_node = vec_at(proc_graph->_roots, width - 1);
         Process* root = (*root_node)->data;
-        if (root->action__ == fql_read) {
+        if (root->action__ == fql_read && fifo_is_open(root->fifo_in0)) {
                 fifo_advance(root->fifo_in0);
-        } else {
-                process_close(root);
         }
 }
 
@@ -61,9 +59,11 @@ int fql_read(Dgraph* proc_graph, Process* proc)
         case FQL_FAIL:
                 return FQL_FAIL;
         default: /* eof */
-                proc->fifo_out0->is_open = false;
-                proc->fifo_in0->is_open = false;
-                fifo_consume(proc->fifo_in0);
+                fifo_close(proc->fifo_in0);
+                fifo_close(proc->fifo_out0);
+                while (!fifo_is_empty(proc->fifo_in0)) {
+                        fifo_consume(proc->fifo_in0);
+                }
                 return 0;
         }
 
@@ -205,6 +205,7 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
                         hj->state = SIDE_LEFT;
                         //proc->fifo_in1->is_open = true;
                         //src->read_proc->action__ = &fql_no_op;
+                        //src->read_proc->fifo_in0->is_open = true;
                         _recycle_specific(proc_graph, proc->fifo_width);
                         return 1;
                 } else {
@@ -226,9 +227,8 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
          * here just to push any available records.
          */
         Process* right_side_read_proc = src->read_proc;
-        if (fifo_is_empty(right_side_read_proc->fifo_in0)) {
-                return 0;
-        }
+        fifo_advance(right_side_read_proc->fifo_in0);
+
         fql_no_op(proc_graph, right_side_read_proc);
 
         Vec** leftrecs = fifo_peek(proc->fifo_in0);

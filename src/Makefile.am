@@ -5,6 +5,7 @@ fql_LDFLAGS = -lreadline -pthread
 fql_LDADD = $(top_srcdir)/lib/libfql.la $(top_srcdir)/libcsv/libcsv.la
 
 stdcsv_SOURCES = stdcsv.c
+stdcsv_LDFLAGS = -pthread
 stdcsv_LDADD = $(top_srcdir)/libcsv/libcsv.la
 
 

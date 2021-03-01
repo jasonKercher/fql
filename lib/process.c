@@ -142,15 +142,10 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
         int run_count = 0;
         while ((proc_node = dgraph_traverse(proc_graph))) {
                 proc = proc_node->data;
-                if (!proc->fifo_in0->is_open) {
+                if (!proc->fifo_in0->is_open && fifo_is_empty(proc->fifo_in0)) {
                         process_close(proc);
-                        break;
+                        continue;
                 }
-                //fifo_wait_for_add(proc->fifo_in0);
-                //if (fifo_is_empty(proc->fifo_in0)) {
-                //        process_close(proc);
-                //        break;
-                //}
                 ++run_count;
 
                 /* Check to see that there is something to process
@@ -209,11 +204,11 @@ void* _thread_exec(void* data)
         Process* proc = tdata->proc;
 
         while (true) {
-                if (!proc->fifo_in0->is_open) {
-                        process_close(proc);
-                        break;
-                }
                 if (fifo_is_empty(proc->fifo_in0)) {
+                        if (!proc->fifo_in0->is_open) {
+                                process_close(proc);
+                                break;
+                        }
                         fifo_wait_for_add(proc->fifo_in0);
                         if (fifo_is_empty(proc->fifo_in0)) {
                                 process_close(proc);

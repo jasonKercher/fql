@@ -118,6 +118,9 @@ fql_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 am_stdcsv_OBJECTS = stdcsv.$(OBJEXT)
 stdcsv_OBJECTS = $(am_stdcsv_OBJECTS)
 stdcsv_DEPENDENCIES = $(top_srcdir)/libcsv/libcsv.la
+stdcsv_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(stdcsv_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -313,6 +316,7 @@ fql_SOURCES = fql.c
 fql_LDFLAGS = -lreadline -pthread
 fql_LDADD = $(top_srcdir)/lib/libfql.la $(top_srcdir)/libcsv/libcsv.la
 stdcsv_SOURCES = stdcsv.c
+stdcsv_LDFLAGS = -pthread
 stdcsv_LDADD = $(top_srcdir)/libcsv/libcsv.la
 all: all-am
 
@@ -403,7 +407,7 @@ fql$(EXEEXT): $(fql_OBJECTS) $(fql_DEPENDENCIES) $(EXTRA_fql_DEPENDENCIES)
 
 stdcsv$(EXEEXT): $(stdcsv_OBJECTS) $(stdcsv_DEPENDENCIES) $(EXTRA_stdcsv_DEPENDENCIES) 
 	@rm -f stdcsv$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(stdcsv_OBJECTS) $(stdcsv_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(stdcsv_LINK) $(stdcsv_OBJECTS) $(stdcsv_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

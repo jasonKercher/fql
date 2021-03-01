@@ -35,6 +35,7 @@ void fifo_resize(struct fifo*, size_t);
 size_t fifo_available(struct fifo*);
 _Bool fifo_is_empty(struct fifo*);
 _Bool fifo_is_full(struct fifo*);
+_Bool fifo_is_open(struct fifo*);
 _Bool fifo_is_receivable(struct fifo*);
 //_Bool fifo_has_data(struct fifo*);
 void* fifo_get(struct fifo*);
