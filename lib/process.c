@@ -108,12 +108,12 @@ void process_activate(Dnode* proc_node)
                 }
 
                 if (proc->fifo_out0 != NULL) {
-                        fifo_add(proc->fifo_out0, *recs);
-                        fifo_consume(proc->fifo_out0);
+                        fifo_add_ts(proc->fifo_out0, *recs);
+                        fifo_consume_ts(proc->fifo_out0);
                 }
         }
 
-        fifo_advance(proc->fifo_in0);
+        fifo_advance_ts(proc->fifo_in0);
 }
 
 void process_add_second_input(Process* proc)
@@ -124,12 +124,12 @@ void process_add_second_input(Process* proc)
 void process_close(Process* proc)
 {
         if (proc->fifo_out0 != NULL) {
-                fifo_close(proc->fifo_out0); 
+                fifo_set_open_ts(proc->fifo_out0, false);
         }
         if (proc->fifo_out1 != NULL) {
-                fifo_close(proc->fifo_out1); 
+                fifo_set_open_ts(proc->fifo_out1, false);
         }
-        fifo_close(proc->fifo_in0);
+        fifo_set_open_ts(proc->fifo_in0, false);
 }
 
 /* returns number of processes that executed or FQL_FAIL
@@ -142,7 +142,7 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
         int run_count = 0;
         while ((proc_node = dgraph_traverse(proc_graph))) {
                 proc = proc_node->data;
-                if (!proc->fifo_in0->is_open && fifo_is_empty(proc->fifo_in0)) {
+                if (!proc->fifo_in0->is_open && fifo_is_empty_ts(proc->fifo_in0)) {
                         process_close(proc);
                         continue;
                 }
@@ -151,9 +151,9 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
                 /* Check to see that there is something to process
                  * as well as a place for it to go.
                  */
-                if (fifo_is_empty(proc->fifo_in0) ||
-                    (proc->fifo_out0 && !fifo_is_receivable(proc->fifo_out0)) ||
-                    (proc->fifo_out1 && !fifo_is_receivable(proc->fifo_out1))) {
+                if (fifo_is_empty_ts(proc->fifo_in0) ||
+                    (proc->fifo_out0 && !fifo_is_receivable_ts(proc->fifo_out0)) ||
+                    (proc->fifo_out1 && !fifo_is_receivable_ts(proc->fifo_out1))) {
                         continue;
                 }
                 int ret = proc->action__(proc_graph, proc);
@@ -204,29 +204,29 @@ void* _thread_exec(void* data)
         Process* proc = tdata->proc;
 
         while (true) {
-                if (fifo_is_empty(proc->fifo_in0)) {
+                if (fifo_is_empty_ts(proc->fifo_in0)) {
                         if (!proc->fifo_in0->is_open) {
                                 process_close(proc);
                                 break;
                         }
                         fifo_wait_for_add(proc->fifo_in0);
-                        if (fifo_is_empty(proc->fifo_in0)) {
+                        if (fifo_is_empty_ts(proc->fifo_in0)) {
                                 process_close(proc);
                                 break;
                         }
                 }
                 if (proc->fifo_in1) {
-                        if (!fifo_is_empty(proc->fifo_in1)) {
+                        if (!fifo_is_empty_ts(proc->fifo_in1)) {
                                 fifo_wait_for_add(proc->fifo_in1);
                         }
                 }
                 if (proc->fifo_out0) {
-                        while (!fifo_is_receivable(proc->fifo_out0)) {
+                        while (!fifo_is_receivable_ts(proc->fifo_out0)) {
                                 fifo_wait_for_get(proc->fifo_out0);
                         }
                 }
                 if (proc->fifo_out1) {
-                        while (!fifo_is_receivable(proc->fifo_out1)) {
+                        while (!fifo_is_receivable_ts(proc->fifo_out1)) {
                                 fifo_wait_for_get(proc->fifo_out0);
                         }
                 }
