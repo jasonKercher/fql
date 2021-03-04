@@ -70,17 +70,17 @@ void fifo_set_open(Fifo* fifo, int is_open)
 
 void fifo_set_open_ts(Fifo* fifo, int is_open)
 {
-        pthread_mutex_lock(&fifo->head_mutex);
         pthread_mutex_lock(&fifo->tail_mutex);
+        pthread_mutex_lock(&fifo->head_mutex);
         pthread_mutex_lock(&fifo->open_mutex);
         fifo_set_open(fifo, is_open);
 
-        pthread_cond_broadcast(&fifo->cond_add);
         pthread_cond_broadcast(&fifo->cond_get);
+        pthread_cond_broadcast(&fifo->cond_add);
 
         pthread_mutex_unlock(&fifo->open_mutex);
-        pthread_mutex_unlock(&fifo->tail_mutex);
         pthread_mutex_unlock(&fifo->head_mutex);
+        pthread_mutex_unlock(&fifo->tail_mutex);
 }
 
 /** NOT Thread-safe **/
@@ -120,14 +120,14 @@ size_t fifo_available(Fifo* f)
 
 size_t fifo_available_ts(Fifo* f)
 {
-        pthread_mutex_lock(&f->head_mutex);
         pthread_mutex_lock(&f->tail_mutex);
+        pthread_mutex_lock(&f->head_mutex);
         size_t available = f->head - f->tail;
         if (f->head < f->tail) {
                 available += f->buf->size;
         }
-        pthread_mutex_unlock(&f->tail_mutex);
         pthread_mutex_unlock(&f->head_mutex);
+        pthread_mutex_unlock(&f->tail_mutex);
         return available;
 }
 
@@ -138,11 +138,11 @@ _Bool fifo_is_full(Fifo* f)
 
 _Bool fifo_is_full_ts(Fifo* f)
 {
-        pthread_mutex_lock(&f->head_mutex);
         pthread_mutex_lock(&f->tail_mutex);
-        _Bool is_full = ((f->head + 1) % f->buf->size == f->tail);
-        pthread_mutex_unlock(&f->tail_mutex);
+        pthread_mutex_lock(&f->head_mutex);
+        _Bool is_full = fifo_is_full(f);
         pthread_mutex_unlock(&f->head_mutex);
+        pthread_mutex_unlock(&f->tail_mutex);
         return is_full;
 }
 
@@ -153,11 +153,11 @@ _Bool fifo_is_empty(Fifo* f)
 
 _Bool fifo_is_empty_ts(Fifo* f)
 {
-        pthread_mutex_lock(&f->head_mutex);
         pthread_mutex_lock(&f->tail_mutex);
+        pthread_mutex_lock(&f->head_mutex);
         _Bool is_empty = (f->head == f->tail);
-        pthread_mutex_unlock(&f->tail_mutex);
         pthread_mutex_unlock(&f->head_mutex);
+        pthread_mutex_unlock(&f->tail_mutex);
         return is_empty;
 }
 
@@ -215,6 +215,28 @@ void fifo_consume_ts(Fifo* f)
         pthread_mutex_unlock(&f->tail_mutex);
 }
 
+int fifo_recycle(Fifo* f, void* data)
+{
+        size_t waste_idx = f->tail - 1;
+        waste_idx %= f->buf->size;
+        vec_set(f->buf, waste_idx, data);
+        fifo_advance(f);
+
+        return 0;
+}
+
+int fifo_recycle_ts(Fifo* f, void* data)
+{
+        pthread_mutex_lock(&f->tail_mutex);
+        size_t waste_idx = f->tail - 1;
+        waste_idx %= f->buf->size;
+        vec_set(f->buf, waste_idx, data);
+        fifo_advance_ts(f);
+        pthread_mutex_unlock(&f->tail_mutex);
+
+        return 0;
+}
+
 int fifo_add(Fifo* f, void* data)
 {
         vec_set(f->buf, f->head, data);
@@ -226,9 +248,7 @@ int fifo_add(Fifo* f, void* data)
 int fifo_add_ts(Fifo* f, void* data)
 {
         pthread_mutex_lock(&f->head_mutex);
-        vec_set(f->buf, f->head, data);
-        /* Using non-ts version on purpose */
-        fifo_advance(f);
+        fifo_add(f, data);
         pthread_cond_signal(&f->cond_add);
         pthread_mutex_unlock(&f->head_mutex);
 

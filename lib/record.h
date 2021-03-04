@@ -1,14 +1,17 @@
 #ifndef RECORD_H
 #define RECORD_H
 
+#include "csv.h"
 #include "util/vec.h"
 #include "util/stringview.h"
 #include "util/stringy.h"
 
 struct record {
-        struct vec fields;
-        String rec_cpy;
+        struct vec* fields;
+        struct csv_record* libcsv_rec;
+        String* rec_cpy;
         StringView rec_raw;
+        _Bool consumable;
 };
 typedef struct record Record;
 

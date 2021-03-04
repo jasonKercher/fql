@@ -18,6 +18,7 @@ struct fql_handle {
                 int override_warnings;
                 int print_plan;
                 int threading;
+                int force_cartesian;
         } props;
 };
 

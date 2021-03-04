@@ -46,23 +46,23 @@ void process_node_free(Dnode* proc_node)
         }
         Process* proc = proc_node->data;
         if (proc->fifo_in0 != NULL) {
-                Vec** it = vec_begin(proc->fifo_in0->buf);
+                Vec** it = vec_begin(proc->fifo_in0->buf); /* vec_(Vec*) */
                 for (; it != vec_end(proc->fifo_in0->buf); ++it) {
-                        Vec** it2 = vec_begin(*it);
+                        Record** it2 = vec_begin(*it); /* vec_(Record*) */
                         for (; it2 != vec_end(*it); ++it2) {
-                                vec_free(*it2);
+                                record_free(*it2);
                         }
-                        vec_free(*it);
+                        //vec_free(*it);
                 }
         }
         if (proc->fifo_in1 != NULL) {
-                Vec** it = vec_begin(proc->fifo_in1->buf);
+                Vec** it = vec_begin(proc->fifo_in1->buf); /* vec_(Vec*) */
                 for (; it != vec_end(proc->fifo_in1->buf); ++it) {
-                        Vec** it2 = vec_begin(*it);
+                        Record** it2 = vec_begin(*it); /* vec_(Record*) */
                         for (; it2 != vec_end(*it); ++it2) {
-                                vec_free(*it2);
+                                record_free(*it2);
                         }
-                        vec_free(*it);
+                        //vec_free(*it);
                 }
         }
         process_free(proc_node->data);
@@ -94,6 +94,9 @@ void process_activate(Dnode* proc_node)
                 field_count = reader->max_col_idx + 1;
         }
 
+        /* Need atleast width 1 even to pass constant data */
+        //int fifo_width = (proc->fifo_width) ? proc->fifo_width : 1;
+
         /* If root, it will own the vector of StringViews */
         Vec* buf = proc->fifo_in0->buf;
         Vec** recs = vec_begin(buf);
@@ -104,16 +107,17 @@ void process_activate(Dnode* proc_node)
                 Record** rec = vec_begin(*recs);
                 for (; rec != vec_end(*recs); ++rec) {
                         *rec = record_new();
-                        vec_resize(&(*rec)->fields, field_count);
+                        vec_resize((*rec)->fields, field_count);
                 }
 
-                if (proc->fifo_out0 != NULL) {
-                        fifo_add_ts(proc->fifo_out0, *recs);
-                        fifo_consume_ts(proc->fifo_out0);
-                }
+                // lol what?
+                //if (proc->fifo_out0 != NULL) {
+                //        fifo_add(proc->fifo_out0, *recs);
+                //        fifo_consume(proc->fifo_out0);
+                //}
         }
 
-        fifo_advance_ts(proc->fifo_in0);
+        fifo_advance(proc->fifo_in0);
 }
 
 void process_add_second_input(Process* proc)
@@ -142,7 +146,7 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
         int run_count = 0;
         while ((proc_node = dgraph_traverse(proc_graph))) {
                 proc = proc_node->data;
-                if (!proc->fifo_in0->is_open && fifo_is_empty_ts(proc->fifo_in0)) {
+                if (!proc->fifo_in0->is_open && fifo_is_empty(proc->fifo_in0)) {
                         process_close(proc);
                         continue;
                 }
@@ -151,9 +155,9 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
                 /* Check to see that there is something to process
                  * as well as a place for it to go.
                  */
-                if (fifo_is_empty_ts(proc->fifo_in0) ||
-                    (proc->fifo_out0 && !fifo_is_receivable_ts(proc->fifo_out0)) ||
-                    (proc->fifo_out1 && !fifo_is_receivable_ts(proc->fifo_out1))) {
+                if (fifo_is_empty(proc->fifo_in0) ||
+                    (proc->fifo_out0 && !fifo_is_receivable(proc->fifo_out0)) ||
+                    (proc->fifo_out1 && !fifo_is_receivable(proc->fifo_out1))) {
                         continue;
                 }
                 int ret = proc->action__(proc_graph, proc);

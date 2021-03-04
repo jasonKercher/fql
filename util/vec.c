@@ -73,7 +73,14 @@ void vec_reserve(Vec* vec, size_t alloc)
         if (vec->_alloc > ++alloc) {
                 return;
         }
-        realloc_(vec->data, alloc * vec->_elem_size);
+        //realloc_(vec->data, alloc * vec->_elem_size);
+        void* new_dest_ = realloc(vec->data, alloc * vec->_elem_size);
+        if (!new_dest_) {                           
+                perror("realloc");              
+                exit(EXIT_FAILURE);             
+        }                                       
+        vec->data = new_dest_;                      
+        new_dest_ = NULL;                       
         vec->_alloc = alloc;
 }
 

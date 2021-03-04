@@ -6,7 +6,7 @@
 #include "column.h"
 
 /* Trigger appropiate roots to read the next record */
-void _recycle_rec(Dgraph* proc_graph, int width)
+void _recycle_recs(Dgraph* proc_graph, Vec* recs, int width)
 {
         /* width == 0 means constant expression */
         if (width == 0) {
@@ -16,15 +16,41 @@ void _recycle_rec(Dgraph* proc_graph, int width)
         }
         int i = 0;
         for (; i < width; ++i) {
+                Record** rec = vec_at(recs, i);
+                if (!(*rec)->consumable) {
+                        continue;
+                }
+
+                /* NOTE: order of sources and roots must match */
                 Dnode** root_node = vec_at(proc_graph->_roots, i);
                 Process* root = (*root_node)->data;
                 if (root->action__ == fql_read && fifo_is_open_ts(root->fifo_in0)) {
-                        fifo_advance_ts(root->fifo_in0);
+                        if (i != 0) {
+                                vec_set(recs, 0, rec);
+                        }
+                        fifo_recycle_ts(root->fifo_in0, &recs);
                 }
         }
 }
 
-void _recycle_specific(Dgraph* proc_graph, int width)
+/* This is designed to work on right side readers.
+ * recs should always be of size 1
+ */
+void _recycle_specific(Dgraph* proc_graph, Vec* recs, int width)
+{
+        Record** rec = vec_at(recs, 0);
+        if (!(*rec)->consumable) {
+                return;
+        }
+
+        Dnode** root_node = vec_at(proc_graph->_roots, width-1);
+        Process* root = (*root_node)->data;
+        if (root->action__ == fql_read && fifo_is_open_ts(root->fifo_in0)) {
+                fifo_recycle_ts(root->fifo_in0, &recs);
+        }
+}
+
+void _advance_specific(Dgraph* proc_graph, int width)
 {
         /* width == 0 means constant expression */
         if (width == 0) {
@@ -75,7 +101,7 @@ int fql_select(Dgraph* proc_graph, Process* proc)
         Select* select = proc->proc_data;
         int ret = select->select__(select, *recs);
 
-        _recycle_rec(proc_graph, proc->fifo_width);
+        _recycle_recs(proc_graph, *recs, proc->fifo_width);
 
         return ret;
 }
@@ -95,10 +121,18 @@ int fql_logic(Dgraph* proc_graph, Process* proc)
         } else if (proc->fifo_out0 != NULL) {
                 fifo_add_ts(proc->fifo_out0, recs);  /* false */
         } else {
-                _recycle_rec(proc_graph, proc->fifo_width);
+                _recycle_recs(proc_graph, *recs, proc->fifo_width);
         }
 
         return 1;
+}
+
+void _set_left_side_consumable(Vec* leftrecs, _Bool consumable)
+{
+        Record** it = vec_begin(leftrecs);
+        for (; it+1 != vec_end(leftrecs); ++it) {
+                (*it)->consumable = consumable;
+        }
 }
 
 int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
@@ -110,7 +144,8 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
                 if (fifo_is_open_ts(proc->fifo_in1)) {
                         return 0;
                 }
-                _recycle_rec(proc_graph, proc->fifo_width - 1);
+
+                _recycle_recs(proc_graph, *leftrecs, proc->fifo_width - 1);
                 fifo_consume_ts(proc->fifo_in0);
                 fifo_set_open_ts(proc->fifo_in1, true);
                 return 1;
@@ -131,13 +166,12 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
 
 
 
-void _hash_join_right_side(Process* proc, Source* src)
+void _hash_join_right_side(Process* proc, Source* src, Vec* rightrecs)
 {
         Vec** leftrecs = fifo_peek_ts(proc->fifo_in0);
 
         /* We can assume recs is of size 1 */
-        Vec** rightrecs = fifo_get_ts(proc->fifo_in1);
-        Record** rightrec = vec_begin(*rightrecs);
+        Record** rightrec = vec_begin(rightrecs);
 
         /* We don't need anything on the left side,
          * BUT we need a vector with the right side
@@ -165,14 +199,16 @@ Record* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
                 if (hj->recs == NULL) {
                         return NULL;
                 }
+                _set_left_side_consumable(leftrecs, false);
                 hj->rec_idx = 0;
         }
 
-        if (hj->rec_idx >= hj->recs->size) {
-                hj->recs = NULL;
-                return NULL;
-        }
         char** rightrec_ptr = vec_at(hj->recs, hj->rec_idx++);
+        if (hj->rec_idx >= hj->recs->size) {
+                fifo_consume_ts(proc->fifo_in0);
+                _set_left_side_consumable(leftrecs, true);
+                hj->recs = NULL;
+        }
 
         /* Let's assume that this read never fails
          * because it has already parsed...
@@ -195,7 +231,7 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
         if (fifo_is_empty_ts(proc->fifo_in1) && hj->state == SIDE_RIGHT) {
                 if (!fifo_is_open_ts(proc->fifo_in1)) {
                         hj->state = SIDE_LEFT;
-                        _recycle_specific(proc_graph, proc->fifo_width);
+                        _advance_specific(proc_graph, proc->fifo_width);
                         return 1;
                 } else {
                         return 0;
@@ -203,11 +239,9 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
         }
 
         if (hj->state == SIDE_RIGHT) {
-                //if (fifo_is_empty_ts(proc->fifo_in1)) {
-                //        return 0;
-                //}
-                _hash_join_right_side(proc, src);
-                _recycle_specific(proc_graph, proc->fifo_width);
+                Vec** rightrecs = fifo_get_ts(proc->fifo_in1);
+                _hash_join_right_side(proc, src, *rightrecs);
+                _recycle_specific(proc_graph, *rightrecs, proc->fifo_width);
                 return 1;
         }
 
@@ -224,7 +258,7 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
         Record* rightrec = _hash_join_left_side(proc, src, *leftrecs);
         if (rightrec == NULL) {
                 fifo_consume_ts(proc->fifo_in0);
-                _recycle_rec(proc_graph, proc->fifo_width);
+                _recycle_recs(proc_graph, *leftrecs, proc->fifo_width);
                 return 1;
         }
 

@@ -6,8 +6,8 @@
 #include "vec.h"
 
 /**
- * Circular Buffer
- *
+ * Naive Thread-safe Circular Buffer
+ * Bounds checking is the responsibilty user
  */
 
 struct fifo {
@@ -54,6 +54,8 @@ void* fifo_peek(struct fifo*);
 void* fifo_peek_ts(struct fifo*);
 void fifo_consume(struct fifo*);
 void fifo_consume_ts(struct fifo*);
+int fifo_recycle(struct fifo*, void*);
+int fifo_recycle_ts(struct fifo*, void*);
 int fifo_add(struct fifo*, void*);
 int fifo_add_ts(struct fifo*, void*);
 int fifo_advance(struct fifo*);

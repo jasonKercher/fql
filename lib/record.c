@@ -1,4 +1,5 @@
 #include "record.h"
+#include "util/vec.h"
 #include "util/util.h"
 #include "util/stringview.h"
 
@@ -13,13 +14,13 @@ Record* record_new()
 Record* record_construct(Record* rec)
 {
         *rec = (Record) {
-                 { 0 }  /* fields */
-                ,{ 0 }  /* rec_cpy */
-                ,{ 0 }  /* raw_rec */
+                 vec_new_(StringView)   /* fields */
+                ,csv_record_new()       /* libcsv_rec */
+                ,string_new()           /* rec_cpy */
+                ,{ 0 }                  /* raw_rec */
+                ,true                   /* consumable */
         };
 
-        vec_construct_(&rec->fields, StringView);
-        string_construct(&rec->rec_cpy);
         return rec;
 }
 
@@ -31,6 +32,7 @@ void record_free(Record* rec)
 
 void record_destroy(Record* rec)
 {
-        string_destroy(&rec->rec_cpy);
-        vec_destroy(&rec->fields);
+        vec_free(rec->fields);
+        csv_record_free(rec->libcsv_rec);
+        string_free(rec->rec_cpy);
 }

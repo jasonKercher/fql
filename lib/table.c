@@ -157,10 +157,10 @@ size_t _guess_row_count(Source* src)
         if (avg_len < 1)
                 avg_len = 1;
 
-        struct mmapcsv_data* data = reader->reader_data;
+        struct mmapcsv* csv = reader->reader_data;
         reader->reset__(reader);
 
-        guess = data->file_size / avg_len;
+        guess = csv->file_size / avg_len;
 
         return (guess < HASH_JOIN_MIN_SIZE) ? HASH_JOIN_MIN_SIZE : guess + 1;
 }

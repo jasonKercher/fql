@@ -10,7 +10,6 @@ extern "C" {
 #include "util/pmap.h"
 #include "util/stringy.h"
 #include "util/stringview.h"
-#include "util/fifo.h"
 #include "util/util.h"
 
 struct reader;
@@ -33,6 +32,7 @@ struct reader {
         reset_fn reset__;
         String file_name;
         size_t max_col_idx;
+        _Bool eof;
 };
 typedef struct reader Reader;
 
@@ -47,31 +47,16 @@ void reader_assign(struct reader*);
  * Reader types own the data that is passed from
  * process to process. The records pass a vector
  * of fields in the form of read-only StringViews.
- * To match the raw records to the correct
- * StringView, an index is passed to the *_get_record
- * family of functions.
  */
 
-typedef struct csv_record csv_record;
-typedef struct csv_reader csv_reader;
-
-struct libcsv_reader {
-        csv_reader* csv_handle;
-        struct fifo* csv_recs; 
-        _Bool eof;
-};
-
-struct libcsv_reader* libcsv_reader_new(size_t);
-struct libcsv_reader* libcsv_reader_construct(struct libcsv_reader*, size_t);
 void libcsv_reader_free(void*);
 
-char* libcsv_get_delim(struct libcsv_reader*);
+char* libcsv_get_delim(struct csv_reader*);
 int libcsv_get_record(struct reader*, struct record* rec);
 int libcsv_reset(struct reader*);
 
-struct mmapcsv_data {
-        csv_reader* csv_handle;
-        struct fifo* csv_recs; /* vec_(csv_record*) */
+struct mmapcsv {
+        struct csv_reader* csv_handle;
         struct stringview current;
         struct vec* raw;
         Pmap* rec_map;
@@ -79,15 +64,14 @@ struct mmapcsv_data {
         char* mp;
         size_t file_size;
         int fd;
-        _Bool eof;
 };
 
-struct mmapcsv_data* mmapcsv_new(size_t);
-struct mmapcsv_data* mmapcsv_construct(struct mmapcsv_data*, size_t);
+struct mmapcsv* mmapcsv_new(size_t);
+struct mmapcsv* mmapcsv_construct(struct mmapcsv*, size_t);
 void mmapcsv_free(void*);
 
-char* mmapcsv_get_delim(struct mmapcsv_data*);
-int mmapcsv_open(struct mmapcsv_data*, const char* file_name);
+char* mmapcsv_get_delim(struct mmapcsv*);
+int mmapcsv_open(struct mmapcsv*, const char* file_name);
 int mmapcsv_get_record(struct reader*, struct record* rec);
 int mmapcsv_get_record_at(struct reader*, struct record* rec, char* rec_loc);
 int mmapcsv_reset(struct reader*);

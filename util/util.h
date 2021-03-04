@@ -35,7 +35,7 @@ typedef int(*int_generic_data_fn)(void*);
  */
 #define realloc_(dest_, size_) {                \
         void* new_dest_ = realloc(dest_, size_);\
-        if (!dest_) {                           \
+        if (!new_dest_) {                       \
                 perror("realloc");              \
                 exit(EXIT_FAILURE);             \
         }                                       \

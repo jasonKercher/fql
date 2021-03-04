@@ -29,6 +29,7 @@ Reader* reader_construct(Reader* reader)
                 ,NULL           /* reset__ */
                 ,{ 0 }          /* file_name */
                 ,0              /* max_col_idx */
+                ,false          /* eof */
         };
 
         string_construct(&reader->file_name);
@@ -70,22 +71,22 @@ void reader_assign(Reader* reader)
         switch (reader->type) {
         case READ_LIBCSV:
         {
-                struct libcsv_reader* data = libcsv_reader_new(PROCESS_BUFFER_SIZE);
-                reader->reader_data = data;
+                struct csv_reader* csv = csv_reader_new();
+                reader->reader_data = csv;
                 reader->free__ = &libcsv_reader_free;
                 reader->get_record__ = &libcsv_get_record;
                 reader->reset__ = &libcsv_reset;
-                ret = csv_reader_open(data->csv_handle, reader->file_name.data);
+                ret = csv_reader_open(csv, reader->file_name.data);
                 break;
         }
         case READ_MMAPCSV:
         {
-                struct mmapcsv_data* data = mmapcsv_new(PROCESS_BUFFER_SIZE);
-                reader->reader_data = data;
+                struct mmapcsv* csv = mmapcsv_new(PROCESS_BUFFER_SIZE);
+                reader->reader_data = csv;
                 reader->free__ = &mmapcsv_free;
                 reader->get_record__ = &mmapcsv_get_record;
                 reader->reset__ = &mmapcsv_reset;
-                ret = mmapcsv_open(data, reader->file_name.data);
+                ret = mmapcsv_open(csv, reader->file_name.data);
                 break;
         }
         case READ_SUBQUERY:

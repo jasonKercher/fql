@@ -157,11 +157,11 @@ success_return:
 
 void schema_assign_header(Table* table, Record* rec)
 {
-        table->schema->col_map = hmap_new(rec->fields.size * 2, HMAP_NOCASE);
+        table->schema->col_map = hmap_new(rec->fields->size * 2, HMAP_NOCASE);
 
         int i = 0;
-        StringView* it = vec_begin(&rec->fields);
-        for (; it != vec_end(&rec->fields); ++it) {
+        StringView* it = vec_begin(rec->fields);
+        for (; it != vec_end(rec->fields); ++it) {
                 String col_str;
                 string_construct_from_stringview(&col_str, it);
                 Column* new_col = column_new(EXPR_COLUMN_NAME, col_str.data, "");
@@ -395,7 +395,7 @@ void _resolve_join_conditions(Source* right_src, int right_idx)
         vec_free(right_src->condition->joinable);
 }
 
-int schema_resolve_query(Query* query)
+int schema_resolve_query(struct fql_handle* fql, Query* query)
 {
         Vec* sources = query->sources;
 
@@ -419,7 +419,7 @@ int schema_resolve_query(Query* query)
                         return FQL_FAIL;
                 }
 
-                if (i > 0) {
+                if (i > 0 && !fql->props.force_cartesian) {
                         _resolve_join_conditions(src, i);
                 }
         }
@@ -445,7 +445,7 @@ int schema_resolve(struct fql_handle* fql)
                          fql->props.out_delim,
                          DELIM_LEN_MAX);
 
-                if (schema_resolve_query(query)) {
+                if (schema_resolve_query(fql, query)) {
                         return FQL_FAIL;
                 }
         }

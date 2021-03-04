@@ -155,7 +155,7 @@ int column_get_int(long* ret, Column* col, Vec* recs)
                 //String s;
                 //string_construct(&s);
                 Record** rec = vec_at(recs, col->src_idx);
-                StringView* sv = vec_at(&(*rec)->fields, col->data_source->location);
+                StringView* sv = vec_at((*rec)->fields, col->data_source->location);
                 string_copy_from_stringview(&col->buf, sv);
                 if (str2long(ret, col->buf.data)) {
                         //string_destroy(&s);
@@ -199,7 +199,7 @@ int column_get_float(double* ret, Column* col, Vec* recs)
         {
                 /* this is a rather unfortunate necessity */
                 Record** rec = vec_at(recs, col->src_idx);
-                StringView* sv = vec_at(&(*rec)->fields, col->data_source->location);
+                StringView* sv = vec_at((*rec)->fields, col->data_source->location);
                 string_copy_from_stringview(&col->buf, sv);
                 if (str2double(ret, col->buf.data)) {
                         return FQL_FAIL;
@@ -239,7 +239,7 @@ int column_get_stringview(StringView* ret, Column* col, Vec* recs)
         case EXPR_COLUMN_NAME:
         {
                 Record** rec = vec_at(recs, col->src_idx);
-                StringView* sv = vec_at(&(*rec)->fields, col->data_source->location);
+                StringView* sv = vec_at((*rec)->fields, col->data_source->location);
                 ret->data = sv->data;
                 ret->len = sv->len;
                 return FQL_GOOD;

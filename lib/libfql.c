@@ -33,6 +33,7 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
                         ,false  /* override_warnings */
                         ,false  /* print_plan */
                         ,false  /* threading */
+                        ,false  /* force_cartesian */
                 }  /* props */
         };
         return fql;

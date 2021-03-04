@@ -5,7 +5,6 @@
 
 #include "fqlhandle.h"
 #include "query.h"
-#include "search.h"
 #include "util/queue.h"
 #include "util/stack.h"
 

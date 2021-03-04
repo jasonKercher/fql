@@ -41,7 +41,7 @@ int libcsv_write_record(void* writer_data, Vec* col_vec, Vec* recs)
                         int quote_store = handle->quotes;
                         handle->quotes = QUOTE_NONE;
                         Record** rec = vec_at(recs, cols[i]->src_idx);
-                        csv_nwrite_field(handle, (*rec)->rec_cpy.data, (*rec)->rec_cpy.size);
+                        csv_nwrite_field(handle, (*rec)->rec_cpy->data, (*rec)->rec_cpy->size);
                         handle->quotes = quote_store;
                 }
                 else {

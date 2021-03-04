@@ -37,7 +37,7 @@ Plan* plan_construct(Plan* plan, int source_total)
                 ,NULL                                              /* current */
                 ,0                                                 /* rows_affected */
                 ,0                                                 /* source_count */
-                ,source_total                                      /* source_count */
+                ,source_total                                      /* source_total */
                 ,false                                             /* has_stepped */
         };
 
@@ -170,7 +170,6 @@ void _from(Plan* plan, Query* query)
         for (++src; src != vec_end(query->sources); ++src) {
                 Process* join_proc = _new_join_proc(src->join_type, ++plan->source_count);
                 process_add_second_input(join_proc);
-                //if (/* TODO */ false && src->condition->join_logic != NULL) {
                 if (src->condition->join_logic != NULL) {
                         join_proc->action__ = &fql_hash_join;
                         source_hash_join_init(src);
