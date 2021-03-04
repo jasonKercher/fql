@@ -120,6 +120,11 @@ void fql_set_threading(struct fql_handle* fql, int threading)
         fql->props.threading = threading;
 }
 
+void fql_set_force_cartesian(struct fql_handle* fql, int force_cartesian)
+{
+        fql->props.force_cartesian = force_cartesian;
+}
+
 /**
  * Methods
  */

@@ -25,9 +25,6 @@ void _recycle_recs(Dgraph* proc_graph, Vec* recs, int width)
                 Dnode** root_node = vec_at(proc_graph->_roots, i);
                 Process* root = (*root_node)->data;
                 if (root->action__ == fql_read && fifo_is_open_ts(root->fifo_in0)) {
-                        if (i != 0) {
-                                vec_set(recs, 0, rec);
-                        }
                         fifo_recycle_ts(root->fifo_in0, &recs);
                 }
         }
@@ -69,8 +66,8 @@ int fql_read(Dgraph* proc_graph, Process* proc)
 {
         Reader* reader = proc->proc_data;
         Vec** recs = fifo_peek_ts(proc->fifo_in0);
-        /* We can assume recs is of size 1 */
-        Record** rec = vec_begin(*recs);
+        
+        Record** rec = vec_back(*recs);
         int ret = reader->get_record__(reader, *rec);
 
         switch (ret) {
@@ -88,8 +85,6 @@ int fql_read(Dgraph* proc_graph, Process* proc)
         }
 
         fifo_consume_ts(proc->fifo_in0);
-
-        /* to next process */
         fifo_add_ts(proc->fifo_out0, recs);
 
         return 1;
@@ -138,28 +133,38 @@ void _set_left_side_consumable(Vec* leftrecs, _Bool consumable)
 int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
 {
         Vec** leftrecs = fifo_peek_ts(proc->fifo_in0);
+        //_set_left_side_consumable(*leftrecs, false);
 
         /* Re-open fifo if eof reached and consume */
         if (fifo_is_empty_ts(proc->fifo_in1)) {
                 if (fifo_is_open_ts(proc->fifo_in1)) {
                         return 0;
                 }
-
-                _recycle_recs(proc_graph, *leftrecs, proc->fifo_width - 1);
                 fifo_consume_ts(proc->fifo_in0);
+
+                if (!proc->fifo_in0->is_open) {
+                        return 0;
+                }
+
+                //_set_left_side_consumable(*leftrecs, true);
+                Source* src = proc->proc_data;
+                Process* right_side_read_proc = src->read_proc;
+                fifo_advance_ts(right_side_read_proc->fifo_in0);
+                fifo_set_open_ts(right_side_read_proc->fifo_in0, true);
                 fifo_set_open_ts(proc->fifo_in1, true);
+                //_advance_specific(proc_graph, proc->fifo_width);
                 return 1;
         }
 
-        /* We can assume recs is of size 1 */
         Vec** rightrecs = fifo_get_ts(proc->fifo_in1);
-        Record** rightrec = vec_begin(*rightrecs);
 
-        /* Copy rightrec into appropriate index */
-        Source* src = proc->proc_data;
-        vec_set(*leftrecs, src->idx, rightrec);
+        unsigned i = 0;
+        for (; i < (*leftrecs)->size; ++i) {
+                Record** leftrec = vec_at(*leftrecs, i);
+                vec_set(*rightrecs, i, leftrec);
+        }
 
-        fifo_add_ts(proc->fifo_out0, leftrecs);
+        fifo_add_ts(proc->fifo_out0, rightrecs);
 
         return 1;
 }
@@ -168,26 +173,16 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
 
 void _hash_join_right_side(Process* proc, Source* src, Vec* rightrecs)
 {
-        Vec** leftrecs = fifo_peek_ts(proc->fifo_in0);
-
-        /* We can assume recs is of size 1 */
-        Record** rightrec = vec_begin(rightrecs);
-
-        /* We don't need anything on the left side,
-         * BUT we need a vector with the right side
-         * at the right index.
-         */
-        vec_set(*leftrecs, src->idx, rightrec);
-
         struct hashjoin* hj = src->join_data;
 
         StringView sv;
-        column_get_stringview(&sv, hj->right_col, *leftrecs);
+        column_get_stringview(&sv, hj->right_col, rightrecs);
 
+        Record** rightrec = vec_back(rightrecs);
         pmap_nset(&hj->hash_data, sv.data, (void*) (*rightrec)->rec_raw.data, sv.len);
 }
 
-Record* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
+Vec* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
 {
         struct hashjoin* hj = src->join_data;
 
@@ -210,17 +205,14 @@ Record* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
                 hj->recs = NULL;
         }
 
-        /* Let's assume that this read never fails
-         * because it has already parsed...
-         */
         Vec** rightrecs = fifo_get_ts(proc->fifo_in1);
-        /* We can assume recs is of size 1 */
-        Record** rec = vec_begin(*rightrecs);
-
+        Record** rec = vec_back(*rightrecs);
         Reader* reader = src->table->reader;
+
+        /* TODO: this should be a function pointer */
         mmapcsv_get_record_at(reader, *rec, *rightrec_ptr);
 
-        return *rec;
+        return *rightrecs;
 }
 
 int fql_hash_join(Dgraph* proc_graph, Process* proc)
@@ -251,21 +243,23 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
          */
         Process* right_side_read_proc = src->read_proc;
         fifo_advance_ts(right_side_read_proc->fifo_in0);
-
         fql_no_op(proc_graph, right_side_read_proc);
 
         Vec** leftrecs = fifo_peek_ts(proc->fifo_in0);
-        Record* rightrec = _hash_join_left_side(proc, src, *leftrecs);
-        if (rightrec == NULL) {
+        Vec* rightrecs = _hash_join_left_side(proc, src, *leftrecs);
+        if (rightrecs == NULL) {
                 fifo_consume_ts(proc->fifo_in0);
-                _recycle_recs(proc_graph, *leftrecs, proc->fifo_width);
+                _recycle_recs(proc_graph, *leftrecs, proc->fifo_width-1);
                 return 1;
         }
 
-        /* Copy rightrec into appropriate index */
-        vec_set(*leftrecs, src->idx, &rightrec);
+        unsigned i = 0;
+        for (; i < (*leftrecs)->size; ++i) {
+                Record** leftrec = vec_at(*leftrecs, i);
+                vec_set(rightrecs, i, leftrec);
+        }
 
-        fifo_add_ts(proc->fifo_out0, leftrecs);
+        fifo_add_ts(proc->fifo_out0, &rightrecs);
 
         return 1;
 }

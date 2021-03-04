@@ -17,7 +17,7 @@ Record* record_construct(Record* rec)
                  vec_new_(StringView)   /* fields */
                 ,csv_record_new()       /* libcsv_rec */
                 ,string_new()           /* rec_cpy */
-                ,{ 0 }                  /* raw_rec */
+                ,{ 0 }                  /* rec_raw */
                 ,true                   /* consumable */
         };
 

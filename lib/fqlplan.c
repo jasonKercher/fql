@@ -156,7 +156,7 @@ void _from(Plan* plan, Query* query)
                        "stream read");
 
         ++plan->source_count;
-        Process* from_proc = process_new(action_msg.data, plan->source_total);
+        Process* from_proc = process_new(action_msg.data, plan->source_count);
         src->read_proc = from_proc;
         from_proc->action__ = &fql_read;
         from_proc->proc_data = src->table->reader;
@@ -188,8 +188,7 @@ void _from(Plan* plan, Query* query)
                                src->table->reader->file_name.data,
                                "mmap read");
 
-                /* Root node only will only have one source */
-                Process* read_proc = process_new(action_msg.data, 1);
+                Process* read_proc = process_new(action_msg.data, plan->source_count);
                 src->read_proc = read_proc;
                 read_proc->proc_data = src->table->reader;
                 read_proc->action__ = &fql_read;
