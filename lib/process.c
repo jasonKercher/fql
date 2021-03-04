@@ -141,7 +141,7 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
                         process_close(proc);
                         continue;
                 }
-                ++run_count;
+                //++run_count;
 
                 /* Check to see that there is something to process
                  * as well as a place for it to go.
@@ -159,7 +159,7 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
                 if (proc_node == plan->op_true) {
                         ++plan->rows_affected;
                 }
-                //run_count += ret;
+                run_count += ret;
         }
 
         return run_count;

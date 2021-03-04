@@ -18,7 +18,7 @@ Record* record_construct(Record* rec)
                 ,csv_record_new()       /* libcsv_rec */
                 ,string_new()           /* rec_cpy */
                 ,{ 0 }                  /* rec_raw */
-                ,true                   /* consumable */
+                ,0                      /* ref_count */
         };
 
         return rec;

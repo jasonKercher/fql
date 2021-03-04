@@ -11,7 +11,7 @@ struct record {
         struct csv_record* libcsv_rec;
         String* rec_cpy;
         StringView rec_raw;
-        _Bool consumable;
+        int ref_count;
 };
 typedef struct record Record;
 
