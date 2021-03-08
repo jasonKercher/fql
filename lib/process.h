@@ -30,7 +30,7 @@ struct process {
 typedef struct process Process;
 
 struct thread_data {
-        struct process* proc;
+        struct dnode* proc_node;
         struct dgraph* proc_graph;
 };
 

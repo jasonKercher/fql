@@ -17,6 +17,7 @@ struct fifo {
         pthread_mutex_t open_mutex;
         pthread_cond_t cond_add;
         pthread_cond_t cond_get;
+        pthread_cond_t cond_full;
         size_t head;
         size_t tail;
         unsigned input_count;
@@ -65,6 +66,7 @@ int fifo_advance_ts(struct fifo*);
 /* thread conditions */
 void fifo_wait_for_add(struct fifo*);
 void fifo_wait_for_get(struct fifo*);
+void fifo_wait_for_full(struct fifo*);
 
 
 #endif  /* CIRCLE_H */

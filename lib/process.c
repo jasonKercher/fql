@@ -106,7 +106,7 @@ void process_activate(Dnode* proc_node)
                 Vec* new_recs = vec_at(proc->records, i);
                 vec_construct_(new_recs, Record*);
                 vec_resize(new_recs, proc->fifo_width);
-                
+
                 Record** new_rec = vec_back(new_recs);
                 *new_rec = record_new(i);
                 vec_resize((*new_rec)->fields, field_count);
@@ -216,7 +216,7 @@ int process_exec_plan(Plan* plan)
 void* _thread_exec(void* data)
 {
         struct thread_data* tdata = data;
-        Process* proc = tdata->proc;
+        Process* proc = tdata->proc_node->data;
 
         while (true) {
                 if (fifo_is_empty_ts(proc->fifo_in0)) {
@@ -224,7 +224,11 @@ void* _thread_exec(void* data)
                                 process_close(proc);
                                 break;
                         }
-                        fifo_wait_for_add(proc->fifo_in0);
+                        if (tdata->proc_node->is_root) {
+                                fifo_wait_for_add(proc->fifo_in0);
+                        } else { 
+                                fifo_wait_for_full(proc->fifo_in0);
+                        }
                         if (fifo_is_empty_ts(proc->fifo_in0)) {
                                 process_close(proc);
                                 break;
@@ -232,7 +236,7 @@ void* _thread_exec(void* data)
                 }
                 if (proc->fifo_in1) {
                         if (!fifo_is_empty_ts(proc->fifo_in1)) {
-                                fifo_wait_for_add(proc->fifo_in1);
+                                fifo_wait_for_full(proc->fifo_in1);
                         }
                 }
                 if (proc->fifo_out0) {
@@ -272,9 +276,10 @@ int process_exec_plan_thread(Plan* plan)
         for (; i < tdata_vec.size; ++i) {
                 struct thread_data* tdata = vec_at(&tdata_vec, i);
                 Dnode** proc_node = vec_at(proc_graph->nodes, i);
-                tdata->proc = (*proc_node)->data;
+                tdata->proc_node = *proc_node;
                 tdata->proc_graph = proc_graph;
-                if (pthread_create(&tdata->proc->thread, &attr, _thread_exec, tdata)) {
+                Process* proc = (*proc_node)->data;
+                if (pthread_create(&proc->thread, &attr, _thread_exec, tdata)) {
                         return FQL_FAIL;
                 }
         }
@@ -284,7 +289,8 @@ int process_exec_plan_thread(Plan* plan)
         void* status = NULL;
         for (i = 0; i < tdata_vec.size; ++i) {
                 struct thread_data* tdata = vec_at(&tdata_vec, i);
-                if (pthread_join(tdata->proc->thread, &status)) {
+                Process* proc = tdata->proc_node->data;
+                if (pthread_join(proc->thread, &status)) {
                         return FQL_FAIL;
                 }
         }
