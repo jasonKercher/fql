@@ -280,6 +280,32 @@ void _clear_passive(Plan* plan)
         }
 }
 
+/* Assign input counts to each process by traversing 
+ * and copying the visit_count. This important when
+ * threading because "is not full" is not a valid 
+ * test for whether we are allowed to send data
+ * into the pipe IF there is more than one input.
+ */
+void _assign_input_counts(Dgraph* proc_graph)
+{
+        while (dgraph_traverse(proc_graph));
+
+        Dnode** it = vec_begin(proc_graph->nodes);
+        for (; it != vec_end(proc_graph->nodes); ++it) {
+                /* This should be impossible */
+                if ((*it)->visit_count == 0) {
+                        return;
+                }
+                Process* proc = (*it)->data;
+                proc->fifo_in0->input_count = (*it)->visit_count;
+                if (proc->fifo_in1) {
+                        proc->fifo_in1->input_count = (*it)->visit_count;
+                }
+        }
+
+        dgraph_traverse_reset(proc_graph);
+}
+
 void _activate_procs(Plan* plan)
 {
         Vec* node_vec = plan->processes->nodes;
@@ -331,17 +357,12 @@ Plan* plan_build(Plan* plan, Query* query)
         _having(plan, query);
         _operation(plan, query);
         _limit(plan, query);
-
-        /* In case we don't have root process(es),
-         * this will assign *one*.
-         */
-        //dgraph_get_roots(plan->processes);
         _clear_passive(plan);
-
         /* Reset root vec after passive removed */
         dgraph_get_roots(plan->processes);
         _activate_procs(plan);
         _make_pipes(plan);
+        _assign_input_counts(plan->processes);
 
         return plan;
 }

@@ -17,9 +17,7 @@ void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
         Dnode** root_node = vec_at(proc_graph->_roots, index);
         Process* root = (*root_node)->data;
 
-        Record** a_rec = vec_at(recs, index);
-        unsigned rec_idx = (*a_rec)->idx;
-        Vec* proc_recs = vec_at(root->records, rec_idx);
+        Vec* proc_recs = vec_at(root->records, (*rec)->idx);
 
         if (root->action__ == fql_read && fifo_is_open_ts(root->fifo_in0)) {
                 fifo_recycle_ts(root->fifo_in0, &proc_recs);
