@@ -1,0 +1,2 @@
+The following throws ambiguous column foo
+fql <<< "select * from t3 t1 join t2 on t1.foo = t2.foo"
