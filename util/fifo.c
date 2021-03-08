@@ -12,7 +12,7 @@ Fifo* fifo_new(size_t elem_size, size_t buf_size)
 
 Fifo* fifo_construct(Fifo* fifo, size_t elem_size, size_t buf_size)
 {
-        /* Fifo requires a buffer of atleast size 1 */
+        /* Fifo requires a buffer of atleast size 2 */
         if (buf_size <= 1) {
                 buf_size = 2;
         }

@@ -23,6 +23,7 @@ Process* process_construct(Process* proc, const char* action, int width)
 {
         *proc = (Process) {
                  0                              /* thread */
+                ,NULL                           /* records */
                 ,&fql_no_op                     /* action__ */
                 ,NULL                           /* fifo_in0 */
                 ,NULL                           /* fifo_in1 */
@@ -40,31 +41,31 @@ Process* process_construct(Process* proc, const char* action, int width)
 
 void process_node_free(Dnode* proc_node)
 {
-        if (!proc_node->is_root) {
-                process_free(proc_node->data);
-                return;
-        }
-        Process* proc = proc_node->data;
-        if (proc->fifo_in0 != NULL) {
-                Vec** it = vec_begin(proc->fifo_in0->buf); /* vec_(Vec*) */
-                for (; it != vec_end(proc->fifo_in0->buf); ++it) {
-                        Record** it2 = vec_begin(*it); /* vec_(Record*) */
-                        for (; it2 != vec_end(*it); ++it2) {
-                                record_free(*it2);
-                        }
-                        //vec_free(*it);
-                }
-        }
-        if (proc->fifo_in1 != NULL) {
-                Vec** it = vec_begin(proc->fifo_in1->buf); /* vec_(Vec*) */
-                for (; it != vec_end(proc->fifo_in1->buf); ++it) {
-                        Record** it2 = vec_begin(*it); /* vec_(Record*) */
-                        for (; it2 != vec_end(*it); ++it2) {
-                                record_free(*it2);
-                        }
-                        //vec_free(*it);
-                }
-        }
+        //if (!proc_node->is_root) {
+        //        process_free(proc_node->data);
+        //        return;
+        //}
+        //Process* proc = proc_node->data;
+        //if (proc->fifo_in0 != NULL) {
+        //        Vec** it = vec_begin(proc->fifo_in0->buf); /* vec_(Vec*) */
+        //        for (; it != vec_end(proc->fifo_in0->buf); ++it) {
+        //                Record** it2 = vec_begin(*it); /* vec_(Record*) */
+        //                for (; it2 != vec_end(*it); ++it2) {
+        //                        record_free(*it2);
+        //                }
+        //                //vec_free(*it);
+        //        }
+        //}
+        //if (proc->fifo_in1 != NULL) {
+        //        Vec** it = vec_begin(proc->fifo_in1->buf); /* vec_(Vec*) */
+        //        for (; it != vec_end(proc->fifo_in1->buf); ++it) {
+        //                Record** it2 = vec_begin(*it); /* vec_(Record*) */
+        //                for (; it2 != vec_end(*it); ++it2) {
+        //                        record_free(*it2);
+        //                }
+        //                //vec_free(*it);
+        //        }
+        //}
         process_free(proc_node->data);
 }
 
@@ -94,19 +95,38 @@ void process_activate(Dnode* proc_node)
                 field_count = reader->max_col_idx + 1;
         }
 
-        /* If root, it will own the vector of StringViews */
-        Vec* buf = proc->fifo_in0->buf;
-        Vec** recs = vec_begin(buf);
-        for (; recs != vec_end(buf); ++recs) {
-                *recs = vec_new_(Vec*);
-                vec_resize(*recs, proc->fifo_width);
+        proc->records = vec_new_(Vec);
+        vec_resize(proc->records, 256);
 
-                Record** rec = vec_begin(*recs);
-                for (; rec != vec_end(*recs); ++rec) {
-                        *rec = record_new();
-                        vec_resize((*rec)->fields, field_count);
-                }
+        int i = 0;
+
+        /* If root, it will own the vector of Records */
+        Vec* buf = proc->fifo_in0->buf;
+        for (; i < proc->records->size; ++i) {
+                Vec* new_recs = vec_at(proc->records, i);
+                vec_construct_(new_recs, Record*);
+                vec_resize(new_recs, proc->fifo_width);
+                
+                Record** new_rec = vec_back(new_recs);
+                *new_rec = record_new(i);
+                vec_resize((*new_rec)->fields, field_count);
+
+                Vec** recs = vec_at(buf, i);
+                *recs = new_recs;
         }
+
+        //Vec* buf = proc->fifo_in0->buf;
+        //Vec** recs = vec_begin(buf);
+        //for (; recs != vec_end(buf); ++recs) {
+        //        *recs = vec_new_(Vec*);
+        //        vec_resize(*recs, proc->fifo_width);
+
+        //        Record** rec = vec_begin(*recs);
+        //        for (; rec != vec_end(*recs); ++rec) {
+        //                *rec = record_new();
+        //                vec_resize((*rec)->fields, field_count);
+        //        }
+        //}
 
         fifo_advance(proc->fifo_in0);
 }

@@ -11,12 +11,13 @@ struct record {
         struct csv_record* libcsv_rec;
         String* rec_cpy;
         StringView rec_raw;
+        unsigned idx;
         int ref_count;
 };
 typedef struct record Record;
 
-struct record* record_new();
-struct record* record_construct(struct record*);
+struct record* record_new(unsigned idx);
+struct record* record_construct(struct record*, unsigned idx);
 void record_free(struct record*);
 void record_destroy(struct record*);
 

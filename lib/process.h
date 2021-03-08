@@ -15,6 +15,7 @@ typedef int (process_fn)(struct dgraph*, struct process*);
 
 struct process {
         pthread_t thread;               /* pthread handle */
+        struct vec* records;            /* This is the owned record data for roots */
         process_fn* action__;           /* function pointer for process */
         Fifo* fifo_in0;                 /* ring buffer of records */
         Fifo* fifo_in1;                 /* optional second input */

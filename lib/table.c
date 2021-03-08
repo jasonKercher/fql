@@ -135,7 +135,7 @@ size_t _guess_row_count(Source* src)
         reader->max_col_idx = 0;
 
         Record rec;
-        record_construct(&rec);
+        record_construct(&rec, 0);
 
         int i = 0;
         for (; i < 10; ++i) {

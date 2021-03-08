@@ -206,7 +206,7 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 
         int ret = process_step(plan);
         if (ret == 0) {
-                plan_destroy(plan);
+                //plan_destroy(plan);
                 vec_remove(fql->plan_vec, 0);
 
                 Query* query = queue_dequeue(&fql->query_list);

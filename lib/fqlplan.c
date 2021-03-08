@@ -37,7 +37,6 @@ Plan* plan_construct(Plan* plan, int source_total)
                 ,NULL                                              /* current */
                 ,0                                                 /* rows_affected */
                 ,0                                                 /* source_count */
-                ,source_total                                      /* source_total */
                 ,false                                             /* has_stepped */
         };
 
@@ -155,8 +154,7 @@ void _from(Plan* plan, Query* query)
                        src->table->reader->file_name.data,
                        "stream read");
 
-        ++plan->source_count;
-        Process* from_proc = process_new(action_msg.data, plan->source_count);
+        Process* from_proc = process_new(action_msg.data, ++plan->source_count);
         src->read_proc = from_proc;
         from_proc->action__ = &fql_read;
         from_proc->proc_data = src->table->reader;

@@ -212,7 +212,7 @@ int schema_resolve_source(Source* source)
         reader_assign(table->reader);
 
         Record rec;
-        record_construct(&rec);
+        record_construct(&rec, 0);
         table->reader->max_col_idx = INT_MAX;
         table->reader->get_record__(table->reader, &rec);
         char* delim = reader_get_delim(table->reader);
