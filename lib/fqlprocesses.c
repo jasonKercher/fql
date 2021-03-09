@@ -41,11 +41,6 @@ void _recycle_recs(Dgraph* proc_graph, Vec* recs, int width)
 
 void _advance_specific(Dgraph* proc_graph, int index)
 {
-        //if (index == 0) {
-        //        Dnode** root_node = vec_begin(proc_graph->_roots);
-        //        process_close((*root_node)->data);
-        //        return;
-        //}
         Dnode** root_node = vec_at(proc_graph->_roots, index);
         Process* root = (*root_node)->data;
         if (root->action__ == fql_read && fifo_is_open_ts(root->fifo_in0)) {

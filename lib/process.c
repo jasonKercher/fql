@@ -115,20 +115,16 @@ void process_activate(Dnode* proc_node)
                 *recs = new_recs;
         }
 
-        //Vec* buf = proc->fifo_in0->buf;
-        //Vec** recs = vec_begin(buf);
-        //for (; recs != vec_end(buf); ++recs) {
-        //        *recs = vec_new_(Vec*);
-        //        vec_resize(*recs, proc->fifo_width);
-
-        //        Record** rec = vec_begin(*recs);
-        //        for (; rec != vec_end(*recs); ++rec) {
-        //                *rec = record_new();
-        //                vec_resize((*rec)->fields, field_count);
-        //        }
-        //}
-
-        fifo_advance(proc->fifo_in0);
+        /* TODO: once we stop hard coding fifo size,
+         *       this if block can go.
+         */
+        if (proc->action__ != &fql_read) {
+                fifo_advance(proc->fifo_in0);
+                return;
+        }
+        while (!fifo_is_full(proc->fifo_in0)) {
+                fifo_advance(proc->fifo_in0);
+        }
 }
 
 void process_add_second_input(Process* proc)
@@ -235,8 +231,8 @@ void* _thread_exec(void* data)
                         }
                 }
                 if (proc->fifo_in1) {
-                        if (!fifo_is_empty_ts(proc->fifo_in1)) {
-                                fifo_wait_for_full(proc->fifo_in1);
+                        if (fifo_is_empty_ts(proc->fifo_in1)) {
+                                fifo_wait_for_add(proc->fifo_in1);
                         }
                 }
                 if (proc->fifo_out0) {
@@ -246,7 +242,7 @@ void* _thread_exec(void* data)
                 }
                 if (proc->fifo_out1) {
                         while (!fifo_is_receivable_ts(proc->fifo_out1)) {
-                                fifo_wait_for_get(proc->fifo_out0);
+                                fifo_wait_for_get(proc->fifo_out1);
                         }
                 }
                 int ret = proc->action__(tdata->proc_graph, proc);
