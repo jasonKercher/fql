@@ -17,7 +17,7 @@ struct fifo {
         pthread_mutex_t open_mutex;
         pthread_cond_t cond_add;
         pthread_cond_t cond_get;
-        pthread_cond_t cond_full;
+        pthread_cond_t cond_half;
         size_t head;
         size_t tail;
         unsigned input_count;
@@ -43,12 +43,15 @@ size_t fifo_available(struct fifo*);
 size_t fifo_available_ts(struct fifo*);
 _Bool fifo_is_empty(struct fifo*);
 _Bool fifo_is_empty_ts(struct fifo*);
+_Bool fifo_is_over_half(struct fifo*);
+_Bool fifo_is_over_half_ts(struct fifo*);
 _Bool fifo_is_full(struct fifo*);
 _Bool fifo_is_full_ts(struct fifo*);
 _Bool fifo_is_open(struct fifo*);
 _Bool fifo_is_open_ts(struct fifo*);
 _Bool fifo_is_receivable(struct fifo*);
 _Bool fifo_is_receivable_ts(struct fifo*);
+void fifo_set_full(struct fifo*);
 void* fifo_get(struct fifo*);
 void* fifo_get_ts(struct fifo*);
 void* fifo_peek(struct fifo*);
@@ -66,7 +69,7 @@ int fifo_advance_ts(struct fifo*);
 /* thread conditions */
 void fifo_wait_for_add(struct fifo*);
 void fifo_wait_for_get(struct fifo*);
-void fifo_wait_for_full(struct fifo*);
+void fifo_wait_for_half(struct fifo*);
 
 
 #endif  /* CIRCLE_H */

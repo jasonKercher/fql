@@ -39,15 +39,6 @@ void _recycle_recs(Dgraph* proc_graph, Vec* recs, int width)
         }
 }
 
-void _advance_specific(Dgraph* proc_graph, int index)
-{
-        Dnode** root_node = vec_at(proc_graph->_roots, index);
-        Process* root = (*root_node)->data;
-        if (root->action__ == fql_read && fifo_is_open_ts(root->fifo_in0)) {
-                fifo_advance_ts(root->fifo_in0);
-        }
-}
-
 int fql_read(Dgraph* proc_graph, Process* proc)
 {
         Reader* reader = proc->proc_data;
@@ -210,7 +201,6 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
         if (fifo_is_empty_ts(proc->fifo_in1) && hj->state == SIDE_RIGHT) {
                 if (!fifo_is_open_ts(proc->fifo_in1)) {
                         hj->state = SIDE_LEFT;
-                        _advance_specific(proc_graph, proc->fifo_width-1);
                         return 1;
                 } else {
                         return 0;
