@@ -1,5 +1,5 @@
 
-// Generated from grammar/TSqlLexer.g4 by ANTLR 4.7.2
+// Generated from grammar/TSqlLexer.g4 by ANTLR 4.9.1
 
 #pragma once
 
@@ -203,7 +203,7 @@ public:
     BIT_NOT = 864, BIT_OR = 865, BIT_AND = 866, BIT_XOR = 867, IPV4_OCTECT = 868
   };
 
-  TSqlLexer(antlr4::CharStream *input);
+  explicit TSqlLexer(antlr4::CharStream *input);
   ~TSqlLexer();
 
   virtual std::string getGrammarFileName() const override;

@@ -1,5 +1,5 @@
 
-// Generated from grammar/TSqlParser.g4 by ANTLR 4.7.2
+// Generated from grammar/TSqlParser.g4 by ANTLR 4.9.1
 
 #pragma once
 
@@ -381,7 +381,7 @@ public:
     RuleFile_size = 486
   };
 
-  TSqlParser(antlr4::TokenStream *input);
+  explicit TSqlParser(antlr4::TokenStream *input);
   ~TSqlParser();
 
   virtual std::string getGrammarFileName() const override;
@@ -1331,8 +1331,8 @@ public:
 
   class  Try_catch_statementContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Sql_clausesContext *try_clauses = nullptr;;
-    TSqlParser::Sql_clausesContext *catch_clauses = nullptr;;
+    TSqlParser::Sql_clausesContext *try_clauses = nullptr;
+    TSqlParser::Sql_clausesContext *catch_clauses = nullptr;
     Try_catch_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> BEGIN();
@@ -1416,11 +1416,11 @@ public:
 
   class  Raiseerror_statementContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *msg = nullptr;;
-    TSqlParser::Constant_LOCAL_IDContext *severity = nullptr;;
-    TSqlParser::Constant_LOCAL_IDContext *state = nullptr;;
-    antlr4::Token *formatstring = nullptr;;
-    antlr4::Token *argument = nullptr;;
+    antlr4::Token *msg = nullptr;
+    TSqlParser::Constant_LOCAL_IDContext *severity = nullptr;
+    TSqlParser::Constant_LOCAL_IDContext *state = nullptr;
+    antlr4::Token *formatstring = nullptr;
+    antlr4::Token *argument = nullptr;
     Raiseerror_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *RAISERROR();
@@ -1492,10 +1492,10 @@ public:
 
   class  Alter_application_roleContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *appliction_role = nullptr;;
-    TSqlParser::IdContext *new_application_role_name = nullptr;;
-    antlr4::Token *application_role_password = nullptr;;
-    TSqlParser::IdContext *app_role_default_schema = nullptr;;
+    TSqlParser::IdContext *appliction_role = nullptr;
+    TSqlParser::IdContext *new_application_role_name = nullptr;
+    antlr4::Token *application_role_password = nullptr;
+    TSqlParser::IdContext *app_role_default_schema = nullptr;
     Alter_application_roleContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -1522,9 +1522,9 @@ public:
 
   class  Create_application_roleContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *appliction_role = nullptr;;
-    antlr4::Token *application_role_password = nullptr;;
-    TSqlParser::IdContext *app_role_default_schema = nullptr;;
+    TSqlParser::IdContext *appliction_role = nullptr;
+    antlr4::Token *application_role_password = nullptr;
+    TSqlParser::IdContext *app_role_default_schema = nullptr;
     Create_application_roleContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -1550,8 +1550,8 @@ public:
 
   class  Drop_aggregateContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *aggregate_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *aggregate_name = nullptr;
     Drop_aggregateContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -1571,7 +1571,7 @@ public:
 
   class  Drop_application_roleContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *rolename = nullptr;;
+    TSqlParser::IdContext *rolename = nullptr;
     Drop_application_roleContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -1588,7 +1588,7 @@ public:
 
   class  Alter_assemblyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *assembly_name = nullptr;;
+    TSqlParser::IdContext *assembly_name = nullptr;
     Alter_assemblyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Alter_assembly_startContext *alter_assembly_start();
@@ -1868,7 +1868,7 @@ public:
 
   class  Network_computerContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *computer_name = nullptr;;
+    TSqlParser::IdContext *computer_name = nullptr;
     Network_computerContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     IdContext *id();
@@ -1979,8 +1979,8 @@ public:
 
   class  Create_assemblyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *assembly_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
+    TSqlParser::IdContext *assembly_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
     Create_assemblyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -2011,7 +2011,7 @@ public:
 
   class  Drop_assemblyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *assembly_name = nullptr;;
+    TSqlParser::IdContext *assembly_name = nullptr;
     Drop_assemblyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2035,7 +2035,7 @@ public:
 
   class  Alter_asymmetric_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *Asym_Key_Name = nullptr;;
+    TSqlParser::IdContext *Asym_Key_Name = nullptr;
     Alter_asymmetric_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Alter_asymmetric_key_startContext *alter_asymmetric_key_start();
@@ -2120,12 +2120,12 @@ public:
 
   class  Create_asymmetric_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *Asym_Key_Nam = nullptr;;
-    TSqlParser::IdContext *database_principal_name = nullptr;;
-    TSqlParser::IdContext *Assembly_Name = nullptr;;
-    TSqlParser::IdContext *Provider_Name = nullptr;;
-    antlr4::Token *provider_key_name = nullptr;;
-    antlr4::Token *asymmetric_key_password = nullptr;;
+    TSqlParser::IdContext *Asym_Key_Nam = nullptr;
+    TSqlParser::IdContext *database_principal_name = nullptr;
+    TSqlParser::IdContext *Assembly_Name = nullptr;
+    TSqlParser::IdContext *Provider_Name = nullptr;
+    antlr4::Token *provider_key_name = nullptr;
+    antlr4::Token *asymmetric_key_password = nullptr;
     Create_asymmetric_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -2167,7 +2167,7 @@ public:
 
   class  Drop_asymmetric_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *key_name = nullptr;;
+    TSqlParser::IdContext *key_name = nullptr;
     Drop_asymmetric_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2187,7 +2187,7 @@ public:
 
   class  Alter_authorizationContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Entity_nameContext *entity = nullptr;;
+    TSqlParser::Entity_nameContext *entity = nullptr;
     Alter_authorizationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Alter_authorization_startContext *alter_authorization_start();
@@ -2206,7 +2206,7 @@ public:
 
   class  Authorization_granteeContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *principal_name = nullptr;;
+    TSqlParser::IdContext *principal_name = nullptr;
     Authorization_granteeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     IdContext *id();
@@ -2264,7 +2264,7 @@ public:
 
   class  Alter_authorization_for_sql_databaseContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Entity_nameContext *entity = nullptr;;
+    TSqlParser::Entity_nameContext *entity = nullptr;
     Alter_authorization_for_sql_databaseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Alter_authorization_startContext *alter_authorization_start();
@@ -2283,7 +2283,7 @@ public:
 
   class  Alter_authorization_for_azure_dwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Entity_name_for_azure_dwContext *entity = nullptr;;
+    TSqlParser::Entity_name_for_azure_dwContext *entity = nullptr;
     Alter_authorization_for_azure_dwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Alter_authorization_startContext *alter_authorization_start();
@@ -2302,7 +2302,7 @@ public:
 
   class  Alter_authorization_for_parallel_dwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Entity_name_for_parallel_dwContext *entity = nullptr;;
+    TSqlParser::Entity_name_for_parallel_dwContext *entity = nullptr;
     Alter_authorization_for_parallel_dwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Alter_authorization_startContext *alter_authorization_start();
@@ -2420,7 +2420,7 @@ public:
 
   class  Drop_availability_groupContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *group_name = nullptr;;
+    TSqlParser::IdContext *group_name = nullptr;
     Drop_availability_groupContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2451,7 +2451,7 @@ public:
 
   class  Alter_availability_group_startContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *group_name = nullptr;;
+    TSqlParser::IdContext *group_name = nullptr;
     Alter_availability_group_startContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -2468,13 +2468,13 @@ public:
 
   class  Alter_availability_group_optionsContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *milliseconds = nullptr;;
-    TSqlParser::IdContext *database_name = nullptr;;
-    antlr4::Token *server_instance = nullptr;;
-    antlr4::Token *session_timeout = nullptr;;
-    antlr4::Token *ag_name = nullptr;;
-    antlr4::Token *ag_name_modified = nullptr;;
-    antlr4::Token *listener_name = nullptr;;
+    antlr4::Token *milliseconds = nullptr;
+    TSqlParser::IdContext *database_name = nullptr;
+    antlr4::Token *server_instance = nullptr;
+    antlr4::Token *session_timeout = nullptr;
+    antlr4::Token *ag_name = nullptr;
+    antlr4::Token *ag_name_modified = nullptr;
+    antlr4::Token *listener_name = nullptr;
     Alter_availability_group_optionsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *SET();
@@ -2567,9 +2567,9 @@ public:
 
   class  Create_or_alter_broker_priorityContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *ConversationPriorityName = nullptr;;
-    antlr4::Token *RemoteServiceName = nullptr;;
-    antlr4::Token *PriorityValue = nullptr;;
+    TSqlParser::IdContext *ConversationPriorityName = nullptr;
+    antlr4::Token *RemoteServiceName = nullptr;
+    antlr4::Token *PriorityValue = nullptr;
     Create_or_alter_broker_priorityContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *BROKER();
@@ -2607,7 +2607,7 @@ public:
 
   class  Drop_broker_priorityContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *ConversationPriorityName = nullptr;;
+    TSqlParser::IdContext *ConversationPriorityName = nullptr;
     Drop_broker_priorityContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2624,7 +2624,7 @@ public:
 
   class  Alter_certificateContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *certificate_name = nullptr;;
+    TSqlParser::IdContext *certificate_name = nullptr;
     Alter_certificateContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -2668,9 +2668,9 @@ public:
 
   class  Alter_column_encryption_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *column_encryption_key = nullptr;;
-    TSqlParser::IdContext *column_master_key_name = nullptr;;
-    antlr4::Token *algorithm_name = nullptr;;
+    TSqlParser::IdContext *column_encryption_key = nullptr;
+    TSqlParser::IdContext *column_master_key_name = nullptr;
+    antlr4::Token *algorithm_name = nullptr;
     Alter_column_encryption_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -2703,10 +2703,10 @@ public:
 
   class  Create_column_encryption_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *column_encryption_key = nullptr;;
-    TSqlParser::IdContext *column_master_key_name = nullptr;;
-    antlr4::Token *algorithm_name = nullptr;;
-    antlr4::Token *encrypted_value = nullptr;;
+    TSqlParser::IdContext *column_encryption_key = nullptr;
+    TSqlParser::IdContext *column_master_key_name = nullptr;
+    antlr4::Token *algorithm_name = nullptr;
+    antlr4::Token *encrypted_value = nullptr;
     Create_column_encryption_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -2745,7 +2745,7 @@ public:
 
   class  Drop_certificateContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *certificate_name = nullptr;;
+    TSqlParser::IdContext *certificate_name = nullptr;
     Drop_certificateContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2761,7 +2761,7 @@ public:
 
   class  Drop_column_encryption_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *key_name = nullptr;;
+    TSqlParser::IdContext *key_name = nullptr;
     Drop_column_encryption_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2779,7 +2779,7 @@ public:
 
   class  Drop_column_master_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *key_name = nullptr;;
+    TSqlParser::IdContext *key_name = nullptr;
     Drop_column_master_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2797,7 +2797,7 @@ public:
 
   class  Drop_contractContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *dropped_contract_name = nullptr;;
+    TSqlParser::IdContext *dropped_contract_name = nullptr;
     Drop_contractContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2813,7 +2813,7 @@ public:
 
   class  Drop_credentialContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *credential_name = nullptr;;
+    TSqlParser::IdContext *credential_name = nullptr;
     Drop_credentialContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2829,7 +2829,7 @@ public:
 
   class  Drop_cryptograhic_providerContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *provider_name = nullptr;;
+    TSqlParser::IdContext *provider_name = nullptr;
     Drop_cryptograhic_providerContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2846,7 +2846,7 @@ public:
 
   class  Drop_databaseContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *database_name_or_database_snapshot_name = nullptr;;
+    TSqlParser::IdContext *database_name_or_database_snapshot_name = nullptr;
     Drop_databaseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2867,7 +2867,7 @@ public:
 
   class  Drop_database_audit_specificationContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *audit_specification_name = nullptr;;
+    TSqlParser::IdContext *audit_specification_name = nullptr;
     Drop_database_audit_specificationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2885,7 +2885,7 @@ public:
 
   class  Drop_database_scoped_credentialContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *credential_name = nullptr;;
+    TSqlParser::IdContext *credential_name = nullptr;
     Drop_database_scoped_credentialContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2903,8 +2903,8 @@ public:
 
   class  Drop_defaultContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *default_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *default_name = nullptr;
     Drop_defaultContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2925,7 +2925,7 @@ public:
 
   class  Drop_endpointContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *endPointName = nullptr;;
+    TSqlParser::IdContext *endPointName = nullptr;
     Drop_endpointContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2941,7 +2941,7 @@ public:
 
   class  Drop_external_data_sourceContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *external_data_source_name = nullptr;;
+    TSqlParser::IdContext *external_data_source_name = nullptr;
     Drop_external_data_sourceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2959,7 +2959,7 @@ public:
 
   class  Drop_external_file_formatContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *external_file_format_name = nullptr;;
+    TSqlParser::IdContext *external_file_format_name = nullptr;
     Drop_external_file_formatContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2977,8 +2977,8 @@ public:
 
   class  Drop_external_libraryContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *library_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
+    TSqlParser::IdContext *library_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
     Drop_external_libraryContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -2997,7 +2997,7 @@ public:
 
   class  Drop_external_resource_poolContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *pool_name = nullptr;;
+    TSqlParser::IdContext *pool_name = nullptr;
     Drop_external_resource_poolContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3015,9 +3015,9 @@ public:
 
   class  Drop_external_tableContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *database_name = nullptr;;
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *table = nullptr;;
+    TSqlParser::IdContext *database_name = nullptr;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *table = nullptr;
     Drop_external_tableContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3037,8 +3037,8 @@ public:
 
   class  Drop_event_notificationsContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *notification_name = nullptr;;
-    TSqlParser::IdContext *queue_name = nullptr;;
+    TSqlParser::IdContext *notification_name = nullptr;
+    TSqlParser::IdContext *queue_name = nullptr;
     Drop_event_notificationsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3062,7 +3062,7 @@ public:
 
   class  Drop_event_sessionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *event_session_name = nullptr;;
+    TSqlParser::IdContext *event_session_name = nullptr;
     Drop_event_sessionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3081,7 +3081,7 @@ public:
 
   class  Drop_fulltext_catalogContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *catalog_name = nullptr;;
+    TSqlParser::IdContext *catalog_name = nullptr;
     Drop_fulltext_catalogContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3098,8 +3098,8 @@ public:
 
   class  Drop_fulltext_indexContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema = nullptr;;
-    TSqlParser::IdContext *table = nullptr;;
+    TSqlParser::IdContext *schema = nullptr;
+    TSqlParser::IdContext *table = nullptr;
     Drop_fulltext_indexContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3119,7 +3119,7 @@ public:
 
   class  Drop_fulltext_stoplistContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *stoplist_name = nullptr;;
+    TSqlParser::IdContext *stoplist_name = nullptr;
     Drop_fulltext_stoplistContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3136,7 +3136,7 @@ public:
 
   class  Drop_loginContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *login_name = nullptr;;
+    TSqlParser::IdContext *login_name = nullptr;
     Drop_loginContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3167,7 +3167,7 @@ public:
 
   class  Drop_message_typeContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *message_type_name = nullptr;;
+    TSqlParser::IdContext *message_type_name = nullptr;
     Drop_message_typeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3184,7 +3184,7 @@ public:
 
   class  Drop_partition_functionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *partition_function_name = nullptr;;
+    TSqlParser::IdContext *partition_function_name = nullptr;
     Drop_partition_functionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3201,7 +3201,7 @@ public:
 
   class  Drop_partition_schemeContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *partition_scheme_name = nullptr;;
+    TSqlParser::IdContext *partition_scheme_name = nullptr;
     Drop_partition_schemeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3218,9 +3218,9 @@ public:
 
   class  Drop_queueContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *database_name = nullptr;;
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *queue_name = nullptr;;
+    TSqlParser::IdContext *database_name = nullptr;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *queue_name = nullptr;
     Drop_queueContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3239,7 +3239,7 @@ public:
 
   class  Drop_remote_service_bindingContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *binding_name = nullptr;;
+    TSqlParser::IdContext *binding_name = nullptr;
     Drop_remote_service_bindingContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3257,7 +3257,7 @@ public:
 
   class  Drop_resource_poolContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *pool_name = nullptr;;
+    TSqlParser::IdContext *pool_name = nullptr;
     Drop_resource_poolContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3274,7 +3274,7 @@ public:
 
   class  Drop_db_roleContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *role_name = nullptr;;
+    TSqlParser::IdContext *role_name = nullptr;
     Drop_db_roleContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3292,7 +3292,7 @@ public:
 
   class  Drop_routeContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *route_name = nullptr;;
+    TSqlParser::IdContext *route_name = nullptr;
     Drop_routeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3308,8 +3308,8 @@ public:
 
   class  Drop_ruleContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *rule_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *rule_name = nullptr;
     Drop_ruleContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3330,7 +3330,7 @@ public:
 
   class  Drop_schemaContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
     Drop_schemaContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3348,7 +3348,7 @@ public:
 
   class  Drop_search_property_listContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *property_list_name = nullptr;;
+    TSqlParser::IdContext *property_list_name = nullptr;
     Drop_search_property_listContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3366,8 +3366,8 @@ public:
 
   class  Drop_security_policyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *security_policy_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *security_policy_name = nullptr;
     Drop_security_policyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3388,9 +3388,9 @@ public:
 
   class  Drop_sequenceContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *database_name = nullptr;;
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *sequence_name = nullptr;;
+    TSqlParser::IdContext *database_name = nullptr;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *sequence_name = nullptr;
     Drop_sequenceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3412,7 +3412,7 @@ public:
 
   class  Drop_server_auditContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *audit_name = nullptr;;
+    TSqlParser::IdContext *audit_name = nullptr;
     Drop_server_auditContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3429,7 +3429,7 @@ public:
 
   class  Drop_server_audit_specificationContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *audit_specification_name = nullptr;;
+    TSqlParser::IdContext *audit_specification_name = nullptr;
     Drop_server_audit_specificationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3447,7 +3447,7 @@ public:
 
   class  Drop_server_roleContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *role_name = nullptr;;
+    TSqlParser::IdContext *role_name = nullptr;
     Drop_server_roleContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3464,7 +3464,7 @@ public:
 
   class  Drop_serviceContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *dropped_service_name = nullptr;;
+    TSqlParser::IdContext *dropped_service_name = nullptr;
     Drop_serviceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3480,10 +3480,10 @@ public:
 
   class  Drop_signatureContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *module_name = nullptr;;
-    TSqlParser::IdContext *cert_name = nullptr;;
-    TSqlParser::IdContext *Asym_key_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *module_name = nullptr;
+    TSqlParser::IdContext *cert_name = nullptr;
+    TSqlParser::IdContext *Asym_key_name = nullptr;
     Drop_signatureContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3512,9 +3512,9 @@ public:
 
   class  Drop_statistics_name_azure_dw_and_pdwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *object_name = nullptr;;
-    TSqlParser::IdContext *statistics_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *object_name = nullptr;
+    TSqlParser::IdContext *statistics_name = nullptr;
     Drop_statistics_name_azure_dw_and_pdwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3533,7 +3533,7 @@ public:
 
   class  Drop_symmetric_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *symmetric_key_name = nullptr;;
+    TSqlParser::IdContext *symmetric_key_name = nullptr;
     Drop_symmetric_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3553,8 +3553,8 @@ public:
 
   class  Drop_synonymContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema = nullptr;;
-    TSqlParser::IdContext *synonym_name = nullptr;;
+    TSqlParser::IdContext *schema = nullptr;
+    TSqlParser::IdContext *synonym_name = nullptr;
     Drop_synonymContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3574,7 +3574,7 @@ public:
 
   class  Drop_userContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *user_name = nullptr;;
+    TSqlParser::IdContext *user_name = nullptr;
     Drop_userContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3592,7 +3592,7 @@ public:
 
   class  Drop_workload_groupContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *group_name = nullptr;;
+    TSqlParser::IdContext *group_name = nullptr;
     Drop_workload_groupContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3609,8 +3609,8 @@ public:
 
   class  Drop_xml_schema_collectionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *relational_schema = nullptr;;
-    TSqlParser::IdContext *sql_identifier = nullptr;;
+    TSqlParser::IdContext *relational_schema = nullptr;
+    TSqlParser::IdContext *sql_identifier = nullptr;
     Drop_xml_schema_collectionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -3630,10 +3630,10 @@ public:
 
   class  Disable_triggerContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *trigger_name = nullptr;;
-    TSqlParser::IdContext *schema_id = nullptr;;
-    TSqlParser::IdContext *object_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *trigger_name = nullptr;
+    TSqlParser::IdContext *schema_id = nullptr;
+    TSqlParser::IdContext *object_name = nullptr;
     Disable_triggerContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DISABLE();
@@ -3659,10 +3659,10 @@ public:
 
   class  Enable_triggerContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *trigger_name = nullptr;;
-    TSqlParser::IdContext *schema_id = nullptr;;
-    TSqlParser::IdContext *object_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *trigger_name = nullptr;
+    TSqlParser::IdContext *schema_id = nullptr;
+    TSqlParser::IdContext *object_name = nullptr;
     Enable_triggerContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ENABLE();
@@ -3688,7 +3688,7 @@ public:
 
   class  Lock_tableContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *seconds = nullptr;;
+    antlr4::Token *seconds = nullptr;
     Lock_tableContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LOCK();
@@ -3739,9 +3739,9 @@ public:
 
   class  Create_column_master_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *key_name = nullptr;;
-    antlr4::Token *key_store_provider_name = nullptr;;
-    antlr4::Token *key_path = nullptr;;
+    TSqlParser::IdContext *key_name = nullptr;
+    antlr4::Token *key_store_provider_name = nullptr;
+    antlr4::Token *key_path = nullptr;
     Create_column_master_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -3769,9 +3769,9 @@ public:
 
   class  Alter_credentialContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *credential_name = nullptr;;
-    antlr4::Token *identity_name = nullptr;;
-    antlr4::Token *secret = nullptr;;
+    TSqlParser::IdContext *credential_name = nullptr;
+    antlr4::Token *identity_name = nullptr;
+    antlr4::Token *secret = nullptr;
     Alter_credentialContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -3795,10 +3795,10 @@ public:
 
   class  Create_credentialContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *credential_name = nullptr;;
-    antlr4::Token *identity_name = nullptr;;
-    antlr4::Token *secret = nullptr;;
-    TSqlParser::IdContext *cryptographic_provider_name = nullptr;;
+    TSqlParser::IdContext *credential_name = nullptr;
+    antlr4::Token *identity_name = nullptr;
+    antlr4::Token *secret = nullptr;
+    TSqlParser::IdContext *cryptographic_provider_name = nullptr;
     Create_credentialContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -3826,8 +3826,8 @@ public:
 
   class  Alter_cryptographic_providerContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *provider_name = nullptr;;
-    antlr4::Token *crypto_provider_ddl_file = nullptr;;
+    TSqlParser::IdContext *provider_name = nullptr;
+    antlr4::Token *crypto_provider_ddl_file = nullptr;
     Alter_cryptographic_providerContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -3850,8 +3850,8 @@ public:
 
   class  Create_cryptographic_providerContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *provider_name = nullptr;;
-    antlr4::Token *path_of_DLL = nullptr;;
+    TSqlParser::IdContext *provider_name = nullptr;
+    antlr4::Token *path_of_DLL = nullptr;
     Create_cryptographic_providerContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -3872,11 +3872,11 @@ public:
 
   class  Create_event_notificationContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *event_notification_name = nullptr;;
-    TSqlParser::IdContext *queue_name = nullptr;;
-    TSqlParser::IdContext *event_type_or_group = nullptr;;
-    antlr4::Token *broker_service = nullptr;;
-    antlr4::Token *broker_service_specifier_or_current_database = nullptr;;
+    TSqlParser::IdContext *event_notification_name = nullptr;
+    TSqlParser::IdContext *queue_name = nullptr;
+    TSqlParser::IdContext *event_type_or_group = nullptr;
+    antlr4::Token *broker_service = nullptr;
+    antlr4::Token *broker_service_specifier_or_current_database = nullptr;
     Create_event_notificationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -3907,17 +3907,17 @@ public:
 
   class  Create_or_alter_event_sessionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *event_session_name = nullptr;;
-    TSqlParser::IdContext *event_module_guid = nullptr;;
-    TSqlParser::IdContext *event_package_name = nullptr;;
-    TSqlParser::IdContext *event_name = nullptr;;
-    TSqlParser::IdContext *event_customizable_attributue = nullptr;;
-    TSqlParser::IdContext *action_name = nullptr;;
-    TSqlParser::IdContext *target_name = nullptr;;
-    TSqlParser::IdContext *target_parameter_name = nullptr;;
-    antlr4::Token *max_memory = nullptr;;
-    antlr4::Token *max_dispatch_latency_seconds = nullptr;;
-    antlr4::Token *max_event_size = nullptr;;
+    TSqlParser::IdContext *event_session_name = nullptr;
+    TSqlParser::IdContext *event_module_guid = nullptr;
+    TSqlParser::IdContext *event_package_name = nullptr;
+    TSqlParser::IdContext *event_name = nullptr;
+    TSqlParser::IdContext *event_customizable_attributue = nullptr;
+    TSqlParser::IdContext *action_name = nullptr;
+    TSqlParser::IdContext *target_name = nullptr;
+    TSqlParser::IdContext *target_parameter_name = nullptr;
+    antlr4::Token *max_memory = nullptr;
+    antlr4::Token *max_dispatch_latency_seconds = nullptr;
+    antlr4::Token *max_event_size = nullptr;
     Create_or_alter_event_sessionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> EVENT();
@@ -4037,11 +4037,11 @@ public:
 
   class  Event_session_predicate_leafContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *event_field_name = nullptr;;
-    TSqlParser::IdContext *event_module_guid = nullptr;;
-    TSqlParser::IdContext *event_package_name = nullptr;;
-    TSqlParser::IdContext *predicate_source_name = nullptr;;
-    TSqlParser::IdContext *predicate_compare_name = nullptr;;
+    TSqlParser::IdContext *event_field_name = nullptr;
+    TSqlParser::IdContext *event_module_guid = nullptr;
+    TSqlParser::IdContext *event_package_name = nullptr;
+    TSqlParser::IdContext *predicate_source_name = nullptr;
+    TSqlParser::IdContext *predicate_compare_name = nullptr;
     Event_session_predicate_leafContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<IdContext *> id();
@@ -4067,10 +4067,10 @@ public:
 
   class  Alter_external_data_sourceContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *data_source_name = nullptr;;
-    antlr4::Token *location = nullptr;;
-    antlr4::Token *resource_manager_location = nullptr;;
-    TSqlParser::IdContext *credential_name = nullptr;;
+    TSqlParser::IdContext *data_source_name = nullptr;
+    antlr4::Token *location = nullptr;
+    antlr4::Token *resource_manager_location = nullptr;
+    TSqlParser::IdContext *credential_name = nullptr;
     Alter_external_data_sourceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4110,10 +4110,10 @@ public:
 
   class  Alter_external_libraryContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *library_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
-    antlr4::Token *client_library = nullptr;;
-    TSqlParser::IdContext *external_data_source_name = nullptr;;
+    TSqlParser::IdContext *library_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
+    antlr4::Token *client_library = nullptr;
+    TSqlParser::IdContext *external_data_source_name = nullptr;
     Alter_external_libraryContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4157,10 +4157,10 @@ public:
 
   class  Create_external_libraryContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *library_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
-    antlr4::Token *client_library = nullptr;;
-    TSqlParser::IdContext *external_data_source_name = nullptr;;
+    TSqlParser::IdContext *library_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
+    antlr4::Token *client_library = nullptr;
+    TSqlParser::IdContext *external_data_source_name = nullptr;
     Create_external_libraryContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -4203,10 +4203,10 @@ public:
 
   class  Alter_external_resource_poolContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *pool_name = nullptr;;
-    antlr4::Token *max_cpu_percent = nullptr;;
-    antlr4::Token *max_memory_percent = nullptr;;
-    antlr4::Token *max_processes = nullptr;;
+    TSqlParser::IdContext *pool_name = nullptr;
+    antlr4::Token *max_cpu_percent = nullptr;
+    antlr4::Token *max_memory_percent = nullptr;
+    antlr4::Token *max_processes = nullptr;
     Alter_external_resource_poolContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4243,10 +4243,10 @@ public:
 
   class  Create_external_resource_poolContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *pool_name = nullptr;;
-    antlr4::Token *max_cpu_percent = nullptr;;
-    antlr4::Token *max_memory_percent = nullptr;;
-    antlr4::Token *max_processes = nullptr;;
+    TSqlParser::IdContext *pool_name = nullptr;
+    antlr4::Token *max_cpu_percent = nullptr;
+    antlr4::Token *max_memory_percent = nullptr;
+    antlr4::Token *max_processes = nullptr;
     Create_external_resource_poolContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -4282,7 +4282,7 @@ public:
 
   class  Alter_fulltext_catalogContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *catalog_name = nullptr;;
+    TSqlParser::IdContext *catalog_name = nullptr;
     Alter_fulltext_catalogContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4308,10 +4308,10 @@ public:
 
   class  Create_fulltext_catalogContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *catalog_name = nullptr;;
-    TSqlParser::IdContext *filegroup = nullptr;;
-    antlr4::Token *rootpath = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
+    TSqlParser::IdContext *catalog_name = nullptr;
+    TSqlParser::IdContext *filegroup = nullptr;
+    antlr4::Token *rootpath = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
     Create_fulltext_catalogContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -4342,8 +4342,8 @@ public:
 
   class  Alter_fulltext_stoplistContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *stoplist_name = nullptr;;
-    antlr4::Token *stopword = nullptr;;
+    TSqlParser::IdContext *stoplist_name = nullptr;
+    antlr4::Token *stopword = nullptr;
     Alter_fulltext_stoplistContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4368,10 +4368,10 @@ public:
 
   class  Create_fulltext_stoplistContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *stoplist_name = nullptr;;
-    TSqlParser::IdContext *database_name = nullptr;;
-    TSqlParser::IdContext *source_stoplist_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
+    TSqlParser::IdContext *stoplist_name = nullptr;
+    TSqlParser::IdContext *database_name = nullptr;
+    TSqlParser::IdContext *source_stoplist_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
     Create_fulltext_stoplistContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -4394,13 +4394,13 @@ public:
 
   class  Alter_login_sql_serverContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *login_name = nullptr;;
-    antlr4::Token *password = nullptr;;
-    antlr4::Token *password_hash = nullptr;;
-    antlr4::Token *old_password = nullptr;;
-    TSqlParser::IdContext *default_database = nullptr;;
-    TSqlParser::IdContext *default_laguage = nullptr;;
-    TSqlParser::IdContext *credential_name = nullptr;;
+    TSqlParser::IdContext *login_name = nullptr;
+    antlr4::Token *password = nullptr;
+    antlr4::Token *password_hash = nullptr;
+    antlr4::Token *old_password = nullptr;
+    TSqlParser::IdContext *default_database = nullptr;
+    TSqlParser::IdContext *default_laguage = nullptr;
+    TSqlParser::IdContext *credential_name = nullptr;
     Alter_login_sql_serverContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4446,16 +4446,16 @@ public:
 
   class  Create_login_sql_serverContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *login_name = nullptr;;
-    antlr4::Token *password = nullptr;;
-    antlr4::Token *password_hash = nullptr;;
-    antlr4::Token *sid = nullptr;;
-    TSqlParser::IdContext *default_database = nullptr;;
-    TSqlParser::IdContext *default_laguage = nullptr;;
-    TSqlParser::IdContext *credential_name = nullptr;;
-    antlr4::Token *default_language = nullptr;;
-    TSqlParser::IdContext *certname = nullptr;;
-    TSqlParser::IdContext *asym_key_name = nullptr;;
+    TSqlParser::IdContext *login_name = nullptr;
+    antlr4::Token *password = nullptr;
+    antlr4::Token *password_hash = nullptr;
+    antlr4::Token *sid = nullptr;
+    TSqlParser::IdContext *default_database = nullptr;
+    TSqlParser::IdContext *default_laguage = nullptr;
+    TSqlParser::IdContext *credential_name = nullptr;
+    antlr4::Token *default_language = nullptr;
+    TSqlParser::IdContext *certname = nullptr;
+    TSqlParser::IdContext *asym_key_name = nullptr;
     Create_login_sql_serverContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -4501,9 +4501,9 @@ public:
 
   class  Alter_login_azure_sqlContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *login_name = nullptr;;
-    antlr4::Token *password = nullptr;;
-    antlr4::Token *old_password = nullptr;;
+    TSqlParser::IdContext *login_name = nullptr;
+    antlr4::Token *password = nullptr;
+    antlr4::Token *old_password = nullptr;
     Alter_login_azure_sqlContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4530,8 +4530,8 @@ public:
 
   class  Create_login_azure_sqlContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *login_name = nullptr;;
-    antlr4::Token *sid = nullptr;;
+    TSqlParser::IdContext *login_name = nullptr;
+    antlr4::Token *sid = nullptr;
     Create_login_azure_sqlContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -4554,9 +4554,9 @@ public:
 
   class  Alter_login_azure_sql_dw_and_pdwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *login_name = nullptr;;
-    antlr4::Token *password = nullptr;;
-    antlr4::Token *old_password = nullptr;;
+    TSqlParser::IdContext *login_name = nullptr;
+    antlr4::Token *password = nullptr;
+    antlr4::Token *old_password = nullptr;
     Alter_login_azure_sql_dw_and_pdwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4587,8 +4587,8 @@ public:
 
   class  Create_login_pdwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *loginName = nullptr;;
-    antlr4::Token *password = nullptr;;
+    TSqlParser::IdContext *loginName = nullptr;
+    antlr4::Token *password = nullptr;
     Create_login_pdwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -4615,8 +4615,8 @@ public:
 
   class  Alter_master_key_sql_serverContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *password = nullptr;;
-    antlr4::Token *encryption_password = nullptr;;
+    antlr4::Token *password = nullptr;
+    antlr4::Token *encryption_password = nullptr;
     Alter_master_key_sql_serverContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4645,7 +4645,7 @@ public:
 
   class  Create_master_key_sql_serverContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *password = nullptr;;
+    antlr4::Token *password = nullptr;
     Create_master_key_sql_serverContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -4666,8 +4666,8 @@ public:
 
   class  Alter_master_key_azure_sqlContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *password = nullptr;;
-    antlr4::Token *encryption_password = nullptr;;
+    antlr4::Token *password = nullptr;
+    antlr4::Token *encryption_password = nullptr;
     Alter_master_key_azure_sqlContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4696,7 +4696,7 @@ public:
 
   class  Create_master_key_azure_sqlContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *password = nullptr;;
+    antlr4::Token *password = nullptr;
     Create_master_key_azure_sqlContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -4717,8 +4717,8 @@ public:
 
   class  Alter_message_typeContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *message_type_name = nullptr;;
-    TSqlParser::IdContext *schema_collection_name = nullptr;;
+    TSqlParser::IdContext *message_type_name = nullptr;
+    TSqlParser::IdContext *schema_collection_name = nullptr;
     Alter_message_typeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4745,7 +4745,7 @@ public:
 
   class  Alter_partition_functionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *partition_function_name = nullptr;;
+    TSqlParser::IdContext *partition_function_name = nullptr;
     Alter_partition_functionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4770,8 +4770,8 @@ public:
 
   class  Alter_partition_schemeContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *partition_scheme_name = nullptr;;
-    TSqlParser::IdContext *file_group_name = nullptr;;
+    TSqlParser::IdContext *partition_scheme_name = nullptr;
+    TSqlParser::IdContext *file_group_name = nullptr;
     Alter_partition_schemeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4791,8 +4791,8 @@ public:
 
   class  Alter_remote_service_bindingContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *binding_name = nullptr;;
-    TSqlParser::IdContext *user_name = nullptr;;
+    TSqlParser::IdContext *binding_name = nullptr;
+    TSqlParser::IdContext *user_name = nullptr;
     Alter_remote_service_bindingContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4819,10 +4819,10 @@ public:
 
   class  Create_remote_service_bindingContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *binding_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
-    antlr4::Token *remote_service_name = nullptr;;
-    TSqlParser::IdContext *user_name = nullptr;;
+    TSqlParser::IdContext *binding_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
+    antlr4::Token *remote_service_name = nullptr;
+    TSqlParser::IdContext *user_name = nullptr;
     Create_remote_service_bindingContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -4853,7 +4853,7 @@ public:
 
   class  Create_resource_poolContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *pool_name = nullptr;;
+    TSqlParser::IdContext *pool_name = nullptr;
     Create_resource_poolContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -4894,9 +4894,9 @@ public:
 
   class  Alter_resource_governorContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *function_name = nullptr;;
-    antlr4::Token *max_outstanding_io_per_volume = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *function_name = nullptr;
+    antlr4::Token *max_outstanding_io_per_volume = nullptr;
     Alter_resource_governorContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4927,9 +4927,9 @@ public:
 
   class  Alter_db_roleContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *role_name = nullptr;;
-    TSqlParser::IdContext *database_principal = nullptr;;
-    TSqlParser::IdContext *new_role_name = nullptr;;
+    TSqlParser::IdContext *role_name = nullptr;
+    TSqlParser::IdContext *database_principal = nullptr;
+    TSqlParser::IdContext *new_role_name = nullptr;
     Alter_db_roleContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -4952,8 +4952,8 @@ public:
 
   class  Create_db_roleContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *role_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
+    TSqlParser::IdContext *role_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
     Create_db_roleContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -4971,10 +4971,10 @@ public:
 
   class  Create_routeContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *route_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
-    antlr4::Token *route_service_name = nullptr;;
-    antlr4::Token *broker_instance_identifier = nullptr;;
+    TSqlParser::IdContext *route_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
+    antlr4::Token *route_service_name = nullptr;
+    antlr4::Token *broker_instance_identifier = nullptr;
     Create_routeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5007,8 +5007,8 @@ public:
 
   class  Create_ruleContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *rule_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *rule_name = nullptr;
     Create_ruleContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5028,7 +5028,7 @@ public:
 
   class  Alter_schema_sqlContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
     Alter_schema_sqlContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -5054,9 +5054,9 @@ public:
 
   class  Create_schemaContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
-    TSqlParser::IdContext *object_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
+    TSqlParser::IdContext *object_name = nullptr;
     Create_schemaContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5101,8 +5101,8 @@ public:
 
   class  Create_schema_azure_sql_dw_and_pdwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
     Create_schema_azure_sql_dw_and_pdwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5120,7 +5120,7 @@ public:
 
   class  Alter_schema_azure_sql_dw_and_pdwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
     Alter_schema_azure_sql_dw_and_pdwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -5143,10 +5143,10 @@ public:
 
   class  Create_search_property_listContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *new_list_name = nullptr;;
-    TSqlParser::IdContext *database_name = nullptr;;
-    TSqlParser::IdContext *source_list_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
+    TSqlParser::IdContext *new_list_name = nullptr;
+    TSqlParser::IdContext *database_name = nullptr;
+    TSqlParser::IdContext *source_list_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
     Create_search_property_listContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5168,13 +5168,13 @@ public:
 
   class  Create_security_policyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *security_policy_name = nullptr;;
-    TSqlParser::IdContext *tvf_schema_name = nullptr;;
-    TSqlParser::IdContext *security_predicate_function_name = nullptr;;
-    TSqlParser::IdContext *column_name_or_arguments = nullptr;;
-    TSqlParser::IdContext *table_schema_name = nullptr;;
-    TSqlParser::IdContext *name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *security_policy_name = nullptr;
+    TSqlParser::IdContext *tvf_schema_name = nullptr;
+    TSqlParser::IdContext *security_predicate_function_name = nullptr;
+    TSqlParser::IdContext *column_name_or_arguments = nullptr;
+    TSqlParser::IdContext *table_schema_name = nullptr;
+    TSqlParser::IdContext *name = nullptr;
     Create_security_policyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5229,9 +5229,9 @@ public:
 
   class  Alter_sequenceContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *sequence_name = nullptr;;
-    antlr4::Token *sequnce_increment = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *sequence_name = nullptr;
+    antlr4::Token *sequnce_increment = nullptr;
     Alter_sequenceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -5261,8 +5261,8 @@ public:
 
   class  Create_sequenceContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *sequence_name = nullptr;;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *sequence_name = nullptr;
     Create_sequenceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5295,13 +5295,13 @@ public:
 
   class  Alter_server_auditContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *audit_name = nullptr;;
-    antlr4::Token *filepath = nullptr;;
-    antlr4::Token *max_rollover_files = nullptr;;
-    antlr4::Token *max_files = nullptr;;
-    antlr4::Token *queue_delay = nullptr;;
-    TSqlParser::IdContext *event_field_name = nullptr;;
-    TSqlParser::IdContext *new_audit_name = nullptr;;
+    TSqlParser::IdContext *audit_name = nullptr;
+    antlr4::Token *filepath = nullptr;
+    antlr4::Token *max_rollover_files = nullptr;
+    antlr4::Token *max_files = nullptr;
+    antlr4::Token *queue_delay = nullptr;
+    TSqlParser::IdContext *event_field_name = nullptr;
+    TSqlParser::IdContext *new_audit_name = nullptr;
     Alter_server_auditContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -5380,14 +5380,14 @@ public:
 
   class  Create_server_auditContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *audit_name = nullptr;;
-    antlr4::Token *filepath = nullptr;;
-    antlr4::Token *max_rollover_files = nullptr;;
-    antlr4::Token *max_files = nullptr;;
-    antlr4::Token *queue_delay = nullptr;;
-    TSqlParser::IdContext *audit_guid = nullptr;;
-    TSqlParser::IdContext *event_field_name = nullptr;;
-    TSqlParser::IdContext *new_audit_name = nullptr;;
+    TSqlParser::IdContext *audit_name = nullptr;
+    antlr4::Token *filepath = nullptr;
+    antlr4::Token *max_rollover_files = nullptr;
+    antlr4::Token *max_files = nullptr;
+    antlr4::Token *queue_delay = nullptr;
+    TSqlParser::IdContext *audit_guid = nullptr;
+    TSqlParser::IdContext *event_field_name = nullptr;
+    TSqlParser::IdContext *new_audit_name = nullptr;
     Create_server_auditContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5468,9 +5468,9 @@ public:
 
   class  Alter_server_audit_specificationContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *audit_specification_name = nullptr;;
-    TSqlParser::IdContext *audit_name = nullptr;;
-    TSqlParser::IdContext *audit_action_group_name = nullptr;;
+    TSqlParser::IdContext *audit_specification_name = nullptr;
+    TSqlParser::IdContext *audit_name = nullptr;
+    TSqlParser::IdContext *audit_action_group_name = nullptr;
     Alter_server_audit_specificationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -5505,9 +5505,9 @@ public:
 
   class  Create_server_audit_specificationContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *audit_specification_name = nullptr;;
-    TSqlParser::IdContext *audit_name = nullptr;;
-    TSqlParser::IdContext *audit_action_group_name = nullptr;;
+    TSqlParser::IdContext *audit_specification_name = nullptr;
+    TSqlParser::IdContext *audit_name = nullptr;
+    TSqlParser::IdContext *audit_action_group_name = nullptr;
     Create_server_audit_specificationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5602,9 +5602,9 @@ public:
 
   class  Alter_server_roleContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *server_role_name = nullptr;;
-    TSqlParser::IdContext *server_principal = nullptr;;
-    TSqlParser::IdContext *new_server_role_name = nullptr;;
+    TSqlParser::IdContext *server_role_name = nullptr;
+    TSqlParser::IdContext *server_principal = nullptr;
+    TSqlParser::IdContext *new_server_role_name = nullptr;
     Alter_server_roleContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -5628,8 +5628,8 @@ public:
 
   class  Create_server_roleContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *server_role = nullptr;;
-    TSqlParser::IdContext *server_principal = nullptr;;
+    TSqlParser::IdContext *server_role = nullptr;
+    TSqlParser::IdContext *server_principal = nullptr;
     Create_server_roleContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5648,8 +5648,8 @@ public:
 
   class  Alter_server_role_pdwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *server_role_name = nullptr;;
-    TSqlParser::IdContext *login = nullptr;;
+    TSqlParser::IdContext *server_role_name = nullptr;
+    TSqlParser::IdContext *login = nullptr;
     Alter_server_role_pdwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -5670,10 +5670,10 @@ public:
 
   class  Alter_serviceContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *modified_service_name = nullptr;;
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *queue_name = nullptr;;
-    TSqlParser::IdContext *modified_contract_name = nullptr;;
+    TSqlParser::IdContext *modified_service_name = nullptr;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *queue_name = nullptr;
+    TSqlParser::IdContext *modified_contract_name = nullptr;
     Alter_serviceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -5699,10 +5699,10 @@ public:
 
   class  Create_serviceContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *create_service_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *queue_name = nullptr;;
+    TSqlParser::IdContext *create_service_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *queue_name = nullptr;
     Create_serviceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5729,10 +5729,10 @@ public:
 
   class  Alter_service_master_keyContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *acold_account_name = nullptr;;
-    antlr4::Token *old_password = nullptr;;
-    antlr4::Token *new_account_name = nullptr;;
-    antlr4::Token *new_password = nullptr;;
+    antlr4::Token *acold_account_name = nullptr;
+    antlr4::Token *old_password = nullptr;
+    antlr4::Token *new_account_name = nullptr;
+    antlr4::Token *new_password = nullptr;
     Alter_service_master_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -5761,11 +5761,11 @@ public:
 
   class  Alter_symmetric_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *key_name = nullptr;;
-    TSqlParser::IdContext *certificate_name = nullptr;;
-    antlr4::Token *password = nullptr;;
-    TSqlParser::IdContext *symmetric_key_name = nullptr;;
-    TSqlParser::IdContext *Asym_key_name = nullptr;;
+    TSqlParser::IdContext *key_name = nullptr;
+    TSqlParser::IdContext *certificate_name = nullptr;
+    antlr4::Token *password = nullptr;
+    TSqlParser::IdContext *symmetric_key_name = nullptr;
+    TSqlParser::IdContext *Asym_key_name = nullptr;
     Alter_symmetric_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -5794,16 +5794,16 @@ public:
 
   class  Create_symmetric_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *key_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
-    TSqlParser::IdContext *provider_name = nullptr;;
-    antlr4::Token *key_pass_phrase = nullptr;;
-    antlr4::Token *identity_phrase = nullptr;;
-    antlr4::Token *provider_key_name = nullptr;;
-    TSqlParser::IdContext *certificate_name = nullptr;;
-    antlr4::Token *password = nullptr;;
-    TSqlParser::IdContext *symmetric_key_name = nullptr;;
-    TSqlParser::IdContext *asym_key_name = nullptr;;
+    TSqlParser::IdContext *key_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
+    TSqlParser::IdContext *provider_name = nullptr;
+    antlr4::Token *key_pass_phrase = nullptr;
+    antlr4::Token *identity_phrase = nullptr;
+    antlr4::Token *provider_key_name = nullptr;
+    TSqlParser::IdContext *certificate_name = nullptr;
+    antlr4::Token *password = nullptr;
+    TSqlParser::IdContext *symmetric_key_name = nullptr;
+    TSqlParser::IdContext *asym_key_name = nullptr;
     Create_symmetric_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -5851,14 +5851,14 @@ public:
 
   class  Create_synonymContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_name_1 = nullptr;;
-    TSqlParser::IdContext *synonym_name = nullptr;;
-    TSqlParser::IdContext *server_name = nullptr;;
-    TSqlParser::IdContext *database_name = nullptr;;
-    TSqlParser::IdContext *schema_name_2 = nullptr;;
-    TSqlParser::IdContext *object_name = nullptr;;
-    TSqlParser::IdContext *database_or_schema2 = nullptr;;
-    TSqlParser::IdContext *schema_id_2_or_object_name = nullptr;;
+    TSqlParser::IdContext *schema_name_1 = nullptr;
+    TSqlParser::IdContext *synonym_name = nullptr;
+    TSqlParser::IdContext *server_name = nullptr;
+    TSqlParser::IdContext *database_name = nullptr;
+    TSqlParser::IdContext *schema_name_2 = nullptr;
+    TSqlParser::IdContext *object_name = nullptr;
+    TSqlParser::IdContext *database_or_schema2 = nullptr;
+    TSqlParser::IdContext *schema_id_2_or_object_name = nullptr;
     Create_synonymContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5878,12 +5878,12 @@ public:
 
   class  Alter_userContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *username = nullptr;;
-    TSqlParser::IdContext *newusername = nullptr;;
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *loginame = nullptr;;
-    antlr4::Token *lcid = nullptr;;
-    TSqlParser::IdContext *language_name_or_alias = nullptr;;
+    TSqlParser::IdContext *username = nullptr;
+    TSqlParser::IdContext *newusername = nullptr;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *loginame = nullptr;
+    antlr4::Token *lcid = nullptr;
+    TSqlParser::IdContext *language_name_or_alias = nullptr;
     Alter_userContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -5931,15 +5931,15 @@ public:
 
   class  Create_userContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *user_name = nullptr;;
-    TSqlParser::IdContext *login_name = nullptr;;
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *windows_principal = nullptr;;
-    TSqlParser::IdContext *language_name_or_alias = nullptr;;
-    antlr4::Token *password = nullptr;;
-    TSqlParser::IdContext *Azure_Active_Directory_principal = nullptr;;
-    TSqlParser::IdContext *cert_name = nullptr;;
-    TSqlParser::IdContext *asym_key_name = nullptr;;
+    TSqlParser::IdContext *user_name = nullptr;
+    TSqlParser::IdContext *login_name = nullptr;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *windows_principal = nullptr;
+    TSqlParser::IdContext *language_name_or_alias = nullptr;
+    antlr4::Token *password = nullptr;
+    TSqlParser::IdContext *Azure_Active_Directory_principal = nullptr;
+    TSqlParser::IdContext *cert_name = nullptr;
+    TSqlParser::IdContext *asym_key_name = nullptr;
     Create_userContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -5990,10 +5990,10 @@ public:
 
   class  Create_user_azure_sql_dwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *user_name = nullptr;;
-    TSqlParser::IdContext *login_name = nullptr;;
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *Azure_Active_Directory_principal = nullptr;;
+    TSqlParser::IdContext *user_name = nullptr;
+    TSqlParser::IdContext *login_name = nullptr;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *Azure_Active_Directory_principal = nullptr;
     Create_user_azure_sql_dwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -6019,10 +6019,10 @@ public:
 
   class  Alter_user_azure_sqlContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *username = nullptr;;
-    TSqlParser::IdContext *newusername = nullptr;;
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *loginame = nullptr;;
+    TSqlParser::IdContext *username = nullptr;
+    TSqlParser::IdContext *newusername = nullptr;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *loginame = nullptr;
     Alter_user_azure_sqlContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -6056,13 +6056,13 @@ public:
 
   class  Alter_workload_groupContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *workload_group_group_name = nullptr;;
-    antlr4::Token *request_max_memory_grant = nullptr;;
-    antlr4::Token *request_max_cpu_time_sec = nullptr;;
-    antlr4::Token *request_memory_grant_timeout_sec = nullptr;;
-    antlr4::Token *max_dop = nullptr;;
-    antlr4::Token *group_max_requests = nullptr;;
-    TSqlParser::IdContext *workload_group_pool_name = nullptr;;
+    TSqlParser::IdContext *workload_group_group_name = nullptr;
+    antlr4::Token *request_max_memory_grant = nullptr;
+    antlr4::Token *request_max_cpu_time_sec = nullptr;
+    antlr4::Token *request_memory_grant_timeout_sec = nullptr;
+    antlr4::Token *max_dop = nullptr;
+    antlr4::Token *group_max_requests = nullptr;
+    TSqlParser::IdContext *workload_group_pool_name = nullptr;
     Alter_workload_groupContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -6110,14 +6110,14 @@ public:
 
   class  Create_workload_groupContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *workload_group_group_name = nullptr;;
-    antlr4::Token *request_max_memory_grant = nullptr;;
-    antlr4::Token *request_max_cpu_time_sec = nullptr;;
-    antlr4::Token *request_memory_grant_timeout_sec = nullptr;;
-    antlr4::Token *max_dop = nullptr;;
-    antlr4::Token *group_max_requests = nullptr;;
-    TSqlParser::IdContext *workload_group_pool_name = nullptr;;
-    TSqlParser::IdContext *external_pool_name = nullptr;;
+    TSqlParser::IdContext *workload_group_group_name = nullptr;
+    antlr4::Token *request_max_memory_grant = nullptr;
+    antlr4::Token *request_max_cpu_time_sec = nullptr;
+    antlr4::Token *request_memory_grant_timeout_sec = nullptr;
+    antlr4::Token *max_dop = nullptr;
+    antlr4::Token *group_max_requests = nullptr;
+    TSqlParser::IdContext *workload_group_pool_name = nullptr;
+    TSqlParser::IdContext *external_pool_name = nullptr;
     Create_workload_groupContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -6166,8 +6166,8 @@ public:
 
   class  Create_xml_schema_collectionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *relational_schema = nullptr;;
-    TSqlParser::IdContext *sql_identifier = nullptr;;
+    TSqlParser::IdContext *relational_schema = nullptr;
+    TSqlParser::IdContext *sql_identifier = nullptr;
     Create_xml_schema_collectionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -6190,8 +6190,8 @@ public:
 
   class  Create_queueContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *queue_name = nullptr;;
-    TSqlParser::IdContext *filegroup = nullptr;;
+    TSqlParser::IdContext *queue_name = nullptr;
+    TSqlParser::IdContext *filegroup = nullptr;
     Create_queueContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -6212,8 +6212,8 @@ public:
 
   class  Queue_settingsContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *max_readers = nullptr;;
-    antlr4::Token *user_name = nullptr;;
+    antlr4::Token *max_readers = nullptr;
+    antlr4::Token *user_name = nullptr;
     Queue_settingsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *WITH();
@@ -6254,7 +6254,7 @@ public:
 
   class  Alter_queueContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *queue_name = nullptr;;
+    TSqlParser::IdContext *queue_name = nullptr;
     Alter_queueContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -6314,8 +6314,8 @@ public:
 
   class  Create_contractContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *owner_name = nullptr;;
-    TSqlParser::IdContext *message_type_name = nullptr;;
+    TSqlParser::IdContext *owner_name = nullptr;
+    TSqlParser::IdContext *message_type_name = nullptr;
     Create_contractContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -6368,9 +6368,9 @@ public:
 
   class  Message_statementContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *message_type_name = nullptr;;
-    TSqlParser::IdContext *owner_name = nullptr;;
-    TSqlParser::IdContext *schema_collection_name = nullptr;;
+    TSqlParser::IdContext *message_type_name = nullptr;
+    TSqlParser::IdContext *owner_name = nullptr;
+    TSqlParser::IdContext *schema_collection_name = nullptr;
     Message_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -6485,7 +6485,7 @@ public:
 
   class  Delete_statementContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *cursor_var = nullptr;;
+    antlr4::Token *cursor_var = nullptr;
     Delete_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DELETE();
@@ -6522,7 +6522,7 @@ public:
 
   class  Delete_statement_fromContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *table_var = nullptr;;
+    antlr4::Token *table_var = nullptr;
     Delete_statement_fromContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Ddl_objectContext *ddl_object();
@@ -6587,8 +6587,8 @@ public:
 
   class  Receive_statementContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *table_variable = nullptr;;
-    TSqlParser::Search_conditionContext *where = nullptr;;
+    TSqlParser::IdContext *table_variable = nullptr;
+    TSqlParser::Search_conditionContext *where = nullptr;
     Receive_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *RECEIVE();
@@ -6654,7 +6654,7 @@ public:
 
   class  Update_statementContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *cursor_var = nullptr;;
+    antlr4::Token *cursor_var = nullptr;
     Update_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *UPDATE();
@@ -6752,8 +6752,8 @@ public:
 
   class  Create_databaseContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *database = nullptr;;
-    TSqlParser::IdContext *collation_name = nullptr;;
+    TSqlParser::IdContext *database = nullptr;
+    TSqlParser::IdContext *collation_name = nullptr;
     Create_databaseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -6786,7 +6786,7 @@ public:
 
   class  Create_indexContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Search_conditionContext *where = nullptr;;
+    TSqlParser::Search_conditionContext *where = nullptr;
     Create_indexContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -6819,7 +6819,7 @@ public:
 
   class  Create_or_alter_procedureContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *proc = nullptr;;
+    antlr4::Token *proc = nullptr;
     Create_or_alter_procedureContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Func_proc_name_schemaContext *func_proc_name_schema();
@@ -7058,7 +7058,7 @@ public:
 
   class  Func_body_returns_scalarContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::ExpressionContext *ret = nullptr;;
+    TSqlParser::ExpressionContext *ret = nullptr;
     Func_body_returns_scalarContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *RETURNS();
@@ -7086,7 +7086,7 @@ public:
 
   class  Procedure_paramContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Default_valueContext *default_val = nullptr;;
+    TSqlParser::Default_valueContext *default_val = nullptr;
     Procedure_paramContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LOCAL_ID();
@@ -7294,9 +7294,9 @@ public:
 
   class  Alter_tableContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *constraint = nullptr;;
-    TSqlParser::Column_name_listContext *fk = nullptr;;
-    TSqlParser::Column_name_listContext *pk = nullptr;;
+    TSqlParser::IdContext *constraint = nullptr;
+    TSqlParser::Column_name_listContext *fk = nullptr;
+    TSqlParser::Column_name_listContext *pk = nullptr;
     Alter_tableContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> ALTER();
@@ -7343,9 +7343,9 @@ public:
 
   class  Alter_databaseContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *database = nullptr;;
-    TSqlParser::IdContext *new_name = nullptr;;
-    TSqlParser::IdContext *collation = nullptr;;
+    TSqlParser::IdContext *database = nullptr;
+    TSqlParser::IdContext *new_name = nullptr;
+    TSqlParser::IdContext *collation = nullptr;
     Alter_databaseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -7502,11 +7502,11 @@ public:
 
   class  Alter_endpointContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *endpointname = nullptr;;
-    TSqlParser::IdContext *login = nullptr;;
-    antlr4::Token *state = nullptr;;
-    antlr4::Token *port = nullptr;;
-    TSqlParser::IdContext *cert_name = nullptr;;
+    TSqlParser::IdContext *endpointname = nullptr;
+    TSqlParser::IdContext *login = nullptr;
+    antlr4::Token *state = nullptr;
+    antlr4::Token *port = nullptr;
+    TSqlParser::IdContext *cert_name = nullptr;
     Alter_endpointContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -7732,7 +7732,7 @@ public:
 
   class  Port_numberContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *port = nullptr;;
+    antlr4::Token *port = nullptr;
     Port_numberContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DECIMAL();
@@ -7876,7 +7876,7 @@ public:
 
   class  Hadr_optionsContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *availability_group_name = nullptr;;
+    TSqlParser::IdContext *availability_group_name = nullptr;
     Hadr_optionsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *HADR();
@@ -7966,7 +7966,7 @@ public:
 
   class  Snapshot_optionContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *MEMORY_OPTIMIZED_ELEVATE_TO_SNAPSHOT = nullptr;;
+    antlr4::Token *MEMORY_OPTIMIZED_ELEVATE_TO_SNAPSHOT = nullptr;
     Snapshot_optionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALLOW_SNAPSHOT_ISOLATION();
@@ -8026,7 +8026,7 @@ public:
 
   class  TerminationContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *seconds = nullptr;;
+    antlr4::Token *seconds = nullptr;
     TerminationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ROLLBACK();
@@ -8067,7 +8067,7 @@ public:
 
   class  Drop_relational_or_xml_or_spatial_indexContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *index_name = nullptr;;
+    TSqlParser::IdContext *index_name = nullptr;
     Drop_relational_or_xml_or_spatial_indexContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ON();
@@ -8083,9 +8083,9 @@ public:
 
   class  Drop_backward_compatible_indexContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *owner_name = nullptr;;
-    TSqlParser::IdContext *table_or_view_name = nullptr;;
-    TSqlParser::IdContext *index_name = nullptr;;
+    TSqlParser::IdContext *owner_name = nullptr;
+    TSqlParser::IdContext *table_or_view_name = nullptr;
+    TSqlParser::IdContext *index_name = nullptr;
     Drop_backward_compatible_indexContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> DOT();
@@ -8102,7 +8102,7 @@ public:
 
   class  Drop_procedureContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *proc = nullptr;;
+    antlr4::Token *proc = nullptr;
     Drop_procedureContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -8206,7 +8206,7 @@ public:
 
   class  Drop_statisticsContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *name = nullptr;;
+    TSqlParser::IdContext *name = nullptr;
     Drop_statisticsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -8269,7 +8269,7 @@ public:
 
   class  Create_typeContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Simple_nameContext *name = nullptr;;
+    TSqlParser::Simple_nameContext *name = nullptr;
     Create_typeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -8293,7 +8293,7 @@ public:
 
   class  Drop_typeContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Simple_nameContext *name = nullptr;;
+    TSqlParser::Simple_nameContext *name = nullptr;
     Drop_typeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -8325,8 +8325,8 @@ public:
 
   class  OpenqueryContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *linked_server = nullptr;;
-    antlr4::Token *query = nullptr;;
+    TSqlParser::IdContext *linked_server = nullptr;
+    antlr4::Token *query = nullptr;
     OpenqueryContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *OPENQUERY();
@@ -8345,11 +8345,11 @@ public:
 
   class  OpendatasourceContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *provider = nullptr;;
-    antlr4::Token *init = nullptr;;
-    TSqlParser::IdContext *database = nullptr;;
-    TSqlParser::IdContext *scheme = nullptr;;
-    TSqlParser::IdContext *table = nullptr;;
+    antlr4::Token *provider = nullptr;
+    antlr4::Token *init = nullptr;
+    TSqlParser::IdContext *database = nullptr;
+    TSqlParser::IdContext *scheme = nullptr;
+    TSqlParser::IdContext *table = nullptr;
     OpendatasourceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *OPENDATASOURCE();
@@ -8372,7 +8372,7 @@ public:
 
   class  Declare_statementContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *xml_namespace_uri = nullptr;;
+    antlr4::Token *xml_namespace_uri = nullptr;
     Declare_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DECLARE();
@@ -8422,13 +8422,13 @@ public:
 
   class  Backup_databaseContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *database_name = nullptr;;
-    antlr4::Token *file_or_filegroup = nullptr;;
-    TSqlParser::IdContext *logical_device_name = nullptr;;
-    TSqlParser::IdContext *backup_set_name = nullptr;;
-    antlr4::Token *medianame = nullptr;;
-    antlr4::Token *stats_percent = nullptr;;
-    TSqlParser::IdContext *encryptor_name = nullptr;;
+    TSqlParser::IdContext *database_name = nullptr;
+    antlr4::Token *file_or_filegroup = nullptr;
+    TSqlParser::IdContext *logical_device_name = nullptr;
+    TSqlParser::IdContext *backup_set_name = nullptr;
+    antlr4::Token *medianame = nullptr;
+    antlr4::Token *stats_percent = nullptr;
+    TSqlParser::IdContext *encryptor_name = nullptr;
     Backup_databaseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *BACKUP();
@@ -8553,13 +8553,13 @@ public:
 
   class  Backup_logContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *database_name = nullptr;;
-    TSqlParser::IdContext *logical_device_name = nullptr;;
-    TSqlParser::IdContext *backup_set_name = nullptr;;
-    antlr4::Token *medianame = nullptr;;
-    antlr4::Token *stats_percent = nullptr;;
-    antlr4::Token *undo_file_name = nullptr;;
-    TSqlParser::IdContext *encryptor_name = nullptr;;
+    TSqlParser::IdContext *database_name = nullptr;
+    TSqlParser::IdContext *logical_device_name = nullptr;
+    TSqlParser::IdContext *backup_set_name = nullptr;
+    antlr4::Token *medianame = nullptr;
+    antlr4::Token *stats_percent = nullptr;
+    antlr4::Token *undo_file_name = nullptr;
+    TSqlParser::IdContext *encryptor_name = nullptr;
     Backup_logContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *BACKUP();
@@ -8685,11 +8685,11 @@ public:
 
   class  Backup_certificateContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *certname = nullptr;;
-    antlr4::Token *cert_file = nullptr;;
-    antlr4::Token *private_key_file = nullptr;;
-    antlr4::Token *encryption_password = nullptr;;
-    antlr4::Token *decryption_pasword = nullptr;;
+    TSqlParser::IdContext *certname = nullptr;
+    antlr4::Token *cert_file = nullptr;
+    antlr4::Token *private_key_file = nullptr;
+    antlr4::Token *encryption_password = nullptr;
+    antlr4::Token *decryption_pasword = nullptr;
     Backup_certificateContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *BACKUP();
@@ -8727,8 +8727,8 @@ public:
 
   class  Backup_master_keyContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *master_key_backup_file = nullptr;;
-    antlr4::Token *encryption_password = nullptr;;
+    antlr4::Token *master_key_backup_file = nullptr;
+    antlr4::Token *encryption_password = nullptr;
     Backup_master_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *BACKUP();
@@ -8753,8 +8753,8 @@ public:
 
   class  Backup_service_master_keyContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *service_master_key_backup_file = nullptr;;
-    antlr4::Token *encryption_password = nullptr;;
+    antlr4::Token *service_master_key_backup_file = nullptr;
+    antlr4::Token *encryption_password = nullptr;
     Backup_service_master_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *BACKUP();
@@ -8796,7 +8796,7 @@ public:
 
   class  Kill_processContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *session_id = nullptr;;
+    antlr4::Token *session_id = nullptr;
     Kill_processContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *UOW();
@@ -8814,7 +8814,7 @@ public:
 
   class  Kill_query_notificationContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *subscription_id = nullptr;;
+    antlr4::Token *subscription_id = nullptr;
     Kill_query_notificationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *QUERY();
@@ -8832,7 +8832,7 @@ public:
 
   class  Kill_stats_jobContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *job_id = nullptr;;
+    antlr4::Token *job_id = nullptr;
     Kill_stats_jobContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *STATS();
@@ -8862,7 +8862,7 @@ public:
 
   class  Execute_bodyContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *return_status = nullptr;;
+    antlr4::Token *return_status = nullptr;
     Execute_bodyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Func_proc_name_server_database_schemaContext *func_proc_name_server_database_schema();
@@ -8894,7 +8894,7 @@ public:
 
   class  Execute_statement_argContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *parameter = nullptr;;
+    antlr4::Token *parameter = nullptr;
     Execute_statement_argContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DEFAULT();
@@ -8929,10 +8929,10 @@ public:
 
   class  Security_statementContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Table_nameContext *on_id = nullptr;;
-    TSqlParser::IdContext *idContext = nullptr;;
-    std::vector<IdContext *> to_principal;;
-    TSqlParser::IdContext *as_principal = nullptr;;
+    TSqlParser::Table_nameContext *on_id = nullptr;
+    TSqlParser::IdContext *idContext = nullptr;
+    std::vector<IdContext *> to_principal;
+    TSqlParser::IdContext *as_principal = nullptr;
     Security_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Execute_clauseContext *execute_clause();
@@ -8973,8 +8973,8 @@ public:
 
   class  Create_certificateContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *certificate_name = nullptr;;
-    TSqlParser::IdContext *user_name = nullptr;;
+    TSqlParser::IdContext *certificate_name = nullptr;
+    TSqlParser::IdContext *user_name = nullptr;
     Create_certificateContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -9002,8 +9002,8 @@ public:
 
   class  Existing_keysContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *assembly_name = nullptr;;
-    antlr4::Token *path_to_file = nullptr;;
+    TSqlParser::IdContext *assembly_name = nullptr;
+    antlr4::Token *path_to_file = nullptr;
     Existing_keysContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ASSEMBLY();
@@ -9028,8 +9028,8 @@ public:
 
   class  Private_key_optionsContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *path = nullptr;;
-    antlr4::Token *password = nullptr;;
+    antlr4::Token *path = nullptr;
+    antlr4::Token *password = nullptr;
     Private_key_optionsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> EQUAL();
@@ -9053,8 +9053,8 @@ public:
 
   class  Generate_new_keysContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *password = nullptr;;
-    antlr4::Token *certificate_subject_name = nullptr;;
+    antlr4::Token *password = nullptr;
+    antlr4::Token *certificate_subject_name = nullptr;
     Generate_new_keysContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *WITH();
@@ -9096,8 +9096,8 @@ public:
 
   class  Open_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *key_name = nullptr;;
-    antlr4::Token *password = nullptr;;
+    TSqlParser::IdContext *key_name = nullptr;
+    antlr4::Token *password = nullptr;
     Open_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *OPEN();
@@ -9121,7 +9121,7 @@ public:
 
   class  Close_keyContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *key_name = nullptr;;
+    TSqlParser::IdContext *key_name = nullptr;
     Close_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CLOSE();
@@ -9141,10 +9141,10 @@ public:
 
   class  Create_keyContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *password = nullptr;;
-    TSqlParser::IdContext *key_name = nullptr;;
-    TSqlParser::IdContext *user_name = nullptr;;
-    TSqlParser::IdContext *provider_name = nullptr;;
+    antlr4::Token *password = nullptr;
+    TSqlParser::IdContext *key_name = nullptr;
+    TSqlParser::IdContext *user_name = nullptr;
+    TSqlParser::IdContext *provider_name = nullptr;
     Create_keyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -9180,9 +9180,9 @@ public:
 
   class  Key_optionsContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *pass_phrase = nullptr;;
-    antlr4::Token *identity_phrase = nullptr;;
-    antlr4::Token *key_name_in_provider = nullptr;;
+    antlr4::Token *pass_phrase = nullptr;
+    antlr4::Token *identity_phrase = nullptr;
+    antlr4::Token *key_name_in_provider = nullptr;
     Key_optionsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *KEY_SOURCE();
@@ -9227,9 +9227,9 @@ public:
 
   class  Encryption_mechanismContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *certificate_name = nullptr;;
-    TSqlParser::IdContext *asym_key_name = nullptr;;
-    TSqlParser::IdContext *decrypting_Key_name = nullptr;;
+    TSqlParser::IdContext *certificate_name = nullptr;
+    TSqlParser::IdContext *asym_key_name = nullptr;
+    TSqlParser::IdContext *decrypting_Key_name = nullptr;
     Encryption_mechanismContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CERTIFICATE();
@@ -9250,9 +9250,9 @@ public:
 
   class  Decryption_mechanismContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *certificate_name = nullptr;;
-    TSqlParser::IdContext *asym_key_name = nullptr;;
-    TSqlParser::IdContext *decrypting_Key_name = nullptr;;
+    TSqlParser::IdContext *certificate_name = nullptr;
+    TSqlParser::IdContext *asym_key_name = nullptr;
+    TSqlParser::IdContext *decrypting_Key_name = nullptr;
     Decryption_mechanismContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CERTIFICATE();
@@ -9301,7 +9301,7 @@ public:
 
   class  Set_statementContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *member_name = nullptr;;
+    TSqlParser::IdContext *member_name = nullptr;
     Set_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *SET();
@@ -9363,7 +9363,7 @@ public:
 
   class  Go_statementContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *count = nullptr;;
+    antlr4::Token *count = nullptr;
     Go_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *GO();
@@ -9378,7 +9378,7 @@ public:
 
   class  Use_statementContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *database = nullptr;;
+    TSqlParser::IdContext *database = nullptr;
     Use_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *USE();
@@ -9394,7 +9394,7 @@ public:
 
   class  Setuser_statementContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *user = nullptr;;
+    antlr4::Token *user = nullptr;
     Setuser_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *SETUSER();
@@ -9439,7 +9439,7 @@ public:
 
   class  Dbcc_clauseContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Simple_idContext *name = nullptr;;
+    TSqlParser::Simple_idContext *name = nullptr;
     Dbcc_clauseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DBCC();
@@ -9475,7 +9475,7 @@ public:
 
   class  Execute_clauseContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *clause = nullptr;;
+    antlr4::Token *clause = nullptr;
     Execute_clauseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *EXECUTE();
@@ -9591,9 +9591,9 @@ public:
 
   class  Column_definitionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *constraint = nullptr;;
-    antlr4::Token *seed = nullptr;;
-    antlr4::Token *increment = nullptr;;
+    TSqlParser::IdContext *constraint = nullptr;
+    antlr4::Token *seed = nullptr;
+    antlr4::Token *increment = nullptr;
     Column_definitionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<IdContext *> id();
@@ -9646,8 +9646,8 @@ public:
 
   class  Column_constraintContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *constraint = nullptr;;
-    TSqlParser::Column_name_listContext *pk = nullptr;;
+    TSqlParser::IdContext *constraint = nullptr;
+    TSqlParser::Column_name_listContext *pk = nullptr;
     Column_constraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CHECK();
@@ -9681,9 +9681,9 @@ public:
 
   class  Table_constraintContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *constraint = nullptr;;
-    TSqlParser::Column_name_listContext *fk = nullptr;;
-    TSqlParser::Column_name_listContext *pk = nullptr;;
+    TSqlParser::IdContext *constraint = nullptr;
+    TSqlParser::Column_name_listContext *fk = nullptr;
+    TSqlParser::Column_name_listContext *pk = nullptr;
     Table_constraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> LR_BRACKET();
@@ -9953,7 +9953,7 @@ public:
 
   class  ExpressionContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *op = nullptr;;
+    antlr4::Token *op = nullptr;
     ExpressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Primitive_expressionContext *primitive_expression();
@@ -10004,8 +10004,8 @@ public:
 
   class  Case_expressionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::ExpressionContext *caseExpr = nullptr;;
-    TSqlParser::ExpressionContext *elseExpr = nullptr;;
+    TSqlParser::ExpressionContext *caseExpr = nullptr;
+    TSqlParser::ExpressionContext *elseExpr = nullptr;
     Case_expressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CASE();
@@ -10027,7 +10027,7 @@ public:
 
   class  Unary_operator_expressionContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *op = nullptr;;
+    antlr4::Token *op = nullptr;
     Unary_operator_expressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *BIT_NOT();
@@ -10118,7 +10118,7 @@ public:
 
   class  Common_table_expressionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *expression_name = nullptr;;
+    TSqlParser::IdContext *expression_name = nullptr;
     Common_table_expressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *AS();
@@ -10139,8 +10139,8 @@ public:
 
   class  Update_elemContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *udt_column_name = nullptr;;
-    TSqlParser::IdContext *method_name = nullptr;;
+    TSqlParser::IdContext *udt_column_name = nullptr;
+    TSqlParser::IdContext *method_name = nullptr;
     Update_elemContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     ExpressionContext *expression();
@@ -10296,8 +10296,8 @@ public:
 
   class  Query_specificationContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Search_conditionContext *where = nullptr;;
-    TSqlParser::Search_conditionContext *having = nullptr;;
+    TSqlParser::Search_conditionContext *where = nullptr;
+    TSqlParser::Search_conditionContext *having = nullptr;
     Query_specificationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *SELECT();
@@ -10514,9 +10514,9 @@ public:
 
   class  OptionContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *number_rows = nullptr;;
-    antlr4::Token *number_of_processors = nullptr;;
-    antlr4::Token *number_recursion = nullptr;;
+    antlr4::Token *number_rows = nullptr;
+    antlr4::Token *number_of_processors = nullptr;
+    antlr4::Token *number_recursion = nullptr;
     OptionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *FAST();
@@ -10630,7 +10630,7 @@ public:
 
   class  Column_elemContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *column_name = nullptr;;
+    TSqlParser::IdContext *column_name = nullptr;
     Column_elemContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *null();
@@ -10651,9 +10651,9 @@ public:
 
   class  Udt_elemContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *udt_column_name = nullptr;;
-    TSqlParser::IdContext *non_static_attr = nullptr;;
-    TSqlParser::IdContext *static_attr = nullptr;;
+    TSqlParser::IdContext *udt_column_name = nullptr;
+    TSqlParser::IdContext *non_static_attr = nullptr;
+    TSqlParser::IdContext *static_attr = nullptr;
     Udt_elemContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DOT();
@@ -10673,7 +10673,7 @@ public:
 
   class  Expression_elemContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *eq = nullptr;;
+    antlr4::Token *eq = nullptr;
     Expression_elemContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Column_aliasContext *column_alias();
@@ -10852,8 +10852,8 @@ public:
 
   class  Join_partContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *join_type = nullptr;;
-    antlr4::Token *join_hint = nullptr;;
+    antlr4::Token *join_type = nullptr;
+    antlr4::Token *join_hint = nullptr;
     Join_partContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *JOIN();
@@ -10956,10 +10956,10 @@ public:
 
   class  Rowset_functionContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *provider_name = nullptr;;
-    antlr4::Token *connectionString = nullptr;;
-    antlr4::Token *sql = nullptr;;
-    antlr4::Token *data_file = nullptr;;
+    antlr4::Token *provider_name = nullptr;
+    antlr4::Token *connectionString = nullptr;
+    antlr4::Token *sql = nullptr;
+    antlr4::Token *data_file = nullptr;
     Rowset_functionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *OPENROWSET();
@@ -10983,7 +10983,7 @@ public:
 
   class  Bulk_optionContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *bulk_option_value = nullptr;;
+    antlr4::Token *bulk_option_value = nullptr;
     Bulk_optionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     IdContext *id();
@@ -11392,8 +11392,8 @@ public:
 
   class  Value_methodContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *xquery = nullptr;;
-    antlr4::Token *sqltype = nullptr;;
+    antlr4::Token *xquery = nullptr;
+    antlr4::Token *sqltype = nullptr;
     Value_methodContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> DOT();
@@ -11420,7 +11420,7 @@ public:
 
   class  Query_methodContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *xquery = nullptr;;
+    antlr4::Token *xquery = nullptr;
     Query_methodContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> DOT();
@@ -11443,7 +11443,7 @@ public:
 
   class  Exist_methodContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *xquery = nullptr;;
+    antlr4::Token *xquery = nullptr;
     Exist_methodContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DOT();
@@ -11463,7 +11463,7 @@ public:
 
   class  Modify_methodContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *xml_dml = nullptr;;
+    antlr4::Token *xml_dml = nullptr;
     Modify_methodContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DOT();
@@ -11483,7 +11483,7 @@ public:
 
   class  Nodes_methodContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *xquery = nullptr;;
+    antlr4::Token *xquery = nullptr;
     Nodes_methodContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DOT();
@@ -12004,7 +12004,7 @@ public:
 
   class  File_specContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *file = nullptr;;
+    antlr4::Token *file = nullptr;
     File_specContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LR_BRACKET();
@@ -12034,10 +12034,10 @@ public:
 
   class  Entity_nameContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *server = nullptr;;
-    TSqlParser::IdContext *database = nullptr;;
-    TSqlParser::IdContext *schema = nullptr;;
-    TSqlParser::IdContext *table = nullptr;;
+    TSqlParser::IdContext *server = nullptr;
+    TSqlParser::IdContext *database = nullptr;
+    TSqlParser::IdContext *schema = nullptr;
+    TSqlParser::IdContext *table = nullptr;
     Entity_nameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<IdContext *> id();
@@ -12054,8 +12054,8 @@ public:
 
   class  Entity_name_for_azure_dwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema = nullptr;;
-    TSqlParser::IdContext *object_name = nullptr;;
+    TSqlParser::IdContext *schema = nullptr;
+    TSqlParser::IdContext *object_name = nullptr;
     Entity_name_for_azure_dwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<IdContext *> id();
@@ -12071,9 +12071,9 @@ public:
 
   class  Entity_name_for_parallel_dwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema_database = nullptr;;
-    TSqlParser::IdContext *schema = nullptr;;
-    TSqlParser::IdContext *object_name = nullptr;;
+    TSqlParser::IdContext *schema_database = nullptr;
+    TSqlParser::IdContext *schema = nullptr;
+    TSqlParser::IdContext *object_name = nullptr;
     Entity_name_for_parallel_dwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<IdContext *> id();
@@ -12089,10 +12089,10 @@ public:
 
   class  Full_table_nameContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *server = nullptr;;
-    TSqlParser::IdContext *database = nullptr;;
-    TSqlParser::IdContext *schema = nullptr;;
-    TSqlParser::IdContext *table = nullptr;;
+    TSqlParser::IdContext *server = nullptr;
+    TSqlParser::IdContext *database = nullptr;
+    TSqlParser::IdContext *schema = nullptr;
+    TSqlParser::IdContext *table = nullptr;
     Full_table_nameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<IdContext *> id();
@@ -12109,9 +12109,9 @@ public:
 
   class  Table_nameContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *database = nullptr;;
-    TSqlParser::IdContext *schema = nullptr;;
-    TSqlParser::IdContext *table = nullptr;;
+    TSqlParser::IdContext *database = nullptr;
+    TSqlParser::IdContext *schema = nullptr;
+    TSqlParser::IdContext *table = nullptr;
     Table_nameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<IdContext *> id();
@@ -12129,8 +12129,8 @@ public:
 
   class  Simple_nameContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema = nullptr;;
-    TSqlParser::IdContext *name = nullptr;;
+    TSqlParser::IdContext *schema = nullptr;
+    TSqlParser::IdContext *name = nullptr;
     Simple_nameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<IdContext *> id();
@@ -12146,8 +12146,8 @@ public:
 
   class  Func_proc_name_schemaContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *schema = nullptr;;
-    TSqlParser::IdContext *procedure = nullptr;;
+    TSqlParser::IdContext *schema = nullptr;
+    TSqlParser::IdContext *procedure = nullptr;
     Func_proc_name_schemaContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<IdContext *> id();
@@ -12163,9 +12163,9 @@ public:
 
   class  Func_proc_name_database_schemaContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *database = nullptr;;
-    TSqlParser::IdContext *schema = nullptr;;
-    TSqlParser::IdContext *procedure = nullptr;;
+    TSqlParser::IdContext *database = nullptr;
+    TSqlParser::IdContext *schema = nullptr;
+    TSqlParser::IdContext *procedure = nullptr;
     Func_proc_name_database_schemaContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Func_proc_name_schemaContext *func_proc_name_schema();
@@ -12183,10 +12183,10 @@ public:
 
   class  Func_proc_name_server_database_schemaContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *server = nullptr;;
-    TSqlParser::IdContext *database = nullptr;;
-    TSqlParser::IdContext *schema = nullptr;;
-    TSqlParser::IdContext *procedure = nullptr;;
+    TSqlParser::IdContext *server = nullptr;
+    TSqlParser::IdContext *database = nullptr;
+    TSqlParser::IdContext *schema = nullptr;
+    TSqlParser::IdContext *procedure = nullptr;
     Func_proc_name_server_database_schemaContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Func_proc_name_database_schemaContext *func_proc_name_database_schema();
@@ -12218,7 +12218,7 @@ public:
 
   class  Full_column_nameContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *column_name = nullptr;;
+    TSqlParser::IdContext *column_name = nullptr;
     Full_column_nameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     IdContext *id();
@@ -12416,10 +12416,10 @@ public:
 
   class  Begin_conversation_dialogContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *dialog_handle = nullptr;;
-    TSqlParser::Service_nameContext *initiator_service_name = nullptr;;
-    TSqlParser::Service_nameContext *target_service_name = nullptr;;
-    antlr4::Token *service_broker_guid = nullptr;;
+    antlr4::Token *dialog_handle = nullptr;
+    TSqlParser::Service_nameContext *initiator_service_name = nullptr;
+    TSqlParser::Service_nameContext *target_service_name = nullptr;
+    antlr4::Token *service_broker_guid = nullptr;
     Begin_conversation_dialogContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *BEGIN();
@@ -12488,9 +12488,9 @@ public:
 
   class  End_conversationContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *conversation_handle = nullptr;;
-    antlr4::Token *faliure_code = nullptr;;
-    antlr4::Token *failure_text = nullptr;;
+    antlr4::Token *conversation_handle = nullptr;
+    antlr4::Token *faliure_code = nullptr;
+    antlr4::Token *failure_text = nullptr;
     End_conversationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *END();
@@ -12516,7 +12516,7 @@ public:
 
   class  Waitfor_conversationContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::TimeContext *timeout = nullptr;;
+    TSqlParser::TimeContext *timeout = nullptr;
     Waitfor_conversationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LR_BRACKET();
@@ -12537,8 +12537,8 @@ public:
 
   class  Get_conversationContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *conversation_group_id = nullptr;;
-    TSqlParser::Queue_idContext *queue = nullptr;;
+    antlr4::Token *conversation_group_id = nullptr;
+    TSqlParser::Queue_idContext *queue = nullptr;
     Get_conversationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *GET();
@@ -12559,9 +12559,9 @@ public:
 
   class  Queue_idContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::IdContext *database_name = nullptr;;
-    TSqlParser::IdContext *schema_name = nullptr;;
-    TSqlParser::IdContext *name = nullptr;;
+    TSqlParser::IdContext *database_name = nullptr;
+    TSqlParser::IdContext *schema_name = nullptr;
+    TSqlParser::IdContext *name = nullptr;
     Queue_idContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> DOT();
@@ -12578,9 +12578,9 @@ public:
 
   class  Send_conversationContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *conversation_handle = nullptr;;
-    TSqlParser::ExpressionContext *message_type_name = nullptr;;
-    antlr4::Token *message_body_expression = nullptr;;
+    antlr4::Token *conversation_handle = nullptr;
+    TSqlParser::ExpressionContext *message_type_name = nullptr;
+    antlr4::Token *message_body_expression = nullptr;
     Send_conversationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *SEND();
@@ -12647,7 +12647,7 @@ public:
 
   class  ConstantContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *dollar = nullptr;;
+    antlr4::Token *dollar = nullptr;
     ConstantContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *STRING();

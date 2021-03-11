@@ -1,9 +1,5 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* Define to 1 if you have the <antlr4-runtime/antlr4-runtime.h> header file.
-   */
-#undef HAVE_ANTLR4_RUNTIME_ANTLR4_RUNTIME_H
-
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 

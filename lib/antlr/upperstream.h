@@ -3,7 +3,7 @@
 class UpperStream : public antlr4::ANTLRInputStream
 {
 public:
-        UpperStream(const std::string& input) : ANTLRInputStream(input) {}
+        UpperStream(std::string_view input) : ANTLRInputStream(input) {}
         UpperStream(std::istream &stream) : ANTLRInputStream(stream) {}
         size_t LA(ssize_t i) override;
 } ;
