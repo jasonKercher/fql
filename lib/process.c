@@ -11,7 +11,7 @@
 #include "util/fifo.h"
 #include "util/stringview.h"
 
-#define FIFO_SIZE 32
+#define FIFO_SIZE 16
 
 Process* process_new(const char* action, int width)
 {
@@ -117,16 +117,19 @@ void process_activate(Dnode* proc_node)
                 *recs = new_recs;
         }
 
+        /* set full... */
+        fifo_set_full(proc->fifo_in0);
+
         /* TODO: once we stop hard coding fifo size,
          *       this if block can go.
          */
-        if (proc->action__ != &fql_read) {
-                fifo_advance(proc->fifo_in0);
-                return;
-        }
-        while (!fifo_is_full(proc->fifo_in0)) {
-                fifo_advance(proc->fifo_in0);
-        }
+        //if (proc->action__ != &fql_read) {
+        //        fifo_advance(proc->fifo_in0);
+        //        return;
+        //}
+        //while (!fifo_is_full(proc->fifo_in0)) {
+        //        fifo_advance(proc->fifo_in0);
+        //}
 }
 
 void process_add_second_input(Process* proc)
@@ -224,7 +227,7 @@ void* _thread_exec(void* data)
                         }
                         if (tdata->proc_node->is_root) {
                                 fifo_wait_for_add(proc->fifo_in0);
-                        } else { 
+                        } else {
                                 fifo_wait_for_half(proc->fifo_in0);
                         }
                         if (fifo_is_empty_ts(proc->fifo_in0)) {

@@ -190,7 +190,7 @@ _Bool fifo_is_receivable_ts(Fifo* f)
 
 void fifo_set_full(Fifo* f)
 {
-        f->tail = f->input_count;
+        f->tail = 0;
         f->head = f->buf->size - 1;
 }
 

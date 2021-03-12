@@ -6,6 +6,8 @@
 #include "column.h"
 #include "util/fifo.h"
 
+#define recycle_debug 1
+
 void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
 {
         Record** rec = vec_at(recs, index);
@@ -19,9 +21,50 @@ void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
 
         Vec* proc_recs = vec_at(root->records, (*rec)->idx);
 
-        if (root->action__ == fql_read && fifo_is_open_ts(root->fifo_in0)) {
-                fifo_recycle_ts(root->fifo_in0, &proc_recs);
+#if recycle_debug 
+        fprintf(stderr, "%s: %d\n", root->action_msg->data, (*rec)->idx);
+
+        Vec* buf = root->fifo_in0->buf;
+        Vec** it = vec_begin(buf);
+        int i = 0;
+        for (; it != vec_end(buf); ++it, ++i) {
+                Record** it_rec = vec_at(*it, index);
+                if (i == root->fifo_in0->tail) {
+                        fputc('[', stderr);
+                        //fprintf(stderr, "\x1b[31m%d:%d\x1b[0m ", i++, (*it_rec)->idx);
+                } 
+                fprintf(stderr, "%d:%d", i, (*it_rec)->idx);
+                if (i == root->fifo_in0->head) {
+                        fputc(']', stderr);
+                        //fprintf(stderr, "\x1b[32m%d:%d\x1b[0m ", i++, (*it_rec)->idx);
+                }
+                fputc(' ', stderr);
         }
+        fputc('\n', stderr);
+#endif
+
+        if (root->action__ == fql_read && fifo_is_open_ts(root->fifo_in0)) {
+                fifo_add_ts(root->fifo_in0, &proc_recs);
+        }
+#if recycle_debug 
+        it = vec_begin(buf);
+        i = 0;
+        for (; it != vec_end(buf); ++it, ++i) {
+                Record** it_rec = vec_at(*it, index);
+                if (i == root->fifo_in0->tail) {
+                        fputc('[', stderr);
+                        //fprintf(stderr, "\x1b[31m%d:%d\x1b[0m ", i++, (*it_rec)->idx);
+                } 
+                fprintf(stderr, "%d:%d", i, (*it_rec)->idx);
+                if (i == root->fifo_in0->head) {
+                        fputc(']', stderr);
+                        //fprintf(stderr, "\x1b[32m%d:%d\x1b[0m ", i++, (*it_rec)->idx);
+                }
+                fputc(' ', stderr);
+        }
+        fputc('\n', stderr);
+#endif
+
 }
 
 /* Trigger appropiate roots to read the next record */
