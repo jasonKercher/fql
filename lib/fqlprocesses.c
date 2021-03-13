@@ -6,7 +6,7 @@
 #include "column.h"
 #include "util/fifo.h"
 
-#define recycle_debug 1
+#define recycle_debug 0
 
 void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
 {
