@@ -26,6 +26,7 @@ struct process {
         int fifo_width;                 /* Number of sources at this step */
         _Bool is_secondary;             /* fifo_out should link to a fifo_in1 */
         _Bool is_passive;               /* denotes process that does nothing */
+        _Bool is_enabled;               /* enabled means it still has data to process */
 };
 typedef struct process Process;
 
@@ -45,7 +46,8 @@ int process_step(Plan* plan);
 //int process_exec_plans(struct fql_plan*, int);
 int process_exec_plan(struct fql_plan*);
 int process_exec_plan_thread(struct fql_plan* plan);
-void process_close(struct process*);
+void process_enable(struct process*);
+void process_disable(struct process*);
 
 int fql_read(struct dgraph*, struct process*);
 int fql_select(struct dgraph*, struct process*);

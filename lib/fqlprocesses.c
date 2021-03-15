@@ -6,7 +6,7 @@
 #include "column.h"
 #include "util/fifo.h"
 
-#define recycle_debug 0
+//#define RECYCLE_DEBUG 1
 
 void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
 {
@@ -21,7 +21,7 @@ void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
 
         Vec* proc_recs = vec_at(root->records, (*rec)->idx);
 
-#if recycle_debug 
+#ifdef RECYCLE_DEBUG
         fprintf(stderr, "%s: %d\n", root->action_msg->data, (*rec)->idx);
 
         Vec* buf = root->fifo_in0->buf;
@@ -31,34 +31,30 @@ void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
                 Record** it_rec = vec_at(*it, index);
                 if (i == root->fifo_in0->tail) {
                         fputc('[', stderr);
-                        //fprintf(stderr, "\x1b[31m%d:%d\x1b[0m ", i++, (*it_rec)->idx);
-                } 
+                }
                 fprintf(stderr, "%d:%d", i, (*it_rec)->idx);
                 if (i == root->fifo_in0->head) {
                         fputc(']', stderr);
-                        //fprintf(stderr, "\x1b[32m%d:%d\x1b[0m ", i++, (*it_rec)->idx);
                 }
                 fputc(' ', stderr);
         }
         fputc('\n', stderr);
 #endif
 
-        if (root->action__ == fql_read && fifo_is_open_ts(root->fifo_in0)) {
+        if (root->action__ == fql_read) { // && fifo_is_open_ts(root->fifo_in0)) {
                 fifo_add_ts(root->fifo_in0, &proc_recs);
         }
-#if recycle_debug 
+#ifdef RECYCLE_DEBUG
         it = vec_begin(buf);
         i = 0;
         for (; it != vec_end(buf); ++it, ++i) {
                 Record** it_rec = vec_at(*it, index);
                 if (i == root->fifo_in0->tail) {
                         fputc('[', stderr);
-                        //fprintf(stderr, "\x1b[31m%d:%d\x1b[0m ", i++, (*it_rec)->idx);
-                } 
+                }
                 fprintf(stderr, "%d:%d", i, (*it_rec)->idx);
                 if (i == root->fifo_in0->head) {
                         fputc(']', stderr);
-                        //fprintf(stderr, "\x1b[32m%d:%d\x1b[0m ", i++, (*it_rec)->idx);
                 }
                 fputc(' ', stderr);
         }
@@ -73,7 +69,7 @@ void _recycle_recs(Dgraph* proc_graph, Vec* recs, int width)
         /* width == 0 means constant expression */
         if (width == 0) {
                 Dnode** root_node = vec_begin(proc_graph->_roots);
-                process_close((*root_node)->data);
+                process_disable((*root_node)->data);
                 return;
         }
         int i = 0;
@@ -86,7 +82,7 @@ int fql_read(Dgraph* proc_graph, Process* proc)
 {
         Reader* reader = proc->proc_data;
         Vec** recs = fifo_peek_ts(proc->fifo_in0);
-        
+
         Record** rec = vec_back(*recs);
         int ret = reader->get_record__(reader, *rec);
 
@@ -96,11 +92,7 @@ int fql_read(Dgraph* proc_graph, Process* proc)
         case FQL_FAIL:
                 return FQL_FAIL;
         default: /* eof */
-                fifo_set_open_ts(proc->fifo_in0, false);
-                fifo_set_open_ts(proc->fifo_out0, false);
-                while (!fifo_is_empty_ts(proc->fifo_in0)) {
-                        fifo_consume_ts(proc->fifo_in0);
-                }
+                process_disable(proc);
                 return 0;
         }
 
@@ -170,8 +162,7 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
 
                 Source* src = proc->proc_data;
                 Process* right_side_read_proc = src->read_proc;
-                fifo_advance_ts(right_side_read_proc->fifo_in0);
-                fifo_set_open_ts(right_side_read_proc->fifo_in0, true);
+                process_enable(right_side_read_proc);
                 fifo_set_open_ts(proc->fifo_in1, true);
                 return 1;
         }
@@ -262,7 +253,6 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
          * here just to push any available records.
          */
         Process* right_side_read_proc = src->read_proc;
-        fifo_advance_ts(right_side_read_proc->fifo_in0);
         fql_no_op(proc_graph, right_side_read_proc);
 
         Vec** leftrecs = fifo_peek_ts(proc->fifo_in0);

@@ -36,6 +36,7 @@ Process* process_construct(Process* proc, const char* action, int width)
                 ,width                          /* fifo_width */
                 ,false                          /* is_secondary */
                 ,false                          /* is_passive */
+                ,true                           /* is_enabled */
         };
 
         return proc;
@@ -132,7 +133,7 @@ void process_add_second_input(Process* proc)
         proc->fifo_in1 = fifo_new_(Vec*, FIFO_SIZE);
 }
 
-void process_close(Process* proc)
+void process_disable(Process* proc)
 {
         if (proc->fifo_out0 != NULL) {
                 fifo_set_open_ts(proc->fifo_out0, false);
@@ -141,6 +142,19 @@ void process_close(Process* proc)
                 fifo_set_open_ts(proc->fifo_out1, false);
         }
         fifo_set_open_ts(proc->fifo_in0, false);
+        proc->is_enabled = false;
+}
+
+void process_enable(Process* proc)
+{
+        if (proc->fifo_out0 != NULL) {
+                fifo_set_open_ts(proc->fifo_out0, true);
+        }
+        if (proc->fifo_out1 != NULL) {
+                fifo_set_open_ts(proc->fifo_out1, true);
+        }
+        fifo_set_open_ts(proc->fifo_in0, true);
+        proc->is_enabled = true;
 }
 
 /* returns number of processes that executed or FQL_FAIL
@@ -153,8 +167,11 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
         int run_count = 0;
         while ((proc_node = dgraph_traverse(proc_graph))) {
                 proc = proc_node->data;
+                if (!proc->is_enabled) {
+                        continue;
+                }
                 if (!proc->fifo_in0->is_open && fifo_is_empty(proc->fifo_in0)) {
-                        process_close(proc);
+                        process_disable(proc);
                         continue;
                 }
                 //++run_count;
@@ -214,10 +231,10 @@ void* _thread_exec(void* data)
         struct thread_data* tdata = data;
         Process* proc = tdata->proc_node->data;
 
-        while (true) {
+        while (proc->is_enabled) {
                 if (fifo_is_empty_ts(proc->fifo_in0)) {
                         if (!proc->fifo_in0->is_open) {
-                                process_close(proc);
+                                process_disable(proc);
                                 break;
                         }
                         if (tdata->proc_node->is_root) {
@@ -226,7 +243,7 @@ void* _thread_exec(void* data)
                                 fifo_wait_for_half(proc->fifo_in0);
                         }
                         if (fifo_is_empty_ts(proc->fifo_in0)) {
-                                process_close(proc);
+                                process_disable(proc);
                                 break;
                         }
                 }
