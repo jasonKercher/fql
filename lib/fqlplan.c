@@ -311,9 +311,82 @@ void _activate_procs(Plan* plan)
         Vec* node_vec = plan->processes->nodes;
         Dnode** nodes = vec_begin(node_vec);
 
-        for (; nodes != vec_end(node_vec); ++nodes) {
-                process_activate(*nodes);
+        //for (; nodes != vec_end(node_vec); ++nodes) {
+        //        process_activate(*nodes);
+        //}
+        
+        /* This loop is unrolled so fifo mutexes are not 
+         * all generated from the same location making
+         * them easier to track.
+         */
+
+        int i = 0;
+
+        if (node_vec->size <= i) {
+                return;
         }
+        process_activate(nodes[i++]);
+
+        if (node_vec->size <= i) {
+                return;
+        }
+        process_activate(nodes[i++]);
+
+        if (node_vec->size <= i) {
+                return;
+        }
+        process_activate(nodes[i++]);
+
+        if (node_vec->size <= i) {
+                return;
+        }
+        process_activate(nodes[i++]);
+
+        if (node_vec->size <= i) {
+                return;
+        }
+        process_activate(nodes[i++]);
+
+        if (node_vec->size <= i) {
+                return;
+        }
+        process_activate(nodes[i++]);
+
+        if (node_vec->size <= i) {
+                return;
+        }
+        process_activate(nodes[i++]);
+
+        if (node_vec->size <= i) {
+                return;
+        }
+        process_activate(nodes[i++]);
+
+        if (node_vec->size <= i) {
+                return;
+        }
+        process_activate(nodes[i++]);
+
+        if (node_vec->size <= i) {
+                return;
+        }
+        process_activate(nodes[i++]);
+
+        if (node_vec->size <= i) {
+                return;
+        }
+        process_activate(nodes[i++]);
+
+        if (node_vec->size <= i) {
+                return;
+        }
+        process_activate(nodes[i++]);
+
+        if (node_vec->size <= i) {
+                return;
+        }
+        process_activate(nodes[i++]);
+
 }
 
 /* Run through processes and link up fifos. Input fifos are owned

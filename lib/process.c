@@ -11,7 +11,7 @@
 #include "util/fifo.h"
 #include "util/stringview.h"
 
-#define FIFO_SIZE 16
+#define FIFO_SIZE 512
 
 Process* process_new(const char* action, int width)
 {
@@ -87,6 +87,9 @@ void process_free(Process* proc)
 void process_activate(Dnode* proc_node)
 {
         Process* proc = proc_node->data;
+
+        fprintf(stderr, "Activating %s\n", proc->action_msg->data);
+
         proc->fifo_in0 = fifo_new_(Vec*, FIFO_SIZE);
         if (!proc_node->is_root) {
                 return;

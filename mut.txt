@@ -1,0 +1,167 @@
+mutrace: 0.2 sucessfully initialized for process fql (pid 16622).
+Activating SELECT *,*
+Activating ./t1.temp: stream read
+Activating INNER JOIN
+Activating ./t2.temp: mmap read
+Activating (AND(NOT(foo = foo)))
+
+mutrace: Showing statistics for process fql (pid 16622).
+mutrace: 24 mutexes used.
+
+Mutex #10 (0x0x564ad3274150) first referenced by:
+	/usr/lib/libmutrace.so(pthread_mutex_init+0x1b8) [0x7fd4f4721341]
+	/usr/local/lib/libfql.so.0(fifo_construct+0x5f) [0x7fd4f458d6cf]
+	/usr/local/lib/libfql.so.0(process_activate+0x42) [0x7fd4f4451ba2]
+	/usr/local/lib/libfql.so.0(_activate_procs+0x53) [0x7fd4f44514f3]
+	/usr/local/lib/libfql.so.0(plan_build+0x62) [0x7fd4f44516e2]
+	/usr/local/lib/libfql.so.0(build_plans+0x42) [0x7fd4f4451742]
+	/usr/local/lib/libfql.so.0(fql_make_plans+0x4e) [0x7fd4f4450bce]
+	/usr/local/lib/libfql.so.0(fql_exec+0x12) [0x7fd4f4450c12]
+	fql(main+0x1f0) [0x564ad14863a0]
+	/usr/lib/libc.so.6(__libc_start_main+0xd5) [0x7fd4f3f47b25]
+	fql(_start+0x2e) [0x564ad148646e]
+
+Mutex #7 (0x0x564ad3367480) first referenced by:
+	/usr/lib/libmutrace.so(pthread_mutex_init+0x1b8) [0x7fd4f4721341]
+	/usr/local/lib/libfql.so.0(fifo_construct+0x5f) [0x7fd4f458d6cf]
+	/usr/local/lib/libfql.so.0(process_add_second_input+0x13) [0x7fd4f4451cf3]
+	/usr/local/lib/libfql.so.0(_from+0x1bd) [0x7fd4f445123d]
+	/usr/local/lib/libfql.so.0(plan_build+0x12) [0x7fd4f4451692]
+	/usr/local/lib/libfql.so.0(build_plans+0x42) [0x7fd4f4451742]
+	/usr/local/lib/libfql.so.0(fql_make_plans+0x4e) [0x7fd4f4450bce]
+	/usr/local/lib/libfql.so.0(fql_exec+0x12) [0x7fd4f4450c12]
+	fql(main+0x1f0) [0x564ad14863a0]
+	/usr/lib/libc.so.6(__libc_start_main+0xd5) [0x7fd4f3f47b25]
+	fql(_start+0x2e) [0x564ad148646e]
+
+Mutex #13 (0x0x564ad332cbb0) first referenced by:
+	/usr/lib/libmutrace.so(pthread_mutex_init+0x1b8) [0x7fd4f4721341]
+	/usr/local/lib/libfql.so.0(fifo_construct+0x5f) [0x7fd4f458d6cf]
+	/usr/local/lib/libfql.so.0(process_activate+0x42) [0x7fd4f4451ba2]
+	/usr/local/lib/libfql.so.0(_activate_procs+0x63) [0x7fd4f4451503]
+	/usr/local/lib/libfql.so.0(plan_build+0x62) [0x7fd4f44516e2]
+	/usr/local/lib/libfql.so.0(build_plans+0x42) [0x7fd4f4451742]
+	/usr/local/lib/libfql.so.0(fql_make_plans+0x4e) [0x7fd4f4450bce]
+	/usr/local/lib/libfql.so.0(fql_exec+0x12) [0x7fd4f4450c12]
+	fql(main+0x1f0) [0x564ad14863a0]
+	/usr/lib/libc.so.6(__libc_start_main+0xd5) [0x7fd4f3f47b25]
+	fql(_start+0x2e) [0x564ad148646e]
+
+Mutex #1 (0x0x564ad3399950) first referenced by:
+	/usr/lib/libmutrace.so(pthread_mutex_init+0x1b8) [0x7fd4f4721341]
+	/usr/local/lib/libfql.so.0(fifo_construct+0x5f) [0x7fd4f458d6cf]
+	/usr/local/lib/libfql.so.0(process_activate+0x42) [0x7fd4f4451ba2]
+	/usr/local/lib/libfql.so.0(_activate_procs+0x43) [0x7fd4f44514e3]
+	/usr/local/lib/libfql.so.0(plan_build+0x62) [0x7fd4f44516e2]
+	/usr/local/lib/libfql.so.0(build_plans+0x42) [0x7fd4f4451742]
+	/usr/local/lib/libfql.so.0(fql_make_plans+0x4e) [0x7fd4f4450bce]
+	/usr/local/lib/libfql.so.0(fql_exec+0x12) [0x7fd4f4450c12]
+	fql(main+0x1f0) [0x564ad14863a0]
+	/usr/lib/libc.so.6(__libc_start_main+0xd5) [0x7fd4f3f47b25]
+	fql(_start+0x2e) [0x564ad148646e]
+
+Mutex #12 (0x0x564ad332cb88) first referenced by:
+	/usr/lib/libmutrace.so(pthread_mutex_init+0x1b8) [0x7fd4f4721341]
+	/usr/local/lib/libfql.so.0(fifo_construct+0x53) [0x7fd4f458d6c3]
+	/usr/local/lib/libfql.so.0(process_activate+0x42) [0x7fd4f4451ba2]
+	/usr/local/lib/libfql.so.0(_activate_procs+0x63) [0x7fd4f4451503]
+	/usr/local/lib/libfql.so.0(plan_build+0x62) [0x7fd4f44516e2]
+	/usr/local/lib/libfql.so.0(build_plans+0x42) [0x7fd4f4451742]
+	/usr/local/lib/libfql.so.0(fql_make_plans+0x4e) [0x7fd4f4450bce]
+	/usr/local/lib/libfql.so.0(fql_exec+0x12) [0x7fd4f4450c12]
+	fql(main+0x1f0) [0x564ad14863a0]
+	/usr/lib/libc.so.6(__libc_start_main+0xd5) [0x7fd4f3f47b25]
+	fql(_start+0x2e) [0x564ad148646e]
+
+Mutex #0 (0x0x564ad3399928) first referenced by:
+	/usr/lib/libmutrace.so(pthread_mutex_init+0x1b8) [0x7fd4f4721341]
+	/usr/local/lib/libfql.so.0(fifo_construct+0x53) [0x7fd4f458d6c3]
+	/usr/local/lib/libfql.so.0(process_activate+0x42) [0x7fd4f4451ba2]
+	/usr/local/lib/libfql.so.0(_activate_procs+0x43) [0x7fd4f44514e3]
+	/usr/local/lib/libfql.so.0(plan_build+0x62) [0x7fd4f44516e2]
+	/usr/local/lib/libfql.so.0(build_plans+0x42) [0x7fd4f4451742]
+	/usr/local/lib/libfql.so.0(fql_make_plans+0x4e) [0x7fd4f4450bce]
+	/usr/local/lib/libfql.so.0(fql_exec+0x12) [0x7fd4f4450c12]
+	fql(main+0x1f0) [0x564ad14863a0]
+	/usr/lib/libc.so.6(__libc_start_main+0xd5) [0x7fd4f3f47b25]
+	fql(_start+0x2e) [0x564ad148646e]
+
+Mutex #9 (0x0x564ad3274128) first referenced by:
+	/usr/lib/libmutrace.so(pthread_mutex_init+0x1b8) [0x7fd4f4721341]
+	/usr/local/lib/libfql.so.0(fifo_construct+0x53) [0x7fd4f458d6c3]
+	/usr/local/lib/libfql.so.0(process_activate+0x42) [0x7fd4f4451ba2]
+	/usr/local/lib/libfql.so.0(_activate_procs+0x53) [0x7fd4f44514f3]
+	/usr/local/lib/libfql.so.0(plan_build+0x62) [0x7fd4f44516e2]
+	/usr/local/lib/libfql.so.0(build_plans+0x42) [0x7fd4f4451742]
+	/usr/local/lib/libfql.so.0(fql_make_plans+0x4e) [0x7fd4f4450bce]
+	/usr/local/lib/libfql.so.0(fql_exec+0x12) [0x7fd4f4450c12]
+	fql(main+0x1f0) [0x564ad14863a0]
+	/usr/lib/libc.so.6(__libc_start_main+0xd5) [0x7fd4f3f47b25]
+	fql(_start+0x2e) [0x564ad148646e]
+
+Mutex #6 (0x0x564ad3367458) first referenced by:
+	/usr/lib/libmutrace.so(pthread_mutex_init+0x1b8) [0x7fd4f4721341]
+	/usr/local/lib/libfql.so.0(fifo_construct+0x53) [0x7fd4f458d6c3]
+	/usr/local/lib/libfql.so.0(process_add_second_input+0x13) [0x7fd4f4451cf3]
+	/usr/local/lib/libfql.so.0(_from+0x1bd) [0x7fd4f445123d]
+	/usr/local/lib/libfql.so.0(plan_build+0x12) [0x7fd4f4451692]
+	/usr/local/lib/libfql.so.0(build_plans+0x42) [0x7fd4f4451742]
+	/usr/local/lib/libfql.so.0(fql_make_plans+0x4e) [0x7fd4f4450bce]
+	/usr/local/lib/libfql.so.0(fql_exec+0x12) [0x7fd4f4450c12]
+	fql(main+0x1f0) [0x564ad14863a0]
+	/usr/lib/libc.so.6(__libc_start_main+0xd5) [0x7fd4f3f47b25]
+	fql(_start+0x2e) [0x564ad148646e]
+
+Mutex #16 (0x0x564ad328f9a0) first referenced by:
+	/usr/lib/libmutrace.so(pthread_mutex_init+0x1b8) [0x7fd4f4721341]
+	/usr/local/lib/libfql.so.0(fifo_construct+0x5f) [0x7fd4f458d6cf]
+	/usr/local/lib/libfql.so.0(process_activate+0x42) [0x7fd4f4451ba2]
+	/usr/local/lib/libfql.so.0(_activate_procs+0x73) [0x7fd4f4451513]
+	/usr/local/lib/libfql.so.0(plan_build+0x62) [0x7fd4f44516e2]
+	/usr/local/lib/libfql.so.0(build_plans+0x42) [0x7fd4f4451742]
+	/usr/local/lib/libfql.so.0(fql_make_plans+0x4e) [0x7fd4f4450bce]
+	/usr/local/lib/libfql.so.0(fql_exec+0x12) [0x7fd4f4450c12]
+	fql(main+0x1f0) [0x564ad14863a0]
+	/usr/lib/libc.so.6(__libc_start_main+0xd5) [0x7fd4f3f47b25]
+	fql(_start+0x2e) [0x564ad148646e]
+
+Mutex #15 (0x0x564ad328f978) first referenced by:
+	/usr/lib/libmutrace.so(pthread_mutex_init+0x1b8) [0x7fd4f4721341]
+	/usr/local/lib/libfql.so.0(fifo_construct+0x53) [0x7fd4f458d6c3]
+	/usr/local/lib/libfql.so.0(process_activate+0x42) [0x7fd4f4451ba2]
+	/usr/local/lib/libfql.so.0(_activate_procs+0x73) [0x7fd4f4451513]
+	/usr/local/lib/libfql.so.0(plan_build+0x62) [0x7fd4f44516e2]
+	/usr/local/lib/libfql.so.0(build_plans+0x42) [0x7fd4f4451742]
+	/usr/local/lib/libfql.so.0(fql_make_plans+0x4e) [0x7fd4f4450bce]
+	/usr/local/lib/libfql.so.0(fql_exec+0x12) [0x7fd4f4450c12]
+	fql(main+0x1f0) [0x564ad14863a0]
+	/usr/lib/libc.so.6(__libc_start_main+0xd5) [0x7fd4f3f47b25]
+	fql(_start+0x2e) [0x564ad148646e]
+
+mutrace: Showing 10 most contended mutexes:
+
+ Mutex #   Locked  Changed    Cont. tot.Time[ms] avg.Time[ms] max.Time[ms]  Flags
+      10 254232202  4238137  3083650   121951.400        0.000       10.140 M-.--.
+       7 235314039  3356073  3011436   114551.800        0.000       10.359 M-.--.
+      13  6021738  1950548   250367     2742.882        0.000        4.877 M-.--.
+       1  4911172  1994186    17578     3832.230        0.001        0.150 M-.--.
+      12  2064771  1861160     2970      504.902        0.000        2.313 M-.--.
+       0  4733518  1994026     1733     2032.717        0.000        0.150 M-.--.
+       9 128116105  3969149        0    17456.806        0.000        3.618 M-.--.
+       6 120158747  2906583        0    16700.245        0.000        1.842 M-.--.
+      16  2000907        2        0     1687.793        0.001        3.609 M-.--.
+      15  2000457        2        0      284.692        0.000        0.128 M-.--.
+     ...      ...      ...      ...          ...          ...          ... ||||||
+                                                                           /|||||
+          Object:                                     M = Mutex, W = RWLock /||||
+           State:                                 x = dead, ! = inconsistent /|||
+             Use:                                 R = used in realtime thread /||
+      Mutex Type:                 r = RECURSIVE, e = ERRRORCHECK, a = ADAPTIVE /|
+  Mutex Protocol:                                      i = INHERIT, p = PROTECT /
+     RWLock Kind: r = PREFER_READER, w = PREFER_WRITER, W = PREFER_WRITER_NONREC 
+
+mutrace: Note that the flags column R is only valid in --track-rt mode!
+
+mutrace: Total runtime is 320827.554 ms.
+
+mutrace: Results for SMP with 4 processors.
