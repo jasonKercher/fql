@@ -1,7 +1,7 @@
 #ifndef RECORD_H
 #define RECORD_H
 
-#include "csv.h"
+#include <csv.h>
 #include "util/vec.h"
 #include "util/stringview.h"
 #include "util/stringy.h"

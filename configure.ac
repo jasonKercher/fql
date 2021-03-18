@@ -11,7 +11,7 @@ AC_PROG_CXX
 #AC_CHECK_HEADER([antlr4-runtime.h])
 
 AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_FILES([Makefile libcsv/Makefile lib/Makefile lib/antlr/Makefile lib/antlr/gen/Makefile util/Makefile lib/docs/Makefile libcsv/docs/Makefile src/Makefile ])
+AC_CONFIG_FILES([Makefile lib/Makefile lib/antlr/Makefile lib/antlr/gen/Makefile util/Makefile lib/docs/Makefile src/Makefile ])
 
 # Check
 AC_ARG_WITH([check],
@@ -34,7 +34,7 @@ if test -z "$DOXYGEN";
 fi
 
 AM_CONDITIONAL([HAVE_DOXYGEN],[test -n "$DOXYGEN"])
-AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([lib/docs/Doxyfile libcsv/docs/Doxyfile])])
+AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([lib/docs/Doxyfile])])
 
 AC_OUTPUT
 

@@ -1,6 +1,6 @@
 SUBDIRS = docs antlr
 
-AM_CPPFLAGS = -Iinclude -I$(top_srcdir)/util/ -I$(top_srcdir)/libcsv/include
+AM_CPPFLAGS = -Iinclude -I$(top_srcdir)/util/
 include_HEADERS = include/fql.h
 lib_LTLIBRARIES = libfql.la
 libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
@@ -18,5 +18,5 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					function.h function.c fqlfunctions.c \
 					record.h record.c \
 					field.h field.c
-libfql_la_LDFLAGS = -lantlr4-runtime -pthread
-libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la ../libcsv/libcsv.la 
+libfql_la_LDFLAGS = -lcsv -lantlr4-runtime -pthread
+libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la

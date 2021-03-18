@@ -1,7 +1,7 @@
 #include "schema.h"
 
 #include <dirent.h>
-#include "csv.h"
+#include <csv.h>
 
 #include "fql.h"
 #include "column.h"

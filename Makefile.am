@@ -1,3 +1,3 @@
-SUBDIRS = util lib libcsv tests src
+SUBDIRS = util lib tests src
 
 ACLOCAL_AMFLAGS = -I m4
