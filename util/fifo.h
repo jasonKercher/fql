@@ -17,9 +17,10 @@ struct fifo {
         pthread_mutex_t open_mutex;
         pthread_cond_t cond_add;
         pthread_cond_t cond_get;
-        pthread_cond_t cond_half;
+        pthread_cond_t cond_work;
         size_t head;
         size_t tail;
+        unsigned work_min;
         unsigned input_count;
         _Bool is_open;
 };
@@ -34,6 +35,7 @@ struct fifo* fifo_construct(struct fifo*, size_t, size_t);
 void fifo_free(struct fifo*);
 void fifo_destroy(struct fifo*);
 
+void fifo_set_pipeline_size(struct fifo*, int);
 void fifo_set_open(struct fifo*, int);
 void fifo_set_open_ts(struct fifo*, int);
 void fifo_resize(struct fifo*, size_t);
@@ -43,8 +45,8 @@ size_t fifo_available(struct fifo*);
 size_t fifo_available_ts(struct fifo*);
 _Bool fifo_is_empty(struct fifo*);
 _Bool fifo_is_empty_ts(struct fifo*);
-_Bool fifo_is_over_half(struct fifo*);
-_Bool fifo_is_over_half_ts(struct fifo*);
+_Bool fifo_has_work(struct fifo*);
+_Bool fifo_has_work_ts(struct fifo*);
 _Bool fifo_is_full(struct fifo*);
 _Bool fifo_is_full_ts(struct fifo*);
 _Bool fifo_is_open(struct fifo*);
@@ -69,7 +71,7 @@ int fifo_advance_ts(struct fifo*);
 /* thread conditions */
 void fifo_wait_for_add(struct fifo*);
 void fifo_wait_for_get(struct fifo*);
-void fifo_wait_for_half(struct fifo*);
+void fifo_wait_for_work(struct fifo*);
 
 
 #endif  /* CIRCLE_H */

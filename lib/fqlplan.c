@@ -280,13 +280,16 @@ void _clear_passive(Plan* plan)
         }
 }
 
-/* Assign input counts to each process by traversing 
+/* Assign input counts to each process by traversing
  * and copying the visit_count. This important when
- * threading because "is not full" is not a valid 
+ * threading because "is not full" is not a valid
  * test for whether we are allowed to send data
  * into the pipe IF there is more than one input.
+ *
+ * Also, update the pipeline size. If we just waited
+ * for each pipe to be half full, we could dead lock.
  */
-void _assign_input_counts(Dgraph* proc_graph)
+void _update_pipes(Dgraph* proc_graph)
 {
         while (dgraph_traverse(proc_graph));
 
@@ -298,6 +301,7 @@ void _assign_input_counts(Dgraph* proc_graph)
                 }
                 Process* proc = (*it)->data;
                 proc->fifo_in0->input_count = (*it)->visit_count;
+
                 if (proc->fifo_in1) {
                         proc->fifo_in1->input_count = (*it)->visit_count;
                 }
@@ -314,8 +318,8 @@ void _activate_procs(Plan* plan)
         //for (; nodes != vec_end(node_vec); ++nodes) {
         //        process_activate(*nodes);
         //}
-        
-        /* This loop is unrolled so fifo mutexes are not 
+
+        /* This loop is unrolled so fifo mutexes are not
          * all generated from the same location making
          * them easier to track.
          */
@@ -435,7 +439,7 @@ Plan* plan_build(Plan* plan, Query* query)
         dgraph_get_roots(plan->processes);
         _activate_procs(plan);
         _make_pipes(plan);
-        _assign_input_counts(plan->processes);
+        _update_pipes(plan->processes);
 
         return plan;
 }

@@ -243,7 +243,7 @@ void* _thread_exec(void* data)
                         if (tdata->proc_node->is_root) {
                                 fifo_wait_for_add(proc->fifo_in0);
                         } else {
-                                fifo_wait_for_half(proc->fifo_in0);
+                                fifo_wait_for_work(proc->fifo_in0);
                         }
                         if (fifo_is_empty_ts(proc->fifo_in0)) {
                                 process_disable(proc);
@@ -251,8 +251,10 @@ void* _thread_exec(void* data)
                         }
                 }
                 if (proc->fifo_in1) {
-                        if (fifo_is_empty_ts(proc->fifo_in1)) {
-                                fifo_wait_for_add(proc->fifo_in1);
+                        if (fifo_is_open_ts(proc->fifo_in1) &&
+                            fifo_is_empty_ts(proc->fifo_in1)) {
+                                fifo_wait_for_work(proc->fifo_in0);
+                                //fifo_wait_for_add(proc->fifo_in1);
                         }
                 }
                 if (proc->fifo_out0) {
