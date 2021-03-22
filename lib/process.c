@@ -253,7 +253,7 @@ void* _thread_exec(void* data)
                 if (proc->fifo_in1) {
                         if (fifo_is_open_ts(proc->fifo_in1) &&
                             fifo_is_empty_ts(proc->fifo_in1)) {
-                                fifo_wait_for_work(proc->fifo_in0);
+                                fifo_wait_for_work(proc->fifo_in1);
                                 //fifo_wait_for_add(proc->fifo_in1);
                         }
                 }

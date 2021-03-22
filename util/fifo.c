@@ -1,8 +1,7 @@
 #include "fifo.h"
 #include "util.h"
-#include <stdbool.h>
 
-Fifo* fifo_new(size_t elem_size, size_t buf_size)
+Fifo* fifo_new(size_t elem_size, unsigned buf_size)
 {
         Fifo* new_fifo = NULL;
         malloc_(new_fifo, sizeof(*new_fifo));
@@ -10,7 +9,7 @@ Fifo* fifo_new(size_t elem_size, size_t buf_size)
         return fifo_construct(new_fifo, elem_size, buf_size);
 }
 
-Fifo* fifo_construct(Fifo* fifo, size_t elem_size, size_t buf_size)
+Fifo* fifo_construct(Fifo* fifo, size_t elem_size, unsigned buf_size)
 {
         /* Fifo requires a buffer of atleast size 2 */
         if (buf_size <= 1) {
@@ -27,6 +26,7 @@ Fifo* fifo_construct(Fifo* fifo, size_t elem_size, size_t buf_size)
                 ,0                      /* head */
                 ,0                      /* tail */
                 ,buf_size / 10          /* work_min */
+                //,UINT_MAX               /* work_target */
                 ,0                      /* input_count */
                 ,true                   /* is_open */
         };
@@ -62,11 +62,12 @@ void fifo_destroy(Fifo* fifo)
         pthread_mutex_destroy(&fifo->open_mutex);
         pthread_cond_destroy(&fifo->cond_add);
         pthread_cond_destroy(&fifo->cond_get);
+        pthread_cond_destroy(&fifo->cond_work);
 }
 
 void fifo_set_pipeline_size(Fifo* f, int pipeline_size)
 {
-        f->work_min = f->buf->size / pipeline_size;
+        f->work_min = f->buf->size / 2 * pipeline_size;
         //assert(fifo->work_min > 0);
 }
 
@@ -91,8 +92,12 @@ void fifo_set_open_ts(Fifo* fifo, int is_open)
         pthread_mutex_unlock(&fifo->tail_mutex);
 }
 
-/** NOT Thread-safe **/
-void fifo_resize(Fifo* fifo, size_t n)
+/* This struct was never meant to be resizable
+ * But under the assumption that you are okay
+ * losing all currently held data... yea...
+ * go for it. (Definitely not thread-safe
+ */
+void fifo_resize(Fifo* fifo, unsigned n)
 {
         /* Fifo requires a buffer of atleast size 2 */
         if (n <= 1) {
@@ -117,7 +122,7 @@ _Bool fifo_is_open_ts(Fifo* fifo)
         return ret;
 }
 
-size_t fifo_available(Fifo* f)
+unsigned fifo_available(Fifo* f)
 {
         size_t available = f->head - f->tail;
         if (f->head < f->tail) {
@@ -126,7 +131,7 @@ size_t fifo_available(Fifo* f)
         return available;
 }
 
-size_t fifo_available_ts(Fifo* f)
+unsigned fifo_available_ts(Fifo* f)
 {
         pthread_mutex_lock(&f->tail_mutex);
         pthread_mutex_lock(&f->head_mutex);
@@ -146,28 +151,29 @@ _Bool fifo_is_empty(Fifo* f)
 
 _Bool fifo_is_empty_ts(Fifo* f)
 {
-        pthread_mutex_lock(&f->tail_mutex);
+        //pthread_mutex_lock(&f->tail_mutex);
         pthread_mutex_lock(&f->head_mutex);
         _Bool is_empty = (f->head == f->tail);
         pthread_mutex_unlock(&f->head_mutex);
-        pthread_mutex_unlock(&f->tail_mutex);
+        //pthread_mutex_unlock(&f->tail_mutex);
         return is_empty;
 }
 
 _Bool fifo_has_work(Fifo* f)
 {
-        return (fifo_available(f) >= f->work_min); 
+        return (fifo_available(f) >= f->work_min);
+        //return (f->head == f->work_target);
 }
 
-_Bool fifo_has_work_ts(Fifo* f)
-{
-        pthread_mutex_lock(&f->tail_mutex);
-        pthread_mutex_lock(&f->head_mutex);
-        _Bool has_work = fifo_has_work(f);
-        pthread_mutex_unlock(&f->tail_mutex);
-        pthread_mutex_unlock(&f->head_mutex);
-        return has_work;
-}
+//_Bool fifo_has_work_ts(Fifo* f)
+//{
+//        //pthread_mutex_lock(&f->tail_mutex);
+//        pthread_mutex_lock(&f->head_mutex);
+//        _Bool has_work = fifo_has_work(f);
+//        pthread_mutex_unlock(&f->head_mutex);
+//        //pthread_mutex_unlock(&f->tail_mutex);
+//        return has_work;
+//}
 
 _Bool fifo_is_full(Fifo* f)
 {
@@ -257,14 +263,14 @@ int fifo_recycle(Fifo* f, void* data)
 int fifo_recycle_ts(Fifo* f, void* data)
 {
         pthread_mutex_lock(&f->tail_mutex);
-        pthread_mutex_lock(&f->head_mutex);
+        //pthread_mutex_lock(&f->head_mutex);
         fifo_recycle(f, data);
         pthread_cond_signal(&f->cond_add);
         /* No need to signal here in this application */
         //if (!fifo_is_receivable(f)) {
         //        pthread_cond_signal(&f->cond_work);
         //}
-        pthread_mutex_unlock(&f->head_mutex);
+        //pthread_mutex_unlock(&f->head_mutex);
         pthread_mutex_unlock(&f->tail_mutex);
 
         return 0;
@@ -280,7 +286,7 @@ int fifo_add(Fifo* f, void* data)
 
 int fifo_add_ts(Fifo* f, void* data)
 {
-        pthread_mutex_lock(&f->tail_mutex);
+        //pthread_mutex_lock(&f->tail_mutex);
         pthread_mutex_lock(&f->head_mutex);
         fifo_add(f, data);
         pthread_cond_signal(&f->cond_add);
@@ -288,7 +294,7 @@ int fifo_add_ts(Fifo* f, void* data)
                 pthread_cond_signal(&f->cond_work);
         }
         pthread_mutex_unlock(&f->head_mutex);
-        pthread_mutex_unlock(&f->tail_mutex);
+        //pthread_mutex_unlock(&f->tail_mutex);
 
         return 0;
 }
@@ -303,7 +309,7 @@ int fifo_advance(Fifo* f)
 
 int fifo_advance_ts(Fifo* f)
 {
-        pthread_mutex_lock(&f->tail_mutex);
+        //pthread_mutex_lock(&f->tail_mutex);
         pthread_mutex_lock(&f->head_mutex);
         fifo_advance(f);
         pthread_cond_signal(&f->cond_add);
@@ -311,7 +317,7 @@ int fifo_advance_ts(Fifo* f)
                 pthread_cond_signal(&f->cond_work);
         }
         pthread_mutex_unlock(&f->head_mutex);
-        pthread_mutex_unlock(&f->tail_mutex);
+        //pthread_mutex_unlock(&f->tail_mutex);
 
         return 0;
 }
@@ -328,7 +334,7 @@ void fifo_wait_for_add(Fifo* f)
 void fifo_wait_for_get(Fifo* f)
 {
         pthread_mutex_lock(&f->tail_mutex);
-        while (fifo_is_full(f)) {
+        while (!fifo_is_receivable(f)) {
                 pthread_cond_wait(&f->cond_get, &f->tail_mutex);
         }
         pthread_mutex_unlock(&f->tail_mutex);
@@ -336,9 +342,25 @@ void fifo_wait_for_get(Fifo* f)
 
 void fifo_wait_for_work(Fifo* f)
 {
+        /* get work target, so we don't need
+         * to lock tail while checking for work
+         */
+        //pthread_mutex_lock(&f->tail_mutex);
+        //pthread_mutex_lock(&f->head_mutex);
+        //unsigned available = fifo_available(f);
+        //f->work_target = (f->work_min - available) + f->head;
+        //f->work_target %= f->buf->size;
+        //pthread_mutex_unlock(&f->head_mutex);
+        //pthread_mutex_unlock(&f->tail_mutex);
+
+        //if (available >= f->work_min) {
+        //        return;
+        //}
+
         pthread_mutex_lock(&f->head_mutex);
         /* No loop here in case we never fill. */
-        if (!fifo_has_work(f)) {
+        //if (!fifo_has_work(f)) {
+        while (fifo_is_open(f) && !fifo_has_work(f)) {
                 pthread_cond_wait(&f->cond_work, &f->head_mutex);
                 //return (fifo_available(f) + f->input_count + 1 < f->buf->size);
         }
