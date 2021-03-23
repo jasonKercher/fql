@@ -41,8 +41,8 @@ void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
         fputc('\n', stderr);
 #endif
 
-        if (root->action__ == fql_read) { // && fifo_is_open_ts(root->fifo_in0)) {
-                fifo_add_ts(root->fifo_in0, &proc_recs);
+        if (root->action__ == fql_read) { // && fifo_is_open(root->fifo_in0)) {
+                fifo_add(root->fifo_in0, &proc_recs);
         }
 #ifdef RECYCLE_DEBUG
         it = vec_begin(buf);
@@ -81,7 +81,7 @@ void _recycle_recs(Dgraph* proc_graph, Vec* recs, int width)
 int fql_read(Dgraph* proc_graph, Process* proc)
 {
         Reader* reader = proc->proc_data;
-        Vec** recs = fifo_peek_ts(proc->fifo_in0);
+        Vec** recs = fifo_peek(proc->fifo_in0);
 
         Record** rec = vec_back(*recs);
         int ret = reader->get_record__(reader, *rec);
@@ -96,15 +96,15 @@ int fql_read(Dgraph* proc_graph, Process* proc)
                 return 0;
         }
 
-        fifo_consume_ts(proc->fifo_in0);
-        fifo_add_ts(proc->fifo_out0, recs);
+        fifo_consume(proc->fifo_in0);
+        fifo_add(proc->fifo_out0, recs);
 
         return 1;
 }
 
 int fql_select(Dgraph* proc_graph, Process* proc)
 {
-        Vec** recs = fifo_get_ts(proc->fifo_in0);
+        Vec** recs = fifo_get(proc->fifo_in0);
         Select* select = proc->proc_data;
         int ret = select->select__(select, *recs);
 
@@ -115,7 +115,7 @@ int fql_select(Dgraph* proc_graph, Process* proc)
 
 int fql_logic(Dgraph* proc_graph, Process* proc)
 {
-        Vec** recs = fifo_get_ts(proc->fifo_in0);
+        Vec** recs = fifo_get(proc->fifo_in0);
         LogicGroup* lg = proc->proc_data;
 
         int ret = logicgroup_eval(lg, *recs, lg->join_logic);
@@ -124,9 +124,9 @@ int fql_logic(Dgraph* proc_graph, Process* proc)
         }
 
         if (ret) {
-                fifo_add_ts(proc->fifo_out1, recs);  /* true */
+                fifo_add(proc->fifo_out1, recs);  /* true */
         } else if (proc->fifo_out0 != NULL) {
-                fifo_add_ts(proc->fifo_out0, recs);  /* false */
+                fifo_add(proc->fifo_out0, recs);  /* false */
         } else {
                 _recycle_recs(proc_graph, *recs, proc->fifo_width);
         }
@@ -144,17 +144,17 @@ void _increase_left_side_ref_count(Vec* leftrecs)
 
 int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
 {
-        Vec** leftrecs = fifo_peek_ts(proc->fifo_in0);
+        Vec** leftrecs = fifo_peek(proc->fifo_in0);
 
         /* Re-open fifo if eof reached and consume */
-        if (fifo_is_empty_ts(proc->fifo_in1)) {
-                if (fifo_is_open_ts(proc->fifo_in1)) {
+        if (fifo_is_empty(proc->fifo_in1)) {
+                if (fifo_is_open(proc->fifo_in1)) {
                         return 0;
                 }
-                fifo_consume_ts(proc->fifo_in0);
+                fifo_consume(proc->fifo_in0);
 
-                if (!fifo_is_open_ts(proc->fifo_in0) &&
-                    fifo_is_empty_ts(proc->fifo_in0)) {
+                if (!fifo_is_open(proc->fifo_in0) &&
+                    fifo_is_empty(proc->fifo_in0)) {
                         return 0;
                 }
 
@@ -163,12 +163,12 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
                 Source* src = proc->proc_data;
                 Process* right_side_read_proc = src->read_proc;
                 process_enable(right_side_read_proc);
-                fifo_set_open_ts(proc->fifo_in1, true);
+                fifo_set_open(proc->fifo_in1, true);
                 return 1;
         }
 
         _increase_left_side_ref_count(*leftrecs);
-        Vec** rightrecs = fifo_get_ts(proc->fifo_in1);
+        Vec** rightrecs = fifo_get(proc->fifo_in1);
 
         unsigned i = 0;
         for (; i < (*leftrecs)->size; ++i) {
@@ -176,7 +176,7 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
                 vec_set(*rightrecs, i, leftrec);
         }
 
-        fifo_add_ts(proc->fifo_out0, rightrecs);
+        fifo_add(proc->fifo_out0, rightrecs);
 
         return 1;
 }
@@ -211,13 +211,13 @@ Vec* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
 
         char** rightrec_ptr = vec_at(hj->recs, hj->rec_idx++);
         if (hj->rec_idx >= hj->recs->size) {
-                fifo_consume_ts(proc->fifo_in0);
+                fifo_consume(proc->fifo_in0);
                 hj->recs = NULL;
         } else {
                 _increase_left_side_ref_count(leftrecs);
         }
 
-        Vec** rightrecs = fifo_get_ts(proc->fifo_in1);
+        Vec** rightrecs = fifo_get(proc->fifo_in1);
         Record** rec = vec_back(*rightrecs);
         Reader* reader = src->table->reader;
 
@@ -232,8 +232,8 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
         Source* src = proc->proc_data;
         struct hashjoin* hj = src->join_data;
 
-        if (fifo_is_empty_ts(proc->fifo_in1) && hj->state == SIDE_RIGHT) {
-                if (!fifo_is_open_ts(proc->fifo_in1)) {
+        if (fifo_is_empty(proc->fifo_in1) && hj->state == SIDE_RIGHT) {
+                if (!fifo_is_open(proc->fifo_in1)) {
                         hj->state = SIDE_LEFT;
                         return 1;
                 } else {
@@ -242,7 +242,7 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
         }
 
         if (hj->state == SIDE_RIGHT) {
-                Vec** rightrecs = fifo_get_ts(proc->fifo_in1);
+                Vec** rightrecs = fifo_get(proc->fifo_in1);
                 _hash_join_right_side(proc, src, *rightrecs);
                 _recycle_specific(proc_graph, *rightrecs, proc->fifo_width-1);
                 return 1;
@@ -255,10 +255,11 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
         Process* right_side_read_proc = src->read_proc;
         fql_no_op(proc_graph, right_side_read_proc);
 
-        Vec** leftrecs = fifo_peek_ts(proc->fifo_in0);
+        //Vec** leftrecs = fifo_peek(proc->fifo_in0);
+        Vec** leftrecs = fifo_peek(proc->fifo_in0);
         Vec* rightrecs = _hash_join_left_side(proc, src, *leftrecs);
         if (rightrecs == NULL) {
-                fifo_consume_ts(proc->fifo_in0);
+                fifo_consume(proc->fifo_in0);
                 _recycle_recs(proc_graph, *leftrecs, proc->fifo_width-1);
                 return 1;
         }
@@ -269,7 +270,7 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
                 vec_set(rightrecs, i, leftrec);
         }
 
-        fifo_add_ts(proc->fifo_out0, &rightrecs);
+        fifo_add(proc->fifo_out1, &rightrecs);
 
         return 1;
 }
@@ -277,8 +278,8 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
 int fql_no_op(Dgraph* proc_graph, Process* proc)
 {
         //fprintf(stderr, "No-op: %s\n", (char*) proc->action_msg->data);
-        Vec** recs = fifo_get_ts(proc->fifo_in0);
-        fifo_add_ts(proc->fifo_out0, recs);
+        Vec** recs = fifo_get(proc->fifo_in0);
+        fifo_add(proc->fifo_out0, recs);
         return 0;
 }
 

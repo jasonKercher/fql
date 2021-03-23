@@ -144,6 +144,24 @@ void logicgroup_free(LogicGroup* lg)
         free_(lg);
 }
 
+void _get_condition_count(LogicGroup* lg, unsigned* count)
+{
+        if (lg->type == LG_NOT) {
+                ++(*count);
+        }
+        LogicGroup** it = vec_begin(&lg->items);
+        for (; it != vec_end(&lg->items); ++it) {
+                _get_condition_count(*it, count);
+        }
+}
+
+unsigned logicgroup_get_condition_count(LogicGroup* lg)
+{
+        unsigned count = 0;
+        _get_condition_count(lg, &count);
+        return count;
+}
+
 /* Essentially the same as logicgroup_eval.
  * Every logic is true except the one provided.
  * The point is to determine if that logic MUST be

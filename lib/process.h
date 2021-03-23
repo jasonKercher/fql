@@ -40,7 +40,7 @@ struct process* process_construct(struct process*, const char*, int width);
 void process_node_free(struct dnode* proc_node);
 void process_free(struct process*);
 
-void process_activate(Dnode* proc_node);
+void process_activate(Dnode* proc_node, unsigned graph_size);
 void process_add_second_input(struct process*);
 int process_step(Plan* plan);
 //int process_exec_plans(struct fql_plan*, int);

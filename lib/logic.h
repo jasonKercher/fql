@@ -66,6 +66,7 @@ struct logicgroup* logicgroup_new(enum logicgroup_type);
 struct logicgroup* logicgroup_construct(struct logicgroup*, enum logicgroup_type);
 void logicgroup_free(struct logicgroup*);
 
+unsigned logicgroup_get_condition_count(struct logicgroup* lg);
 int logic_can_be_false(struct logicgroup*, struct logic*);
 int logicgroup_eval(struct logicgroup*, struct vec*, struct logic* skip);
 

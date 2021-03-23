@@ -20,6 +20,8 @@
  * where each node represents a process
  */
 
+void _print_plan(Plan* plan);
+
 Plan* plan_new(int source_total)
 {
         Plan* new_plan = NULL;
@@ -101,7 +103,7 @@ void _logic_to_process(Process* logic_proc, LogicGroup* lg)
         string_strcat(logic_proc->action_msg, ")");
 }
 
-void _logicgroup_process(Plan* plan, LogicGroup* lg)
+void _logicgroup_process(Plan* plan, LogicGroup* lg, _Bool is_from_hash_join)
 {
         Process* logic_proc = process_new("", plan->source_count);
         logic_proc->action__ = &fql_logic;
@@ -109,7 +111,15 @@ void _logicgroup_process(Plan* plan, LogicGroup* lg)
         _logic_to_process(logic_proc, lg);
         Dnode* logic_node = dgraph_add_data(plan->processes, logic_proc);
 
-        plan->current->out[0] = logic_node;
+        if (is_from_hash_join) {
+                plan->current->out[1] = logic_node;
+                if (logicgroup_get_condition_count(lg) == 1) {
+                        logic_proc->is_passive = true;
+                }
+        } else {
+                plan->current->out[0] = logic_node;
+        }
+
         logic_node->out[0] = plan->op_false;
 
         Process* logic_true = process_new("Logic True", plan->source_count);
@@ -168,7 +178,8 @@ void _from(Plan* plan, Query* query)
         for (++src; src != vec_end(query->sources); ++src) {
                 Process* join_proc = _new_join_proc(src->join_type, ++plan->source_count);
                 process_add_second_input(join_proc);
-                if (src->condition->join_logic != NULL) {
+                _Bool is_hash_join = (src->condition->join_logic != NULL);
+                if (is_hash_join) {
                         join_proc->action__ = &fql_hash_join;
                         source_hash_join_init(src);
                 } else {
@@ -198,7 +209,7 @@ void _from(Plan* plan, Query* query)
                 plan->current = join_proc_node;
 
                 if (src->condition != NULL) {
-                        _logicgroup_process(plan, src->condition);
+                        _logicgroup_process(plan, src->condition, is_hash_join);
                 }
         }
 
@@ -211,7 +222,7 @@ void _where(Plan* plan, Query* query)
                 return;
         }
 
-        _logicgroup_process(plan, query->where);
+        _logicgroup_process(plan, query->where, false);
 }
 
 void _group(Plan* plan, Query* query)
@@ -230,6 +241,7 @@ void _having(Plan* plan, Query* query) { }
 void _operation(Plan* plan, Query* query)
 {
         plan->current->out[0] = plan->op_true;
+        //plan->current->out[1] = plan->op_true;
         op_apply_process(query, plan);
 }
 
@@ -258,10 +270,16 @@ void _clear_passive(Plan* plan)
                 }
 
                 /* Check branch 1 */
+                /* TODO: Fix my shit design */
+                _Bool first_pass = true;
                 while (nodes[i]->out[1] != NULL) {
                         Process* proc = nodes[i]->out[1]->data;
                         if (proc->is_passive) {
-                                nodes[i]->out[1] = nodes[i]->out[1]->out[0];
+                                if (nodes[i]->out[1]->out[1] != NULL) {
+                                        nodes[i]->out[1] = nodes[i]->out[1]->out[1];
+                                } else {
+                                        nodes[i]->out[1] = nodes[i]->out[1]->out[0];
+                                }
                         } else {
                                 break;
                         }
@@ -316,7 +334,7 @@ void _activate_procs(Plan* plan)
         Dnode** nodes = vec_begin(node_vec);
 
         //for (; nodes != vec_end(node_vec); ++nodes) {
-        //        process_activate(*nodes);
+        //        process_activate(*nodes, node_vec->size);
         //}
 
         /* This loop is unrolled so fifo mutexes are not
@@ -329,67 +347,67 @@ void _activate_procs(Plan* plan)
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
         if (node_vec->size <= i) {
                 return;
         }
-        process_activate(nodes[i++]);
+        process_activate(nodes[i++], node_vec->size);
 
 }
 
@@ -434,6 +452,10 @@ Plan* plan_build(Plan* plan, Query* query)
         _having(plan, query);
         _operation(plan, query);
         _limit(plan, query);
+
+        /* Uncomment this to view the plan *with* passive nodes */
+        //_print_plan(plan);
+
         _clear_passive(plan);
         /* Reset root vec after passive removed */
         dgraph_get_roots(plan->processes);

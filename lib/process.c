@@ -11,7 +11,7 @@
 #include "util/fifo.h"
 #include "util/stringview.h"
 
-#define FIFO_SIZE 512
+#define FIFO_SIZE 256
 
 Process* process_new(const char* action, int width)
 {
@@ -84,16 +84,18 @@ void process_free(Process* proc)
         free_(proc);
 }
 
-void process_activate(Dnode* proc_node)
+void process_activate(Dnode* proc_node, unsigned graph_size)
 {
         Process* proc = proc_node->data;
 
         fprintf(stderr, "Activating %s\n", proc->action_msg->data);
 
-        proc->fifo_in0 = fifo_new_(Vec*, FIFO_SIZE);
         if (!proc_node->is_root) {
+                proc->fifo_in0 = fifo_new_(Vec*, FIFO_SIZE);
                 return;
         }
+
+        proc->fifo_in0 = fifo_new_(Vec*, FIFO_SIZE * graph_size);
 
         int field_count = 1;
         if (proc->action__ == &fql_read) {
@@ -102,7 +104,7 @@ void process_activate(Dnode* proc_node)
         }
 
         proc->records = vec_new_(Vec);
-        vec_resize(proc->records, FIFO_SIZE);
+        vec_resize(proc->records, FIFO_SIZE * graph_size);
 
         int i = 0;
 
@@ -139,24 +141,24 @@ void process_add_second_input(Process* proc)
 void process_disable(Process* proc)
 {
         if (proc->fifo_out0 != NULL) {
-                fifo_set_open_ts(proc->fifo_out0, false);
+                fifo_set_open(proc->fifo_out0, false);
         }
         if (proc->fifo_out1 != NULL) {
-                fifo_set_open_ts(proc->fifo_out1, false);
+                fifo_set_open(proc->fifo_out1, false);
         }
-        fifo_set_open_ts(proc->fifo_in0, false);
+        fifo_set_open(proc->fifo_in0, false);
         proc->is_enabled = false;
 }
 
 void process_enable(Process* proc)
 {
         if (proc->fifo_out0 != NULL) {
-                fifo_set_open_ts(proc->fifo_out0, true);
+                fifo_set_open(proc->fifo_out0, true);
         }
         if (proc->fifo_out1 != NULL) {
-                fifo_set_open_ts(proc->fifo_out1, true);
+                fifo_set_open(proc->fifo_out1, true);
         }
-        fifo_set_open_ts(proc->fifo_in0, true);
+        fifo_set_open(proc->fifo_in0, true);
         proc->is_enabled = true;
 }
 
@@ -235,7 +237,7 @@ void* _thread_exec(void* data)
         Process* proc = tdata->proc_node->data;
 
         while (proc->is_enabled) {
-                if (fifo_is_empty_ts(proc->fifo_in0)) {
+                if (fifo_is_empty(proc->fifo_in0)) {
                         if (!proc->fifo_in0->is_open) {
                                 process_disable(proc);
                                 break;
@@ -245,25 +247,25 @@ void* _thread_exec(void* data)
                         } else {
                                 fifo_wait_for_work(proc->fifo_in0);
                         }
-                        if (fifo_is_empty_ts(proc->fifo_in0)) {
+                        if (fifo_is_empty(proc->fifo_in0)) {
                                 process_disable(proc);
                                 break;
                         }
                 }
                 if (proc->fifo_in1) {
-                        if (fifo_is_open_ts(proc->fifo_in1) &&
-                            fifo_is_empty_ts(proc->fifo_in1)) {
+                        if (fifo_is_open(proc->fifo_in1) &&
+                            fifo_is_empty(proc->fifo_in1)) {
                                 fifo_wait_for_work(proc->fifo_in1);
                                 //fifo_wait_for_add(proc->fifo_in1);
                         }
                 }
                 if (proc->fifo_out0) {
-                        while (!fifo_is_receivable_ts(proc->fifo_out0)) {
+                        while (!fifo_is_receivable(proc->fifo_out0)) {
                                 fifo_wait_for_get(proc->fifo_out0);
                         }
                 }
                 if (proc->fifo_out1) {
-                        while (!fifo_is_receivable_ts(proc->fifo_out1)) {
+                        while (!fifo_is_receivable(proc->fifo_out1)) {
                                 fifo_wait_for_get(proc->fifo_out1);
                         }
                 }

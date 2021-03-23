@@ -5,6 +5,9 @@ AM_INIT_AUTOMAKE([foreign -Wall -Werror])
 
 AM_PROG_AR
 LT_INIT
+
+#CFLAGS+=" -std=gnu11"
+
 AC_PROG_CC
 AC_PROG_CXX
 
