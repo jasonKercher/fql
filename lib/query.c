@@ -20,7 +20,8 @@ Query* query_new()
 Query* query_construct(Query* query)
 {
         *query = (Query) {
-                 schema_new()           /* table */
+                 NULL                   /* plan */
+                ,schema_new()           /* table */
                 ,vec_new_(Source)       /* sources */
                 ,NULL                   /* where */
                 ,vec_new_(Column*)      /* groups */
@@ -29,7 +30,9 @@ Query* query_construct(Query* query)
                 ,NULL                   /* operation */
 
                 ,NULL                   /* logic_stack */
+                ,NULL                   /* joinable */
                 ,NULL                   /* function_stack */
+
                 ,NULL                   /* expr */
                 ,MODE_UNDEFINED         /* mode */
                 ,LOGIC_UNDEFINED        /* logic_mode */

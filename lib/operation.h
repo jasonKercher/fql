@@ -6,6 +6,7 @@
 extern "C" {
 #endif
 
+#include "fqlhandle.h"
 #include "fqlplan.h"
 #include "util/queue.h"
 
@@ -18,6 +19,7 @@ enum op {
 };
 
 struct vec* op_get_validation_list(void* op);
+void op_preop(struct fql_handle*);
 void op_apply_process(struct query*, struct fql_plan*);
 void op_free(void* op);
 

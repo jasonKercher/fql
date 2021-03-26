@@ -24,7 +24,7 @@ void plan_free(void*);
 void plan_destroy(void*);
 
 struct fql_plan* plan_build(struct fql_plan*, struct query*);
-int build_plans(struct vec*, struct queue*);
-void print_plans(struct vec* plans);
+int build_plans(struct queue*);
+void print_plans(struct queue* plans);
 
 #endif /* FQLPLAN_H */

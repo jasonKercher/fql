@@ -36,6 +36,7 @@ int fql_field_count(struct fql_handle*);
 void fql_set_verbose(struct fql_handle*, int);
 void fql_set_dry_run(struct fql_handle*, int);
 void fql_set_override_warnings(struct fql_handle*, int);
+void fql_set_print_header(struct fql_handle*, int);
 void fql_set_print_plan(struct fql_handle*, int);
 void fql_set_in_delim(struct fql_handle*, const char*);
 void fql_set_out_delim(struct fql_handle*, const char*);

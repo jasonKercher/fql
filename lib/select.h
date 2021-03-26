@@ -32,6 +32,7 @@ void select_connect_api(struct query*, struct vec*);
 void select_apply_process(struct query*, struct fql_plan*);
 void select_apply_column_alias(struct select*, const char* alias);
 
+void select_preop(struct select*, struct query*);
 int select_record(struct select*, struct vec* rec);
 int select_record_api(struct select*, struct vec* rec);
 

@@ -140,6 +140,43 @@ void select_apply_column_alias(Select* select, const char* alias)
         schema_apply_column_alias(select->schema, alias);
 }
 
+void select_preop(Select* select, Query* query)
+{
+        Vec header;
+        vec_construct_(&header, Column*);
+
+        /* Print header */
+        Column** it = vec_begin(select->schema->columns);
+        for (; it != vec_end(select->schema->columns); ++it) {
+                if ((*it)->expr == EXPR_ASTERISK) {
+                        Source* aster_src = vec_at(query->sources, (*it)->src_idx);
+                        Vec* aster_cols = aster_src->table->schema->columns;
+                        Column** it2 = vec_begin(aster_cols);
+                        for (; it2 != vec_end(aster_cols); ++it2) {
+                                Column* field_col = column_new(EXPR_CONST, NULL, "");
+                                String* field_str = string_from_string(&(*it2)->alias);
+                                field_col->field.s = field_str;
+                                field_col->field_type = FIELD_STRING;
+                                vec_push_back(&header, &field_col);
+                        }
+                }
+                Column* field_col = column_new(EXPR_CONST, NULL, "");
+                String* field_str = string_from_string(&(*it)->alias);
+                field_col->field.s = field_str;
+                field_col->field_type = FIELD_STRING;
+                vec_push_back(&header, &field_col);
+        }
+
+        Writer* writer = select->writer;
+        writer->write_record__(writer->writer_data, &header, NULL);
+
+        it = vec_begin(&header);
+        for (; it != vec_end(&header); ++it) {
+                column_free(*it);
+        }
+        vec_destroy(&header);
+}
+
 int select_record_api(Select* select, struct vec* recs)
 {
         Writer* writer = select->writer;

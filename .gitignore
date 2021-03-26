@@ -7,6 +7,7 @@ check_libcsv
 check_logic
 check_read
 
+*~
 
 fql
 .gdb_history

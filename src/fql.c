@@ -21,9 +21,12 @@ void parseargs(struct fql_handle* handle, char c)
         case 'd':
                 fql_set_dry_run(handle, 1);
                 break;
-        case 'h':
+        case 'H':
                 puts(help_string);
                 exit(0);
+        case 'h':
+                fql_set_print_header(handle, 0);
+                break;
         case 'O':
                 fql_set_override_warnings(handle, 1);
                 break;
@@ -75,7 +78,8 @@ int main (int argc, char **argv)
                 //{"verbose", no_argument, 0, 'v'},
                 {"force-cartesian",no_argument, 0, 'C' },
                 {"dry-run",no_argument, 0, 'd' },
-                {"help", no_argument, 0, 'h'},
+                {"no-header", no_argument, 0, 'h'},
+                {"help", no_argument, 0, 'H'},
                 {"override-warnings", no_argument, 0, 'O'},
                 {"print-plan", no_argument, 0, 'p'},
                 {"in-delimiter", required_argument, 0, 's'},
@@ -87,7 +91,7 @@ int main (int argc, char **argv)
         /* getopt_long stores the option index here. */
         int option_index = 0;
 
-        while ( (c = getopt_long (argc, argv, "CdhOps:S:tv",
+        while ( (c = getopt_long (argc, argv, "CdHhOps:S:tv",
                                         long_options, &option_index)) != -1)
                         parseargs(handle, c);
 

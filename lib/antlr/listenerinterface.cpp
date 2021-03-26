@@ -56,7 +56,7 @@ void ListenerInterface::enterSelect_list_elem(TSqlParser::Select_list_elemContex
 {
         _current_list = TOK_COLUMN_NAME;
 }
-void ListenerInterface::exitSelect_list_elem(TSqlParser::Select_list_elemContext * ctx) 
+void ListenerInterface::exitSelect_list_elem(TSqlParser::Select_list_elemContext * ctx)
 {
         if (_on_asterisk) {
                 query_add_asterisk(_query, _table_name);
@@ -88,6 +88,7 @@ void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemCont
 void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx)
 {
         query_add_source(_query, &_source_stack, _table_alias);
+        *_table_alias = '\0';
 }
 
 void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx)
@@ -122,6 +123,13 @@ void ListenerInterface::exitDerived_table(TSqlParser::Derived_tableContext * ctx
 
 void ListenerInterface::enterAs_column_alias(TSqlParser::As_column_aliasContext * ctx) { }
 void ListenerInterface::exitAs_column_alias(TSqlParser::As_column_aliasContext * ctx) { }
+
+void ListenerInterface::enterColumn_alias(TSqlParser::Column_aliasContext * ctx)
+{
+        _current_list = TOK_COLUMN_ALIAS;
+}
+
+void ListenerInterface::exitColumn_alias(TSqlParser::Column_aliasContext * ctx) { }
 
 void ListenerInterface::enterAs_table_alias(TSqlParser::As_table_aliasContext * ctx) { }
 void ListenerInterface::exitAs_table_alias(TSqlParser::As_table_aliasContext * ctx) { }
@@ -1708,9 +1716,6 @@ void ListenerInterface::exitIndex_value(TSqlParser::Index_valueContext * ctx) { 
 
 void ListenerInterface::enterColumn_alias_list(TSqlParser::Column_alias_listContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitColumn_alias_list(TSqlParser::Column_alias_listContext * ctx) { }
-
-void ListenerInterface::enterColumn_alias(TSqlParser::Column_aliasContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitColumn_alias(TSqlParser::Column_aliasContext * ctx) { }
 
 void ListenerInterface::enterTable_value_constructor(TSqlParser::Table_value_constructorContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitTable_value_constructor(TSqlParser::Table_value_constructorContext * ctx) { }

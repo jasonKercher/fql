@@ -54,10 +54,9 @@ void schema_add_column(Schema* schema, Column* col)
 
 void schema_apply_column_alias(Schema* schema, const char* alias)
 {
-        Column* col = vec_back(schema->columns);
-        string_strcpy(&col->alias, alias);
+        Column** col = vec_back(schema->columns);
+        string_strcpy(&(*col)->alias, alias);
 }
-
 
 int schema_resolve_file(Table* table)
 {
@@ -275,12 +274,12 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
                 }
 
                 if (matches > 1) {
-                        fprintf(stderr, "%s: ambiguous column\n", (*it)->alias.data);
+                        fprintf(stderr, "%s: ambiguous column\n", (*it)->name.data);
                         return FQL_FAIL;
                 }
 
                 if (matches == 0) {
-                        fprintf(stderr, "%s: cannot find column\n", (*it)->alias.data);
+                        fprintf(stderr, "%s: cannot find column\n", (*it)->name.data);
                         return FQL_FAIL;
                 }
         }

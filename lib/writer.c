@@ -4,22 +4,6 @@
 #include "column.h"
 #include "util/stringview.h"
 
-//struct libcsv_writer* libcsv_writer_new()
-//{
-//        struct libcsv_writer* new_data = NULL;
-//        malloc_(new_data, sizeof(*new_data));
-//
-//        return libcsv_writer_construct(new_data);
-//}
-//
-//struct libcsv_writer* libcsv_writer_construct(struct libcsv_writer* writer)
-//{
-//        *writer = (struct libcsv_writer) {
-//                 csv_writer_new()       /* csv_handle */
-//        };
-//        return writer;
-//}
-//
 void libcsv_writer_free(void* writer_data)
 {
         csv_writer_free(writer_data);

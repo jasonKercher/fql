@@ -19,6 +19,7 @@ Column* column_construct(Column* col, enum expr_type expr, void* data, const cha
                  expr                   /* expr */
                 ,NULL                   /* table */
                 ,NULL                   /* data_source */
+                ,{ 0 }                  /* name */
                 ,{ 0 }                  /* alias */
                 ,{ 0 }                  /* table_name */
                 ,{ 0 }                  /* buf */
@@ -35,6 +36,7 @@ Column* column_construct(Column* col, enum expr_type expr, void* data, const cha
         switch (expr) {
         case EXPR_COLUMN_NAME:
                 string_construct_from_char_ptr(&col->alias, data);
+                string_construct_from_char_ptr(&col->name, data);
                 //string_copy(&col->buf, &col->alias);
                 //col->field.s = data;
                 break;
@@ -55,6 +57,7 @@ void column_free(void* generic_col)
                 function_free(col->field.fn);
         }
 
+        string_destroy(&col->name);
         string_destroy(&col->alias);
         string_destroy(&col->table_name);
         string_destroy(&col->buf);
@@ -129,7 +132,7 @@ void column_cat_description(Column* col, String* msg)
 
 int column_try_assign_source(Column* col, Source* src, int idx)
 {
-        col->data_source = hmap_get(src->table->schema->col_map, col->alias.data);
+        col->data_source = hmap_get(src->table->schema->col_map, col->name.data);
         if (col->data_source) {
                 col->src_idx = idx;
                 if (col->data_source->location > src->table->reader->max_col_idx) {

@@ -466,15 +466,14 @@ Plan* plan_build(Plan* plan, Query* query)
         return plan;
 }
 
-int build_plans(Vec* plans, Queue* query_list)
+int build_plans(Queue* query_list)
 {
         Queue* node = query_list;
 
         for (; node; node = node->next) {
                 Query* query = node->data;
-                Plan* plan = vec_add_one(plans);
-                plan_construct(plan, query->sources->size);
-                plan_build(plan, query);
+                query->plan = plan_new(query->sources->size);
+                plan_build(query->plan, query);
         }
 
         return 0;
@@ -551,13 +550,14 @@ void _print_plan(Plan* plan)
         }
 }
 
-void print_plans(Vec* plans)
+void print_plans(Queue* query_list)
 {
-        Plan* it = vec_begin(plans);
         int i = 0;
-        for (; it != vec_end(plans); ++it) {
+        Queue* node = query_list;
+        for (; node; node = node->next, ++i) {
+                Query* query = query_list->data;
                 fprintf(stderr, "\nQUERY %d\n", ++i);
-                _print_plan(it);
+                _print_plan(query->plan);
                 fputs("\n", stderr);
         }
 }

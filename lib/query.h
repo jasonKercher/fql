@@ -8,13 +8,14 @@ extern "C" {
 
 #include <stdbool.h>
 
-#include "util/queue.h"
-#include "util/vec.h"
+#include "fqlplan.h"
 #include "table.h"
 #include "function.h"
 #include "operation.h"
 #include "reader.h"
 #include "logic.h"
+#include "util/queue.h"
+#include "util/vec.h"
 
 enum mode {
         MODE_UNDEFINED,
@@ -33,6 +34,7 @@ enum logic_mode {
 
 /** Query **/
 struct query {
+        struct fql_plan* plan;          /* execution plan */
         struct schema* schema;          /* output table */
         struct vec* sources;            /* struct source */
         struct logicgroup* where;       /* struct logicgroup */

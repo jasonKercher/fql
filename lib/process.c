@@ -1,6 +1,7 @@
 #include "process.h"
 
 #include <stdbool.h>
+#include <pthread.h>
 #include "fql.h"
 #include "operation.h"
 #include "reader.h"
@@ -88,7 +89,7 @@ void process_activate(Dnode* proc_node, unsigned graph_size)
 {
         Process* proc = proc_node->data;
 
-        fprintf(stderr, "Activating %s\n", proc->action_msg->data);
+        //fprintf(stderr, "Activating %s\n", proc->action_msg->data);
 
         if (!proc_node->is_root) {
                 proc->fifo_in0 = fifo_new_(Vec*, FIFO_SIZE);

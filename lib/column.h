@@ -24,6 +24,7 @@ struct column {
         enum expr_type expr;
         struct table* table;
         struct column* data_source;
+        String name;
         String alias;
         String table_name;
         String buf;
