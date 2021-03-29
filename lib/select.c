@@ -59,7 +59,7 @@ int _expand_asterisk(Vec* col_vec, Source* src, unsigned src_idx, unsigned* col_
         Column** it = vec_begin(src_col_vec);
         for (; it != vec_end(src_col_vec); ++it) {
                 //String* col_name = string_from_string(&(*it)->alias);
-                Column* new_col = column_new(EXPR_COLUMN_NAME, &(*it)->alias.data, "");
+                Column* new_col = column_new(EXPR_COLUMN_NAME, (*it)->alias.data, "");
                 new_col->data_source = *it;
                 new_col->src_idx = src_idx;
                 new_col->field_type = (*it)->field_type;
@@ -159,6 +159,7 @@ void select_preop(Select* select, Query* query)
                                 field_col->field_type = FIELD_STRING;
                                 vec_push_back(&header, &field_col);
                         }
+                        continue;
                 }
                 Column* field_col = column_new(EXPR_CONST, NULL, "");
                 String* field_str = string_from_string(&(*it)->alias);
