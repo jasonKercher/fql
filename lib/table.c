@@ -2,6 +2,7 @@
 #include "antlr/antlr.h"
 #include "query.h"
 #include "column.h"
+#include "reader.h"
 #include "util/util.h"
 
 Table* table_new()

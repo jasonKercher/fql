@@ -1,5 +1,5 @@
-TESTS = check_constants check_read check_logic
-check_PROGRAMS = check_constants check_read check_logic
+TESTS = check_constants check_read check_logic check_join
+check_PROGRAMS = check_constants check_read check_logic check_join
 
 check_constants_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_common.h check_common.c \
@@ -18,3 +18,9 @@ check_logic_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_logic.c
 check_logic_CFLAGS = @CHECK_CFLAGS@
 check_logic_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+
+check_join_SOURCES = $(top_builddir)/lib/include/fql.h \
+			check_common.h check_common.c \
+			check_join.c
+check_join_CFLAGS = @CHECK_CFLAGS@
+check_join_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@

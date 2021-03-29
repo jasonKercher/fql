@@ -3,9 +3,9 @@ core*
 # script executables
 stdcsv
 check_constants
-check_libcsv
 check_logic
 check_read
+check_join
 
 *~
 
@@ -33,6 +33,8 @@ check_libfql
 *.trs
 *.log
 
+# No judging
+vgcore.*
 
 # compiledb ignore
 compile_commands.json

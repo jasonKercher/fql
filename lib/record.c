@@ -20,6 +20,7 @@ Record* record_construct(Record* rec, unsigned idx)
                 ,{ 0 }                  /* rec_raw */
                 ,idx                    /* idx */
                 ,0                      /* ref_count */
+                ,true                   /* is_recyclable */
         };
 
         return rec;

@@ -7,6 +7,7 @@
 #include "column.h"
 #include "function.h"
 #include "query.h"
+#include "reader.h"
 #include "operation.h"
 #include "util/util.h"
 #include "util/vec.h"
@@ -349,6 +350,7 @@ enum join_side _get_join_side(Column* col, int right_idx)
                                 return SIDE_MIXED;
                         }
                 }
+                return side0;
         }
         default:
                 return SIDE_UNDEF;

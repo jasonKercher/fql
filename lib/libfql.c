@@ -9,6 +9,7 @@
 #include "table.h"
 #include "query.h"
 #include "schema.h"
+#include "reader.h"
 
 struct fql_handle* fql_new()
 {

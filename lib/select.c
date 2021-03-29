@@ -1,5 +1,6 @@
 #include "select.h"
 #include "fql.h"
+#include "reader.h"
 #include "column.h"
 #include "schema.h"
 #include "util/util.h"

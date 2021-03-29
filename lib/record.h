@@ -1,6 +1,7 @@
 #ifndef RECORD_H
 #define RECORD_H
 
+#include <stdatomic.h>
 #include <csv.h>
 #include "util/vec.h"
 #include "util/stringview.h"
@@ -12,7 +13,8 @@ struct record {
         String* rec_cpy;
         StringView rec_raw;
         unsigned idx;
-        int ref_count;
+        _Atomic int ref_count;
+        _Atomic _Bool is_recyclable;
 };
 typedef struct record Record;
 

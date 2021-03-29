@@ -8,6 +8,7 @@
 #include "logic.h"
 #include "process.h"
 #include "query.h"
+#include "reader.h"
 #include "util/dgraph.h"
 #include "util/util.h"
 

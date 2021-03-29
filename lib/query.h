@@ -12,7 +12,6 @@ extern "C" {
 #include "table.h"
 #include "function.h"
 #include "operation.h"
-#include "reader.h"
 #include "logic.h"
 #include "util/queue.h"
 #include "util/vec.h"

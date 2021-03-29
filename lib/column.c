@@ -2,6 +2,7 @@
 #include "fql.h"
 #include "query.h"
 #include "process.h"
+#include "reader.h"
 #include "record.h"
 #include "util/util.h"
 

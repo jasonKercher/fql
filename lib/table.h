@@ -8,8 +8,9 @@ extern "C" {
 #include "util/stack.h"
 #include "util/hmap.h"
 #include "util/pmap.h"
+#include "util/stringy.h"
 #include "schema.h"
-#include "reader.h"
+//#include "reader.h"
 #include "fqlimits.h"
 
 

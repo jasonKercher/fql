@@ -11,8 +11,7 @@
 void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
 {
         Record** rec = vec_at(recs, index);
-        if ((*rec)->ref_count) {
-                --(*rec)->ref_count;
+        if (--(*rec)->ref_count || !(*rec)->is_recyclable) {
                 return;
         }
 
@@ -134,11 +133,12 @@ int fql_logic(Dgraph* proc_graph, Process* proc)
         return 1;
 }
 
-void _increase_left_side_ref_count(Vec* leftrecs)
+void _increase_left_side_ref_count(Vec* leftrecs, _Bool recyclable)
 {
         Record** it = vec_begin(leftrecs);
         for (; it != vec_end(leftrecs); ++it) {
                 ++(*it)->ref_count;
+                (*it)->is_recyclable = recyclable;
         }
 }
 
@@ -158,6 +158,7 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
                         return 0;
                 }
 
+                _increase_left_side_ref_count(*leftrecs, true);
                 _recycle_recs(proc_graph, *leftrecs, (*leftrecs)->size);
 
                 Source* src = proc->proc_data;
@@ -167,7 +168,7 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
                 return 1;
         }
 
-        _increase_left_side_ref_count(*leftrecs);
+        _increase_left_side_ref_count(*leftrecs, false);
         Vec** rightrecs = fifo_get(proc->fifo_in1);
 
         unsigned i = 0;
@@ -213,8 +214,9 @@ Vec* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
         if (hj->rec_idx >= hj->recs->size) {
                 fifo_consume(proc->fifo_in0);
                 hj->recs = NULL;
+                _increase_left_side_ref_count(leftrecs, true);
         } else {
-                _increase_left_side_ref_count(leftrecs);
+                _increase_left_side_ref_count(leftrecs, false);
         }
 
         Vec** rightrecs = fifo_get(proc->fifo_in1);
