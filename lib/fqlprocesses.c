@@ -11,7 +11,7 @@
 void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
 {
         Record** rec = vec_at(recs, index);
-        if (--(*rec)->ref_count || !(*rec)->is_recyclable) {
+        if (--(*rec)->ref_count > 0 || !(*rec)->is_recyclable) {
                 return;
         }
 
@@ -149,20 +149,24 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
         /* Re-open fifo if eof reached and consume */
         if (fifo_is_empty(proc->fifo_in1)) {
                 if (fifo_is_open(proc->fifo_in1)) {
-                        return 0;
+                        return 1;
                 }
                 fifo_consume(proc->fifo_in0);
 
+                Source* src = proc->proc_data;
+                Process* right_side_read_proc = src->read_proc;
                 if (!fifo_is_open(proc->fifo_in0) &&
                     fifo_is_empty(proc->fifo_in0)) {
+                        right_side_read_proc->is_killable = true;
+                        process_disable(right_side_read_proc);
                         return 0;
                 }
 
-                _increase_left_side_ref_count(*leftrecs, true);
-                _recycle_recs(proc_graph, *leftrecs, (*leftrecs)->size);
+                Record** it = vec_begin(*leftrecs);
+                for (; it != vec_end(*leftrecs); ++it) {
+                        (*it)->is_recyclable = true;
+                }
 
-                Source* src = proc->proc_data;
-                Process* right_side_read_proc = src->read_proc;
                 process_enable(right_side_read_proc);
                 fifo_set_open(proc->fifo_in1, true);
                 return 1;

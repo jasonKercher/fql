@@ -10,15 +10,15 @@ int str2longbase(long* ret, const char* s, int base)
         char* endPtr = NULL;
         errno = 0;
         *ret = strtol(s, &endPtr, base);
-        if ((errno == ERANGE && (*ret == LONG_MIN || *ret == LONG_MAX))
-                        || (errno == EINVAL)
-                        || (errno != 0 && *ret == 0)
-                        || (errno == 0 && s && *endPtr != 0)) {
+        if (errno) {
                 perror(s);
-                return 1;
+        } else if (errno == 0 && s && *endPtr != 0) {
+                fprintf(stderr, "%s: could not convert to integer\n", s);
+        } else {
+                return 0;
         }
 
-        return 0;
+        return 1;
 }
 
 int str2long10(long* ret, const char* s)
@@ -40,12 +40,15 @@ int str2double(double* ret, const char* s)
         errno = 0;
         *ret = strtod(s, &endPtr);
 
-        if (errno || (errno == 0 && s && *endPtr != 0)) {
+        if (errno) {
                 perror(s);
-                return 1;
+        } else if (errno == 0 && s && *endPtr != 0) {
+                fprintf(stderr, "%s: could not convert to float\n", s);
+        } else {
+                return 0;
         }
 
-        return 0;
+        return 1;
 }
 
 int charncount(const char* s, char c, unsigned n)

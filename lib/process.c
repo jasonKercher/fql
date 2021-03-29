@@ -38,6 +38,7 @@ Process* process_construct(Process* proc, const char* action, int width)
                 ,false                          /* is_secondary */
                 ,false                          /* is_passive */
                 ,true                           /* is_enabled */
+                ,true                           /* is_killable */
         };
 
         return proc;
@@ -148,6 +149,9 @@ void process_disable(Process* proc)
                 fifo_set_open(proc->fifo_out1, false);
         }
         fifo_set_open(proc->fifo_in0, false);
+        if (!proc->is_killable) {
+                return;
+        }
         proc->is_enabled = false;
 }
 
@@ -271,7 +275,11 @@ void* _thread_exec(void* data)
                         }
                 }
                 int ret = proc->action__(tdata->proc_graph, proc);
+
+                /* TODO: What is best practice here? */
                 if (ret == FQL_FAIL) {
+                        //process_disable(proc);
+                        exit(EXIT_FAILURE);
                         break;
                 }
         }

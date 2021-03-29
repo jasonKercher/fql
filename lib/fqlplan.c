@@ -203,6 +203,9 @@ void _from(Plan* plan, Query* query)
                 read_proc->proc_data = src->table->reader;
                 read_proc->action__ = &fql_read;
                 read_proc->is_secondary = true;
+                if (join_proc->action__ == fql_cartesian_join) {
+                        read_proc->is_killable = false;
+                }
 
                 Dnode* read_node = dgraph_add_data(plan->processes, read_proc);
                 read_node->is_root = true;

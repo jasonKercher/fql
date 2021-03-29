@@ -109,7 +109,7 @@ int mmapcsv_get_record(Reader* reader, Record* rec)
 {
         struct mmapcsv* csv = reader->reader_data;
         if (reader->eof) {
-                return mmapcsv_reset(reader);
+                mmapcsv_reset(reader);
         }
 
         int ret = mmapcsv_getline(reader);
