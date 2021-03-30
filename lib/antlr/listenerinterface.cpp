@@ -7,6 +7,25 @@
 #include "select.h"
 #include "util/util.h"
 
+/** Utility functions **/
+
+void _trim_end_chars(std::string& s, char start, char end)
+{
+        if(s.length() > 1)  //next if statement would crash if 0 or 1
+            if(s[0] == start && s[s.length() - 1] == end)
+                s = s.substr(1, s.length() - 2);
+}
+
+void _find_replace(std::string& s, const std::string& match, const std::string replacement)
+{
+        size_t pos = 0;
+        while ((pos = s.find(match, pos)) != std::string::npos)
+        {
+             s.replace(pos, match.length(), replacement);
+             pos += replacement.length();
+        }
+}
+
 ListenerInterface::ListenerInterface(struct fql_handle* fql, const std::vector<std::string>& rules)
 {
         _table_name[0] = '\0';
@@ -198,8 +217,12 @@ void ListenerInterface::exitDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
 
 void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx)
 {
+        std::string new_str = ctx->getText();
+        if (new_str[0] == '\'' && new_str.length() > 2) {
+                _find_replace(new_str, "''", "'");
+        }
         /* TODO: handle FQL_FAIL here */
-        query_add_constant(_query, ctx->getText().c_str(), ctx->getText().length());
+        query_add_constant(_query, new_str.c_str(), new_str.length());
 }
 void ListenerInterface::exitConstant(TSqlParser::ConstantContext * ctx) { }
 
@@ -211,17 +234,16 @@ void ListenerInterface::exitUnary_operator_expression(TSqlParser::Unary_operator
 
 void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 {
-        int len = ctx->getText().length();
-        char* token = NULL;
+        std::string new_str = ctx->getText();
 
-        char first_char = ctx->getText()[0];
-
-        if (first_char == '\'' || first_char == '[') {
-                token = strdup(ctx->getText().c_str() + 1);
-                token[len - 2] = '\0';
-        } else {
-                token = strdup(ctx->getText().c_str());
+        if (new_str[0] == '\'') {
+                _trim_end_chars(new_str, '\'', '\'');
+                _find_replace(new_str, "''", "'");
+        } else if (new_str[0] == '[') {
+                _trim_end_chars(new_str, '[', ']');
         }
+
+        char* token = strdup(new_str.c_str());
 
         switch (_current_list) {
         case TOK_COLUMN_NAME:

@@ -44,36 +44,20 @@ Process* process_construct(Process* proc, const char* action, int width)
 
 void process_node_free(Dnode* proc_node)
 {
-        //if (!proc_node->is_root) {
-        //        process_free(proc_node->data);
-        //        return;
-        //}
-        //Process* proc = proc_node->data;
-        //if (proc->fifo_in[0] != NULL) {
-        //        Vec** it = vec_begin(proc->fifo_in[0]->buf); /* vec_(Vec*) */
-        //        for (; it != vec_end(proc->fifo_in[0]->buf); ++it) {
-        //                Record** it2 = vec_begin(*it); /* vec_(Record*) */
-        //                for (; it2 != vec_end(*it); ++it2) {
-        //                        record_free(*it2);
-        //                }
-        //                //vec_free(*it);
-        //        }
-        //}
-        //if (proc->fifo_in[1] != NULL) {
-        //        Vec** it = vec_begin(proc->fifo_in[1]->buf); /* vec_(Vec*) */
-        //        for (; it != vec_end(proc->fifo_in[1]->buf); ++it) {
-        //                Record** it2 = vec_begin(*it); /* vec_(Record*) */
-        //                for (; it2 != vec_end(*it); ++it2) {
-        //                        record_free(*it2);
-        //                }
-        //                //vec_free(*it);
-        //        }
-        //}
-        process_free(proc_node->data);
+        process_free(proc_node->data, proc_node->is_root);
 }
 
-void process_free(Process* proc)
+void process_free(Process* proc, _Bool is_root)
 {
+        if (is_root) {
+                Vec* it = vec_begin(proc->records);
+                for (; it != vec_end(proc->records); ++it) {
+                        Record** rec = vec_back(it);
+                        record_free(*rec);
+                        vec_destroy(it);
+                }
+                vec_free(proc->records);
+        }
         if (proc->fifo_in[0] != NULL) {
                 fifo_free(proc->fifo_in[0]);
         }

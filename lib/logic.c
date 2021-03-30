@@ -27,6 +27,11 @@ Logic* logic_construct(Logic* logic)
 
 void logic_free(Logic* logic)
 {
+        if (logic == NULL) {
+                return;
+        }
+        column_free(logic->col[0]);
+        column_free(logic->col[1]);
         free_(logic);
 }
 
@@ -135,10 +140,17 @@ LogicGroup* logicgroup_construct(LogicGroup* lg, enum logicgroup_type type)
 
 void logicgroup_free(LogicGroup* lg)
 {
+        if (lg == NULL) {
+                return;
+        }
         unsigned i = 0;
         for (; i < lg->items.size; ++i) {
                 LogicGroup** lg_item = vec_at(&lg->items, i);
+                logic_free((*lg_item)->condition);
                 logicgroup_free(*lg_item);
+        }
+        if (lg->joinable) {
+                vec_free(lg->joinable);
         }
         vec_destroy(&lg->items);
         free_(lg);

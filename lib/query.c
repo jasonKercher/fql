@@ -46,13 +46,14 @@ void query_free(void* generic_query)
 {
         Query* query = generic_query;
 
+        plan_free(query->plan);
         Source* it = vec_begin(query->sources);
         for (; it != vec_end(query->sources); ++it) {
                 source_destroy(it);
         }
         op_free(query->op);
         vec_free(query->sources);
-        //logic_tree_free(query->where);
+        logicgroup_free(query->where);
         vec_free(query->groups);
         queue_free_data(&query->having);
         schema_free(query->schema);
@@ -143,10 +144,14 @@ int query_add_constant(Query* query, const char* s, int len)
         enum field_type type = FIELD_UNDEFINED;
         if (s[0] == '\'') {
                 type = FIELD_STRING;
-                String* literal = string_from_char_ptr(s + 1);
-                ((char*) literal->data)[len-2] = '\0';
-                --literal->size;
-                col->field.s = literal;
+                string_strcpy(&col->buf, s+1);
+                ((char*) col->buf.data)[len-2] = '\0';
+                --col->buf.size;
+                col->field.s = &col->buf;
+                //String* literal = string_from_char_ptr(s + 1);
+                //((char*) literal->data)[len-2] = '\0';
+                //--literal->size;
+                //col->field.s = literal;
         } else {
                 if (strhaschar(s, '.')) {
                         type = FIELD_FLOAT;

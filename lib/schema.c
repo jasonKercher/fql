@@ -393,7 +393,7 @@ void _resolve_join_conditions(Source* right_src, int right_idx)
         }
 
         /* No more need for this vector */
-        vec_free(right_src->condition->joinable);
+        //vec_free(right_src->condition->joinable);
 }
 
 int schema_resolve_query(struct fql_handle* fql, Query* query)

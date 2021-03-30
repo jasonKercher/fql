@@ -54,8 +54,12 @@ void column_free(void* generic_col)
 {
         Column* col = generic_col;
 
-        if (col->expr == EXPR_FUNCTION) {
+        switch(col->expr) {
+        case EXPR_FUNCTION:
                 function_free(col->field.fn);
+                break;
+        default:
+                ;
         }
 
         string_destroy(&col->name);

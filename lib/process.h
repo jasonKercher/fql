@@ -36,7 +36,7 @@ struct thread_data {
 struct process* process_new(const char* action, int width);
 struct process* process_construct(struct process*, const char*, int width);
 void process_node_free(struct dnode* proc_node);
-void process_free(struct process*);
+void process_free(struct process*, _Bool);
 
 void process_activate(Dnode* proc_node, unsigned graph_size);
 void process_add_second_input(struct process*);

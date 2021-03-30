@@ -299,7 +299,7 @@ void _clear_passive(Plan* plan)
         for (i = 0; i < node_vec->size;) {
                 Process* proc = nodes[i]->data;
                 if (proc->is_passive) {
-                        process_free(proc);
+                        process_free(proc, false);
                         dgraph_remove(plan->processes, &nodes[i]);
                 } else {
                         ++i;

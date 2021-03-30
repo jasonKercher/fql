@@ -30,6 +30,19 @@ struct mmapcsv* mmapcsv_construct(struct mmapcsv* csv_data, size_t buflen)
         return csv_data;
 }
 
+void mmapcsv_free(void* reader_data)
+{
+        struct mmapcsv* csv = reader_data;
+        csv_reader_free(csv->csv_handle);
+
+        if (munmap(csv->mmap_base, csv->file_size)) {
+                perror("munmap");
+        }
+        close(csv->fd);
+        vec_free(csv->raw);
+        free_(csv);
+}
+
 char* mmapcsv_get_delim(struct mmapcsv* csv)
 {
         return csv->csv_handle->delimiter;
@@ -60,18 +73,6 @@ int mmapcsv_open(struct mmapcsv* csv, const char* file_name)
         madvise(csv->mmap_base, csv->file_size, MADV_SEQUENTIAL);
         csv->mp = csv->mmap_base;
         return FQL_GOOD;
-}
-
-void mmapcsv_free(void* reader_data)
-{
-        struct mmapcsv* csv = reader_data;
-        csv_reader_free(csv->csv_handle);
-
-        if (munmap(csv->mmap_base, csv->file_size)) {
-                perror("munmap");
-        }
-        close(csv->fd);
-        free_(csv);
 }
 
 int mmapcsv_getline(Reader* reader)

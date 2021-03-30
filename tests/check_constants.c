@@ -45,7 +45,7 @@ START_TEST(test_const_literals)
 
 
         /* constant string: select 'x' */
-        plan_count = fql_make_plans(fql, "select 'x'");
+        plan_count = fql_make_plans(fql, "select 'x'''");
         ck_assert_int_eq(plan_count, 1);
 
         field_count = fql_field_count(fql);
@@ -54,7 +54,7 @@ START_TEST(test_const_literals)
         rows = fql_step(fql, &fields);
         ck_assert_int_eq(rows, 1);
         ck_assert_int_eq(fields[0].type, FQL_STRING);
-        ck_assert_str_eq(fields[0].data.s, "x");
+        ck_assert_str_eq(fields[0].data.s, "x'");
 
         rows = fql_step(fql, &fields);
         ck_assert_int_eq(rows, 0);

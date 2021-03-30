@@ -17,6 +17,13 @@ void pmap_destroy(Pmap* pmap)
 
 void pmap_free(Pmap* pmap)
 {
+        /* TODO: We do not free the vector data held
+         *       in the hsearch table (See the comment
+         *       in pmap_nset). Freeing this data is 
+         *       impracticle at best. This will
+         *       have to wait until we implement a
+         *       custom hash table.
+         */
         hmap_free(pmap);
 }
 
@@ -39,6 +46,7 @@ Vec* pmap_nset(Pmap* pmap, const char* key, void* data, int char_limit)
                 return v;
         }
 
+        /*** THIS LEAKS ***/
         Vec* new_vec = vec_new_(void*);
         vec_push_back(new_vec, &data);
 

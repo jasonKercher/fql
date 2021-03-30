@@ -88,13 +88,15 @@ void source_free(Source* source)
 
 void source_destroy(Source* source)
 {
-        Column** it = vec_begin(source->validation_list);
-        for (; it != vec_end(source->validation_list); ++it) {
-                column_free(*it);
-        }
-        string_destroy(&source->alias);
-        vec_free(source->validation_list);
         table_free(source->table);
+        logicgroup_free(source->condition);
+        vec_free(source->validation_list);
+        string_destroy(&source->alias);
+        hashjoin_free(source->join_data);
+        //Column** it = vec_begin(source->validation_list);
+        //for (; it != vec_end(source->validation_list); ++it) {
+        //        column_free(*it);
+        //}
 }
 
 
@@ -120,6 +122,9 @@ struct hashjoin* hashjoin_new()
 
 void hashjoin_free(struct hashjoin* join)
 {
+        if (join == NULL) {
+                return;
+        }
         pmap_destroy(&join->hash_data);
         free_(join);
 }
