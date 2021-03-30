@@ -28,17 +28,15 @@ Process* process_construct(Process* proc, const char* action, int width)
                  0                              /* thread */
                 ,NULL                           /* records */
                 ,&fql_no_op                     /* action__ */
-                ,NULL                           /* fifo_in0 */
-                ,NULL                           /* fifo_in1 */
-                ,NULL                           /* fifo_out0 */
-                ,NULL                           /* fifo_out1 */
+                ,{ NULL, NULL }                 /* fifo_in */
+                ,{ NULL, NULL }                 /* fifo_out */
                 ,NULL                           /* proc_data */
                 ,string_from_char_ptr(action)   /* action_msg */
                 ,width                          /* fifo_width */
+                ,0                              /* root_fifo */
                 ,false                          /* is_secondary */
                 ,false                          /* is_passive */
                 ,true                           /* is_enabled */
-                ,true                           /* is_killable */
         };
 
         return proc;
@@ -51,9 +49,9 @@ void process_node_free(Dnode* proc_node)
         //        return;
         //}
         //Process* proc = proc_node->data;
-        //if (proc->fifo_in0 != NULL) {
-        //        Vec** it = vec_begin(proc->fifo_in0->buf); /* vec_(Vec*) */
-        //        for (; it != vec_end(proc->fifo_in0->buf); ++it) {
+        //if (proc->fifo_in[0] != NULL) {
+        //        Vec** it = vec_begin(proc->fifo_in[0]->buf); /* vec_(Vec*) */
+        //        for (; it != vec_end(proc->fifo_in[0]->buf); ++it) {
         //                Record** it2 = vec_begin(*it); /* vec_(Record*) */
         //                for (; it2 != vec_end(*it); ++it2) {
         //                        record_free(*it2);
@@ -61,9 +59,9 @@ void process_node_free(Dnode* proc_node)
         //                //vec_free(*it);
         //        }
         //}
-        //if (proc->fifo_in1 != NULL) {
-        //        Vec** it = vec_begin(proc->fifo_in1->buf); /* vec_(Vec*) */
-        //        for (; it != vec_end(proc->fifo_in1->buf); ++it) {
+        //if (proc->fifo_in[1] != NULL) {
+        //        Vec** it = vec_begin(proc->fifo_in[1]->buf); /* vec_(Vec*) */
+        //        for (; it != vec_end(proc->fifo_in[1]->buf); ++it) {
         //                Record** it2 = vec_begin(*it); /* vec_(Record*) */
         //                for (; it2 != vec_end(*it); ++it2) {
         //                        record_free(*it2);
@@ -76,11 +74,11 @@ void process_node_free(Dnode* proc_node)
 
 void process_free(Process* proc)
 {
-        if (proc->fifo_in0 != NULL) {
-                fifo_free(proc->fifo_in0);
+        if (proc->fifo_in[0] != NULL) {
+                fifo_free(proc->fifo_in[0]);
         }
-        if (proc->fifo_in1 != NULL) {
-                fifo_free(proc->fifo_in1);
+        if (proc->fifo_in[1] != NULL) {
+                fifo_free(proc->fifo_in[1]);
         }
         string_free(proc->action_msg);
         free_(proc);
@@ -93,11 +91,15 @@ void process_activate(Dnode* proc_node, unsigned graph_size)
         //fprintf(stderr, "Activating %s\n", proc->action_msg->data);
 
         if (!proc_node->is_root) {
-                proc->fifo_in0 = fifo_new_(Vec*, FIFO_SIZE);
+                proc->fifo_in[0] = fifo_new_(Vec*, FIFO_SIZE);
                 return;
         }
 
-        proc->fifo_in0 = fifo_new_(Vec*, FIFO_SIZE * graph_size);
+        if (proc->root_fifo == 1) {
+                proc->fifo_in[0] = fifo_new_(Vec*, FIFO_SIZE);
+        }
+
+        proc->fifo_in[proc->root_fifo] = fifo_new_(Vec*, FIFO_SIZE * graph_size);
 
         int field_count = 1;
         if (proc->action__ == &fql_read) {
@@ -111,7 +113,7 @@ void process_activate(Dnode* proc_node, unsigned graph_size)
         int i = 0;
 
         /* If root, it will own the vector of Records */
-        Vec* buf = proc->fifo_in0->buf;
+        Vec* buf = proc->fifo_in[proc->root_fifo]->buf;
         for (; i < proc->records->size; ++i) {
                 Vec* new_recs = vec_at(proc->records, i);
                 vec_construct_(new_recs, Record*);
@@ -129,41 +131,38 @@ void process_activate(Dnode* proc_node, unsigned graph_size)
          *       this if block can go.
          */
         if (proc->action__ != &fql_read) {
-                fifo_advance(proc->fifo_in0);
+                fifo_advance(proc->fifo_in[proc->root_fifo]);
                 return;
         }
-        fifo_set_full(proc->fifo_in0);
+        fifo_set_full(proc->fifo_in[proc->root_fifo]);
 }
 
 void process_add_second_input(Process* proc)
 {
-        proc->fifo_in1 = fifo_new_(Vec*, FIFO_SIZE);
+        proc->fifo_in[1] = fifo_new_(Vec*, FIFO_SIZE);
 }
 
 void process_disable(Process* proc)
 {
-        if (proc->fifo_out0 != NULL) {
-                fifo_set_open(proc->fifo_out0, false);
+        if (proc->fifo_out[0] != NULL) {
+                fifo_set_open(proc->fifo_out[0], false);
         }
-        if (proc->fifo_out1 != NULL) {
-                fifo_set_open(proc->fifo_out1, false);
+        if (proc->fifo_out[1] != NULL) {
+                fifo_set_open(proc->fifo_out[1], false);
         }
-        fifo_set_open(proc->fifo_in0, false);
-        if (!proc->is_killable) {
-                return;
-        }
+        fifo_set_open(proc->fifo_in[0], false);
         proc->is_enabled = false;
 }
 
 void process_enable(Process* proc)
 {
-        if (proc->fifo_out0 != NULL) {
-                fifo_set_open(proc->fifo_out0, true);
+        if (proc->fifo_out[0] != NULL) {
+                fifo_set_open(proc->fifo_out[0], true);
         }
-        if (proc->fifo_out1 != NULL) {
-                fifo_set_open(proc->fifo_out1, true);
+        if (proc->fifo_out[1] != NULL) {
+                fifo_set_open(proc->fifo_out[1], true);
         }
-        fifo_set_open(proc->fifo_in0, true);
+        fifo_set_open(proc->fifo_in[0], true);
         proc->is_enabled = true;
 }
 
@@ -180,7 +179,7 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
                 if (!proc->is_enabled) {
                         continue;
                 }
-                if (!proc->fifo_in0->is_open && fifo_is_empty(proc->fifo_in0)) {
+                if (!proc->fifo_in[0]->is_open && fifo_is_empty(proc->fifo_in[0])) {
                         process_disable(proc);
                         continue;
                 }
@@ -189,9 +188,9 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
                 /* Check to see that there is something to process
                  * as well as a place for it to go.
                  */
-                if (fifo_is_empty(proc->fifo_in0) ||
-                    (proc->fifo_out0 && !fifo_is_receivable(proc->fifo_out0)) ||
-                    (proc->fifo_out1 && !fifo_is_receivable(proc->fifo_out1))) {
+                if (fifo_is_empty(proc->fifo_in[0]) ||
+                    (proc->fifo_out[0] && !fifo_is_receivable(proc->fifo_out[0])) ||
+                    (proc->fifo_out[1] && !fifo_is_receivable(proc->fifo_out[1]))) {
                         continue;
                 }
                 int ret = proc->action__(proc_graph, proc);
@@ -242,36 +241,37 @@ void* _thread_exec(void* data)
         Process* proc = tdata->proc_node->data;
 
         while (proc->is_enabled) {
-                if (fifo_is_empty(proc->fifo_in0)) {
-                        if (!proc->fifo_in0->is_open) {
+                if (fifo_is_empty(proc->fifo_in[0])) {
+                        if (!proc->fifo_in[0]->is_open) {
                                 process_disable(proc);
                                 break;
                         }
                         if (tdata->proc_node->is_root) {
-                                fifo_wait_for_add(proc->fifo_in0);
+                                fifo_wait_for_add(proc->fifo_in[0]);
                         } else {
-                                fifo_wait_for_work(proc->fifo_in0);
+                                fifo_wait_for_work(proc->fifo_in[0]);
                         }
-                        if (fifo_is_empty(proc->fifo_in0)) {
+                        if (fifo_is_empty(proc->fifo_in[0])) {
                                 process_disable(proc);
                                 break;
                         }
                 }
-                if (proc->fifo_in1) {
-                        if (fifo_is_open(proc->fifo_in1) &&
-                            fifo_is_empty(proc->fifo_in1)) {
-                                fifo_wait_for_work(proc->fifo_in1);
-                                //fifo_wait_for_add(proc->fifo_in1);
+                if (proc->fifo_in[1]) {
+                        if (fifo_is_open(proc->fifo_in[1]) &&
+                            fifo_is_open(proc->fifo_in[0]) &&
+                            fifo_is_empty(proc->fifo_in[1])) {
+                                //fifo_wait_for_work(proc->fifo_in[1]);
+                                fifo_wait_for_add(proc->fifo_in[1]);
                         }
                 }
-                if (proc->fifo_out0) {
-                        while (!fifo_is_receivable(proc->fifo_out0)) {
-                                fifo_wait_for_get(proc->fifo_out0);
+                if (proc->fifo_out[0]) {
+                        while (!fifo_is_receivable(proc->fifo_out[0])) {
+                                fifo_wait_for_get(proc->fifo_out[0]);
                         }
                 }
-                if (proc->fifo_out1) {
-                        while (!fifo_is_receivable(proc->fifo_out1)) {
-                                fifo_wait_for_get(proc->fifo_out1);
+                if (proc->fifo_out[1]) {
+                        while (!fifo_is_receivable(proc->fifo_out[1])) {
+                                fifo_wait_for_get(proc->fifo_out[1]);
                         }
                 }
                 int ret = proc->action__(tdata->proc_graph, proc);

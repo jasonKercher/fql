@@ -16,17 +16,15 @@ struct process {
         pthread_t thread;               /* pthread handle */
         struct vec* records;            /* This is the owned record data for roots */
         process_fn* action__;           /* function pointer for process */
-        Fifo* fifo_in0;                 /* ring buffer of records */
-        Fifo* fifo_in1;                 /* optional second input */
-        Fifo* fifo_out0;                /* default next process fifo */
-        Fifo* fifo_out1;                /* optional second output */
+        Fifo* fifo_in[2];               /* ring buffer of records */
+        Fifo* fifo_out[2];              /* default next process fifo */
         void* proc_data;                /* process specific data */
         String* action_msg;             /* Message that prints with plan */
         int fifo_width;                 /* Number of sources at this step */
+        int root_fifo;                  /* Signify which fifo_inx is the root */
         _Bool is_secondary;             /* fifo_out should link to a fifo_in1 */
         _Bool is_passive;               /* denotes process that does nothing */
         _Bool is_enabled;               /* enabled means it still has data to process */
-        _Bool is_killable;              /* determines if process can kill _itself_ */
 };
 typedef struct process Process;
 

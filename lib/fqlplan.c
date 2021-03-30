@@ -132,22 +132,30 @@ void _logicgroup_process(Plan* plan, LogicGroup* lg, _Bool is_from_hash_join)
         plan->current = logic_true_node;
 }
 
-Process* _new_join_proc(enum join_type type, int source_count)
+Process* _new_join_proc(enum join_type type, const char* algorithm, int source_count)
 {
+        char buffer[100];
         switch (type) {
         case JOIN_INNER:
-                return process_new("INNER JOIN", source_count);
+                sprintf(buffer, "INNER JOIN (%s)", algorithm);
+                break;
         case JOIN_LEFT:
-                return process_new("LEFT JOIN", source_count);
+                sprintf(buffer, "LEFT JOIN (%s)", algorithm);
+                break;
         case JOIN_RIGHT:
-                return process_new("RIGHT JOIN", source_count);
+                sprintf(buffer, "RIGHT JOIN (%s)", algorithm);
+                break;
         case JOIN_FULL:
-                return process_new("FULL JOIN", source_count);
+                sprintf(buffer, "FULL JOIN (%s)", algorithm);
+                break;
         case JOIN_CROSS:
-                return process_new("CROSS JOIN", source_count);
+                sprintf(buffer, "CROSS JOIN (%s)", algorithm);
+                break;
         case JOIN_FROM:
-                return process_new("unexpected: JOIN_FROM", source_count);
+                sprintf(buffer, "unexpected: JOIN_FROM (%s)", algorithm);
+                break;
         }
+        return process_new(buffer, source_count);
 }
 
 void _from(Plan* plan, Query* query)
@@ -175,41 +183,38 @@ void _from(Plan* plan, Query* query)
 
         plan->current->out[0] = from_node;
         plan->current = from_node;
+        Dnode* join_proc_node = NULL;
 
         for (++src; src != vec_end(query->sources); ++src) {
-                Process* join_proc = _new_join_proc(src->join_type, ++plan->source_count);
-                process_add_second_input(join_proc);
+                Process* join_proc = NULL;
                 _Bool is_hash_join = (src->condition->join_logic != NULL);
                 if (is_hash_join) {
+                        join_proc = _new_join_proc(src->join_type, "hash", ++plan->source_count);
                         join_proc->action__ = &fql_hash_join;
                         source_hash_join_init(src);
+                        process_add_second_input(join_proc);
+                        
+                        string_sprintf(&action_msg, "%s: %s", src->table->reader->file_name.data, "mmap read");
+                        Process* read_proc = process_new(action_msg.data, plan->source_count);
+                        src->read_proc = read_proc;
+                        read_proc->proc_data = src->table->reader;
+                        read_proc->action__ = &fql_read;
+                        read_proc->is_secondary = true;
+
+                        Dnode* read_node = dgraph_add_data(plan->processes, read_proc);
+                        read_node->is_root = true;
+
+                        join_proc_node = dgraph_add_data(plan->processes, join_proc);
+                        read_node->out[0] = join_proc_node;
                 } else {
+                        join_proc = _new_join_proc(src->join_type, "cartesian", ++plan->source_count);
                         join_proc->action__ = &fql_cartesian_join;
+                        join_proc_node = dgraph_add_data(plan->processes, join_proc);
+                        join_proc_node->is_root = true;
+                        join_proc->root_fifo = 1;
                 }
                 join_proc->proc_data = src;
-
-
-                Dnode* join_proc_node = dgraph_add_data(plan->processes, join_proc);
-
                 plan->current->out[0] = join_proc_node;
-
-                string_sprintf(&action_msg,
-                               "%s: %s",
-                               src->table->reader->file_name.data,
-                               "mmap read");
-
-                Process* read_proc = process_new(action_msg.data, plan->source_count);
-                src->read_proc = read_proc;
-                read_proc->proc_data = src->table->reader;
-                read_proc->action__ = &fql_read;
-                read_proc->is_secondary = true;
-                if (join_proc->action__ == fql_cartesian_join) {
-                        read_proc->is_killable = false;
-                }
-
-                Dnode* read_node = dgraph_add_data(plan->processes, read_proc);
-                read_node->is_root = true;
-                read_node->out[0] = join_proc_node;
                 plan->current = join_proc_node;
 
                 if (src->condition != NULL) {
@@ -322,10 +327,10 @@ void _update_pipes(Dgraph* proc_graph)
                         return;
                 }
                 Process* proc = (*it)->data;
-                proc->fifo_in0->input_count = (*it)->visit_count;
+                proc->fifo_in[0]->input_count = (*it)->visit_count;
 
-                if (proc->fifo_in1) {
-                        proc->fifo_in1->input_count = (*it)->visit_count;
+                if (proc->fifo_in[1]) {
+                        proc->fifo_in[1]->input_count = (*it)->visit_count;
                 }
         }
 
@@ -428,16 +433,16 @@ void _make_pipes(Plan* plan)
                 Process* proc = (*nodes)->data;
                 if ((*nodes)->out[0] != NULL) {
                         Process* proc0 = (*nodes)->out[0]->data;
-                        proc->fifo_out0 = (proc->is_secondary) ? proc0->fifo_in1 : proc0->fifo_in0;
-                        if (proc->fifo_out0 == NULL) {
+                        proc->fifo_out[0] = (proc->is_secondary) ? proc0->fifo_in[1] : proc0->fifo_in[0];
+                        if (proc->fifo_out[0] == NULL) {
                                 fprintf (stderr, "fifo missing for `%s'\n", proc0->action_msg->data);
                         }
                 }
 
                 if ((*nodes)->out[1] != NULL) {
                         Process* proc1 = (*nodes)->out[1]->data;
-                        proc->fifo_out1 = (proc->is_secondary) ? proc1->fifo_in1 : proc1->fifo_in0;
-                        if (proc->fifo_out1 == NULL) {
+                        proc->fifo_out[1] = (proc->is_secondary) ? proc1->fifo_in[1] : proc1->fifo_in[0];
+                        if (proc->fifo_out[1] == NULL) {
                                 fprintf (stderr, "fifo missing for `%s'\n", proc1->action_msg->data);
                         }
                 }
