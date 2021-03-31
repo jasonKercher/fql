@@ -87,10 +87,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-TESTS = check_constants$(EXEEXT) check_read$(EXEEXT) \
-	check_logic$(EXEEXT) check_join$(EXEEXT)
-check_PROGRAMS = check_constants$(EXEEXT) check_read$(EXEEXT) \
-	check_logic$(EXEEXT) check_join$(EXEEXT)
+TESTS = check_hmap$(EXEEXT) check_constants$(EXEEXT) \
+	check_read$(EXEEXT) check_logic$(EXEEXT) check_join$(EXEEXT)
+check_PROGRAMS = check_hmap$(EXEEXT) check_constants$(EXEEXT) \
+	check_read$(EXEEXT) check_logic$(EXEEXT) check_join$(EXEEXT)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -116,6 +116,12 @@ check_constants_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(check_constants_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
+am_check_hmap_OBJECTS = check_hmap-check_hmap.$(OBJEXT)
+check_hmap_OBJECTS = $(am_check_hmap_OBJECTS)
+check_hmap_DEPENDENCIES = $(top_builddir)/util/libutil.la
+check_hmap_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_hmap_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_check_join_OBJECTS = check_join-check_common.$(OBJEXT) \
 	check_join-check_join.$(OBJEXT)
 check_join_OBJECTS = $(am_check_join_OBJECTS)
@@ -154,6 +160,7 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/check_constants-check_common.Po \
 	./$(DEPDIR)/check_constants-check_constants.Po \
+	./$(DEPDIR)/check_hmap-check_hmap.Po \
 	./$(DEPDIR)/check_join-check_common.Po \
 	./$(DEPDIR)/check_join-check_join.Po \
 	./$(DEPDIR)/check_logic-check_common.Po \
@@ -179,10 +186,12 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(check_constants_SOURCES) $(check_join_SOURCES) \
-	$(check_logic_SOURCES) $(check_read_SOURCES)
-DIST_SOURCES = $(check_constants_SOURCES) $(check_join_SOURCES) \
-	$(check_logic_SOURCES) $(check_read_SOURCES)
+SOURCES = $(check_constants_SOURCES) $(check_hmap_SOURCES) \
+	$(check_join_SOURCES) $(check_logic_SOURCES) \
+	$(check_read_SOURCES)
+DIST_SOURCES = $(check_constants_SOURCES) $(check_hmap_SOURCES) \
+	$(check_join_SOURCES) $(check_logic_SOURCES) \
+	$(check_read_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -542,6 +551,9 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+check_hmap_SOURCES = $(top_builddir)/util/hmap.h check_hmap.c
+check_hmap_CFLAGS = @CHECK_CFLAGS@
+check_hmap_LDADD = $(top_builddir)/util/libutil.la @CHECK_LIBS@
 check_constants_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_common.h check_common.c \
 			check_constants.c
@@ -613,6 +625,10 @@ check_constants$(EXEEXT): $(check_constants_OBJECTS) $(check_constants_DEPENDENC
 	@rm -f check_constants$(EXEEXT)
 	$(AM_V_CCLD)$(check_constants_LINK) $(check_constants_OBJECTS) $(check_constants_LDADD) $(LIBS)
 
+check_hmap$(EXEEXT): $(check_hmap_OBJECTS) $(check_hmap_DEPENDENCIES) $(EXTRA_check_hmap_DEPENDENCIES) 
+	@rm -f check_hmap$(EXEEXT)
+	$(AM_V_CCLD)$(check_hmap_LINK) $(check_hmap_OBJECTS) $(check_hmap_LDADD) $(LIBS)
+
 check_join$(EXEEXT): $(check_join_OBJECTS) $(check_join_DEPENDENCIES) $(EXTRA_check_join_DEPENDENCIES) 
 	@rm -f check_join$(EXEEXT)
 	$(AM_V_CCLD)$(check_join_LINK) $(check_join_OBJECTS) $(check_join_LDADD) $(LIBS)
@@ -633,6 +649,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_constants-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_constants-check_constants.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_hmap-check_hmap.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_join-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_join-check_join.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_logic-check_common.Po@am__quote@ # am--include-marker
@@ -694,6 +711,20 @@ check_constants-check_constants.obj: check_constants.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_constants.c' object='check_constants-check_constants.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_constants_CFLAGS) $(CFLAGS) -c -o check_constants-check_constants.obj `if test -f 'check_constants.c'; then $(CYGPATH_W) 'check_constants.c'; else $(CYGPATH_W) '$(srcdir)/check_constants.c'; fi`
+
+check_hmap-check_hmap.o: check_hmap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_hmap_CFLAGS) $(CFLAGS) -MT check_hmap-check_hmap.o -MD -MP -MF $(DEPDIR)/check_hmap-check_hmap.Tpo -c -o check_hmap-check_hmap.o `test -f 'check_hmap.c' || echo '$(srcdir)/'`check_hmap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_hmap-check_hmap.Tpo $(DEPDIR)/check_hmap-check_hmap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_hmap.c' object='check_hmap-check_hmap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_hmap_CFLAGS) $(CFLAGS) -c -o check_hmap-check_hmap.o `test -f 'check_hmap.c' || echo '$(srcdir)/'`check_hmap.c
+
+check_hmap-check_hmap.obj: check_hmap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_hmap_CFLAGS) $(CFLAGS) -MT check_hmap-check_hmap.obj -MD -MP -MF $(DEPDIR)/check_hmap-check_hmap.Tpo -c -o check_hmap-check_hmap.obj `if test -f 'check_hmap.c'; then $(CYGPATH_W) 'check_hmap.c'; else $(CYGPATH_W) '$(srcdir)/check_hmap.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_hmap-check_hmap.Tpo $(DEPDIR)/check_hmap-check_hmap.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_hmap.c' object='check_hmap-check_hmap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_hmap_CFLAGS) $(CFLAGS) -c -o check_hmap-check_hmap.obj `if test -f 'check_hmap.c'; then $(CYGPATH_W) 'check_hmap.c'; else $(CYGPATH_W) '$(srcdir)/check_hmap.c'; fi`
 
 check_join-check_common.o: check_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_join_CFLAGS) $(CFLAGS) -MT check_join-check_common.o -MD -MP -MF $(DEPDIR)/check_join-check_common.Tpo -c -o check_join-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
@@ -978,6 +1009,13 @@ recheck: all $(check_PROGRAMS)
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
+check_hmap.log: check_hmap$(EXEEXT)
+	@p='check_hmap$(EXEEXT)'; \
+	b='check_hmap'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 check_constants.log: check_constants$(EXEEXT)
 	@p='check_constants$(EXEEXT)'; \
 	b='check_constants'; \
@@ -1101,6 +1139,7 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/check_constants-check_common.Po
 	-rm -f ./$(DEPDIR)/check_constants-check_constants.Po
+	-rm -f ./$(DEPDIR)/check_hmap-check_hmap.Po
 	-rm -f ./$(DEPDIR)/check_join-check_common.Po
 	-rm -f ./$(DEPDIR)/check_join-check_join.Po
 	-rm -f ./$(DEPDIR)/check_logic-check_common.Po
@@ -1154,6 +1193,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/check_constants-check_common.Po
 	-rm -f ./$(DEPDIR)/check_constants-check_constants.Po
+	-rm -f ./$(DEPDIR)/check_hmap-check_hmap.Po
 	-rm -f ./$(DEPDIR)/check_join-check_common.Po
 	-rm -f ./$(DEPDIR)/check_join-check_join.Po
 	-rm -f ./$(DEPDIR)/check_logic-check_common.Po

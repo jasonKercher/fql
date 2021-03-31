@@ -1,5 +1,9 @@
-TESTS = check_constants check_read check_logic check_join
-check_PROGRAMS = check_constants check_read check_logic check_join
+TESTS = check_hmap check_constants check_read check_logic check_join
+check_PROGRAMS = check_hmap check_constants check_read check_logic check_join
+
+check_hmap_SOURCES = $(top_builddir)/util/hmap.h check_hmap.c
+check_hmap_CFLAGS = @CHECK_CFLAGS@
+check_hmap_LDADD = $(top_builddir)/util/libutil.la @CHECK_LIBS@
 
 check_constants_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_common.h check_common.c \
