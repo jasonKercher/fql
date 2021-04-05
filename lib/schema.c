@@ -43,7 +43,7 @@ void schema_free(void* generic_schema)
 
         vec_free(schema->columns);
         if (schema->col_map != NULL) {
-                hmap_free(schema->col_map);
+                hashmap_free(schema->col_map);
         }
         free_(schema);
 }
@@ -157,7 +157,7 @@ success_return:
 
 void schema_assign_header(Table* table, Record* rec)
 {
-        table->schema->col_map = hmap_new(rec->fields->size * 2, HMAP_NOCASE);
+        table->schema->col_map = hashmap_new_(Column*, rec->fields->size * 2, HASHMAP_PROP_NOCASE);
 
         int i = 0;
         StringView* it = vec_begin(rec->fields);
@@ -172,7 +172,7 @@ void schema_assign_header(Table* table, Record* rec)
                 new_col->field_type = FIELD_STRING;
 
                 /* add to hash map for easy searching */
-                hmap_set(table->schema->col_map, col_str.data, new_col);
+                hashmap_set(table->schema->col_map, col_str.data, &new_col);
 
                 string_destroy(&col_str);
         }

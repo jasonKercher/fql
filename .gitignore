@@ -1,8 +1,7 @@
 core*
 
 # script executables
-stdcsv
-check_hmap
+check_hashmap
 check_constants
 check_logic
 check_read
@@ -30,7 +29,6 @@ man/
 html/
 
 # Check files
-check_libfql
 *.trs
 *.log
 

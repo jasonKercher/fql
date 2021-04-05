@@ -7,7 +7,7 @@ extern "C" {
 
 #include "record.h"
 #include "util/vec.h"
-#include "util/pmap.h"
+//#include "util/pmap.h"
 #include "util/stringy.h"
 #include "util/stringview.h"
 #include "util/util.h"
@@ -59,7 +59,7 @@ struct mmapcsv {
         struct csv_reader* csv_handle;
         struct stringview current;
         struct vec* raw;
-        Pmap* rec_map;
+        struct hashmap* rec_map;
         char* mmap_base;
         char* mp;
         size_t file_size;

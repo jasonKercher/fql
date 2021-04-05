@@ -125,7 +125,7 @@ void hashjoin_free(struct hashjoin* join)
         if (join == NULL) {
                 return;
         }
-        pmap_destroy(&join->hash_data);
+        multimap_destroy(&join->hash_data);
         free_(join);
 }
 
@@ -177,5 +177,10 @@ void source_hash_join_init(Source* src)
 
         struct hashjoin* join = src->join_data;
 
-        pmap_construct(&join->hash_data, guessed_row_count * 2, HMAP_NOCASE | HMAP_RTRIM);
+        multimap_construct_(
+                 &join->hash_data
+                ,char* /* T_ */
+                ,guessed_row_count * 2
+                ,HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM
+        );
 }

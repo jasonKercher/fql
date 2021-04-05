@@ -6,8 +6,8 @@ extern "C" {
 #endif
 
 #include "util/stack.h"
-#include "util/hmap.h"
-#include "util/pmap.h"
+#include "util/hashmap.h"
+//#include "util/pmap.h"
 #include "util/stringy.h"
 #include "schema.h"
 //#include "reader.h"
@@ -72,7 +72,7 @@ void source_destroy(struct source*);
 #define HASH_JOIN_MIN_SIZE 128
 
 struct hashjoin {
-        Pmap hash_data;
+        struct hashmap hash_data;
         struct column* left_col;
         struct column* right_col;
         Vec* recs;

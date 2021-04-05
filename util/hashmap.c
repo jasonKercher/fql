@@ -32,14 +32,15 @@ HashMap* hashmap_construct(HashMap* m, size_t elem_size, size_t limit, unsigned 
         limit = _next_power_of_2(limit);
 
         *m = (HashMap) {
-                 { 0 }  /* values */
-                ,NULL   /* _entries */
-                ,NULL   /* get_hash__ */
-                ,limit  /* _limit */
-                ,NULL   /* _keybuf */
-                ,0      /* _keybufhead */
-                ,limit  /* _keybuflen */
-                ,props  /* props */
+                 { 0 }          /* values */
+                ,NULL           /* _entries */
+                ,NULL           /* get_hash__ */
+                ,limit          /* _limit */
+                ,NULL           /* _keybuf */
+                ,0              /* _keybufhead */
+                ,limit          /* _keybuflen */
+                ,elem_size      /* elem_size */
+                ,props          /* props */
         };
 
         switch (m->props) {
@@ -166,29 +167,29 @@ void hashmap_nset(HashMap* m, const char* key, void* data, int n)
 
         /* use memcmp instead of strcmp in case non-char* key */
         struct hm_entry* entry = &m->_entries[idx];
-        while (entry->validx != _NONE && (
-                       entry->keylen != n
-                    || memcmp(&m->_keybuf[entry->keyidx], &m->_keybuf[m->_keybufhead], n) != 0)) {
+        while (entry->val_idx != _NONE && (
+                       entry->key_len != n
+                    || memcmp(&m->_keybuf[entry->key_idx], &m->_keybuf[m->_keybufhead], n) != 0)) {
                 idx = (idx + 1) % m->_limit;
                 entry = &m->_entries[idx];
         }
 
-        if (entry->validx == _NONE) {  /* New value */
-                entry->keyidx = m->_keybufhead;
-                entry->keylen = n;
-                entry->validx = m->values.size;
+        if (entry->val_idx == _NONE) {  /* New value */
+                entry->key_idx = m->_keybufhead;
+                entry->key_len = n;
+                entry->val_idx = m->values.size;
                 m->_keybufhead += n;
                 vec_push_back(&m->values, data);
         } else {
-                vec_set(&m->values, entry->validx, data);
+                vec_set(&m->values, entry->val_idx, data);
         }
 }
 
-void hashmap_set(HashMap* m, const char* key, void* data)
-{
-        int n = strlen(key);
-        hashmap_nset(m, key, data, n);
-}
+//void hashmap_set(HashMap* m, const char* key, void* data)
+//{
+//        int n = strlen(key);
+//        hashmap_nset(m, key, data, n);
+//}
 
 void* hashmap_nget(HashMap* m, const char* key, int n)
 {
@@ -202,22 +203,88 @@ void* hashmap_nget(HashMap* m, const char* key, int n)
 
         /* use memcmp instead of strcmp in case non-char* key */
         struct hm_entry* entry = &m->_entries[idx];
-        while (entry->validx != _NONE && (
-                        entry->keylen != n
-                     || memcmp(&m->_keybuf[entry->keyidx], &m->_keybuf[m->_keybufhead], n) != 0)) {
+        while (entry->val_idx != _NONE && (
+                        entry->key_len != n
+                     || memcmp(&m->_keybuf[entry->key_idx], &m->_keybuf[m->_keybufhead], n) != 0)) {
                 idx = (idx + 1) % m->_limit;
                 entry = &m->_entries[idx];
         }
 
-        if (entry->validx == _NONE) {  /* New value */
+        if (entry->val_idx == _NONE) {  /* New value */
                 return NULL;
         }
 
-        return vec_at(&m->values, entry->validx);
-}
-void* hashmap_get(HashMap* m, const char* key)
-{
-        int n = strlen(key);
-        return hashmap_nget(m, key, n);
+        return vec_at(&m->values, entry->val_idx);
 }
 
+//void* hashmap_get(HashMap* m, const char* key)
+//{
+//        int n = strlen(key);
+//        return hashmap_nget(m, key, n);
+//}
+
+/* elem size is Vec elements now */
+MultiMap* multimap_new(size_t elem_size, size_t limit, unsigned props)
+{
+        MultiMap* new_map = NULL;
+        malloc_(new_map, sizeof(*new_map));
+        return multimap_construct(new_map, elem_size, limit, props);
+}
+
+MultiMap* multimap_construct(MultiMap* m, size_t elem_size, size_t limit, unsigned props)
+{
+        hashmap_construct_(m, Vec, limit, props);
+        m->elem_size = elem_size;  /* This parameter is the elem_size of
+                                    * of the vectors created for each entry
+                                    */
+        return m;
+}
+
+void multimap_free(MultiMap* m)
+{
+        multimap_destroy(m);
+        free_(m);
+}
+
+void multimap_destroy(MultiMap* m)
+{
+        Vec* it = vec_begin(&m->values);
+        for (; it != vec_end(&m->values); ++it) {
+                vec_destroy(it);
+        }
+        hashmap_destroy(m);
+}
+
+void multimap_nset(MultiMap* m, const char* key, void* data, int n)
+{
+        if (m->_keybufhead + n > m->_keybuflen) {
+                m->_keybuflen *= 2;
+                realloc_(m->_keybuf, m->_keybuflen);
+        }
+
+        uint64_t hash = m->get_hash__(m, key, &n);
+        size_t idx = (size_t)(hash & (m->_limit-1));
+
+        /* use memcmp instead of strcmp in case non-char* key */
+        struct hm_entry* entry = &m->_entries[idx];
+        while (entry->val_idx != _NONE && (
+                       entry->key_len != n
+                    || memcmp(&m->_keybuf[entry->key_idx], &m->_keybuf[m->_keybufhead], n) != 0)) {
+                idx = (idx + 1) % m->_limit;
+                entry = &m->_entries[idx];
+        }
+
+        if (entry->val_idx == _NONE) {  /* New value */
+                entry->key_idx = m->_keybufhead;
+                entry->key_len = n;
+                entry->val_idx = m->values.size;
+                m->_keybufhead += n;
+                Vec new_vec;
+                vec_construct(&new_vec, m->elem_size);
+                vec_push_back(&new_vec, data);
+                vec_push_back(&m->values, &new_vec);
+        } else {
+                Vec* entryvec = vec_at(&m->values, entry->val_idx);
+                vec_push_back(entryvec, data);
+        }
+}

@@ -137,8 +137,9 @@ void column_cat_description(Column* col, String* msg)
 
 int column_try_assign_source(Column* col, Source* src, int idx)
 {
-        col->data_source = hmap_get(src->table->schema->col_map, col->name.data);
-        if (col->data_source) {
+        Column** src_col = hashmap_get(src->table->schema->col_map, col->name.data);
+        if (src_col != NULL) {
+                col->data_source = *src_col;
                 col->src_idx = idx;
                 if (col->data_source->location > src->table->reader->max_col_idx) {
                         src->table->reader->max_col_idx = col->data_source->location;

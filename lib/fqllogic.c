@@ -1,4 +1,6 @@
 #include "logic.h"
+#include <stdio.h>
+#include <ctype.h>
 #include "column.h"
 
 #include "util/stringview.h"

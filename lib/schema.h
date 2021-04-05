@@ -4,12 +4,12 @@
 #include "fqlhandle.h"
 #include "fqlimits.h"
 #include "util/queue.h"
-#include "util/hmap.h"
+#include "util/hashmap.h"
 #include "util/vec.h"
 
 struct schema {
         struct vec* columns;
-        struct hmap* col_map;
+        struct hashmap* col_map;
         char name[TABLE_NAME_MAX];
         char delimiter[DELIM_LEN_MAX];
 };
