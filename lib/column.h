@@ -41,7 +41,7 @@ struct column* column_construct(struct column*, enum expr_type, void*, const cha
 void column_free(void*);
 
 void column_cat_description(struct column* col, String*);
-int column_try_assign_source(struct column*, struct source*, int);
+int column_try_assign_source(struct column*, struct table*, int);
 
 /* Data Access */
 int column_get_int(long*, struct column*, struct vec*);

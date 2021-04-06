@@ -13,19 +13,11 @@ extern "C" {
 //#include "reader.h"
 #include "fqlimits.h"
 
-
-/** Table **/
-struct table {
-        struct reader* reader;
-        struct schema* schema;
-        String name;
-};
-typedef struct table Table;
-
-struct table* table_new();
-struct table* table_construct(struct table*);
-void table_free(struct table*);
-
+//struct table {
+//        struct reader* reader;
+//        struct schema* schema;
+//        String name;
+//};
 
 /** Source **/
 enum source_type {
@@ -42,32 +34,34 @@ enum join_type {
         JOIN_CROSS,
 };
 
-struct source {
-        struct table* table;
+struct table {
+        String name;
+        String alias;
+        struct reader* reader;
+        struct schema* schema;
         struct logicgroup* condition;
         struct vec* validation_list;
         struct process* read_proc;
         void* join_data;
-        String alias;
         size_t idx;
         enum source_type source_type;
         enum join_type join_type;
 };
-typedef struct source Source;
+typedef struct table Table;
 
-struct source* source_new(struct table*,
-                          const char* alias,
-                          size_t idx,
-                          enum source_type,
-                          enum join_type);
-struct source* source_construct(struct source*,
-                           struct table*,
-                           const char* alias,
-                           size_t idx,
-                           enum source_type,
-                           enum join_type);
-void source_free(struct source*);
-void source_destroy(struct source*);
+struct table* table_new(char* name,
+                        const char* alias,
+                        size_t idx,
+                        enum source_type,
+                        enum join_type);
+struct table* table_construct(struct table*,
+                              char* name,
+                              const char* alias,
+                              size_t idx,
+                              enum source_type,
+                              enum join_type);
+void table_free(struct table*);
+void table_destroy(struct table*);
 
 #define HASH_JOIN_MIN_SIZE 128
 
@@ -82,7 +76,7 @@ struct hashjoin {
 
 struct hashjoin* hashjoin_new();
 void hashjoin_free(struct hashjoin*);
-void source_hash_join_init(struct source*);
+void table_hash_join_init(struct table*);
 
 
 #ifdef __cplusplus

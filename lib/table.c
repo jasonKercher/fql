@@ -5,94 +5,96 @@
 #include "reader.h"
 #include "util/util.h"
 
-Table* table_new()
+//Table* table_new()
+//{
+//        Table* new_table = NULL;
+//        malloc_(new_table, sizeof(*new_table));
+//
+//        return table_construct(new_table);
+//}
+//
+//Table* table_construct(Table* table)
+//{
+//        *table = (Table) {
+//        };
+//
+//        string_construct(&table->name);
+//
+//        return table;
+//}
+//
+//void table_free(Table* table)
+//{
+//        if (table == NULL)
+//                return;
+//
+//        string_destroy(&table->name);
+//        reader_free(table->reader);
+//        schema_free(table->schema);
+//        free_(table);
+//}
+
+
+
+Table* table_new(char* name,
+                 const char* alias,
+                 size_t idx,
+                 enum source_type source_type,
+                 enum join_type join_type)
 {
         Table* new_table = NULL;
         malloc_(new_table, sizeof(*new_table));
 
-        return table_construct(new_table);
+        return table_construct(new_table, name, alias, idx, source_type, join_type);
 }
 
-Table* table_construct(Table* table)
+Table* table_construct(Table* table,
+                       char* name,
+                       const char* alias,
+                       size_t idx,
+                       enum source_type source_type,
+                       enum join_type join_type)
 {
         *table = (Table) {
-                 reader_new() /* reader */
-                ,schema_new() /* schema */
-                ,{ 0 }        /* name */
-        };
-
-        string_construct(&table->name);
-
-        return table;
-}
-
-void table_free(Table* table)
-{
-        if (table == NULL)
-                return;
-
-        string_destroy(&table->name);
-        reader_free(table->reader);
-        schema_free(table->schema);
-        free_(table);
-}
-
-
-
-Source* source_new(Table* table,
-                   const char* alias,
-                   size_t idx,
-                   enum source_type source_type,
-                   enum join_type join_type)
-{
-        Source* new_source = NULL;
-        malloc_(new_source, sizeof(*new_source));
-
-        return source_construct(new_source, table, alias, idx, source_type, join_type);
-}
-
-Source* source_construct(Source* src,
-                         Table* table,
-                         const char* alias,
-                         size_t idx,
-                         enum source_type source_type,
-                         enum join_type join_type)
-{
-        *src = (Source) {
-                 table                  /* table */
+                 { 0 }                  /* name */
+                ,{ 0 }                  /* alias */
+                ,reader_new()           /* reader */
+                ,schema_new()           /* schema */
                 ,NULL                   /* condition */
                 ,vec_new_(Column*)      /* validation_list */
                 ,NULL                   /* read_proc */
                 ,NULL                   /* join_data */
-                ,{ 0 }                  /* alias */
                 ,idx                    /* idx */
                 ,source_type            /* source_type */
                 ,join_type              /* join_type */
-
         };
+        
+        string_construct_take(&table->name, name);
 
         if (alias[0] == '\0') {
-                string_construct_from_string(&src->alias, &table->name);
+                string_construct_from_string(&table->alias, &table->name);
         } else {
-                string_construct_from_char_ptr(&src->alias, alias);
+                string_construct_from_char_ptr(&table->alias, alias);
         }
 
-        return src;
+        return table; 
 }
 
-void source_free(Source* source)
+void table_free(Table* table)
 {
-        source_destroy(source);
-        free_(source);
+        table_destroy(table);
+        free_(table);
 }
 
-void source_destroy(Source* source)
+void table_destroy(Table* table)
 {
-        table_free(source->table);
-        logicgroup_free(source->condition);
-        vec_free(source->validation_list);
-        string_destroy(&source->alias);
-        hashjoin_free(source->join_data);
+        string_destroy(&table->name);
+        reader_free(table->reader);
+        schema_free(table->schema);
+        logicgroup_free(table->condition);
+        vec_free(table->validation_list);
+        string_destroy(&table->alias);
+        hashjoin_free(table->join_data);
         //Column** it = vec_begin(source->validation_list);
         //for (; it != vec_end(source->validation_list); ++it) {
         //        column_free(*it);
@@ -130,12 +132,12 @@ void hashjoin_free(struct hashjoin* join)
 }
 
 
-size_t _guess_row_count(Source* src)
+size_t _guess_row_count(Table* table)
 {
         size_t guess = 0;
         size_t total_length = 0;
 
-        Reader* reader = src->table->reader;
+        Reader* reader = table->reader;
 
         unsigned max_col_store = reader->max_col_idx;
         reader->max_col_idx = 0;
@@ -171,11 +173,11 @@ size_t _guess_row_count(Source* src)
         return (guess < HASH_JOIN_MIN_SIZE) ? HASH_JOIN_MIN_SIZE : guess + 1;
 }
 
-void source_hash_join_init(Source* src)
+void table_hash_join_init(Table* table)
 {
-        size_t guessed_row_count = _guess_row_count(src);
+        size_t guessed_row_count = _guess_row_count(table);
 
-        struct hashjoin* join = src->join_data;
+        struct hashjoin* join = table->join_data;
 
         multimap_construct_(
                  &join->hash_data

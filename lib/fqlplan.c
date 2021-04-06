@@ -166,17 +166,17 @@ void _from(Plan* plan, Query* query)
 
         String action_msg;
         string_construct(&action_msg);
-        Source* src = vec_begin(query->sources);
+        Table* table = vec_begin(query->sources);
 
         string_sprintf(&action_msg,
                        "%s: %s",
-                       src->table->reader->file_name.data,
+                       table->reader->file_name.data,
                        "stream read");
 
         Process* from_proc = process_new(action_msg.data, ++plan->source_count);
-        src->read_proc = from_proc;
+        table->read_proc = from_proc;
         from_proc->action__ = &fql_read;
-        from_proc->proc_data = src->table->reader;
+        from_proc->proc_data = table->reader;
 
         Dnode* from_node = dgraph_add_data(plan->processes, from_proc);
         from_node->is_root = true;
@@ -185,19 +185,19 @@ void _from(Plan* plan, Query* query)
         plan->current = from_node;
         Dnode* join_proc_node = NULL;
 
-        for (++src; src != vec_end(query->sources); ++src) {
+        for (++table; table != vec_end(query->sources); ++table) {
                 Process* join_proc = NULL;
-                _Bool is_hash_join = (src->condition->join_logic != NULL);
+                _Bool is_hash_join = (table->condition->join_logic != NULL);
                 if (is_hash_join) {
-                        join_proc = _new_join_proc(src->join_type, "hash", ++plan->source_count);
+                        join_proc = _new_join_proc(table->join_type, "hash", ++plan->source_count);
                         join_proc->action__ = &fql_hash_join;
-                        source_hash_join_init(src);
+                        table_hash_join_init(table);
                         process_add_second_input(join_proc);
                         
-                        string_sprintf(&action_msg, "%s: %s", src->table->reader->file_name.data, "mmap read");
+                        string_sprintf(&action_msg, "%s: %s", table->reader->file_name.data, "mmap read");
                         Process* read_proc = process_new(action_msg.data, plan->source_count);
-                        src->read_proc = read_proc;
-                        read_proc->proc_data = src->table->reader;
+                        table->read_proc = read_proc;
+                        read_proc->proc_data = table->reader;
                         read_proc->action__ = &fql_read;
                         read_proc->is_secondary = true;
 
@@ -207,18 +207,18 @@ void _from(Plan* plan, Query* query)
                         join_proc_node = dgraph_add_data(plan->processes, join_proc);
                         read_node->out[0] = join_proc_node;
                 } else {
-                        join_proc = _new_join_proc(src->join_type, "cartesian", ++plan->source_count);
+                        join_proc = _new_join_proc(table->join_type, "cartesian", ++plan->source_count);
                         join_proc->action__ = &fql_cartesian_join;
                         join_proc_node = dgraph_add_data(plan->processes, join_proc);
                         join_proc_node->is_root = true;
                         join_proc->root_fifo = 1;
                 }
-                join_proc->proc_data = src;
+                join_proc->proc_data = table;
                 plan->current->out[0] = join_proc_node;
                 plan->current = join_proc_node;
 
-                if (src->condition != NULL) {
-                        _logicgroup_process(plan, src->condition, is_hash_join);
+                if (table->condition != NULL) {
+                        _logicgroup_process(plan, table->condition, is_hash_join);
                 }
         }
 

@@ -51,11 +51,11 @@ void _resize_raw_rec(Vec* raw_rec, unsigned size)
         }
 }
 
-int _expand_asterisk(Vec* col_vec, Source* src, unsigned src_idx, unsigned* col_idx)
+int _expand_asterisk(Vec* col_vec, Table* table, unsigned src_idx, unsigned* col_idx)
 {
-        Vec* src_col_vec = src->table->schema->columns;
+        Vec* src_col_vec = table->schema->columns;
 
-        src->table->reader->max_col_idx = src_col_vec->size - 1;
+        table->reader->max_col_idx = src_col_vec->size - 1;
 
         Column** it = vec_begin(src_col_vec);
         for (; it != vec_end(src_col_vec); ++it) {
@@ -68,7 +68,7 @@ int _expand_asterisk(Vec* col_vec, Source* src, unsigned src_idx, unsigned* col_
                 ++(*col_idx);
         }
 
-        return src->table->schema->columns->size;
+        return table->schema->columns->size;
 }
 
 void _expand_asterisks(Query* query, _Bool check_schema)
@@ -83,15 +83,15 @@ void _expand_asterisks(Query* query, _Bool check_schema)
                         continue;
                 }
 
-                Source* src = vec_at(query->sources, (*col)->src_idx);
+                Table* table = vec_at(query->sources, (*col)->src_idx);
 
                 if (check_schema &&
-                    string_eq(src->table->schema->delimiter, query->schema->delimiter)) {
+                    string_eq(table->schema->delimiter, query->schema->delimiter)) {
                         continue;
                 }
 
                 unsigned asterisk_index = i++;
-                _expand_asterisk(col_vec, src, (*col)->src_idx, &i);
+                _expand_asterisk(col_vec, table, (*col)->src_idx, &i);
 
                 Column** asterisk_col = vec_at(col_vec, asterisk_index);
                 column_free(*asterisk_col);
@@ -150,8 +150,8 @@ void select_preop(Select* select, Query* query)
         Column** it = vec_begin(select->schema->columns);
         for (; it != vec_end(select->schema->columns); ++it) {
                 if ((*it)->expr == EXPR_ASTERISK) {
-                        Source* aster_src = vec_at(query->sources, (*it)->src_idx);
-                        Vec* aster_cols = aster_src->table->schema->columns;
+                        Table* aster_src = vec_at(query->sources, (*it)->src_idx);
+                        Vec* aster_cols = aster_src->schema->columns;
                         Column** it2 = vec_begin(aster_cols);
                         for (; it2 != vec_end(aster_cols); ++it2) {
                                 Column* field_col = column_new(EXPR_CONST, NULL, "");

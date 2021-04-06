@@ -135,14 +135,14 @@ void column_cat_description(Column* col, String* msg)
         }
 }
 
-int column_try_assign_source(Column* col, Source* src, int idx)
+int column_try_assign_source(Column* col, Table* table, int idx)
 {
-        Column** src_col = hashmap_get(src->table->schema->col_map, col->name.data);
+        Column** src_col = hashmap_get(table->schema->col_map, col->name.data);
         if (src_col != NULL) {
                 col->data_source = *src_col;
                 col->src_idx = idx;
-                if (col->data_source->location > src->table->reader->max_col_idx) {
-                        src->table->reader->max_col_idx = col->data_source->location;
+                if (col->data_source->location > table->reader->max_col_idx) {
+                        table->reader->max_col_idx = col->data_source->location;
                 }
                 return 1;
         }

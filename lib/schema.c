@@ -178,14 +178,13 @@ void schema_assign_header(Table* table, Record* rec)
         }
 }
 
-int schema_resolve_source(Source* source)
+int schema_resolve_source(Table* table)
 {
-        Table* table = source->table;
         if (!vec_empty(table->schema->columns)) {
                 return FQL_GOOD;  /* Schema already set */
         }
 
-        if (source->source_type == SOURCE_SUBQUERY) {
+        if (table->source_type == SOURCE_SUBQUERY) {
                 fputs("Not supporting subquery schema yet\n", stderr);
                 return FQL_FAIL;  /* TODO: retrieve schema from subquery */
         }
@@ -199,12 +198,12 @@ int schema_resolve_source(Source* source)
          * schema by reading the top row of the file and assume a
          * delimited list of field names.
          */
-        if (schema_resolve_file(source->table)) {
+        if (schema_resolve_file(table)) {
                 return FQL_FAIL;
         }
 
         /* Retrieve schema using libcsv */
-        if (source->join_type == JOIN_FROM) {
+        if (table->join_type == JOIN_FROM) {
                 table->reader->type = READ_LIBCSV;
         } else {
                 table->reader->type = READ_MMAPCSV;
@@ -267,10 +266,10 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
                 int j = 0;
 
                 for (; j <= limit; ++j) {
-                        Source* search_src = vec_at(sources, j);
+                        Table* search_table = vec_at(sources, j);
                         if (string_empty(&(*it)->table_name) ||
-                            istring_eq((*it)->table_name.data, search_src->alias.data)) {
-                                matches += column_try_assign_source(*it, search_src, j);
+                            istring_eq((*it)->table_name.data, search_table->alias.data)) {
+                                matches += column_try_assign_source(*it, search_table, j);
                         }
                 }
 
@@ -306,9 +305,9 @@ int _asterisk_resolve(Vec* columns, Vec* sources)
                 int matches = 0;
                 int j = 0;
                 for (; j < sources->size; ++j) {
-                        Source* search_src = vec_at(sources, j);
+                        Table* search_table = vec_at(sources, j);
                         if (string_empty(&(*col)->table_name) ||
-                            istring_eq((*col)->table_name.data, search_src->alias.data)) {
+                            istring_eq((*col)->table_name.data, search_table->alias.data)) {
                                 if (matches > 0) {
                                         Column* new_col = column_new(EXPR_ASTERISK, NULL, "");
                                         new_col->src_idx = j;
@@ -359,14 +358,14 @@ enum join_side _get_join_side(Column* col, int right_idx)
 }
 
 
-void _resolve_join_conditions(Source* right_src, int right_idx)
+void _resolve_join_conditions(Table* right_table, int right_idx)
 {
-        if (right_src->condition == NULL ||
-            right_src->condition->joinable == NULL) {
+        if (right_table->condition == NULL ||
+            right_table->condition->joinable == NULL) {
                 return;
         }
 
-        Vec* joinable = right_src->condition->joinable;
+        Vec* joinable = right_table->condition->joinable;
 
         Logic** it = vec_begin(joinable);
         for (; it != vec_end(joinable); ++it) {
@@ -376,8 +375,8 @@ void _resolve_join_conditions(Source* right_src, int right_idx)
                 }
                 enum join_side side1 = _get_join_side((*it)->col[1], right_idx);
                 if (side0 != side1) {
-                        if (!logic_can_be_false(right_src->condition, *it)) {
-                                right_src->condition->join_logic = *it;
+                        if (!logic_can_be_false(right_table->condition, *it)) {
+                                right_table->condition->join_logic = *it;
                                 struct hashjoin* hj = hashjoin_new();
                                 if (side0 == SIDE_RIGHT) {
                                         hj->right_col = (*it)->col[0];
@@ -386,14 +385,14 @@ void _resolve_join_conditions(Source* right_src, int right_idx)
                                         hj->right_col = (*it)->col[1];
                                         hj->left_col = (*it)->col[0];
                                 }
-                                right_src->join_data = hj;
+                                right_table->join_data = hj;
                                 break;
                         }
                 }
         }
 
         /* No more need for this vector */
-        //vec_free(right_src->condition->joinable);
+        //vec_free(right_table->condition->joinable);
 }
 
 int schema_resolve_query(struct fql_handle* fql, Query* query)
@@ -402,8 +401,8 @@ int schema_resolve_query(struct fql_handle* fql, Query* query)
 
         int i = 0;
         for (; i < sources->size; ++i) {
-                Source* src = vec_at(query->sources, i);
-                if (schema_resolve_source(src)) {
+                Table* table = vec_at(query->sources, i);
+                if (schema_resolve_source(table)) {
                         return FQL_FAIL;
                 }
 
@@ -411,17 +410,17 @@ int schema_resolve_query(struct fql_handle* fql, Query* query)
                     query->schema->name[0] == '\0' &&
                     query->schema->delimiter[0] == '\0') {
                         strncpy_(query->schema->delimiter,
-                                 src->table->schema->delimiter,
+                                 table->schema->delimiter,
                                  DELIM_LEN_MAX);
                 }
 
-                if (schema_assign_columns_limited(src->validation_list,
+                if (schema_assign_columns_limited(table->validation_list,
                                                   sources, i)) {
                         return FQL_FAIL;
                 }
 
                 if (i > 0 && !fql->props.force_cartesian) {
-                        _resolve_join_conditions(src, i);
+                        _resolve_join_conditions(table, i);
                 }
         }
 

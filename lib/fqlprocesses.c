@@ -145,8 +145,8 @@ void _increase_left_side_ref_count(Vec* leftrecs, _Bool recyclable)
 
 int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
 {
-        Source* src = proc->proc_data;
-        Reader* reader = src->table->reader;
+        Table* table = proc->proc_data;
+        Reader* reader = table->reader;
 
         Vec** rightrecs = fifo_peek(proc->fifo_in[1]);
         Record** rec = vec_back(*rightrecs);
@@ -186,9 +186,9 @@ int fql_cartesian_join(Dgraph* proc_graph, Process* proc)
 
 
 
-void _hash_join_right_side(Process* proc, Source* src, Vec* rightrecs)
+void _hash_join_right_side(Process* proc, Table* table, Vec* rightrecs)
 {
-        struct hashjoin* hj = src->join_data;
+        struct hashjoin* hj = table->join_data;
 
         StringView sv;
         column_get_stringview(&sv, hj->right_col, rightrecs);
@@ -197,9 +197,9 @@ void _hash_join_right_side(Process* proc, Source* src, Vec* rightrecs)
         multimap_nset(&hj->hash_data, sv.data, &(*rightrec)->rec_raw.data, sv.len);
 }
 
-Vec* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
+Vec* _hash_join_left_side(Process* proc, Table* table, Vec* leftrecs)
 {
-        struct hashjoin* hj = src->join_data;
+        struct hashjoin* hj = table->join_data;
 
         if (hj->recs == NULL) {
                 StringView sv;
@@ -223,7 +223,7 @@ Vec* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
 
         Vec** rightrecs = fifo_get(proc->fifo_in[1]);
         Record** rec = vec_back(*rightrecs);
-        Reader* reader = src->table->reader;
+        Reader* reader = table->reader;
 
         /* TODO: this should be a function pointer */
         mmapcsv_get_record_at(reader, *rec, *rightrec_ptr);
@@ -233,8 +233,8 @@ Vec* _hash_join_left_side(Process* proc, Source* src, Vec* leftrecs)
 
 int fql_hash_join(Dgraph* proc_graph, Process* proc)
 {
-        Source* src = proc->proc_data;
-        struct hashjoin* hj = src->join_data;
+        Table* table = proc->proc_data;
+        struct hashjoin* hj = table->join_data;
 
         if (fifo_is_empty(proc->fifo_in[1]) && hj->state == SIDE_RIGHT) {
                 if (!fifo_is_open(proc->fifo_in[1])) {
@@ -247,7 +247,7 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
 
         if (hj->state == SIDE_RIGHT) {
                 Vec** rightrecs = fifo_get(proc->fifo_in[1]);
-                _hash_join_right_side(proc, src, *rightrecs);
+                _hash_join_right_side(proc, table, *rightrecs);
                 _recycle_specific(proc_graph, *rightrecs, proc->fifo_width-1);
                 return 1;
         }
@@ -256,12 +256,12 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
          * when it hit EOF. Run it manually as no-op
          * here just to push any available records.
          */
-        Process* right_side_read_proc = src->read_proc;
+        Process* right_side_read_proc = table->read_proc;
         fql_no_op(proc_graph, right_side_read_proc);
 
         //Vec** leftrecs = fifo_peek(proc->fifo_in[0]);
         Vec** leftrecs = fifo_peek(proc->fifo_in[0]);
-        Vec* rightrecs = _hash_join_left_side(proc, src, *leftrecs);
+        Vec* rightrecs = _hash_join_left_side(proc, table, *leftrecs);
         if (rightrecs == NULL) {
                 fifo_consume(proc->fifo_in[0]);
                 _recycle_recs(proc_graph, *leftrecs, proc->fifo_width-1);

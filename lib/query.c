@@ -22,7 +22,7 @@ Query* query_construct(Query* query)
         *query = (Query) {
                  NULL                   /* plan */
                 ,schema_new()           /* table */
-                ,vec_new_(Source)       /* sources */
+                ,vec_new_(Table)       /* sources */
                 ,NULL                   /* where */
                 ,vec_new_(Column*)      /* groups */
                 ,NULL                   /* having */
@@ -47,9 +47,9 @@ void query_free(void* generic_query)
         Query* query = generic_query;
 
         plan_free(query->plan);
-        Source* it = vec_begin(query->sources);
+        Table* it = vec_begin(query->sources);
         for (; it != vec_end(query->sources); ++it) {
-                source_destroy(it);
+                table_destroy(it);
         }
         op_free(query->op);
         vec_free(query->sources);
@@ -76,8 +76,8 @@ void _add_validation_column(Query* query, Column* col)
                 return;
         }
 
-        Source* src = vec_back(query->sources);
-        vec_push_back(src->validation_list, &col);
+        Table* table = vec_back(query->sources);
+        vec_push_back(table->validation_list, &col);
 }
 
 void _add_logic_column(Query* query, Column* col)
@@ -188,40 +188,38 @@ void query_add_source(Query* query,
                       Stack** source_stack,
                       const char* alias)
 {
-        Table* new_table = table_new();
+        //Table* new_table = table_new();
         enum source_type type = SOURCE_SUBQUERY;
-
+        char* schema_name = NULL;
         char* table_name = stack_pop(source_stack);
         if (table_name != NULL) {
                 type = SOURCE_TABLE;
-                string_strcpy(&new_table->name, table_name);
-                free_(table_name);
-
-                char* schema_name = stack_pop(source_stack);
-                if (schema_name != NULL) {
-                        strncpy_(new_table->schema->name
-                                ,schema_name
-                                ,TABLE_NAME_MAX);
-                        free_(schema_name);
-                }
+                schema_name = stack_pop(source_stack);
         }
 
         stack_free_data(source_stack);
 
-        Source* new_src = vec_add_one(query->sources);
+        Table* new_table = vec_add_one(query->sources);
 
-        source_construct(new_src,
-                         new_table,
-                         alias,
-                         query->sources->size - 1,
-                         type,
-                         query->join);
+        table_construct(new_table,
+                        table_name,
+                        alias,
+                        query->sources->size - 1,
+                        type,
+                        query->join);
+
+        if (schema_name != NULL) {
+                strncpy_(new_table->schema->name
+                        ,schema_name
+                        ,TABLE_NAME_MAX);
+                free_(schema_name);
+        }
 }
 
 void query_apply_table_alias(Query* query, const char* alias)
 {
-        Source* source = vec_back(query->sources);
-        string_strcpy(&source->alias, alias);
+        Table* table = vec_back(query->sources);
+        string_strcpy(&table->alias, alias);
 }
 
 void _add_function(Query* query, Function* func, enum field_type type)
@@ -271,8 +269,8 @@ void _assign_logic(Query* query, LogicGroup* lg)
 {
         switch (query->logic_mode) {
         case LOGIC_JOIN: {
-                Source* src = vec_back(query->sources);
-                src->condition = lg;
+                Table* table = vec_back(query->sources);
+                table->condition = lg;
                 break;
         }
         case LOGIC_WHERE:
