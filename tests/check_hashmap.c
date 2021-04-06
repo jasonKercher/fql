@@ -142,6 +142,253 @@ START_TEST(test_hashmap_nocase_rtrim)
 }
 END_TEST
 
+void multimap_sets()
+{
+        multimap_set(m, "one", &ten);
+        multimap_set(m, "two", &two);
+        multimap_set(m, "one", &one);
+        multimap_set(m, "ten", &ten);
+        multimap_set(m, "twelve", &twelve);
+        multimap_set(m, "test", &test);
+        multimap_set(m, "Test", &Test);
+        multimap_set(m, "test ", &test_);
+}
+
+START_TEST(test_multimap_basic)
+{
+        m = multimap_new_(int, test, 0);
+        ck_assert_ptr_nonnull(m);
+
+        multimap_sets();
+
+        int val = 0;
+        Vec* vec = NULL;
+
+        vec = multimap_get(m, "one");
+        ck_assert_uint_eq(vec->size, 2);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, ten);
+        val = *(int*) vec_at(vec, 1);
+        ck_assert_uint_eq(val, one);
+
+        vec = multimap_get(m, "two");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, two);
+
+        vec = multimap_get(m, "ten");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, ten);
+
+        vec = multimap_get(m, "twelve");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, twelve);
+
+        vec = multimap_get(m, "test");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, test);
+
+        vec = multimap_get(m, "Test");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, Test);
+
+        vec = multimap_get(m, "test ");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, test_);
+
+        void* no_match = multimap_get(m, "no");
+        ck_assert_ptr_null(no_match);
+
+        multimap_free(m);
+}
+END_TEST
+
+START_TEST(test_multimap_nocase)
+{
+        m = multimap_new_(int, test, HASHMAP_PROP_NOCASE);
+        ck_assert_ptr_nonnull(m);
+
+        multimap_sets();
+
+        int val = 0;
+        Vec* vec = NULL;
+
+        vec = multimap_get(m, "one");
+        ck_assert_uint_eq(vec->size, 2);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, ten);
+        val = *(int*) vec_at(vec, 1);
+        ck_assert_uint_eq(val, one);
+
+        vec = multimap_get(m, "two");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, two);
+
+        vec = multimap_get(m, "ten");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, ten);
+
+        vec = multimap_get(m, "twelve");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, twelve);
+
+        vec = multimap_get(m, "test");
+        ck_assert_uint_eq(vec->size, 2);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, test);
+        val = *(int*) vec_at(vec, 1);
+        ck_assert_uint_eq(val, Test);
+
+        vec = multimap_get(m, "Test");
+        ck_assert_uint_eq(vec->size, 2);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, test);
+        val = *(int*) vec_at(vec, 1);
+        ck_assert_uint_eq(val, Test);
+
+        vec = multimap_get(m, "test ");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, test_);
+
+        void* no_match = multimap_get(m, "no");
+        ck_assert_ptr_null(no_match);
+
+        multimap_free(m);
+}
+END_TEST
+
+START_TEST(test_multimap_rtrim)
+{
+        m = multimap_new_(int, test, HASHMAP_PROP_RTRIM);
+        ck_assert_ptr_nonnull(m);
+
+        multimap_sets();
+
+        int val = 0;
+        Vec* vec = NULL;
+
+        vec = multimap_get(m, "one");
+        ck_assert_uint_eq(vec->size, 2);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, ten);
+        val = *(int*) vec_at(vec, 1);
+        ck_assert_uint_eq(val, one);
+
+        vec = multimap_get(m, "two");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, two);
+
+        vec = multimap_get(m, "ten");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, ten);
+
+        vec = multimap_get(m, "twelve");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, twelve);
+
+        vec = multimap_get(m, "test");
+        ck_assert_uint_eq(vec->size, 2);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, test);
+        val = *(int*) vec_at(vec, 1);
+        ck_assert_uint_eq(val, test_);
+
+        vec = multimap_get(m, "Test");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, Test);
+
+        vec = multimap_get(m, "test ");
+        ck_assert_uint_eq(vec->size, 2);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, test);
+        val = *(int*) vec_at(vec, 1);
+        ck_assert_uint_eq(val, test_);
+
+        void* no_match = multimap_get(m, "no");
+        ck_assert_ptr_null(no_match);
+
+        multimap_free(m);
+}
+END_TEST
+
+START_TEST(test_multimap_nocase_rtrim)
+{
+        m = multimap_new_(int, test, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
+        ck_assert_ptr_nonnull(m);
+
+        multimap_sets();
+
+        int val = 0;
+        Vec* vec = NULL;
+
+        vec = multimap_get(m, "one");
+        ck_assert_uint_eq(vec->size, 2);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, ten);
+        val = *(int*) vec_at(vec, 1);
+        ck_assert_uint_eq(val, one);
+
+        vec = multimap_get(m, "two");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, two);
+
+        vec = multimap_get(m, "ten");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, ten);
+
+        vec = multimap_get(m, "twelve");
+        ck_assert_uint_eq(vec->size, 1);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, twelve);
+
+        vec = multimap_get(m, "test");
+        ck_assert_uint_eq(vec->size, 3);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, test);
+        val = *(int*) vec_at(vec, 1);
+        ck_assert_uint_eq(val, Test);
+        val = *(int*) vec_at(vec, 2);
+        ck_assert_uint_eq(val, test_);
+
+        vec = multimap_get(m, "Test");
+        ck_assert_uint_eq(vec->size, 3);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, test);
+        val = *(int*) vec_at(vec, 1);
+        ck_assert_uint_eq(val, Test);
+        val = *(int*) vec_at(vec, 2);
+        ck_assert_uint_eq(val, test_);
+
+        vec = multimap_get(m, "test ");
+        ck_assert_uint_eq(vec->size, 3);
+        val = *(int*) vec_at(vec, 0);
+        ck_assert_uint_eq(val, test);
+        val = *(int*) vec_at(vec, 1);
+        ck_assert_uint_eq(val, Test);
+        val = *(int*) vec_at(vec, 2);
+        ck_assert_uint_eq(val, test_);
+
+        void* no_match = multimap_get(m, "no");
+        ck_assert_ptr_null(no_match);
+
+        multimap_free(m);
+}
+END_TEST
 
 Suite* fql_hashmap_suite(void)
 {
@@ -154,6 +401,13 @@ Suite* fql_hashmap_suite(void)
         tcase_add_test(tc_hashmap, test_hashmap_rtrim);
         tcase_add_test(tc_hashmap, test_hashmap_nocase_rtrim);
         suite_add_tcase(s, tc_hashmap);
+
+        TCase* tc_multimap = tcase_create("multimap");
+        tcase_add_test(tc_multimap, test_multimap_basic);
+        tcase_add_test(tc_multimap, test_multimap_nocase);
+        tcase_add_test(tc_multimap, test_multimap_rtrim);
+        tcase_add_test(tc_multimap, test_multimap_nocase_rtrim);
+        suite_add_tcase(s, tc_multimap);
 
         return s;
 }
