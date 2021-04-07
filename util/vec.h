@@ -22,10 +22,10 @@
 #include <stdbool.h>
 
 struct vec {
-        void* data;             /* the data */
-        size_t size;            /* number of elements populated */
-        size_t _alloc;          /* number of allocated elements */
-        size_t _elem_size;      /* size of a single element */
+	void* data;             /* the data */
+	size_t size;            /* number of elements populated */
+	size_t _alloc;          /* number of allocated elements */
+	size_t _elem_size;      /* size of a single element */
 };
 typedef struct vec Vec;
 

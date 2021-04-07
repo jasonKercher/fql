@@ -15,11 +15,11 @@ struct select;
 typedef int(*select_fn)(struct select*, struct vec*);
 
 struct select {
-        enum op oper_type;
-        struct vec* api;
-        struct schema* schema;
-        struct writer* writer;
-        select_fn select__;
+	enum op oper_type;
+	struct vec* api;
+	struct schema* schema;
+	struct writer* writer;
+	select_fn select__;
 };
 typedef struct select Select;
 

@@ -21,17 +21,17 @@ int libcsv_write_record(void* writer_data, struct vec*, struct vec*);
 typedef int (*write_fn)(void*, struct vec*, struct vec*);
 
 enum write_type {
-        WRITE_UNDEFINED,
-        WRITE_LIBCSV,
+	WRITE_UNDEFINED,
+	WRITE_LIBCSV,
 };
 
 struct writer {
-        enum write_type type;
-        void* writer_data;
-        write_fn write_record__;
-        generic_data_fn free__;
-        struct vec* raw_rec;
-        String file_name;
+	enum write_type type;
+	void* writer_data;
+	write_fn write_record__;
+	generic_data_fn free__;
+	struct vec* raw_rec;
+	String file_name;
 };
 typedef struct writer Writer;
 

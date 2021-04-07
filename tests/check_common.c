@@ -6,11 +6,11 @@ struct fql_handle* fql = NULL;
 
 void fql_setup()
 {
-        fql = fql_new();
+	fql = fql_new();
 }
 
 void fql_teardown()
 {
-        fql_free(fql);
+	fql_free(fql);
 }
 

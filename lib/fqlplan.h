@@ -7,14 +7,14 @@
 struct query;
 
 struct fql_plan {
-        struct dgraph* processes;
-        struct dnode* op_true;
-        struct dnode* op_false;
-        /* temp */
-        struct dnode* current;
-        size_t rows_affected;
-        int source_count;
-        _Bool has_stepped;
+	struct dgraph* processes;
+	struct dnode* op_true;
+	struct dnode* op_false;
+	/* temp */
+	struct dnode* current;
+	size_t rows_affected;
+	int source_count;
+	_Bool has_stepped;
 };
 typedef struct fql_plan Plan;
 

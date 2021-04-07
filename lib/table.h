@@ -21,57 +21,57 @@ extern "C" {
 
 /** Source **/
 enum source_type {
-        SOURCE_TABLE,
-        SOURCE_SUBQUERY,
+	SOURCE_TABLE,
+	SOURCE_SUBQUERY,
 };
 
 enum join_type {
-        JOIN_FROM,
-        JOIN_INNER,
-        JOIN_LEFT,
-        JOIN_RIGHT,
-        JOIN_FULL,
-        JOIN_CROSS,
+	JOIN_FROM,
+	JOIN_INNER,
+	JOIN_LEFT,
+	JOIN_RIGHT,
+	JOIN_FULL,
+	JOIN_CROSS,
 };
 
 struct table {
-        String name;
-        String alias;
-        struct reader* reader;
-        struct schema* schema;
-        struct logicgroup* condition;
-        struct vec* validation_list;
-        struct process* read_proc;
-        void* join_data;
-        size_t idx;
-        enum source_type source_type;
-        enum join_type join_type;
+	String name;
+	String alias;
+	struct reader* reader;
+	struct schema* schema;
+	struct logicgroup* condition;
+	struct vec* validation_list;
+	struct process* read_proc;
+	void* join_data;
+	size_t idx;
+	enum source_type source_type;
+	enum join_type join_type;
 };
 typedef struct table Table;
 
 struct table* table_new(char* name,
-                        const char* alias,
-                        size_t idx,
-                        enum source_type,
-                        enum join_type);
+			const char* alias,
+			size_t idx,
+			enum source_type,
+			enum join_type);
 struct table* table_construct(struct table*,
-                              char* name,
-                              const char* alias,
-                              size_t idx,
-                              enum source_type,
-                              enum join_type);
+			      char* name,
+			      const char* alias,
+			      size_t idx,
+			      enum source_type,
+			      enum join_type);
 void table_free(struct table*);
 void table_destroy(struct table*);
 
 #define HASH_JOIN_MIN_SIZE 128
 
 struct hashjoin {
-        struct hashmap hash_data;
-        struct column* left_col;
-        struct column* right_col;
-        Vec* recs;
-        enum join_side state;
-        unsigned rec_idx;
+	struct hashmap hash_data;
+	struct column* left_col;
+	struct column* right_col;
+	Vec* recs;
+	enum join_side state;
+	unsigned rec_idx;
 };
 
 struct hashjoin* hashjoin_new();

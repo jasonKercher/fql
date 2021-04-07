@@ -7,7 +7,7 @@
 
 #if __STDC_VERSION__ < 201112L
 #define ATOMIC_
-#else 
+#else
 #include <stdatomic.h>
 #define ATOMIC_ _Atomic
 #endif
@@ -20,17 +20,17 @@
  */
 
 struct fifo {
-        Vec* buf;
-        pthread_mutex_t head_mutex;
-        pthread_mutex_t tail_mutex;
-        pthread_mutex_t open_mutex;
-        pthread_cond_t cond_add;
-        pthread_cond_t cond_get;
-        pthread_cond_t cond_work;
-        ATOMIC_ unsigned head;
-        ATOMIC_ unsigned tail;
-        unsigned input_count;
-        _Bool is_open;
+	Vec* buf;
+	pthread_mutex_t head_mutex;
+	pthread_mutex_t tail_mutex;
+	pthread_mutex_t open_mutex;
+	pthread_cond_t cond_add;
+	pthread_cond_t cond_get;
+	pthread_cond_t cond_work;
+	ATOMIC_ unsigned head;
+	ATOMIC_ unsigned tail;
+	unsigned input_count;
+	_Bool is_open;
 };
 typedef struct fifo Fifo;
 

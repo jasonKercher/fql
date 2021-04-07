@@ -18,21 +18,21 @@ typedef int (*read_fn)(struct reader*, struct record* rec);
 typedef int (*reset_fn)(struct reader*);
 
 enum read_type {
-        READ_UNDEFINED,
-        READ_LIBCSV,
-        READ_MMAPCSV,
-        READ_SUBQUERY,
+	READ_UNDEFINED,
+	READ_LIBCSV,
+	READ_MMAPCSV,
+	READ_SUBQUERY,
 };
 
 struct reader {
-        enum read_type type;
-        void* reader_data;
-        read_fn get_record__;
-        generic_data_fn free__;
-        reset_fn reset__;
-        String file_name;
-        size_t max_col_idx;
-        _Bool eof;
+	enum read_type type;
+	void* reader_data;
+	read_fn get_record__;
+	generic_data_fn free__;
+	reset_fn reset__;
+	String file_name;
+	size_t max_col_idx;
+	_Bool eof;
 };
 typedef struct reader Reader;
 
@@ -56,14 +56,14 @@ int libcsv_get_record(struct reader*, struct record* rec);
 int libcsv_reset(struct reader*);
 
 struct mmapcsv {
-        struct csv_reader* csv_handle;
-        struct stringview current;
-        struct vec* raw;
-        struct hashmap* rec_map;
-        char* mmap_base;
-        char* mp;
-        size_t file_size;
-        int fd;
+	struct csv_reader* csv_handle;
+	struct stringview current;
+	struct vec* raw;
+	struct hashmap* rec_map;
+	char* mmap_base;
+	char* mp;
+	size_t file_size;
+	int fd;
 };
 
 struct mmapcsv* mmapcsv_new(size_t);

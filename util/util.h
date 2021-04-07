@@ -23,24 +23,24 @@ typedef int(*int_generic_data_fn)(void*);
  * malloc wrapper that does error checking
  */
 #define malloc_(dest_, size_) {         \
-        dest_ = malloc(size_);          \
-        if (!dest_) {                   \
-                perror("malloc");       \
-                exit(EXIT_FAILURE);     \
-        }                               \
+	dest_ = malloc(size_);          \
+	if (!dest_) {                   \
+		perror("malloc");       \
+		exit(EXIT_FAILURE);     \
+	}                               \
 }
 
 /**
  * realloc wrapper that does error checking
  */
 #define realloc_(dest_, size_) {                \
-        void* new_dest_ = realloc(dest_, size_);\
-        if (!new_dest_) {                       \
-                perror("realloc");              \
-                exit(EXIT_FAILURE);             \
-        }                                       \
-        dest_ = new_dest_;                      \
-        new_dest_ = NULL;                       \
+	void* new_dest_ = realloc(dest_, size_);\
+	if (!new_dest_) {                       \
+		perror("realloc");              \
+		exit(EXIT_FAILURE);             \
+	}                                       \
+	dest_ = new_dest_;                      \
+	new_dest_ = NULL;                       \
 }
 
 /**
@@ -49,21 +49,21 @@ typedef int(*int_generic_data_fn)(void*);
  * allocated memory, free it first.
  */
 #define strdup_(src_, dest_)  {                                         \
-        if (dest_)                                                      \
-                free(dest_);                                            \
-        dest_ = strdup(src_);                                           \
-        if (!dest_) {                                                   \
-                fprintf(stderr, "strdup failed on string %s.\n", src_); \
-                exit(EXIT_FAILURE);                                     \
-        }                                                               \
+	if (dest_)                                                      \
+		free(dest_);                                            \
+	dest_ = strdup(src_);                                           \
+	if (!dest_) {                                                   \
+		fprintf(stderr, "strdup failed on string %s.\n", src_); \
+		exit(EXIT_FAILURE);                                     \
+	}                                                               \
 }
 
 /**
  * strncpy but guaranteed to end with '\0'
  */
 #define strncpy_(dest_, src_, n_) {     \
-        strncpy(dest_, src_, n_-1);     \
-        dest_[n_-1] = '\0';             \
+	strncpy(dest_, src_, n_-1);     \
+	dest_[n_-1] = '\0';             \
 }
 
 /**
@@ -72,9 +72,9 @@ typedef int(*int_generic_data_fn)(void*);
  *       write this one from scratch...
  */
 #define strncat_(dest_, src_, n_) {     \
-        int l0_ = strlen(dest_);        \
-        strncat(dest_, src_, l0_+n_-1); \
-        dest_[n_-1] = '\0';             \
+	int l0_ = strlen(dest_);        \
+	strncat(dest_, src_, l0_+n_-1); \
+	dest_[n_-1] = '\0';             \
 }
 
 
@@ -82,10 +82,10 @@ typedef int(*int_generic_data_fn)(void*);
  * Free pointer if not NULL and set to NULL
  */
 #define free_(ptr_) {               \
-        if (ptr_) {                 \
-                free((void*)ptr_);  \
-                ptr_ = NULL;        \
-        }                           \
+	if (ptr_) {                 \
+		free((void*)ptr_);  \
+		ptr_ = NULL;        \
+	}                           \
 }
 
 

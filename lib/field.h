@@ -8,19 +8,19 @@
 /** data type **/
 #define FIELD_TYPE_COUNT 3
 enum field_type {
-        FIELD_UNDEFINED = -1,
-        FIELD_INT,
-        FIELD_FLOAT,
-        FIELD_STRING,
+	FIELD_UNDEFINED = -1,
+	FIELD_INT,
+	FIELD_FLOAT,
+	FIELD_STRING,
 };
 
 struct function;
 
 union field {
-        struct function* fn;
-        String* s;
-        double f;
-        long i;
+	struct function* fn;
+	String* s;
+	double f;
+	long i;
 };
 
 enum field_type field_determine_type(enum field_type, enum field_type);

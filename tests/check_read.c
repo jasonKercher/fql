@@ -16,401 +16,401 @@ c1519b0d	c8	87082
 
 START_TEST(test_read_t1)
 {
-        struct fql_field* fields = NULL;
-        int plan_count = 0;
-        int field_count = 0;
-        int rows = 0;
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
 
-        /* standard select */
-        plan_count = fql_make_plans(fql, "select foo, bar, baz from t1");
-        ck_assert_int_eq(plan_count, 1);
+	/* standard select */
+	plan_count = fql_make_plans(fql, "select foo, bar, baz from t1");
+	ck_assert_int_eq(plan_count, 1);
 
-        field_count = fql_field_count(fql);
-        ck_assert_int_eq(field_count, 3);
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 3);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 1);
-        ck_assert_int_eq(fields[0].type, FQL_STRING);
-        ck_assert_int_eq(fields[1].type, FQL_STRING);
-        ck_assert_int_eq(fields[2].type, FQL_STRING);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_int_eq(fields[1].type, FQL_STRING);
+	ck_assert_int_eq(fields[2].type, FQL_STRING);
 
-        ck_assert_str_eq(fields[0].data.s, "44b72d44");
-        ck_assert_str_eq(fields[1].data.s, "70");
-        ck_assert_str_eq(fields[2].data.s, "30279");
+	ck_assert_str_eq(fields[0].data.s, "44b72d44");
+	ck_assert_str_eq(fields[1].data.s, "70");
+	ck_assert_str_eq(fields[2].data.s, "30279");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "b8e63822");
-        ck_assert_str_eq(fields[1].data.s, "cb");
-        ck_assert_str_eq(fields[2].data.s, "38922");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "b8e63822");
+	ck_assert_str_eq(fields[1].data.s, "cb");
+	ck_assert_str_eq(fields[2].data.s, "38922");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "46a1bad3");
-        ck_assert_str_eq(fields[1].data.s, "5f");
-        ck_assert_str_eq(fields[2].data.s, "30119");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "46a1bad3");
+	ck_assert_str_eq(fields[1].data.s, "5f");
+	ck_assert_str_eq(fields[2].data.s, "30119");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "8ab25d8f");
-        ck_assert_str_eq(fields[1].data.s, "f8");
-        ck_assert_str_eq(fields[2].data.s, "75882");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "8ab25d8f");
+	ck_assert_str_eq(fields[1].data.s, "f8");
+	ck_assert_str_eq(fields[2].data.s, "75882");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "282a4957");
-        ck_assert_str_eq(fields[1].data.s, "6c");
-        ck_assert_str_eq(fields[2].data.s, "121263");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "282a4957");
+	ck_assert_str_eq(fields[1].data.s, "6c");
+	ck_assert_str_eq(fields[2].data.s, "121263");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "3138b3f8");
-        ck_assert_str_eq(fields[1].data.s, "b0");
-        ck_assert_str_eq(fields[2].data.s, "154715");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8");
+	ck_assert_str_eq(fields[1].data.s, "b0");
+	ck_assert_str_eq(fields[2].data.s, "154715");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "18e25713");
-        ck_assert_str_eq(fields[1].data.s, "1e");
-        ck_assert_str_eq(fields[2].data.s, "100092");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "18e25713");
+	ck_assert_str_eq(fields[1].data.s, "1e");
+	ck_assert_str_eq(fields[2].data.s, "100092");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "c1519b0d");
-        ck_assert_str_eq(fields[1].data.s, "c8");
-        ck_assert_str_eq(fields[2].data.s, "87082");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "c1519b0d");
+	ck_assert_str_eq(fields[1].data.s, "c8");
+	ck_assert_str_eq(fields[2].data.s, "87082");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "6ed156a7");
-        ck_assert_str_eq(fields[1].data.s, "ae");
-        ck_assert_str_eq(fields[2].data.s, "229701");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "6ed156a7");
+	ck_assert_str_eq(fields[1].data.s, "ae");
+	ck_assert_str_eq(fields[2].data.s, "229701");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 0);
-        ck_assert_int_eq(fql_field_count(fql), 0);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
 }
 END_TEST
 
 START_TEST(test_read_non_cwd)
 {
-        struct fql_field* fields = NULL;
-        int plan_count = 0;
-        int field_count = 0;
-        int rows = 0;
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
 
-        /*  parent directory */
-        plan_count = fql_make_plans(fql, "select foo from [../parent]");
-        ck_assert_int_eq(plan_count, 1);
+	/*  parent directory */
+	plan_count = fql_make_plans(fql, "select foo from [../parent]");
+	ck_assert_int_eq(plan_count, 1);
 
-        field_count = fql_field_count(fql);
-        ck_assert_int_eq(field_count, 1);
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 1);
-        ck_assert_int_eq(fields[0].type, FQL_STRING);
-        ck_assert_str_eq(fields[0].data.s, "parent directory");
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "parent directory");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 0);
-        ck_assert_int_eq(fql_field_count(fql), 0);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
 
 
-        /* Sub directory */
-        plan_count = fql_make_plans(fql, "select foo from [sub/sub]");
-        ck_assert_int_eq(plan_count, 1);
+	/* Sub directory */
+	plan_count = fql_make_plans(fql, "select foo from [sub/sub]");
+	ck_assert_int_eq(plan_count, 1);
 
-        field_count = fql_field_count(fql);
-        ck_assert_int_eq(field_count, 1);
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 1);
-        ck_assert_int_eq(fields[0].type, FQL_STRING);
-        ck_assert_str_eq(fields[0].data.s, "sub directory");
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "sub directory");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 0);
-        ck_assert_int_eq(fql_field_count(fql), 0);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
 }
 END_TEST
 
 START_TEST(test_read_t1_asterisk)
 {
-        struct fql_field* fields = NULL;
-        int plan_count = 0;
-        int field_count = 0;
-        int rows = 0;
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
 
-        /* standard select */
-        plan_count = fql_make_plans(fql, "select * from t1");
-        ck_assert_int_eq(plan_count, 1);
+	/* standard select */
+	plan_count = fql_make_plans(fql, "select * from t1");
+	ck_assert_int_eq(plan_count, 1);
 
-        field_count = fql_field_count(fql);
-        ck_assert_int_eq(field_count, 3);
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 3);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 1);
-        ck_assert_int_eq(fields[0].type, FQL_STRING);
-        ck_assert_int_eq(fields[1].type, FQL_STRING);
-        ck_assert_int_eq(fields[2].type, FQL_STRING);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_int_eq(fields[1].type, FQL_STRING);
+	ck_assert_int_eq(fields[2].type, FQL_STRING);
 
-        ck_assert_str_eq(fields[0].data.s, "44b72d44");
-        ck_assert_str_eq(fields[1].data.s, "70");
-        ck_assert_str_eq(fields[2].data.s, "30279");
+	ck_assert_str_eq(fields[0].data.s, "44b72d44");
+	ck_assert_str_eq(fields[1].data.s, "70");
+	ck_assert_str_eq(fields[2].data.s, "30279");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "b8e63822");
-        ck_assert_str_eq(fields[1].data.s, "cb");
-        ck_assert_str_eq(fields[2].data.s, "38922");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "b8e63822");
+	ck_assert_str_eq(fields[1].data.s, "cb");
+	ck_assert_str_eq(fields[2].data.s, "38922");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "46a1bad3");
-        ck_assert_str_eq(fields[1].data.s, "5f");
-        ck_assert_str_eq(fields[2].data.s, "30119");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "46a1bad3");
+	ck_assert_str_eq(fields[1].data.s, "5f");
+	ck_assert_str_eq(fields[2].data.s, "30119");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "8ab25d8f");
-        ck_assert_str_eq(fields[1].data.s, "f8");
-        ck_assert_str_eq(fields[2].data.s, "75882");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "8ab25d8f");
+	ck_assert_str_eq(fields[1].data.s, "f8");
+	ck_assert_str_eq(fields[2].data.s, "75882");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "282a4957");
-        ck_assert_str_eq(fields[1].data.s, "6c");
-        ck_assert_str_eq(fields[2].data.s, "121263");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "282a4957");
+	ck_assert_str_eq(fields[1].data.s, "6c");
+	ck_assert_str_eq(fields[2].data.s, "121263");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "3138b3f8");
-        ck_assert_str_eq(fields[1].data.s, "b0");
-        ck_assert_str_eq(fields[2].data.s, "154715");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8");
+	ck_assert_str_eq(fields[1].data.s, "b0");
+	ck_assert_str_eq(fields[2].data.s, "154715");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "18e25713");
-        ck_assert_str_eq(fields[1].data.s, "1e");
-        ck_assert_str_eq(fields[2].data.s, "100092");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "18e25713");
+	ck_assert_str_eq(fields[1].data.s, "1e");
+	ck_assert_str_eq(fields[2].data.s, "100092");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "c1519b0d");
-        ck_assert_str_eq(fields[1].data.s, "c8");
-        ck_assert_str_eq(fields[2].data.s, "87082");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "c1519b0d");
+	ck_assert_str_eq(fields[1].data.s, "c8");
+	ck_assert_str_eq(fields[2].data.s, "87082");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "6ed156a7");
-        ck_assert_str_eq(fields[1].data.s, "ae");
-        ck_assert_str_eq(fields[2].data.s, "229701");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "6ed156a7");
+	ck_assert_str_eq(fields[1].data.s, "ae");
+	ck_assert_str_eq(fields[2].data.s, "229701");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 0);
-        ck_assert_int_eq(fql_field_count(fql), 0);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
 }
 END_TEST
 
 
 START_TEST(test_read_const)
 {
-        struct fql_field* fields = NULL;
-        int plan_count = 0;
-        int field_count = 0;
-        int rows = 0;
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
 
-        /* select constant with read */
-        plan_count = fql_make_plans(fql, "select 5 from t1");
-        ck_assert_int_eq(plan_count, 1);
+	/* select constant with read */
+	plan_count = fql_make_plans(fql, "select 5 from t1");
+	ck_assert_int_eq(plan_count, 1);
 
-        field_count = fql_field_count(fql);
-        ck_assert_int_eq(field_count, 1);
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 1);
-        ck_assert_int_eq(fields[0].type, FQL_INT);
-        ck_assert_int_eq(fields[0].data.i, 5);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_INT);
+	ck_assert_int_eq(fields[0].data.i, 5);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(fields[0].data.i, 5);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, 5);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(fields[0].data.i, 5);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, 5);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(fields[0].data.i, 5);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, 5);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(fields[0].data.i, 5);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, 5);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(fields[0].data.i, 5);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, 5);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(fields[0].data.i, 5);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, 5);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(fields[0].data.i, 5);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, 5);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(fields[0].data.i, 5);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, 5);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 0);
-        ck_assert_int_eq(fql_field_count(fql), 0);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
 }
 END_TEST
 
 START_TEST(test_read_operators)
 {
-        struct fql_field* fields = NULL;
-        int plan_count = 0;
-        int field_count = 0;
-        int rows = 0;
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
 
-        /* string operators */
-        plan_count = fql_make_plans(fql, "select foo + bar, baz / 10, baz from t1");
-        ck_assert_int_eq(plan_count, 1);
+	/* string operators */
+	plan_count = fql_make_plans(fql, "select foo + bar, baz / 10, baz from t1");
+	ck_assert_int_eq(plan_count, 1);
 
-        field_count = fql_field_count(fql);
-        ck_assert_int_eq(field_count, 3);
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 3);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 1);
-        ck_assert_int_eq(fields[0].type, FQL_STRING);
-        ck_assert_int_eq(fields[1].type, FQL_INT);
-        ck_assert_int_eq(fields[2].type, FQL_STRING);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_int_eq(fields[1].type, FQL_INT);
+	ck_assert_int_eq(fields[2].type, FQL_STRING);
 
-        ck_assert_str_eq(fields[0].data.s, "44b72d4470");
-        ck_assert_int_eq(fields[1].data.i, 3027);
-        ck_assert_str_eq(fields[2].data.s, "30279");
+	ck_assert_str_eq(fields[0].data.s, "44b72d4470");
+	ck_assert_int_eq(fields[1].data.i, 3027);
+	ck_assert_str_eq(fields[2].data.s, "30279");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "b8e63822cb");
-        ck_assert_int_eq(fields[1].data.i, 3892);
-        ck_assert_str_eq(fields[2].data.s, "38922");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "b8e63822cb");
+	ck_assert_int_eq(fields[1].data.i, 3892);
+	ck_assert_str_eq(fields[2].data.s, "38922");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "46a1bad35f");
-        ck_assert_int_eq(fields[1].data.i, 3011);
-        ck_assert_str_eq(fields[2].data.s, "30119");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "46a1bad35f");
+	ck_assert_int_eq(fields[1].data.i, 3011);
+	ck_assert_str_eq(fields[2].data.s, "30119");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "8ab25d8ff8");
-        ck_assert_int_eq(fields[1].data.i, 7588);
-        ck_assert_str_eq(fields[2].data.s, "75882");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "8ab25d8ff8");
+	ck_assert_int_eq(fields[1].data.i, 7588);
+	ck_assert_str_eq(fields[2].data.s, "75882");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "282a49576c");
-        ck_assert_int_eq(fields[1].data.i, 12126);
-        ck_assert_str_eq(fields[2].data.s, "121263");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "282a49576c");
+	ck_assert_int_eq(fields[1].data.i, 12126);
+	ck_assert_str_eq(fields[2].data.s, "121263");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "3138b3f8b0");
-        ck_assert_int_eq(fields[1].data.i, 15471);
-        ck_assert_str_eq(fields[2].data.s, "154715");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8b0");
+	ck_assert_int_eq(fields[1].data.i, 15471);
+	ck_assert_str_eq(fields[2].data.s, "154715");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "18e257131e");
-        ck_assert_int_eq(fields[1].data.i, 10009);
-        ck_assert_str_eq(fields[2].data.s, "100092");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "18e257131e");
+	ck_assert_int_eq(fields[1].data.i, 10009);
+	ck_assert_str_eq(fields[2].data.s, "100092");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "c1519b0dc8");
-        ck_assert_int_eq(fields[1].data.i, 8708);
-        ck_assert_str_eq(fields[2].data.s, "87082");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "c1519b0dc8");
+	ck_assert_int_eq(fields[1].data.i, 8708);
+	ck_assert_str_eq(fields[2].data.s, "87082");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "6ed156a7ae");
-        ck_assert_int_eq(fields[1].data.i, 22970);
-        ck_assert_str_eq(fields[2].data.s, "229701");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "6ed156a7ae");
+	ck_assert_int_eq(fields[1].data.i, 22970);
+	ck_assert_str_eq(fields[2].data.s, "229701");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 0);
-        ck_assert_int_eq(fql_field_count(fql), 0);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
 }
 END_TEST
 
 
 START_TEST(test_read_functions)
 {
-        struct fql_field* fields = NULL;
-        int plan_count = 0;
-        int field_count = 0;
-        int rows = 0;
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
 
-        /* standard use combination of left and right
-         * to pull substring (middle 2) from foo
-         */
-        plan_count = fql_make_plans(fql, "select foo, left(right(foo, 5), 2) from t1");
-        ck_assert_int_eq(plan_count, 1);
+	/* standard use combination of left and right
+	 * to pull substring (middle 2) from foo
+	 */
+	plan_count = fql_make_plans(fql, "select foo, left(right(foo, 5), 2) from t1");
+	ck_assert_int_eq(plan_count, 1);
 
-        field_count = fql_field_count(fql);
-        ck_assert_int_eq(field_count, 2);
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 2);
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 1);
-        ck_assert_int_eq(fields[0].type, FQL_STRING);
-        ck_assert_int_eq(fields[1].type, FQL_STRING);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_int_eq(fields[1].type, FQL_STRING);
 
-        ck_assert_str_eq(fields[0].data.s, "44b72d44");
-        ck_assert_str_eq(fields[1].data.s, "72");
+	ck_assert_str_eq(fields[0].data.s, "44b72d44");
+	ck_assert_str_eq(fields[1].data.s, "72");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "b8e63822");
-        ck_assert_str_eq(fields[1].data.s, "63");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "b8e63822");
+	ck_assert_str_eq(fields[1].data.s, "63");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "46a1bad3");
-        ck_assert_str_eq(fields[1].data.s, "1b");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "46a1bad3");
+	ck_assert_str_eq(fields[1].data.s, "1b");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "8ab25d8f");
-        ck_assert_str_eq(fields[1].data.s, "25");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "8ab25d8f");
+	ck_assert_str_eq(fields[1].data.s, "25");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "282a4957");
-        ck_assert_str_eq(fields[1].data.s, "a4");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "282a4957");
+	ck_assert_str_eq(fields[1].data.s, "a4");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "3138b3f8");
-        ck_assert_str_eq(fields[1].data.s, "8b");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8");
+	ck_assert_str_eq(fields[1].data.s, "8b");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "18e25713");
-        ck_assert_str_eq(fields[1].data.s, "25");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "18e25713");
+	ck_assert_str_eq(fields[1].data.s, "25");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "c1519b0d");
-        ck_assert_str_eq(fields[1].data.s, "19");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "c1519b0d");
+	ck_assert_str_eq(fields[1].data.s, "19");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_str_eq(fields[0].data.s, "6ed156a7");
-        ck_assert_str_eq(fields[1].data.s, "15");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "6ed156a7");
+	ck_assert_str_eq(fields[1].data.s, "15");
 
-        rows = fql_step(fql, &fields);
-        ck_assert_int_eq(rows, 0);
-        ck_assert_int_eq(fql_field_count(fql), 0);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
 }
 END_TEST
 
 Suite* fql_read_suite(void)
 {
-        Suite* s;
-        s = suite_create("read");
+	Suite* s;
+	s = suite_create("read");
 
-        TCase* tc_read = tcase_create("read");
-        tcase_add_checked_fixture(tc_read, fql_setup, fql_teardown);
+	TCase* tc_read = tcase_create("read");
+	tcase_add_checked_fixture(tc_read, fql_setup, fql_teardown);
 
-        tcase_add_test(tc_read, test_read_t1);
-        tcase_add_test(tc_read, test_read_non_cwd);
-        tcase_add_test(tc_read, test_read_t1_asterisk);
-        tcase_add_test(tc_read, test_read_const);
-        tcase_add_test(tc_read, test_read_operators);
-        tcase_add_test(tc_read, test_read_functions);
+	tcase_add_test(tc_read, test_read_t1);
+	tcase_add_test(tc_read, test_read_non_cwd);
+	tcase_add_test(tc_read, test_read_t1_asterisk);
+	tcase_add_test(tc_read, test_read_const);
+	tcase_add_test(tc_read, test_read_operators);
+	tcase_add_test(tc_read, test_read_functions);
 
-        suite_add_tcase(s, tc_read);
+	suite_add_tcase(s, tc_read);
 
-        return s;
+	return s;
 }
 
 int main(void)
 {
-        int number_failed;
-        Suite* read_suite = fql_read_suite();
-        SRunner* read_runner = srunner_create(read_suite);
-        srunner_set_fork_status (read_runner, CK_NOFORK);
+	int number_failed;
+	Suite* read_suite = fql_read_suite();
+	SRunner* read_runner = srunner_create(read_suite);
+	srunner_set_fork_status (read_runner, CK_NOFORK);
 
-        srunner_run_all(read_runner, CK_VERBOSE);
-        number_failed = srunner_ntests_failed(read_runner);
-        srunner_free(read_runner);
+	srunner_run_all(read_runner, CK_VERBOSE);
+	number_failed = srunner_ntests_failed(read_runner);
+	srunner_free(read_runner);
 
-        return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 

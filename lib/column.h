@@ -9,30 +9,30 @@
 
 /** Expression **/
 enum expr_type {
-        EXPR_NONE,
-        EXPR_COLUMN_NAME,
-        EXPR_CONST,
-        EXPR_ASTERISK,
-        EXPR_FUNCTION,
-        EXPR_SOURCE,
-        EXPR_SUBQUERY,
-        EXPR_SUBQUERY_CONST,
+	EXPR_NONE,
+	EXPR_COLUMN_NAME,
+	EXPR_CONST,
+	EXPR_ASTERISK,
+	EXPR_FUNCTION,
+	EXPR_SOURCE,
+	EXPR_SUBQUERY,
+	EXPR_SUBQUERY_CONST,
 };
 
 /** Column **/
 struct column {
-        enum expr_type expr;
-        struct table* table;
-        struct column* data_source;
-        String name;
-        String alias;
-        String table_name;
-        String buf;
-        enum field_type field_type;
-        union field field;
-        unsigned location;
-        unsigned width;
-        int src_idx;
+	enum expr_type expr;
+	struct table* table;
+	struct column* data_source;
+	String name;
+	String alias;
+	String table_name;
+	String buf;
+	enum field_type field_type;
+	union field field;
+	unsigned location;
+	unsigned width;
+	int src_idx;
 };
 typedef struct column Column;
 

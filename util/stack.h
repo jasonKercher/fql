@@ -11,9 +11,9 @@ extern "C" {
  * Doubly-linked list treated as a stack.
  */
 struct stack {
-        void* data;
-        struct stack* prev;
-        struct stack* next;
+	void* data;
+	struct stack* prev;
+	struct stack* next;
 };
 typedef struct stack Stack;
 

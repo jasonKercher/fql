@@ -8,18 +8,18 @@
 #include "util/vec.h"
 
 struct schema {
-        struct vec* columns;
-        struct hashmap* col_map;
-        char name[TABLE_NAME_MAX];
-        char delimiter[DELIM_LEN_MAX];
+	struct vec* columns;
+	struct hashmap* col_map;
+	char name[TABLE_NAME_MAX];
+	char delimiter[DELIM_LEN_MAX];
 };
 typedef struct schema Schema;
 
 enum join_side {
-        SIDE_UNDEF,
-        SIDE_LEFT,
-        SIDE_RIGHT,
-        SIDE_MIXED,
+	SIDE_UNDEF,
+	SIDE_LEFT,
+	SIDE_RIGHT,
+	SIDE_MIXED,
 };
 
 struct column;

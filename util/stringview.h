@@ -11,8 +11,8 @@
  */
 
 struct stringview {
-        const char* data;
-        unsigned len;
+	const char* data;
+	unsigned len;
 };
 typedef struct stringview StringView;
 

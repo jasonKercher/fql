@@ -8,10 +8,10 @@
 #include "fifo.h"
 
 struct dnode {
-        void* data;
-        struct dnode* out[2];
-        int visit_count;
-        _Bool is_root;
+	void* data;
+	struct dnode* out[2];
+	int visit_count;
+	_Bool is_root;
 };
 typedef struct dnode Dnode;
 
@@ -20,12 +20,12 @@ struct dnode* dnode_construct(struct dnode*, void*);
 void* dnode_free(struct dnode*);
 
 struct dgraph {
-        struct vec* nodes;
-        struct dnode* newest;
-        struct fifo* _trav;
-        struct vec* _roots;
-        unsigned _root_idx;
-        _Bool _roots_good;
+	struct vec* nodes;
+	struct dnode* newest;
+	struct fifo* _trav;
+	struct vec* _roots;
+	unsigned _root_idx;
+	_Bool _roots_good;
 };
 typedef struct dgraph Dgraph;
 

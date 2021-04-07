@@ -8,13 +8,13 @@
 #include "util/stringy.h"
 
 struct record {
-        struct vec* fields;
-        struct csv_record* libcsv_rec;
-        String* rec_cpy;
-        StringView rec_raw;
-        unsigned idx;
-        _Atomic int ref_count;
-        _Atomic _Bool is_recyclable;
+	struct vec* fields;
+	struct csv_record* libcsv_rec;
+	String* rec_cpy;
+	StringView rec_raw;
+	unsigned idx;
+	_Atomic int ref_count;
+	_Atomic _Bool is_recyclable;
 };
 typedef struct record Record;
 

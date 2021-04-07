@@ -11,9 +11,9 @@ extern "C" {
  * Doubly-linked list treated as a queue
  */
 struct queue {
-        void* data;
-        struct queue* prev;
-        struct queue* next;
+	void* data;
+	struct queue* prev;
+	struct queue* next;
 };
 typedef struct queue Queue;
 

@@ -12,10 +12,10 @@ extern "C" {
 
 /** Operation **/
 enum op {
-        OP_NONE,
-        OP_SELECT,
-        OP_DELETE,
-        OP_UPDATE,
+	OP_NONE,
+	OP_SELECT,
+	OP_DELETE,
+	OP_UPDATE,
 };
 
 struct vec* op_get_validation_list(void* op);

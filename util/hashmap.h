@@ -10,24 +10,24 @@
 #define HASHMAP_PROP_RTRIM   0x02
 
 struct hm_entry {
-        size_t val_idx;
-        size_t key_idx;
-        unsigned key_len;
+	size_t val_idx;
+	size_t key_idx;
+	unsigned key_len;
 };
 
 struct hashmap;
 typedef uint64_t(*hash_fn)(struct hashmap*, const char* key, int* n);
 
 struct hashmap {
-        struct vec values;
-        struct hm_entry* _entries;
-        hash_fn get_hash__;
-        uint64_t _limit;
-        char* _keybuf;
-        size_t _keybufhead;
-        size_t _keybuflen;
-        unsigned elem_size;  /* only for multimap */
-        unsigned props;
+	struct vec values;
+	struct hm_entry* _entries;
+	hash_fn get_hash__;
+	uint64_t _limit;
+	char* _keybuf;
+	size_t _keybufhead;
+	size_t _keybuflen;
+	unsigned elem_size;  /* only for multimap */
+	unsigned props;
 };
 typedef struct hashmap HashMap;
 

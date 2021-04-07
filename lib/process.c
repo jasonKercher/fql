@@ -16,138 +16,138 @@
 
 Process* process_new(const char* action, int width)
 {
-        Process* new_proc = NULL;
-        malloc_(new_proc, sizeof(*new_proc));
+	Process* new_proc = NULL;
+	malloc_(new_proc, sizeof(*new_proc));
 
-        return process_construct(new_proc, action, width);
+	return process_construct(new_proc, action, width);
 }
 
 Process* process_construct(Process* proc, const char* action, int width)
 {
-        *proc = (Process) {
-                 0                              /* thread */
-                ,NULL                           /* records */
-                ,&fql_no_op                     /* action__ */
-                ,{ NULL, NULL }                 /* fifo_in */
-                ,{ NULL, NULL }                 /* fifo_out */
-                ,NULL                           /* proc_data */
-                ,string_from_char_ptr(action)   /* action_msg */
-                ,width                          /* fifo_width */
-                ,0                              /* root_fifo */
-                ,false                          /* is_secondary */
-                ,false                          /* is_passive */
-                ,true                           /* is_enabled */
-        };
+	*proc = (Process) {
+		 0                              /* thread */
+		,NULL                           /* records */
+		,&fql_no_op                     /* action__ */
+		,{ NULL, NULL }                 /* fifo_in */
+		,{ NULL, NULL }                 /* fifo_out */
+		,NULL                           /* proc_data */
+		,string_from_char_ptr(action)   /* action_msg */
+		,width                          /* fifo_width */
+		,0                              /* root_fifo */
+		,false                          /* is_secondary */
+		,false                          /* is_passive */
+		,true                           /* is_enabled */
+	};
 
-        return proc;
+	return proc;
 }
 
 void process_node_free(Dnode* proc_node)
 {
-        process_free(proc_node->data, proc_node->is_root);
+	process_free(proc_node->data, proc_node->is_root);
 }
 
 void process_free(Process* proc, _Bool is_root)
 {
-        if (is_root) {
-                Vec* it = vec_begin(proc->records);
-                for (; it != vec_end(proc->records); ++it) {
-                        Record** rec = vec_back(it);
-                        record_free(*rec);
-                        vec_destroy(it);
-                }
-                vec_free(proc->records);
-        }
-        if (proc->fifo_in[0] != NULL) {
-                fifo_free(proc->fifo_in[0]);
-        }
-        if (proc->fifo_in[1] != NULL) {
-                fifo_free(proc->fifo_in[1]);
-        }
-        string_free(proc->action_msg);
-        free_(proc);
+	if (is_root) {
+		Vec* it = vec_begin(proc->records);
+		for (; it != vec_end(proc->records); ++it) {
+			Record** rec = vec_back(it);
+			record_free(*rec);
+			vec_destroy(it);
+		}
+		vec_free(proc->records);
+	}
+	if (proc->fifo_in[0] != NULL) {
+		fifo_free(proc->fifo_in[0]);
+	}
+	if (proc->fifo_in[1] != NULL) {
+		fifo_free(proc->fifo_in[1]);
+	}
+	string_free(proc->action_msg);
+	free_(proc);
 }
 
 void process_activate(Dnode* proc_node, unsigned graph_size)
 {
-        Process* proc = proc_node->data;
+	Process* proc = proc_node->data;
 
-        //fprintf(stderr, "Activating %s\n", proc->action_msg->data);
+	//fprintf(stderr, "Activating %s\n", proc->action_msg->data);
 
-        if (!proc_node->is_root) {
-                proc->fifo_in[0] = fifo_new_(Vec*, FIFO_SIZE);
-                return;
-        }
+	if (!proc_node->is_root) {
+		proc->fifo_in[0] = fifo_new_(Vec*, FIFO_SIZE);
+		return;
+	}
 
-        if (proc->root_fifo == 1) {
-                proc->fifo_in[0] = fifo_new_(Vec*, FIFO_SIZE);
-        }
+	if (proc->root_fifo == 1) {
+		proc->fifo_in[0] = fifo_new_(Vec*, FIFO_SIZE);
+	}
 
-        proc->fifo_in[proc->root_fifo] = fifo_new_(Vec*, FIFO_SIZE * graph_size);
+	proc->fifo_in[proc->root_fifo] = fifo_new_(Vec*, FIFO_SIZE * graph_size);
 
-        int field_count = 1;
-        if (proc->action__ == &fql_read) {
-                Reader* reader = proc->proc_data;
-                field_count = reader->max_col_idx + 1;
-        }
+	int field_count = 1;
+	if (proc->action__ == &fql_read) {
+		Reader* reader = proc->proc_data;
+		field_count = reader->max_col_idx + 1;
+	}
 
-        proc->records = vec_new_(Vec);
-        vec_resize(proc->records, FIFO_SIZE * graph_size);
+	proc->records = vec_new_(Vec);
+	vec_resize(proc->records, FIFO_SIZE * graph_size);
 
-        int i = 0;
+	int i = 0;
 
-        /* If root, it will own the vector of Records */
-        Vec* buf = proc->fifo_in[proc->root_fifo]->buf;
-        for (; i < proc->records->size; ++i) {
-                Vec* new_recs = vec_at(proc->records, i);
-                vec_construct_(new_recs, Record*);
-                vec_resize(new_recs, proc->fifo_width);
+	/* If root, it will own the vector of Records */
+	Vec* buf = proc->fifo_in[proc->root_fifo]->buf;
+	for (; i < proc->records->size; ++i) {
+		Vec* new_recs = vec_at(proc->records, i);
+		vec_construct_(new_recs, Record*);
+		vec_resize(new_recs, proc->fifo_width);
 
-                Record** new_rec = vec_back(new_recs);
-                *new_rec = record_new(i);
-                vec_resize((*new_rec)->fields, field_count);
+		Record** new_rec = vec_back(new_recs);
+		*new_rec = record_new(i);
+		vec_resize((*new_rec)->fields, field_count);
 
-                Vec** recs = vec_at(buf, i);
-                *recs = new_recs;
-        }
+		Vec** recs = vec_at(buf, i);
+		*recs = new_recs;
+	}
 
-        /* TODO: once we stop hard coding fifo size,
-         *       this if block can go.
-         */
-        if (proc->action__ != &fql_read) {
-                fifo_advance(proc->fifo_in[proc->root_fifo]);
-                return;
-        }
-        fifo_set_full(proc->fifo_in[proc->root_fifo]);
+	/* TODO: once we stop hard coding fifo size,
+	 *       this if block can go.
+	 */
+	if (proc->action__ != &fql_read) {
+		fifo_advance(proc->fifo_in[proc->root_fifo]);
+		return;
+	}
+	fifo_set_full(proc->fifo_in[proc->root_fifo]);
 }
 
 void process_add_second_input(Process* proc)
 {
-        proc->fifo_in[1] = fifo_new_(Vec*, FIFO_SIZE);
+	proc->fifo_in[1] = fifo_new_(Vec*, FIFO_SIZE);
 }
 
 void process_disable(Process* proc)
 {
-        if (proc->fifo_out[0] != NULL) {
-                fifo_set_open(proc->fifo_out[0], false);
-        }
-        if (proc->fifo_out[1] != NULL) {
-                fifo_set_open(proc->fifo_out[1], false);
-        }
-        fifo_set_open(proc->fifo_in[0], false);
-        proc->is_enabled = false;
+	if (proc->fifo_out[0] != NULL) {
+		fifo_set_open(proc->fifo_out[0], false);
+	}
+	if (proc->fifo_out[1] != NULL) {
+		fifo_set_open(proc->fifo_out[1], false);
+	}
+	fifo_set_open(proc->fifo_in[0], false);
+	proc->is_enabled = false;
 }
 
 void process_enable(Process* proc)
 {
-        if (proc->fifo_out[0] != NULL) {
-                fifo_set_open(proc->fifo_out[0], true);
-        }
-        if (proc->fifo_out[1] != NULL) {
-                fifo_set_open(proc->fifo_out[1], true);
-        }
-        fifo_set_open(proc->fifo_in[0], true);
-        proc->is_enabled = true;
+	if (proc->fifo_out[0] != NULL) {
+		fifo_set_open(proc->fifo_out[0], true);
+	}
+	if (proc->fifo_out[1] != NULL) {
+		fifo_set_open(proc->fifo_out[1], true);
+	}
+	fifo_set_open(proc->fifo_in[0], true);
+	proc->is_enabled = true;
 }
 
 /* returns number of processes that executed or FQL_FAIL
@@ -155,160 +155,160 @@ void process_enable(Process* proc)
  */
 int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
 {
-        Dnode* proc_node = NULL;
-        Process* proc = NULL;
-        int run_count = 0;
-        while ((proc_node = dgraph_traverse(proc_graph))) {
-                proc = proc_node->data;
-                if (!proc->is_enabled) {
-                        continue;
-                }
-                if (!proc->fifo_in[0]->is_open && fifo_is_empty(proc->fifo_in[0])) {
-                        process_disable(proc);
-                        continue;
-                }
-                //++run_count;
+	Dnode* proc_node = NULL;
+	Process* proc = NULL;
+	int run_count = 0;
+	while ((proc_node = dgraph_traverse(proc_graph))) {
+		proc = proc_node->data;
+		if (!proc->is_enabled) {
+			continue;
+		}
+		if (!proc->fifo_in[0]->is_open && fifo_is_empty(proc->fifo_in[0])) {
+			process_disable(proc);
+			continue;
+		}
+		//++run_count;
 
-                /* Check to see that there is something to process
-                 * as well as a place for it to go.
-                 */
-                if (fifo_is_empty(proc->fifo_in[0]) ||
-                    (proc->fifo_out[0] && !fifo_is_receivable(proc->fifo_out[0])) ||
-                    (proc->fifo_out[1] && !fifo_is_receivable(proc->fifo_out[1]))) {
-                        continue;
-                }
-                int ret = proc->action__(proc_graph, proc);
-                if (ret == FQL_FAIL) {
-                        return FQL_FAIL;
-                }
+		/* Check to see that there is something to process
+		 * as well as a place for it to go.
+		 */
+		if (fifo_is_empty(proc->fifo_in[0]) ||
+		    (proc->fifo_out[0] && !fifo_is_receivable(proc->fifo_out[0])) ||
+		    (proc->fifo_out[1] && !fifo_is_receivable(proc->fifo_out[1]))) {
+			continue;
+		}
+		int ret = proc->action__(proc_graph, proc);
+		if (ret == FQL_FAIL) {
+			return FQL_FAIL;
+		}
 
-                if (proc_node == plan->op_true) {
-                        ++plan->rows_affected;
-                }
-                run_count += ret;
-        }
+		if (proc_node == plan->op_true) {
+			++plan->rows_affected;
+		}
+		run_count += ret;
+	}
 
-        return run_count;
+	return run_count;
 }
 
 int process_step(Plan* plan)
 {
-        Dgraph* proc_graph = plan->processes;
-        int ret = 0;
+	Dgraph* proc_graph = plan->processes;
+	int ret = 0;
 
-        plan->rows_affected = 0;
+	plan->rows_affected = 0;
 
-        do {
-                dgraph_traverse_reset(proc_graph);
-                ret = _exec_one_pass(plan, proc_graph);
-        } while (!plan->rows_affected && ret && ret != FQL_FAIL);
+	do {
+		dgraph_traverse_reset(proc_graph);
+		ret = _exec_one_pass(plan, proc_graph);
+	} while (!plan->rows_affected && ret && ret != FQL_FAIL);
 
-        return (ret > 0) ? 1 : ret;
+	return (ret > 0) ? 1 : ret;
 }
 
 int process_exec_plan(Plan* plan)
 {
-        Dgraph* proc_graph = plan->processes;
-        int ret = 0;
+	Dgraph* proc_graph = plan->processes;
+	int ret = 0;
 
-        do {
-                dgraph_traverse_reset(proc_graph);
-                ret = _exec_one_pass(plan, proc_graph);
-        } while (ret && ret != FQL_FAIL);
+	do {
+		dgraph_traverse_reset(proc_graph);
+		ret = _exec_one_pass(plan, proc_graph);
+	} while (ret && ret != FQL_FAIL);
 
-        return ret;
+	return ret;
 }
 
 void* _thread_exec(void* data)
 {
-        struct thread_data* tdata = data;
-        Process* proc = tdata->proc_node->data;
+	struct thread_data* tdata = data;
+	Process* proc = tdata->proc_node->data;
 
-        while (proc->is_enabled) {
-                if (fifo_is_empty(proc->fifo_in[0])) {
-                        if (!proc->fifo_in[0]->is_open) {
-                                process_disable(proc);
-                                break;
-                        }
-                        if (tdata->proc_node->is_root) {
-                                fifo_wait_for_add(proc->fifo_in[0]);
-                        } else {
-                                fifo_wait_for_work(proc->fifo_in[0]);
-                        }
-                        if (fifo_is_empty(proc->fifo_in[0])) {
-                                process_disable(proc);
-                                break;
-                        }
-                }
-                if (proc->fifo_in[1]) {
-                        if (fifo_is_open(proc->fifo_in[1]) &&
-                            fifo_is_open(proc->fifo_in[0]) &&
-                            fifo_is_empty(proc->fifo_in[1])) {
-                                //fifo_wait_for_work(proc->fifo_in[1]);
-                                fifo_wait_for_add(proc->fifo_in[1]);
-                        }
-                }
-                if (proc->fifo_out[0]) {
-                        while (!fifo_is_receivable(proc->fifo_out[0])) {
-                                fifo_wait_for_get(proc->fifo_out[0]);
-                        }
-                }
-                if (proc->fifo_out[1]) {
-                        while (!fifo_is_receivable(proc->fifo_out[1])) {
-                                fifo_wait_for_get(proc->fifo_out[1]);
-                        }
-                }
-                int ret = proc->action__(tdata->proc_graph, proc);
+	while (proc->is_enabled) {
+		if (fifo_is_empty(proc->fifo_in[0])) {
+			if (!proc->fifo_in[0]->is_open) {
+				process_disable(proc);
+				break;
+			}
+			if (tdata->proc_node->is_root) {
+				fifo_wait_for_add(proc->fifo_in[0]);
+			} else {
+				fifo_wait_for_work(proc->fifo_in[0]);
+			}
+			if (fifo_is_empty(proc->fifo_in[0])) {
+				process_disable(proc);
+				break;
+			}
+		}
+		if (proc->fifo_in[1]) {
+			if (fifo_is_open(proc->fifo_in[1]) &&
+			    fifo_is_open(proc->fifo_in[0]) &&
+			    fifo_is_empty(proc->fifo_in[1])) {
+				//fifo_wait_for_work(proc->fifo_in[1]);
+				fifo_wait_for_add(proc->fifo_in[1]);
+			}
+		}
+		if (proc->fifo_out[0]) {
+			while (!fifo_is_receivable(proc->fifo_out[0])) {
+				fifo_wait_for_get(proc->fifo_out[0]);
+			}
+		}
+		if (proc->fifo_out[1]) {
+			while (!fifo_is_receivable(proc->fifo_out[1])) {
+				fifo_wait_for_get(proc->fifo_out[1]);
+			}
+		}
+		int ret = proc->action__(tdata->proc_graph, proc);
 
-                /* TODO: What is best practice here? */
-                if (ret == FQL_FAIL) {
-                        //process_disable(proc);
-                        exit(EXIT_FAILURE);
-                        break;
-                }
-        }
+		/* TODO: What is best practice here? */
+		if (ret == FQL_FAIL) {
+			//process_disable(proc);
+			exit(EXIT_FAILURE);
+			break;
+		}
+	}
 
-        pthread_exit(NULL);
-        return NULL;
+	pthread_exit(NULL);
+	return NULL;
 }
 
 int process_exec_plan_thread(Plan* plan)
 {
-        Dgraph* proc_graph = plan->processes;
+	Dgraph* proc_graph = plan->processes;
 
-        pthread_attr_t attr;
-        pthread_attr_init(&attr);
-        pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-        Vec tdata_vec = { 0 };
-        vec_construct_(&tdata_vec, struct thread_data);
-        vec_resize(&tdata_vec, proc_graph->nodes->size);
+	Vec tdata_vec = { 0 };
+	vec_construct_(&tdata_vec, struct thread_data);
+	vec_resize(&tdata_vec, proc_graph->nodes->size);
 
-        int i = 0;
+	int i = 0;
 
-        for (; i < tdata_vec.size; ++i) {
-                struct thread_data* tdata = vec_at(&tdata_vec, i);
-                Dnode** proc_node = vec_at(proc_graph->nodes, i);
-                tdata->proc_node = *proc_node;
-                tdata->proc_graph = proc_graph;
-                Process* proc = (*proc_node)->data;
-                if (pthread_create(&proc->thread, &attr, _thread_exec, tdata)) {
-                        return FQL_FAIL;
-                }
-        }
+	for (; i < tdata_vec.size; ++i) {
+		struct thread_data* tdata = vec_at(&tdata_vec, i);
+		Dnode** proc_node = vec_at(proc_graph->nodes, i);
+		tdata->proc_node = *proc_node;
+		tdata->proc_graph = proc_graph;
+		Process* proc = (*proc_node)->data;
+		if (pthread_create(&proc->thread, &attr, _thread_exec, tdata)) {
+			return FQL_FAIL;
+		}
+	}
 
-        pthread_attr_destroy(&attr);
+	pthread_attr_destroy(&attr);
 
-        void* status = NULL;
-        for (i = 0; i < tdata_vec.size; ++i) {
-                struct thread_data* tdata = vec_at(&tdata_vec, i);
-                Process* proc = tdata->proc_node->data;
-                if (pthread_join(proc->thread, &status)) {
-                        return FQL_FAIL;
-                }
-        }
+	void* status = NULL;
+	for (i = 0; i < tdata_vec.size; ++i) {
+		struct thread_data* tdata = vec_at(&tdata_vec, i);
+		Process* proc = tdata->proc_node->data;
+		if (pthread_join(proc->thread, &status)) {
+			return FQL_FAIL;
+		}
+	}
 
-        pthread_exit(NULL);
+	pthread_exit(NULL);
 
-        return FQL_GOOD;
+	return FQL_GOOD;
 }
