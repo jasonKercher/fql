@@ -58,6 +58,9 @@ Plan* plan_construct(Plan* plan, int source_total)
 
 void plan_free(void* generic_plan)
 {
+        if (generic_plan == NULL) {
+                return;
+        }
 	plan_destroy(generic_plan);
 	free_(generic_plan);
 }
@@ -193,7 +196,7 @@ void _from(Plan* plan, Query* query)
 			join_proc->action__ = &fql_hash_join;
 			table_hash_join_init(table);
 			process_add_second_input(join_proc);
-			
+
 			string_sprintf(&action_msg, "%s: %s", table->reader->file_name.data, "mmap read");
 			Process* read_proc = process_new(action_msg.data, plan->source_count);
 			table->read_proc = read_proc;

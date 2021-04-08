@@ -225,10 +225,16 @@ int select_record_api(Select* select, struct vec* recs)
 	return 1;
 }
 
-int select_record(Select* select, struct vec* recs)
+int select_record(Select* select, Vec* recs)
 {
 	Writer* writer = select->writer;
 	Vec* col_vec = select->schema->columns;
 
 	return writer->write_record__(writer->writer_data, col_vec, recs);
 }
+
+int select_record_subquery(Select* select, Vec* recs)
+{
+        return FQL_GOOD;
+}
+

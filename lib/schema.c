@@ -185,8 +185,10 @@ int schema_resolve_source(Table* table)
 	}
 
 	if (table->source_type == SOURCE_SUBQUERY) {
-		fputs("Not supporting subquery schema yet\n", stderr);
-		return FQL_FAIL;  /* TODO: retrieve schema from subquery */
+		table->schema = table->subquery->schema;
+		return FQL_GOOD;
+		//fputs("Not supporting subquery schema yet\n", stderr);
+		//return FQL_FAIL;  /* TODO: retrieve schema from subquery */
 	}
 
 	if (table->schema->name[0]) {

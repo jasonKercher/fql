@@ -106,7 +106,13 @@ void ListenerInterface::exitTable_source_item_joined(TSqlParser::Table_source_it
 void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemContext * ctx) { }
 void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx)
 {
-	query_add_source(_query, &_source_stack, _table_alias);
+	if (_subquery == NULL) {
+		query_add_source(_query, &_source_stack, _table_alias);
+	} else {
+	        query_add_subquery_source(_query, _subquery, _table_alias);
+	} 
+
+	_subquery = NULL;
 	*_table_alias = '\0';
 }
 
@@ -365,7 +371,7 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 }
 void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 {
-	//struct expression* new_expr = expression_new(EXPR_NONE, stack_pop(&_query_stack));
+	_subquery = (struct query*) stack_pop(&_query_stack);
 	_query = (struct query*) _query_stack->data;
 
 	//switch(_query->mode) {

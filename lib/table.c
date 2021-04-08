@@ -5,36 +5,6 @@
 #include "reader.h"
 #include "util/util.h"
 
-//Table* table_new()
-//{
-//        Table* new_table = NULL;
-//        malloc_(new_table, sizeof(*new_table));
-//
-//        return table_construct(new_table);
-//}
-//
-//Table* table_construct(Table* table)
-//{
-//        *table = (Table) {
-//        };
-//
-//        string_construct(&table->name);
-//
-//        return table;
-//}
-//
-//void table_free(Table* table)
-//{
-//        if (table == NULL)
-//                return;
-//
-//        string_destroy(&table->name);
-//        reader_free(table->reader);
-//        schema_free(table->schema);
-//        free_(table);
-//}
-
-
 
 Table* table_new(char* name,
 		 const char* alias,
@@ -45,19 +15,19 @@ Table* table_new(char* name,
 	Table* new_table = NULL;
 	malloc_(new_table, sizeof(*new_table));
 
-	return table_construct(new_table, name, alias, idx, source_type, join_type);
+	return table_construct(new_table, name, alias, idx, join_type);
 }
 
 Table* table_construct(Table* table,
 		       char* name,
 		       const char* alias,
 		       size_t idx,
-		       enum source_type source_type,
 		       enum join_type join_type)
 {
 	*table = (Table) {
 		 { 0 }                  /* name */
 		,{ 0 }                  /* alias */
+		,NULL                   /* subquery */
 		,reader_new()           /* reader */
 		,schema_new()           /* schema */
 		,NULL                   /* condition */
@@ -65,10 +35,10 @@ Table* table_construct(Table* table,
 		,NULL                   /* read_proc */
 		,NULL                   /* join_data */
 		,idx                    /* idx */
-		,source_type            /* source_type */
+		,SOURCE_TABLE           /* source_type */
 		,join_type              /* join_type */
 	};
-	
+
 	string_construct_take(&table->name, name);
 
 	if (alias[0] == '\0') {
@@ -77,7 +47,39 @@ Table* table_construct(Table* table,
 		string_construct_from_char_ptr(&table->alias, alias);
 	}
 
-	return table; 
+	return table;
+}
+
+Table* table_construct_subquery(Table* table,
+				Query* subquery,
+				const char* alias,
+				size_t idx,
+				enum join_type join_type)
+{
+	*table = (Table) {
+		 { 0 }              /* name */
+		,{ 0 }              /* alias */
+		,subquery           /* subquery */
+		,reader_new()       /* reader */
+		,schema_new()       /* schema */
+		,NULL               /* condition */
+		,vec_new_(Column*)  /* validation_list */
+		,NULL               /* read_proc */
+		,NULL               /* join_data */
+		,idx                /* idx */
+		,SOURCE_SUBQUERY    /* source_type */
+		,join_type          /* join_type */
+	};
+
+	string_construct(&table->name);
+
+	if (alias[0] == '\0') {
+		string_construct_from_string(&table->alias, &table->name);
+	} else {
+		string_construct_from_char_ptr(&table->alias, alias);
+	}
+
+	return table;
 }
 
 void table_free(Table* table)
@@ -95,10 +97,6 @@ void table_destroy(Table* table)
 	vec_free(table->validation_list);
 	string_destroy(&table->alias);
 	hashjoin_free(table->join_data);
-	//Column** it = vec_begin(source->validation_list);
-	//for (; it != vec_end(source->validation_list); ++it) {
-	//        column_free(*it);
-	//}
 }
 
 

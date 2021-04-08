@@ -21,6 +21,7 @@ private:
 	std::vector<std::string> _rule_names;
 	struct fql_handle* _fql = NULL;
 	struct stack* _query_stack = NULL;
+        struct query* _subquery = NULL;
 	struct query* _query = NULL;
 
 	/* Likely these remaining variables

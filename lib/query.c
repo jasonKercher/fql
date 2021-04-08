@@ -188,24 +188,15 @@ void query_add_source(Query* query,
 		      Stack** source_stack,
 		      const char* alias)
 {
-	//Table* new_table = table_new();
-	enum source_type type = SOURCE_SUBQUERY;
-	char* schema_name = NULL;
 	char* table_name = stack_pop(source_stack);
-	if (table_name != NULL) {
-		type = SOURCE_TABLE;
-		schema_name = stack_pop(source_stack);
-	}
+	char* schema_name = stack_pop(source_stack);
 
 	stack_free_data(source_stack);
-
 	Table* new_table = vec_add_one(query->sources);
-
 	table_construct(new_table,
 			table_name,
 			alias,
 			query->sources->size - 1,
-			type,
 			query->join);
 
 	if (schema_name != NULL) {
@@ -214,6 +205,19 @@ void query_add_source(Query* query,
 			,TABLE_NAME_MAX);
 		free_(schema_name);
 	}
+}
+
+void query_add_subquery_source(Query* query,
+			       Query* subquery,
+			       const char* alias)
+{
+	Table* new_table = vec_add_one(query->sources);
+	table_construct_subquery(new_table,
+				 subquery,
+				 alias,
+				 query->sources->size - 1,
+				 query->join);
+
 }
 
 void query_apply_table_alias(Query* query, const char* alias)

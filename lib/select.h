@@ -35,6 +35,7 @@ void select_apply_column_alias(struct select*, const char* alias);
 void select_preop(struct select*, struct query*);
 int select_record(struct select*, struct vec* rec);
 int select_record_api(struct select*, struct vec* rec);
+int select_record_subquery(struct select*, struct vec* rec);
 
 #ifdef __cplusplus
 }

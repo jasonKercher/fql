@@ -37,6 +37,7 @@ enum join_type {
 struct table {
 	String name;
 	String alias;
+	struct query* subquery;
 	struct reader* reader;
 	struct schema* schema;
 	struct logicgroup* condition;
@@ -58,8 +59,12 @@ struct table* table_construct(struct table*,
 			      char* name,
 			      const char* alias,
 			      size_t idx,
-			      enum source_type,
 			      enum join_type);
+struct table* table_construct_subquery(struct table*,
+				       struct query*,
+				       const char* alias,
+				       size_t idx,
+				       enum join_type);
 void table_free(struct table*);
 void table_destroy(struct table*);
 
