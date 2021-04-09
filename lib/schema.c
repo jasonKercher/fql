@@ -178,13 +178,14 @@ void schema_assign_header(Table* table, Record* rec)
 	}
 }
 
-int schema_resolve_source(Table* table)
+int schema_resolve_source(struct fql_handle* fql, Table* table)
 {
 	if (!vec_empty(table->schema->columns)) {
 		return FQL_GOOD;  /* Schema already set */
 	}
 
 	if (table->source_type == SOURCE_SUBQUERY) {
+		schema_resolve_query(fql, table->subquery);
 		table->schema = table->subquery->schema;
 		return FQL_GOOD;
 		//fputs("Not supporting subquery schema yet\n", stderr);
@@ -404,7 +405,7 @@ int schema_resolve_query(struct fql_handle* fql, Query* query)
 	int i = 0;
 	for (; i < sources->size; ++i) {
 		Table* table = vec_at(query->sources, i);
-		if (schema_resolve_source(table)) {
+		if (schema_resolve_source(fql, table)) {
 			return FQL_FAIL;
 		}
 

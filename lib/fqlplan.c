@@ -9,7 +9,6 @@
 #include "process.h"
 #include "query.h"
 #include "reader.h"
-#include "util/dgraph.h"
 #include "util/util.h"
 
 #define PLAN_COLUMN_SEP " | "
@@ -169,38 +168,47 @@ void _from(Plan* plan, Query* query)
 
 	String action_msg;
 	string_construct(&action_msg);
-	Table* table = vec_begin(query->sources);
+	Table* table_iter = vec_begin(query->sources);
 
-	string_sprintf(&action_msg,
-		       "%s: %s",
-		       table->reader->file_name.data,
-		       "stream read");
+	Process* from_proc = NULL;
+	Dnode* from_node = NULL;
+	if (table_iter->source_type == SOURCE_TABLE) {
+		string_sprintf(&action_msg,
+			       "%s: %s",
+			       table_iter->reader->file_name.data,
+			       "stream read");
 
-	Process* from_proc = process_new(action_msg.data, ++plan->source_count);
-	table->read_proc = from_proc;
+		from_proc = process_new(action_msg.data, ++plan->source_count);
+		from_node = dgraph_add_data(plan->processes, from_proc);
+	} else {
+		from_proc = process_new("Subquery Read", ++plan->source_count);
+		Plan* subquery_plan = plan_build(table_iter->subquery, from_proc);
+		from_node = subquery_plan->op_true;
+		dgraph_add_node(plan->processes, from_node);
+	}
+	table_iter->read_proc = from_proc;
 	from_proc->action__ = &fql_read;
-	from_proc->proc_data = table->reader;
+	from_proc->proc_data = table_iter->reader;
 
-	Dnode* from_node = dgraph_add_data(plan->processes, from_proc);
 	from_node->is_root = true;
 
 	plan->current->out[0] = from_node;
 	plan->current = from_node;
 	Dnode* join_proc_node = NULL;
 
-	for (++table; table != vec_end(query->sources); ++table) {
+	for (++table_iter; table_iter != vec_end(query->sources); ++table_iter) {
 		Process* join_proc = NULL;
-		_Bool is_hash_join = (table->condition->join_logic != NULL);
+		_Bool is_hash_join = (table_iter->condition->join_logic != NULL);
 		if (is_hash_join) {
-			join_proc = _new_join_proc(table->join_type, "hash", ++plan->source_count);
+			join_proc = _new_join_proc(table_iter->join_type, "hash", ++plan->source_count);
 			join_proc->action__ = &fql_hash_join;
-			table_hash_join_init(table);
+			table_hash_join_init(table_iter);
 			process_add_second_input(join_proc);
 
-			string_sprintf(&action_msg, "%s: %s", table->reader->file_name.data, "mmap read");
+			string_sprintf(&action_msg, "%s: %s", table_iter->reader->file_name.data, "mmap read");
 			Process* read_proc = process_new(action_msg.data, plan->source_count);
-			table->read_proc = read_proc;
-			read_proc->proc_data = table->reader;
+			table_iter->read_proc = read_proc;
+			read_proc->proc_data = table_iter->reader;
 			read_proc->action__ = &fql_read;
 			read_proc->is_secondary = true;
 
@@ -210,18 +218,18 @@ void _from(Plan* plan, Query* query)
 			join_proc_node = dgraph_add_data(plan->processes, join_proc);
 			read_node->out[0] = join_proc_node;
 		} else {
-			join_proc = _new_join_proc(table->join_type, "cartesian", ++plan->source_count);
+			join_proc = _new_join_proc(table_iter->join_type, "cartesian", ++plan->source_count);
 			join_proc->action__ = &fql_cartesian_join;
 			join_proc_node = dgraph_add_data(plan->processes, join_proc);
 			join_proc_node->is_root = true;
 			join_proc->root_fifo = 1;
 		}
-		join_proc->proc_data = table;
+		join_proc->proc_data = table_iter;
 		plan->current->out[0] = join_proc_node;
 		plan->current = join_proc_node;
 
-		if (table->condition != NULL) {
-			_logicgroup_process(plan, table->condition, is_hash_join);
+		if (table_iter->condition != NULL) {
+			_logicgroup_process(plan, table_iter->condition, is_hash_join);
 		}
 	}
 
@@ -250,11 +258,12 @@ void _group(Plan* plan, Query* query)
 
 void _having(Plan* plan, Query* query) { }
 
-void _operation(Plan* plan, Query* query)
+void _operation(Plan* plan, Query* query, Process* entry)
 {
 	plan->current->out[0] = plan->op_true;
-	//plan->current->out[1] = plan->op_true;
-	op_apply_process(query, plan);
+	if (entry == NULL) {
+		op_apply_process(query, plan);
+	}
 }
 
 void _limit(Plan* plan, Query* query) { }
@@ -453,16 +462,17 @@ void _make_pipes(Plan* plan)
 
 }
 
-Plan* plan_build(Plan* plan, Query* query)
+Plan* plan_build(Query* query, Process* entry)
 {
-	//Plan* plan = plan_new(query->sources->size);
+	query->plan = plan_new(query->sources->size);
+	Plan* plan = query->plan;
 
 	/* Query */
 	_from(plan, query);
 	_where(plan, query);
 	_group(plan, query);
 	_having(plan, query);
-	_operation(plan, query);
+	_operation(plan, query, entry);
 	_limit(plan, query);
 
 	/* Uncomment this to view the plan *with* passive nodes */
@@ -484,8 +494,8 @@ int build_plans(Queue* query_list)
 
 	for (; node; node = node->next) {
 		Query* query = node->data;
-		query->plan = plan_new(query->sources->size);
-		plan_build(query->plan, query);
+		//query->plan = plan_new(query->sources->size);
+		plan_build(query, NULL);
 	}
 
 	return 0;
@@ -560,6 +570,7 @@ void _print_plan(Plan* plan)
 			fputs(proc->action_msg->data, stderr);
 		}
 	}
+	fputs("\n", stderr);
 }
 
 void print_plans(Queue* query_list)
@@ -570,6 +581,5 @@ void print_plans(Queue* query_list)
 		Query* query = query_list->data;
 		fprintf(stderr, "\nQUERY %d\n", ++i);
 		_print_plan(query->plan);
-		fputs("\n", stderr);
 	}
 }

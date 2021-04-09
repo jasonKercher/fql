@@ -22,7 +22,7 @@ Query* query_construct(Query* query)
 	*query = (Query) {
 		 NULL                   /* plan */
 		,schema_new()           /* table */
-		,vec_new_(Table)       /* sources */
+		,vec_new_(Table)        /* sources */
 		,NULL                   /* where */
 		,vec_new_(Column*)      /* groups */
 		,NULL                   /* having */
@@ -178,8 +178,7 @@ int query_add_constant(Query* query, const char* s, int len)
 
 /**
  * Create new table and source object
- * Assign name and schema if provided. If not provided,
- * we are dealing with a subquery source. source_stack
+ * Assign name and schema if provided. source_stack
  * is a stack of allocated char* of the form:
  * object->schema->database->server
  * We ignore database and server for now.

@@ -74,7 +74,7 @@ Table* table_construct_subquery(Table* table,
 	string_construct(&table->name);
 
 	if (alias[0] == '\0') {
-		string_construct_from_string(&table->alias, &table->name);
+		string_construct(&table->alias);
 	} else {
 		string_construct_from_char_ptr(&table->alias, alias);
 	}
