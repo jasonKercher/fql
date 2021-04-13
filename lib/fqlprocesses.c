@@ -102,6 +102,34 @@ int fql_read(Dgraph* proc_graph, Process* proc)
 	return 1;
 }
 
+/* Same thing as fql_read, but we recycle */
+int fql_read_subquery(Dgraph* proc_graph, Process* proc)
+{
+	Reader* reader = proc->proc_data;
+	Vec** recs = fifo_peek(proc->fifo_in[0]);
+
+	Record** rec = vec_back(*recs);
+	int ret = reader->get_record__(reader, *rec);
+
+	switch (ret) {
+	case FQL_GOOD:
+		break;
+	case FQL_FAIL:
+		return FQL_FAIL;
+	default: /* eof */
+		process_disable(proc);
+		return 0;
+	}
+
+	fifo_consume(proc->fifo_in[0]);
+
+	/* TODO: query ID's for targeted recycling */
+
+	fifo_add(proc->fifo_out[0], recs);
+
+	return ret;
+}
+
 int fql_select(Dgraph* proc_graph, Process* proc)
 {
 	Vec** recs = fifo_get(proc->fifo_in[0]);

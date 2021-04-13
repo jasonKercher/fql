@@ -131,7 +131,6 @@ void select_apply_process(Query* query, Plan* plan)
 
 	_expand_asterisks(query, true);
 
-	/* Initialize the raw strings used for writing */
 	proc = plan->op_false->data;
 	proc->is_passive = true;
 }
@@ -233,8 +232,16 @@ int select_record(Select* select, Vec* recs)
 	return writer->write_record__(writer->writer_data, col_vec, recs);
 }
 
-int select_record_subquery(Select* select, Vec* recs)
+/* This becomes a big copy operation because
+ * I want to recycle the subquery's record.
+ */
+int select_subquery_record(Reader* reader, Record* rec)
 {
-        return FQL_GOOD;
+	Query* subquery = reader->reader_data;
+	return FQL_GOOD;
 }
 
+int select_subquery_reset(Reader* reader)
+{
+	return FQL_GOOD;
+}

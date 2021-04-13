@@ -84,10 +84,11 @@ Dnode* dgraph_add_data(Dgraph* graph, void* data)
 	return dgraph_add_node(graph, node);
 }
 
-void dgraph_extend(Dgraph* dest, Dgraph* src)
+void dgraph_consume(Dgraph* dest, Dgraph* src)
 {
 	dest->_roots_good = false;
-	/* TODO */
+	vec_extend(dest->nodes, src->nodes);
+	dgraph_shallow_free(src);
 }
 
 void* dgraph_remove(Dgraph* graph, Dnode** node)

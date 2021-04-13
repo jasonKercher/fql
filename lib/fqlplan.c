@@ -179,15 +179,16 @@ void _from(Plan* plan, Query* query)
 			       "stream read");
 
 		from_proc = process_new(action_msg.data, ++plan->source_count);
+		from_proc->action__ = &fql_read;
 		from_node = dgraph_add_data(plan->processes, from_proc);
 	} else {
-		from_proc = process_new("Subquery Read", ++plan->source_count);
-		Plan* subquery_plan = plan_build(table_iter->subquery, from_proc);
-		from_node = subquery_plan->op_true;
-		dgraph_add_node(plan->processes, from_node);
+		from_proc = process_new("subquery select", ++plan->source_count);
+		from_proc->action__ = &fql_read_subquery;
+		from_node = dgraph_add_data(plan->processes, from_proc);
+		Plan* subquery_plan = plan_build(table_iter->subquery, from_node);
+		dgraph_consume(plan->processes, subquery_plan->processes);
 	}
 	table_iter->read_proc = from_proc;
-	from_proc->action__ = &fql_read;
 	from_proc->proc_data = table_iter->reader;
 
 	from_node->is_root = true;
@@ -258,12 +259,19 @@ void _group(Plan* plan, Query* query)
 
 void _having(Plan* plan, Query* query) { }
 
-void _operation(Plan* plan, Query* query, Process* entry)
+void _operation(Plan* plan, Query* query, Dnode* entry)
 {
 	plan->current->out[0] = plan->op_true;
 	if (entry == NULL) {
 		op_apply_process(query, plan);
+		return;
 	}
+
+	plan->op_true->out[0] = entry;
+	Process* true_proc = plan->op_true->data;
+	true_proc->is_passive = true;
+	Process* false_proc = plan->op_false->data;
+	false_proc->is_passive = true;
 }
 
 void _limit(Plan* plan, Query* query) { }
@@ -445,24 +453,32 @@ void _make_pipes(Plan* plan)
 		Process* proc = (*nodes)->data;
 		if ((*nodes)->out[0] != NULL) {
 			Process* proc0 = (*nodes)->out[0]->data;
-			proc->fifo_out[0] = (proc->is_secondary) ? proc0->fifo_in[1] : proc0->fifo_in[0];
-			if (proc->fifo_out[0] == NULL) {
-			        fprintf (stderr, "fifo missing for `%s'\n", proc0->action_msg->data);
-			}
+			proc->fifo_out[0] = (proc->is_secondary) ?
+					    proc0->fifo_in[1] :
+					    proc0->fifo_in[0];
+			//if (proc->fifo_out[0] == NULL) {
+			//        fprintf (stderr,
+			//		 "fifo missing for `%s'\n",
+			//		 (char*)proc0->action_msg->data);
+			//}
 		}
 
 		if ((*nodes)->out[1] != NULL) {
 			Process* proc1 = (*nodes)->out[1]->data;
-			proc->fifo_out[1] = (proc->is_secondary) ? proc1->fifo_in[1] : proc1->fifo_in[0];
-			if (proc->fifo_out[1] == NULL) {
-			        fprintf (stderr, "fifo missing for `%s'\n", proc1->action_msg->data);
-			}
+			proc->fifo_out[1] = (proc->is_secondary) ?
+					    proc1->fifo_in[1] :
+					    proc1->fifo_in[0];
+			//if (proc->fifo_out[1] == NULL) {
+			//        fprintf (stderr,
+			//		 "fifo missing for `%s'\n",
+			//		 (char*)proc1->action_msg->data);
+			//}
 		}
 	}
 
 }
 
-Plan* plan_build(Query* query, Process* entry)
+Plan* plan_build(Query* query, Dnode* entry)
 {
 	query->plan = plan_new(query->sources->size);
 	Plan* plan = query->plan;

@@ -12,6 +12,7 @@ extern "C" {
 #include "util/stringview.h"
 #include "util/util.h"
 
+struct table;
 struct reader;
 
 typedef int (*read_fn)(struct reader*, struct record* rec);
@@ -41,7 +42,7 @@ struct reader* reader_construct(struct reader*);
 void reader_free(struct reader*);
 
 char* reader_get_delim(struct reader*);
-void reader_assign(struct reader*);
+void reader_assign(struct reader*, struct table*);
 
 /**
  * Reader types own the data that is passed from
@@ -75,6 +76,8 @@ int mmapcsv_open(struct mmapcsv*, const char* file_name);
 int mmapcsv_get_record(struct reader*, struct record* rec);
 int mmapcsv_get_record_at(struct reader*, struct record* rec, char* rec_loc);
 int mmapcsv_reset(struct reader*);
+
+
 
 #ifdef __cplusplus
 }

@@ -6,7 +6,6 @@
 #include "util/dgraph.h"
 
 struct query;
-struct process;
 
 struct fql_plan {
 	struct dgraph* processes;
@@ -24,7 +23,7 @@ struct fql_plan* plan_construct(struct fql_plan*, int);
 void plan_free(void*);
 void plan_destroy(void*);
 
-struct fql_plan* plan_build(struct query*, struct process*);
+struct fql_plan* plan_build(struct query*, struct dnode* entry);
 int build_plans(struct queue*);
 void print_plans(struct queue* plans);
 

@@ -2,9 +2,11 @@
 
 #include <sys/types.h>
 #include <csv.h>
-
 #include "fql.h"
+#include "query.h"
 #include "process.h"
+#include "table.h"
+#include "select.h"
 #include "util/stringview.h"
 #include "util/util.h"
 
@@ -65,7 +67,7 @@ char* reader_get_delim(Reader* reader)
 	}
 }
 
-void reader_assign(Reader* reader)
+void reader_assign(Reader* reader, Table* table)
 {
 	int ret = 0;
 	switch (reader->type) {
@@ -90,7 +92,11 @@ void reader_assign(Reader* reader)
 		break;
 	}
 	case READ_SUBQUERY:
-		fputs("cannot assign reader for subquery\n", stderr);
+		reader->reader_data = table->subquery;
+		reader->free__ = &query_free;
+		reader->get_record__ = &select_subquery_record;
+		reader->reset__ = &select_subquery_reset;
+		// subquery_init ?
 		break;
 	default:
 		fprintf(stderr, "%d: unknown read_type\n", reader->type);

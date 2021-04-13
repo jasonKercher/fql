@@ -61,6 +61,9 @@ void schema_apply_column_alias(Schema* schema, const char* alias)
 
 int schema_resolve_file(Table* table)
 {
+	if (table->source_type == SOURCE_SUBQUERY) {
+		return FQL_GOOD;
+	}
 	String table_name_base;
 	String table_name_dir;
 	String file_noext;
@@ -102,7 +105,9 @@ int schema_resolve_file(Table* table)
 	}
 
 	if (matches > 1) {
-		fprintf(stderr, "%s: ambiguous file name\n", table->name.data);
+		fprintf(stderr,
+			"%s: ambiguous file name\n",
+			(char*)table->name.data);
 		return FQL_FAIL;
 	} else if (matches) {
 		goto success_return;
@@ -120,7 +125,9 @@ int schema_resolve_file(Table* table)
 	}
 
 	if (matches > 1) {
-		fprintf(stderr, "%s: ambiguous file name\n", table->name.data);
+		fprintf(stderr,
+			"%s: ambiguous file name\n",
+			(char*)table->name.data);
 		return FQL_FAIL;
 	} else if (matches) {
 		goto success_return;
@@ -138,13 +145,17 @@ int schema_resolve_file(Table* table)
 	}
 
 	if (matches > 1) {
-		fprintf(stderr, "%s: ambiguous file name\n", table->name.data);
+		fprintf(stderr,
+			"%s: ambiguous file name\n",
+			(char*)table->name.data);
 		return FQL_FAIL;
 	} else if (matches) {
 		goto success_return;
 	}
 
-	fprintf(stderr, "%s: unable to find matching file\n", table->name.data);
+	fprintf(stderr,
+		"%s: unable to find matching file\n",
+		(char*)table->name.data);
 	return FQL_FAIL;
 
 success_return:
@@ -184,34 +195,39 @@ int schema_resolve_source(struct fql_handle* fql, Table* table)
 		return FQL_GOOD;  /* Schema already set */
 	}
 
-	if (table->source_type == SOURCE_SUBQUERY) {
-		schema_resolve_query(fql, table->subquery);
-		table->schema = table->subquery->schema;
-		return FQL_GOOD;
-		//fputs("Not supporting subquery schema yet\n", stderr);
-		//return FQL_FAIL;  /* TODO: retrieve schema from subquery */
-	}
-
 	if (table->schema->name[0]) {
 		fputs("Not loading schema by name yet\n", stderr);
 		return FQL_FAIL;  /* TODO: load schema by name */
 	}
 
-	/* If we've made it this far, we want to try and determine
-	 * schema by reading the top row of the file and assume a
-	 * delimited list of field names.
-	 */
-	if (schema_resolve_file(table)) {
-		return FQL_FAIL;
-	}
-
-	/* Retrieve schema using libcsv */
-	if (table->join_type == JOIN_FROM) {
-		table->reader->type = READ_LIBCSV;
+	if (table->source_type == SOURCE_SUBQUERY) {
+		schema_resolve_query(fql, table->subquery);
+		table->schema = table->subquery->schema;
+		table->reader->type = READ_SUBQUERY;
 	} else {
-		table->reader->type = READ_MMAPCSV;
+
+		/* If we've made it this far, we want to try
+		 * and determine schema by reading the top
+		 * row of the file and assume a delimited
+		 * list of field names.
+		 */
+		if (schema_resolve_file(table)) {
+			return FQL_FAIL;
+		}
+
+		/* Retrieve schema using libcsv */
+		if (table->join_type == JOIN_FROM) {
+			table->reader->type = READ_LIBCSV;
+		} else {
+			table->reader->type = READ_MMAPCSV;
+		}
 	}
-	reader_assign(table->reader);
+	reader_assign(table->reader, table);
+
+	/* Skip here if we *now* know schema */
+	if (!vec_empty(table->schema->columns)) {
+		return FQL_GOOD;
+	}
 
 	Record rec;
 	record_construct(&rec, 0);

@@ -47,6 +47,7 @@ void process_enable(struct process*);
 void process_disable(struct process*);
 
 int fql_read(struct dgraph*, struct process*);
+int fql_read_subquery(struct dgraph*, struct process*);
 int fql_select(struct dgraph*, struct process*);
 int fql_logic(struct dgraph*, struct process*);
 int fql_cartesian_join(struct dgraph*, struct process*);
