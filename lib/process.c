@@ -14,15 +14,15 @@
 
 #define FIFO_SIZE 256
 
-Process* process_new(const char* action, int width)
+Process* process_new(const char* action, Plan* plan)
 {
 	Process* new_proc = NULL;
 	malloc_(new_proc, sizeof(*new_proc));
 
-	return process_construct(new_proc, action, width);
+	return process_construct(new_proc, action, plan);
 }
 
-Process* process_construct(Process* proc, const char* action, int width)
+Process* process_construct(Process* proc, const char* action, Plan* plan)
 {
 	*proc = (Process) {
 		 0                              /* thread */
@@ -32,7 +32,8 @@ Process* process_construct(Process* proc, const char* action, int width)
 		,{ NULL, NULL }                 /* fifo_out */
 		,NULL                           /* proc_data */
 		,string_from_char_ptr(action)   /* action_msg */
-		,width                          /* fifo_width */
+		,plan->source_count             /* fifo_width */
+		,plan->plan_id                  /* plan_id */
 		,0                              /* root_fifo */
 		,false                          /* is_secondary */
 		,false                          /* is_passive */

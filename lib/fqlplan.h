@@ -14,12 +14,13 @@ struct fql_plan {
 	struct dnode* current;  /* temp */
 	size_t rows_affected;
 	int source_count;
+	int plan_id;
 	_Bool has_stepped;
 };
 typedef struct fql_plan Plan;
 
-struct fql_plan* plan_new(int);
-struct fql_plan* plan_construct(struct fql_plan*, int);
+struct fql_plan* plan_new(struct query*);
+struct fql_plan* plan_construct(struct fql_plan*, struct query*);
 void plan_free(void*);
 void plan_destroy(void*);
 

@@ -160,17 +160,12 @@ int column_get_int(long* ret, Column* col, Vec* recs)
 	switch (col->expr) {
 	case EXPR_COLUMN_NAME:
 	{
-		/* this is a rather unfortunate necessity */
-		//String s;
-		//string_construct(&s);
 		Record** rec = vec_at(recs, col->src_idx);
 		StringView* sv = vec_at((*rec)->fields, col->data_source->location);
 		string_copy_from_stringview(&col->buf, sv);
 		if (str2long(ret, col->buf.data)) {
-			//string_destroy(&s);
 			return FQL_FAIL;
 		}
-		//string_destroy(&s);
 		return FQL_GOOD;
 	}
 	case EXPR_FUNCTION:
@@ -178,7 +173,6 @@ int column_get_int(long* ret, Column* col, Vec* recs)
 		Function* func = col->field.fn;
 		union field new_field;
 		if (col->field_type == FIELD_STRING) {
-			//new_field.s = &func->ret_buf;
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
@@ -206,7 +200,6 @@ int column_get_float(double* ret, Column* col, Vec* recs)
 	switch (col->expr) {
 	case EXPR_COLUMN_NAME:
 	{
-		/* this is a rather unfortunate necessity */
 		Record** rec = vec_at(recs, col->src_idx);
 		StringView* sv = vec_at((*rec)->fields, col->data_source->location);
 		string_copy_from_stringview(&col->buf, sv);
@@ -220,7 +213,6 @@ int column_get_float(double* ret, Column* col, Vec* recs)
 		Function* func = col->field.fn;
 		union field new_field;
 		if (col->field_type == FIELD_STRING) {
-			//new_field.s = &func->ret_buf;
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
@@ -258,7 +250,6 @@ int column_get_stringview(StringView* ret, Column* col, Vec* recs)
 		Function* func = col->field.fn;
 		union field new_field;
 		if (col->field_type == FIELD_STRING) {
-			//new_field.s = &func->ret_buf;
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}

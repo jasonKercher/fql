@@ -92,7 +92,6 @@ void reader_assign(Reader* reader, Table* table)
 		break;
 	}
 	case READ_SUBQUERY:
-		reader->reader_data = table->subquery;
 		reader->free__ = &query_free;
 		reader->get_record__ = &select_subquery_record;
 		reader->reset__ = &select_subquery_reset;

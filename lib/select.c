@@ -197,7 +197,7 @@ int select_record_api(Select* select, struct vec* recs)
 			}
 			/* Even though the we are not using the
 			 * writer directly, we use the data it
-			 * owns for our string fields
+			 * owns for our string fields.
 			 */
 			String* s = vec_at(writer->raw_rec, i);
 			string_copy_from_stringview(s, &sv);

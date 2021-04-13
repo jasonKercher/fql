@@ -21,6 +21,7 @@ struct process {
 	void* proc_data;                /* process specific data */
 	String* action_msg;             /* Message that prints with plan */
 	int fifo_width;                 /* Number of sources at this step */
+	int plan_id;                    /* Plan ID for root grouping */
 	int root_fifo;                  /* Signify which fifo_inx is the root */
 	_Bool is_secondary;             /* fifo_out should link to a fifo_in1 */
 	_Bool is_passive;               /* denotes process that does nothing */
@@ -33,8 +34,8 @@ struct thread_data {
 	struct dgraph* proc_graph;
 };
 
-struct process* process_new(const char* action, int width);
-struct process* process_construct(struct process*, const char*, int width);
+struct process* process_new(const char* action, struct fql_plan*);
+struct process* process_construct(struct process*, const char*, struct fql_plan*);
 void process_node_free(struct dnode* proc_node);
 void process_free(struct process*, _Bool);
 

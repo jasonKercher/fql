@@ -6,8 +6,6 @@
 #include "column.h"
 #include "util/fifo.h"
 
-//#define RECYCLE_DEBUG 1
-
 void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
 {
 	Record** rec = vec_at(recs, index);
@@ -20,47 +18,10 @@ void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
 
 	Vec* proc_recs = vec_at(root->records, (*rec)->idx);
 
-#ifdef RECYCLE_DEBUG
-	fprintf(stderr, "%s: %d\n", root->action_msg->data, (*rec)->idx);
-
-	Vec* buf = root->fifo_in[root->root_fifo]->buf;
-	Vec** it = vec_begin(buf);
-	int i = 0;
-	for (; it != vec_end(buf); ++it, ++i) {
-		Record** it_rec = vec_at(*it, index);
-		if (i == root->fifo_in[root->root_fifo]->tail) {
-			fputc('[', stderr);
-		}
-		fprintf(stderr, "%d:%d", i, (*it_rec)->idx);
-		if (i == root->fifo_in[root->root_fifo]->head) {
-			fputc(']', stderr);
-		}
-		fputc(' ', stderr);
-	}
-	fputc('\n', stderr);
-#endif
-
 	if (root->action__ == fql_read ||
 	    root->action__ == fql_cartesian_join) {
 		fifo_add(root->fifo_in[root->root_fifo], &proc_recs);
 	}
-#ifdef RECYCLE_DEBUG
-	it = vec_begin(buf);
-	i = 0;
-	for (; it != vec_end(buf); ++it, ++i) {
-		Record** it_rec = vec_at(*it, index);
-		if (i == root->fifo_in[root->root_fifo]->tail) {
-			fputc('[', stderr);
-		}
-		fprintf(stderr, "%d:%d", i, (*it_rec)->idx);
-		if (i == root->fifo_in[root->root_fifo]->head) {
-			fputc(']', stderr);
-		}
-		fputc(' ', stderr);
-	}
-	fputc('\n', stderr);
-#endif
-
 }
 
 /* Trigger appropiate roots to read the next record */
@@ -102,13 +63,15 @@ int fql_read(Dgraph* proc_graph, Process* proc)
 	return 1;
 }
 
-/* Same thing as fql_read, but we recycle */
 int fql_read_subquery(Dgraph* proc_graph, Process* proc)
 {
 	Reader* reader = proc->proc_data;
 	Vec** recs = fifo_peek(proc->fifo_in[0]);
-
 	Record** rec = vec_back(*recs);
+
+	Vec** sub_recs = fifo_get(proc->fifo_in[1]);
+	reader->reader_data = *sub_recs;
+
 	int ret = reader->get_record__(reader, *rec);
 
 	switch (ret) {
@@ -287,7 +250,6 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
 	Process* right_side_read_proc = table->read_proc;
 	fql_no_op(proc_graph, right_side_read_proc);
 
-	//Vec** leftrecs = fifo_peek(proc->fifo_in[0]);
 	Vec** leftrecs = fifo_peek(proc->fifo_in[0]);
 	Vec* rightrecs = _hash_join_left_side(proc, table, *leftrecs);
 	if (rightrecs == NULL) {

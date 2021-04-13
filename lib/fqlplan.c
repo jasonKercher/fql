@@ -22,31 +22,39 @@
 
 void _print_plan(Plan* plan);
 
-Plan* plan_new(int source_total)
+Plan* plan_new(Query* query)
 {
 	Plan* new_plan = NULL;
 	malloc_(new_plan, sizeof(*new_plan));
 
-	return plan_construct(new_plan, source_total);
+	return plan_construct(new_plan, query);
 }
 
-Plan* plan_construct(Plan* plan, int source_total)
+Plan* plan_construct(Plan* plan, Query* query)
 {
 	*plan = (Plan) {
-		 dgraph_new()                                      /* processes */
-		,dnode_new(process_new("OP_TRUE", source_total))   /* op_true */
-		,dnode_new(process_new("OP_FALSE", source_total))  /* op_false */
-		,NULL                                              /* current */
-		,0                                                 /* rows_affected */
-		,0                                                 /* source_count */
-		,false                                             /* has_stepped */
+		 dgraph_new()      /* processes */
+		,NULL              /* op_true */
+		,NULL              /* op_false */
+		,NULL              /* current */
+		,0                 /* rows_affected */
+		,0                 /* source_count */
+		,false             /* has_stepped */
 	};
+
+	plan->plan_id = query->query_total;
+	plan->source_count = query->sources->size;
+
+	plan->op_true = dnode_new(process_new("OP_TRUE", plan));
+	plan->op_false = dnode_new(process_new("OP_FALSE", plan));
+
+	plan->source_count = 0;
 
 	/* source_count is a temporary variable used to keep track
 	 * of the current number of sources as the plan is built.
 	 * Setting the member (source_count) to 0 is correct here.
 	 */
-	Process* start = process_new("start", 0);
+	Process* start = process_new("start", plan);
 	start->is_passive = true;
 	plan->current = dgraph_add_data(plan->processes, start);
 	dgraph_add_node(plan->processes, plan->op_true);
@@ -108,7 +116,7 @@ void _logic_to_process(Process* logic_proc, LogicGroup* lg)
 
 void _logicgroup_process(Plan* plan, LogicGroup* lg, _Bool is_from_hash_join)
 {
-	Process* logic_proc = process_new("", plan->source_count);
+	Process* logic_proc = process_new("", plan);
 	logic_proc->action__ = &fql_logic;
 	logic_proc->proc_data = lg;
 	_logic_to_process(logic_proc, lg);
@@ -125,7 +133,7 @@ void _logicgroup_process(Plan* plan, LogicGroup* lg, _Bool is_from_hash_join)
 
 	logic_node->out[0] = plan->op_false;
 
-	Process* logic_true = process_new("Logic True", plan->source_count);
+	Process* logic_true = process_new("Logic True", plan);
 	logic_true->is_passive = true;
 	Dnode* logic_true_node = dgraph_add_data(plan->processes, logic_true);
 
@@ -134,8 +142,9 @@ void _logicgroup_process(Plan* plan, LogicGroup* lg, _Bool is_from_hash_join)
 	plan->current = logic_true_node;
 }
 
-Process* _new_join_proc(enum join_type type, const char* algorithm, int source_count)
+Process* _new_join_proc(enum join_type type, const char* algorithm, Plan* plan)
 {
+	++plan->source_count;
 	char buffer[100];
 	switch (type) {
 	case JOIN_INNER:
@@ -157,7 +166,7 @@ Process* _new_join_proc(enum join_type type, const char* algorithm, int source_c
 		sprintf(buffer, "unexpected: JOIN_FROM (%s)", algorithm);
 		break;
 	}
-	return process_new(buffer, source_count);
+	return process_new(buffer, plan);
 }
 
 void _from(Plan* plan, Query* query)
@@ -172,17 +181,18 @@ void _from(Plan* plan, Query* query)
 
 	Process* from_proc = NULL;
 	Dnode* from_node = NULL;
+	++plan->source_count;
 	if (table_iter->source_type == SOURCE_TABLE) {
 		string_sprintf(&action_msg,
 			       "%s: %s",
 			       table_iter->reader->file_name.data,
 			       "stream read");
 
-		from_proc = process_new(action_msg.data, ++plan->source_count);
+		from_proc = process_new(action_msg.data, plan);
 		from_proc->action__ = &fql_read;
 		from_node = dgraph_add_data(plan->processes, from_proc);
 	} else {
-		from_proc = process_new("subquery select", ++plan->source_count);
+		from_proc = process_new("subquery select", plan);
 		from_proc->action__ = &fql_read_subquery;
 		from_node = dgraph_add_data(plan->processes, from_proc);
 		Plan* subquery_plan = plan_build(table_iter->subquery, from_node);
@@ -201,13 +211,13 @@ void _from(Plan* plan, Query* query)
 		Process* join_proc = NULL;
 		_Bool is_hash_join = (table_iter->condition->join_logic != NULL);
 		if (is_hash_join) {
-			join_proc = _new_join_proc(table_iter->join_type, "hash", ++plan->source_count);
+			join_proc = _new_join_proc(table_iter->join_type, "hash", plan);
 			join_proc->action__ = &fql_hash_join;
 			table_hash_join_init(table_iter);
 			process_add_second_input(join_proc);
 
 			string_sprintf(&action_msg, "%s: %s", table_iter->reader->file_name.data, "mmap read");
-			Process* read_proc = process_new(action_msg.data, plan->source_count);
+			Process* read_proc = process_new(action_msg.data, plan);
 			table_iter->read_proc = read_proc;
 			read_proc->proc_data = table_iter->reader;
 			read_proc->action__ = &fql_read;
@@ -219,7 +229,7 @@ void _from(Plan* plan, Query* query)
 			join_proc_node = dgraph_add_data(plan->processes, join_proc);
 			read_node->out[0] = join_proc_node;
 		} else {
-			join_proc = _new_join_proc(table_iter->join_type, "cartesian", ++plan->source_count);
+			join_proc = _new_join_proc(table_iter->join_type, "cartesian", plan);
 			join_proc->action__ = &fql_cartesian_join;
 			join_proc_node = dgraph_add_data(plan->processes, join_proc);
 			join_proc_node->is_root = true;
@@ -251,7 +261,7 @@ void _group(Plan* plan, Query* query)
 	if (query->groups->size == 0) {
 		return;
 	}
-	Process* group_proc = process_new("GROUP BY", plan->source_count);
+	Process* group_proc = process_new("GROUP BY", plan);
 	Dnode* group_node = dgraph_add_data(plan->processes, group_proc);
 	plan->current->out[0] = group_node;
 	plan->current = group_node;
@@ -480,7 +490,7 @@ void _make_pipes(Plan* plan)
 
 Plan* plan_build(Query* query, Dnode* entry)
 {
-	query->plan = plan_new(query->sources->size);
+	query->plan = plan_new(query);
 	Plan* plan = query->plan;
 
 	/* Query */
@@ -510,7 +520,6 @@ int build_plans(Queue* query_list)
 
 	for (; node; node = node->next) {
 		Query* query = node->data;
-		//query->plan = plan_new(query->sources->size);
 		plan_build(query, NULL);
 	}
 

@@ -110,7 +110,7 @@ void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemConte
 		query_add_source(_query, &_source_stack, _table_alias);
 	} else {
 	        query_add_subquery_source(_query, _subquery, _table_alias);
-	} 
+	}
 
 	_subquery = NULL;
 	*_table_alias = '\0';
@@ -209,7 +209,7 @@ void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext * ctx) { 
 
 void ListenerInterface::enterSql_clause(TSqlParser::Sql_clauseContext * ctx)
 {
-	_query = query_new();
+	_query = query_new(0);
 	queue_enqueue(&_fql->query_list, _query);
 	stack_push(&_query_stack, _query);
 }
@@ -364,7 +364,7 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 	 * If it is, this is a sub-query
 	 */
 	if (_query->op != NULL) {
-		_query = query_new();
+		_query = query_new(_query->query_total);
 		stack_push(&_query_stack, _query);
 	}
 

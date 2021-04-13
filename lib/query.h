@@ -41,6 +41,7 @@ struct query {
 	struct queue* having;           /* struct expression */
 	struct expression* limit;       /* TOP */
 	void* op;                       /* Operation structure */
+	int query_total;                /* Query Total */
 
 	/* All the variables below are temporaries for
 	 * tracking the query as antlr traverses it
@@ -56,8 +57,8 @@ struct query {
 };
 typedef struct query Query;
 
-struct query* query_new();
-struct query* query_construct(struct query*);
+struct query* query_new(int total);
+struct query* query_construct(struct query*, int total);
 void query_free(void*);
 
 int query_add_constant(Query*, const char*, int);

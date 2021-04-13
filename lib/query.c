@@ -9,15 +9,15 @@
 #include "util/dgraph.h"
 #include "util/util.h"
 
-Query* query_new()
+Query* query_new(int total)
 {
 	Query* new_query = NULL;
 	malloc_(new_query, sizeof(*new_query));
 
-	return query_construct(new_query);
+	return query_construct(new_query, total);
 }
 
-Query* query_construct(Query* query)
+Query* query_construct(Query* query, int total)
 {
 	*query = (Query) {
 		 NULL                   /* plan */
@@ -28,6 +28,7 @@ Query* query_construct(Query* query)
 		,NULL                   /* having */
 		,NULL                   /* limit */
 		,NULL                   /* operation */
+		,total                  /* query_total */
 
 		,NULL                   /* logic_stack */
 		,NULL                   /* joinable */
