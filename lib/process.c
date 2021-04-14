@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 #include "fql.h"
+#include "table.h"
 #include "operation.h"
 #include "reader.h"
 #include "record.h"
@@ -32,6 +33,7 @@ Process* process_construct(Process* proc, const char* action, Plan* plan)
 		,{ NULL, NULL }                 /* fifo_out */
 		,NULL                           /* proc_data */
 		,string_from_char_ptr(action)   /* action_msg */
+		,NULL                           /* root_group */
 		,plan->source_count             /* fifo_width */
 		,plan->plan_id                  /* plan_id */
 		,0                              /* root_fifo */
@@ -69,17 +71,18 @@ void process_free(Process* proc, _Bool is_root)
 	free_(proc);
 }
 
-void process_activate(Dnode* proc_node, unsigned graph_size)
+void process_activate(Dnode* proc_node, Plan* plan)
 {
 	Process* proc = proc_node->data;
-
-	//fprintf(stderr, "Activating %s\n", proc->action_msg->data);
+	unsigned graph_size = plan->processes->nodes->size;
+	proc->root_group = vec_at(plan->recycle_groups, proc->plan_id);
 
 	if (!proc_node->is_root) {
 		proc->fifo_in[0] = fifo_new_(Vec*, FIFO_SIZE);
 		return;
 	}
 
+	vec_push_back(proc->root_group, &proc_node);
 	if (proc->root_fifo == 1) {
 		proc->fifo_in[0] = fifo_new_(Vec*, FIFO_SIZE);
 	}
@@ -88,7 +91,8 @@ void process_activate(Dnode* proc_node, unsigned graph_size)
 
 	int field_count = 1;
 	if (proc->action__ == &fql_read) {
-		Reader* reader = proc->proc_data;
+		Table* table = proc->proc_data;
+		Reader* reader = table->reader;
 		field_count = reader->max_col_idx + 1;
 	}
 

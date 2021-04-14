@@ -6,42 +6,40 @@
 #include "column.h"
 #include "util/fifo.h"
 
-void _recycle_specific(Dgraph* proc_graph, Vec* recs, int index)
+void _recycle_specific(Process* proc, Vec* recs, int index)
 {
 	Record** rec = vec_at(recs, index);
 	if (--(*rec)->ref_count > 0 || !(*rec)->is_recyclable) {
 		return;
 	}
 
-	Dnode** root_node = vec_at(proc_graph->_roots, index);
+	Dnode** root_node = vec_at(proc->root_group, index);
 	Process* root = (*root_node)->data;
 
 	Vec* proc_recs = vec_at(root->records, (*rec)->idx);
 
-	if (root->action__ == fql_read ||
-	    root->action__ == fql_cartesian_join) {
-		fifo_add(root->fifo_in[root->root_fifo], &proc_recs);
-	}
+	fifo_add(root->fifo_in[root->root_fifo], &proc_recs);
 }
 
 /* Trigger appropiate roots to read the next record */
-void _recycle_recs(Dgraph* proc_graph, Vec* recs, int width)
+void _recycle_recs(Process* proc, Vec* recs, int width)
 {
 	/* width == 0 means constant expression */
 	if (width == 0) {
-		Dnode** root_node = vec_begin(proc_graph->_roots);
+		Dnode** root_node = vec_begin(proc->root_group);
 		process_disable((*root_node)->data);
 		return;
 	}
 	int i = 0;
 	for (; i < width; ++i) {
-		_recycle_specific(proc_graph, recs, i);
+		_recycle_specific(proc, recs, i);
 	}
 }
 
 int fql_read(Dgraph* proc_graph, Process* proc)
 {
-	Reader* reader = proc->proc_data;
+	Table* table = proc->proc_data;
+	Reader* reader = table->reader;
 	Vec** recs = fifo_peek(proc->fifo_in[0]);
 
 	Record** rec = vec_back(*recs);
@@ -65,7 +63,8 @@ int fql_read(Dgraph* proc_graph, Process* proc)
 
 int fql_read_subquery(Dgraph* proc_graph, Process* proc)
 {
-	Reader* reader = proc->proc_data;
+	Table* table = proc->proc_data;
+	Reader* reader = table->reader;
 	Vec** recs = fifo_peek(proc->fifo_in[0]);
 	Record** rec = vec_back(*recs);
 
@@ -99,7 +98,7 @@ int fql_select(Dgraph* proc_graph, Process* proc)
 	Select* select = proc->proc_data;
 	int ret = select->select__(select, *recs);
 
-	_recycle_recs(proc_graph, *recs, proc->fifo_width);
+	_recycle_recs(proc, *recs, proc->fifo_width);
 
 	return ret;
 }
@@ -119,7 +118,7 @@ int fql_logic(Dgraph* proc_graph, Process* proc)
 	} else if (proc->fifo_out[0] != NULL) {
 		fifo_add(proc->fifo_out[0], recs);  /* false */
 	} else {
-		_recycle_recs(proc_graph, *recs, proc->fifo_width);
+		_recycle_recs(proc, *recs, proc->fifo_width);
 	}
 
 	return 1;
@@ -239,7 +238,7 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
 	if (hj->state == SIDE_RIGHT) {
 		Vec** rightrecs = fifo_get(proc->fifo_in[1]);
 		_hash_join_right_side(proc, table, *rightrecs);
-		_recycle_specific(proc_graph, *rightrecs, proc->fifo_width-1);
+		_recycle_specific(proc, *rightrecs, proc->fifo_width-1);
 		return 1;
 	}
 
@@ -254,7 +253,7 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
 	Vec* rightrecs = _hash_join_left_side(proc, table, *leftrecs);
 	if (rightrecs == NULL) {
 		fifo_consume(proc->fifo_in[0]);
-		_recycle_recs(proc_graph, *leftrecs, proc->fifo_width-1);
+		_recycle_recs(proc, *leftrecs, proc->fifo_width-1);
 		return 1;
 	}
 

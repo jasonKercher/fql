@@ -37,18 +37,28 @@ Plan* plan_construct(Plan* plan, Query* query)
 		,NULL              /* op_true */
 		,NULL              /* op_false */
 		,NULL              /* current */
+		,NULL              /* recycle_groups */
 		,0                 /* rows_affected */
 		,0                 /* source_count */
 		,false             /* has_stepped */
 	};
 
-	plan->plan_id = query->query_total;
+	plan->plan_id = query->query_id;
 	plan->source_count = query->sources->size;
 
 	plan->op_true = dnode_new(process_new("OP_TRUE", plan));
 	plan->op_false = dnode_new(process_new("OP_FALSE", plan));
 
 	plan->source_count = 0;
+
+	if (query->query_id == 0) {
+		plan->recycle_groups = vec_new_(Vec);
+		vec_resize(plan->recycle_groups, query->query_total);
+		Vec* it = vec_begin(plan->recycle_groups);
+		for (; it != vec_end(plan->recycle_groups); ++it) {
+			vec_construct_(it, Dnode*);
+		}
+	}
 
 	/* source_count is a temporary variable used to keep track
 	 * of the current number of sources as the plan is built.
@@ -78,6 +88,13 @@ void plan_destroy(void* generic_plan)
 	Dnode** it = vec_begin(plan->processes->nodes);
 	for (; it != vec_end(plan->processes->nodes); ++it) {
 		process_node_free(*it);
+	}
+	if (plan->recycle_groups != NULL) {
+		Vec* it = vec_begin(plan->recycle_groups);
+		for (; it != vec_end(plan->recycle_groups); ++it) {
+			vec_destroy(it);
+		}
+		vec_free(plan->recycle_groups);
 	}
 	dgraph_free(plan->processes);
 }
@@ -199,7 +216,7 @@ void _from(Plan* plan, Query* query)
 		dgraph_consume(plan->processes, subquery_plan->processes);
 	}
 	table_iter->read_proc = from_proc;
-	from_proc->proc_data = table_iter->reader;
+	from_proc->proc_data = table_iter;
 
 	from_node->is_root = true;
 
@@ -219,7 +236,7 @@ void _from(Plan* plan, Query* query)
 			string_sprintf(&action_msg, "%s: %s", table_iter->reader->file_name.data, "mmap read");
 			Process* read_proc = process_new(action_msg.data, plan);
 			table_iter->read_proc = read_proc;
-			read_proc->proc_data = table_iter->reader;
+			read_proc->proc_data = table_iter;
 			read_proc->action__ = &fql_read;
 			read_proc->is_secondary = true;
 
@@ -372,82 +389,9 @@ void _activate_procs(Plan* plan)
 	Vec* node_vec = plan->processes->nodes;
 	Dnode** nodes = vec_begin(node_vec);
 
-	//for (; nodes != vec_end(node_vec); ++nodes) {
-	//        process_activate(*nodes, node_vec->size);
-	//}
-
-	/* This loop is unrolled so fifo mutexes are not
-	 * all generated from the same location making
-	 * them easier to track.
-	 */
-
-	int i = 0;
-
-	if (node_vec->size <= i) {
-		return;
+	for (; nodes != vec_end(node_vec); ++nodes) {
+	        process_activate(*nodes, plan);
 	}
-	process_activate(nodes[i++], node_vec->size);
-
-	if (node_vec->size <= i) {
-		return;
-	}
-	process_activate(nodes[i++], node_vec->size);
-
-	if (node_vec->size <= i) {
-		return;
-	}
-	process_activate(nodes[i++], node_vec->size);
-
-	if (node_vec->size <= i) {
-		return;
-	}
-	process_activate(nodes[i++], node_vec->size);
-
-	if (node_vec->size <= i) {
-		return;
-	}
-	process_activate(nodes[i++], node_vec->size);
-
-	if (node_vec->size <= i) {
-		return;
-	}
-	process_activate(nodes[i++], node_vec->size);
-
-	if (node_vec->size <= i) {
-		return;
-	}
-	process_activate(nodes[i++], node_vec->size);
-
-	if (node_vec->size <= i) {
-		return;
-	}
-	process_activate(nodes[i++], node_vec->size);
-
-	if (node_vec->size <= i) {
-		return;
-	}
-	process_activate(nodes[i++], node_vec->size);
-
-	if (node_vec->size <= i) {
-		return;
-	}
-	process_activate(nodes[i++], node_vec->size);
-
-	if (node_vec->size <= i) {
-		return;
-	}
-	process_activate(nodes[i++], node_vec->size);
-
-	if (node_vec->size <= i) {
-		return;
-	}
-	process_activate(nodes[i++], node_vec->size);
-
-	if (node_vec->size <= i) {
-		return;
-	}
-	process_activate(nodes[i++], node_vec->size);
-
 }
 
 /* Run through processes and link up fifos. Input fifos are owned

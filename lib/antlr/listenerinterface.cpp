@@ -215,6 +215,7 @@ void ListenerInterface::enterSql_clause(TSqlParser::Sql_clauseContext * ctx)
 }
 void ListenerInterface::exitSql_clause(TSqlParser::Sql_clauseContext * ctx)
 {
+	_query->query_total = _query_id + 1;
 	stack_free(&_query_stack);
 }
 
@@ -364,7 +365,7 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 	 * If it is, this is a sub-query
 	 */
 	if (_query->op != NULL) {
-		_query = query_new(_query->query_total);
+		_query = query_new(++_query_id);
 		stack_push(&_query_stack, _query);
 	}
 

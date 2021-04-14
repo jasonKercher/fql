@@ -35,6 +35,7 @@ private:
 
 	int _next_list;
 	int _current_list;
+	int _query_id = 0;
 	bool _on_asterisk = false;
 
 	void _no_impl(const std::string&, int);

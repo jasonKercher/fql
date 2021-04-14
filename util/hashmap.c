@@ -185,12 +185,6 @@ void hashmap_nset(HashMap* m, const char* key, void* data, int n)
 	}
 }
 
-//void hashmap_set(HashMap* m, const char* key, void* data)
-//{
-//        int n = strlen(key);
-//        hashmap_nset(m, key, data, n);
-//}
-
 void* hashmap_nget(HashMap* m, const char* key, int n)
 {
 	if (m->_keybufhead + n > m->_keybuflen) {
@@ -216,12 +210,6 @@ void* hashmap_nget(HashMap* m, const char* key, int n)
 
 	return vec_at(&m->values, entry->val_idx);
 }
-
-//void* hashmap_get(HashMap* m, const char* key)
-//{
-//        int n = strlen(key);
-//        return hashmap_nget(m, key, n);
-//}
 
 /* elem size is Vec elements now */
 MultiMap* multimap_new(size_t elem_size, size_t limit, unsigned props)

@@ -65,7 +65,8 @@ int _api_connect(struct fql_handle* fql, Query* query)
 	for (; it != vec_end(node_vec); ++it) {
 		Process* proc = (*it)->data;
 		if (proc->action__ == fql_read) {
-			Reader* reader = proc->proc_data;
+			Table* table = proc->proc_data;
+			Reader* reader = table->reader;
 			reader->max_col_idx = INT_MAX;
 		}
 	}
