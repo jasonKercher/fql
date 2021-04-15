@@ -125,7 +125,7 @@ uint64_t _hash_rtrim(HashMap* m, const char* key, int* n)
 		hash ^= (uint64_t) *keyptr;
 		if (*keyptr != ' ') {
 			last_not_space_hash = hash;
-			last_not_space_n = i;
+			last_not_space_n = i+1;
 		}
 	}
 
@@ -147,7 +147,7 @@ uint64_t _hash_nocase_rtrim(HashMap* m, const char* key, int* n)
 		hash ^= (uint64_t) *keyptr;
 		if (*keyptr != ' ') {
 			last_not_space_hash = hash;
-			last_not_space_n = i;
+			last_not_space_n = i+1;
 		}
 	}
 

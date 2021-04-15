@@ -28,7 +28,7 @@ void sets()
 
 START_TEST(test_hashmap_basic)
 {
-	m = hashmap_new_(int, test, 0);
+	m = hashmap_new_(int, 20, 0);
 	ck_assert_ptr_nonnull(m);
 
 	sets();
@@ -57,7 +57,7 @@ END_TEST
 
 START_TEST(test_hashmap_nocase)
 {
-	m = hashmap_new_(int, test, HASHMAP_PROP_NOCASE);
+	m = hashmap_new_(int, 20, HASHMAP_PROP_NOCASE);
 	ck_assert_ptr_nonnull(m);
 
 	sets();
@@ -86,7 +86,7 @@ END_TEST
 
 START_TEST(test_hashmap_rtrim)
 {
-	m = hashmap_new_(int, test, HASHMAP_PROP_RTRIM);
+	m = hashmap_new_(int, 20, HASHMAP_PROP_RTRIM);
 	ck_assert_ptr_nonnull(m);
 
 	sets();
@@ -115,7 +115,7 @@ END_TEST
 
 START_TEST(test_hashmap_nocase_rtrim)
 {
-	m = hashmap_new_(int, test, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
+	m = hashmap_new_(int, 20, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 	ck_assert_ptr_nonnull(m);
 
 	sets();
