@@ -31,9 +31,9 @@ struct hashmap {
 };
 typedef struct hashmap HashMap;
 
-struct hashmap* hashmap_new(size_t elem_size, size_t limit, unsigned props);
+struct hashmap* hashmap_new(unsigned elem_size, size_t limit, unsigned props);
 #define hashmap_new_(T_, limit_, props_) hashmap_new(sizeof(T_), limit_, props_)
-struct hashmap* hashmap_construct(struct hashmap*, size_t elem_size, size_t limit, unsigned props);
+struct hashmap* hashmap_construct(struct hashmap*, unsigned elem_size, size_t limit, unsigned props);
 #define hashmap_construct_(h_, T_, limit_, props_) hashmap_construct(h_, sizeof(T_), limit_, props_)
 void hashmap_free(struct hashmap*);
 void hashmap_destroy(struct hashmap*);
@@ -45,9 +45,9 @@ void* hashmap_nget(struct hashmap*, const char* key, int);
 
 typedef struct hashmap MultiMap;
 
-MultiMap* multimap_new(size_t elem_size, size_t limit, unsigned props);
+MultiMap* multimap_new(unsigned elem_size, size_t limit, unsigned props);
 #define multimap_new_(T_, limit_, props_) multimap_new(sizeof(T_), limit_, props_)
-MultiMap* multimap_construct(MultiMap*, size_t elem_size, size_t limit, unsigned props);
+MultiMap* multimap_construct(MultiMap*, unsigned elem_size, size_t limit, unsigned props);
 #define multimap_construct_(h_, T_, limit_, props_) multimap_construct(h_, sizeof(T_), limit_, props_)
 void multimap_free(MultiMap*);
 void multimap_destroy(MultiMap*);

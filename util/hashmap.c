@@ -6,11 +6,11 @@ const uint64_t _OFFSET = 14695981039346656037UL;
 const uint64_t _PRIME = 1099511628211UL;
 const size_t _NONE = (size_t) -1;
 
-unsigned long _next_power_of_2 (unsigned long n)
+size_t _next_power_of_2 (size_t n)
 {
-	unsigned long value  =  1;
+	size_t value = 1;
 	while  (value <  n) {
-		value = value  <<  1;
+		value = value << 1;
 	}
 	return  value;
 }
@@ -20,14 +20,14 @@ uint64_t _hash_nocase(HashMap* m, const char* key, int* n);
 uint64_t _hash_rtrim(HashMap* m, const char* key, int* n);
 uint64_t _hash_nocase_rtrim(HashMap* m, const char* key, int* n);
 
-HashMap* hashmap_new(size_t elem_size, size_t limit, unsigned props)
+HashMap* hashmap_new(unsigned elem_size, size_t limit, unsigned props)
 {
 	HashMap* new_map = NULL;
 	malloc_(new_map, sizeof(*new_map));
 	return hashmap_construct(new_map, elem_size, limit, props);
 }
 
-HashMap* hashmap_construct(HashMap* m, size_t elem_size, size_t limit, unsigned props)
+HashMap* hashmap_construct(HashMap* m, unsigned elem_size, size_t limit, unsigned props)
 {
 	limit = _next_power_of_2(limit);
 
@@ -212,14 +212,14 @@ void* hashmap_nget(HashMap* m, const char* key, int n)
 }
 
 /* elem size is Vec elements now */
-MultiMap* multimap_new(size_t elem_size, size_t limit, unsigned props)
+MultiMap* multimap_new(unsigned elem_size, size_t limit, unsigned props)
 {
 	MultiMap* new_map = NULL;
 	malloc_(new_map, sizeof(*new_map));
 	return multimap_construct(new_map, elem_size, limit, props);
 }
 
-MultiMap* multimap_construct(MultiMap* m, size_t elem_size, size_t limit, unsigned props)
+MultiMap* multimap_construct(MultiMap* m, unsigned elem_size, size_t limit, unsigned props)
 {
 	hashmap_construct_(m, Vec, limit, props);
 	m->elem_size = elem_size;  /* This parameter is the elem_size of
