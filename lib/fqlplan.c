@@ -295,6 +295,18 @@ void _operation(Plan* plan, Query* query, Dnode* entry)
 	}
 
 	plan->op_true->out[0] = entry;
+	Process* entry_proc = entry->data;
+	entry_proc->plan_id = plan->plan_id;
+
+	/* We are selecting in a subquery. The process
+	 * that reads from the subquery will read what
+	 * is needed and recycle the record back into 
+	 * the subquery.
+	 *
+	 * This reading process will take the place of
+	 * op_true so both op_true and op_false can be
+	 * marked as passive.
+	 */
 	Process* true_proc = plan->op_true->data;
 	true_proc->is_passive = true;
 	Process* false_proc = plan->op_false->data;

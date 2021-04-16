@@ -85,7 +85,7 @@ int fql_read_subquery(Dgraph* proc_graph, Process* proc)
 
 	fifo_consume(proc->fifo_in[0]);
 
-	/* TODO: query ID's for targeted recycling */
+	_recycle_recs(proc, *sub_recs, (*sub_recs)->size);
 
 	fifo_add(proc->fifo_out[0], recs);
 

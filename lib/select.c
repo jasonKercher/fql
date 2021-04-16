@@ -237,7 +237,8 @@ int select_record(Select* select, Vec* recs)
  */
 int select_subquery_record(Reader* reader, Record* rec)
 {
-	Query* subquery = reader->reader_data;
+	Vec* sub_recs = reader->reader_data;
+	//reader->table?
 	return FQL_GOOD;
 }
 
