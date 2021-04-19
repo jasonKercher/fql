@@ -7,6 +7,8 @@
 #include "column.h"
 #include "function.h"
 #include "query.h"
+#include "select.h"
+#include "table.h"
 #include "reader.h"
 #include "operation.h"
 #include "util/util.h"
@@ -202,7 +204,8 @@ int schema_resolve_source(struct fql_handle* fql, Table* table)
 
 	if (table->source_type == SOURCE_SUBQUERY) {
 		schema_resolve_query(fql, table->subquery);
-		table->schema = table->subquery->schema;
+		Select* select = table->subquery->op;
+		table->schema = select->schema;
 		table->reader->type = READ_SUBQUERY;
 	} else {
 
@@ -233,7 +236,7 @@ int schema_resolve_source(struct fql_handle* fql, Table* table)
 	record_construct(&rec, 0);
 	table->reader->max_col_idx = INT_MAX;
 	table->reader->get_record__(table->reader, &rec);
-	char* delim = reader_get_delim(table->reader);
+	char* delim = table_get_delim(table);
 	strncpy_(table->schema->delimiter, delim, DELIM_LEN_MAX);
 	table->reader->max_col_idx = 0;
 
@@ -425,12 +428,8 @@ int schema_resolve_query(struct fql_handle* fql, Query* query)
 			return FQL_FAIL;
 		}
 
-		if (i == 0 &&
-		    query->schema->name[0] == '\0' &&
-		    query->schema->delimiter[0] == '\0') {
-			strncpy_(query->schema->delimiter,
-				 table->schema->delimiter,
-				 DELIM_LEN_MAX);
+		if (i == 0 && !op_has_delim(query->op)) {
+			op_set_delim(query->op, table->schema->delimiter);
 		}
 
 		if (schema_assign_columns_limited(table->validation_list,
@@ -460,9 +459,9 @@ int schema_resolve(struct fql_handle* fql)
 	for (; query_node; query_node = query_node->next) {
 		Query* query = query_node->data;
 
-		strncpy_(query->schema->delimiter,
-			 fql->props.out_delim,
-			 DELIM_LEN_MAX);
+		if (fql->props.out_delim[0]) {
+			op_set_delim(query->op, fql->props.out_delim);
+		}
 
 		if (schema_resolve_query(fql, query)) {
 			return FQL_FAIL;

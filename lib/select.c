@@ -36,6 +36,16 @@ void select_free(Select* select)
 	free_(select);
 }
 
+_Bool select_has_delim(Select* select)
+{
+	return select->schema->delimiter[0];
+}
+
+void select_set_delim(Select* select, const char* delim)
+{
+	strncpy_(select->schema->delimiter, delim, DELIM_LEN_MAX);
+}
+
 void select_add_column(Select* select, Column* col)
 {
 	schema_add_column(select->schema, col);
@@ -86,7 +96,7 @@ void _expand_asterisks(Query* query, _Bool check_schema)
 		Table* table = vec_at(query->sources, (*col)->src_idx);
 
 		if (check_schema &&
-		    string_eq(table->schema->delimiter, query->schema->delimiter)) {
+		    string_eq(table->schema->delimiter, select->schema->delimiter)) {
 			continue;
 		}
 
@@ -118,7 +128,7 @@ void select_apply_process(Query* query, Plan* plan)
 	proc->proc_data = select;
 	string_strcpy(proc->action_msg, "SELECT ");
 
-	writer_set_delimiter(select->writer, query->schema->delimiter);
+	writer_set_delimiter(select->writer, select->schema->delimiter);
 
 	Vec* col_vec = select->schema->columns;
 	Column** col = vec_begin(col_vec);

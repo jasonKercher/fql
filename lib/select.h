@@ -28,6 +28,8 @@ struct select* select_new();
 struct select* select_construct(struct select*);
 void select_free(struct select*);
 
+_Bool select_has_delim(struct select*);
+void select_set_delim(struct select*, const char*);
 void select_add_column(struct select*, struct column*);
 void select_connect_api(struct query*, struct vec*);
 void select_apply_process(struct query*, struct fql_plan*);

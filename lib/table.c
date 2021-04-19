@@ -100,6 +100,22 @@ void table_destroy(Table* table)
 }
 
 
+char* table_get_delim(Table* table)
+{
+	Reader* reader = table->reader;
+	switch (reader->type) {
+	case READ_LIBCSV:
+		return libcsv_get_delim(reader->reader_data);
+	case READ_MMAPCSV:
+		return mmapcsv_get_delim(reader->reader_data);
+	case READ_SUBQUERY:
+		return table_get_delim(vec_begin(table->subquery->sources));
+	default:
+		fprintf(stderr, "%d: unknown read_type\n", reader->type);
+		return NULL;
+	}
+}
+
 
 
 struct hashjoin* hashjoin_new()

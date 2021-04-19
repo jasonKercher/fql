@@ -34,7 +34,6 @@ enum logic_mode {
 /** Query **/
 struct query {
 	struct fql_plan* plan;          /* execution plan */
-	struct schema* schema;          /* output table */
 	struct vec* sources;            /* struct source */
 	struct logicgroup* where;       /* struct logicgroup */
 	struct vec* groups;             /* struct expression */

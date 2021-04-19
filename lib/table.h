@@ -67,6 +67,7 @@ struct table* table_construct_subquery(struct table*,
 				       enum join_type);
 void table_free(struct table*);
 void table_destroy(struct table*);
+char* table_get_delim(struct table*);
 
 #define HASH_JOIN_MIN_SIZE 128
 

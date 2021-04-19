@@ -41,7 +41,6 @@ struct reader* reader_new();
 struct reader* reader_construct(struct reader*);
 void reader_free(struct reader*);
 
-char* reader_get_delim(struct reader*);
 void reader_assign(struct reader*, struct table*);
 
 /**

@@ -34,6 +34,32 @@ void op_preop(struct fql_handle* fql)
 	}
 }
 
+_Bool op_has_delim(void* op)
+{
+	enum op* type = op;
+
+	switch (*type) {
+	case OP_SELECT:
+		return select_has_delim(op);
+		break;
+	default:
+		return true;
+	}
+}
+
+void op_set_delim(void* op, const char* delim)
+{
+	enum op* type = op;
+
+	switch (*type) {
+	case OP_SELECT:
+		select_set_delim(op, delim);
+		break;
+	default:
+		;
+	}
+}
+
 void op_apply_process(Query* query, Plan* plan)
 {
 	enum op* type = query->op;

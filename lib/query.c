@@ -21,7 +21,6 @@ Query* query_construct(Query* query, int id)
 {
 	*query = (Query) {
 		 NULL                   /* plan */
-		,schema_new()           /* table */
 		,vec_new_(Table)        /* sources */
 		,NULL                   /* where */
 		,vec_new_(Column*)      /* groups */
@@ -58,7 +57,6 @@ void query_free(void* generic_query)
 	logicgroup_free(query->where);
 	vec_free(query->groups);
 	queue_free_data(&query->having);
-	schema_free(query->schema);
 	free_(query->limit);
 	free_(query->expr);
 	free_(query);
