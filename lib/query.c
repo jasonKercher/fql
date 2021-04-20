@@ -9,15 +9,15 @@
 #include "util/dgraph.h"
 #include "util/util.h"
 
-Query* query_new(int id, _Bool is_subquery)
+Query* query_new(int id)
 {
 	Query* new_query = NULL;
 	malloc_(new_query, sizeof(*new_query));
 
-	return query_construct(new_query, id, is_subquery);
+	return query_construct(new_query, id);
 }
 
-Query* query_construct(Query* query, int id, _Bool is_subquery)
+Query* query_construct(Query* query, int id)
 {
 	*query = (Query) {
 		 NULL                   /* plan */
@@ -38,7 +38,6 @@ Query* query_construct(Query* query, int id, _Bool is_subquery)
 		,MODE_UNDEFINED         /* mode */
 		,LOGIC_UNDEFINED        /* logic_mode */
 		,JOIN_FROM              /* join */
-		,is_subquery            /* is_subquery */
 	};
 
 	return query;

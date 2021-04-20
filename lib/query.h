@@ -54,12 +54,11 @@ struct query {
 	enum mode mode;
 	enum logic_mode logic_mode;
 	enum join_type join;
-	_Bool is_subquery;
 };
 typedef struct query Query;
 
-struct query* query_new(int id, _Bool is_subquery);
-struct query* query_construct(struct query*, int id, _Bool is_subquery);
+struct query* query_new(int id);
+struct query* query_construct(struct query*, int id);
 void query_free(void*);
 
 int query_add_constant(Query*, const char*, int);

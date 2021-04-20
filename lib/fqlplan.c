@@ -448,8 +448,8 @@ Plan* plan_build(Query* query, Dnode* entry)
 	_clear_passive(plan);
 	/* Reset root vec after passive removed */
 	dgraph_get_roots(plan->processes);
-	
-	if (query->is_subquery) {
+
+	if (query->query_id != 0) { /* is subquery */
 		return plan;
 	}
 	_activate_procs(plan);

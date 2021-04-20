@@ -210,7 +210,7 @@ void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext * ctx) { 
 
 void ListenerInterface::enterSql_clause(TSqlParser::Sql_clauseContext * ctx)
 {
-	_query = query_new(0, false);
+	_query = query_new(0);
 	queue_enqueue(&_fql->query_list, _query);
 	stack_push(&_query_stack, _query);
 }
@@ -366,7 +366,7 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 	 * If it is, this is a sub-query
 	 */
 	if (_query->op != NULL) {
-		_query = query_new(++_query_id, true);
+		_query = query_new(++_query_id);
 		stack_push(&_query_stack, _query);
 	}
 
