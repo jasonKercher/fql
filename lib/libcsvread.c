@@ -31,8 +31,8 @@ int libcsv_get_record(Reader* reader, Record* rec)
 		return EOF;
 	}
 
-	/* This should really never change unless we
-	 * want this to mean something (like NULLs).
+	/* This should really never change...
+	 * _guess_row_count relies on this
 	 */
 	vec_resize(rec->fields, rec->libcsv_rec->size);
 

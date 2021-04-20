@@ -252,12 +252,28 @@ int select_record(Select* select, Vec* recs)
  */
 int select_subquery_record(Reader* reader, Record* rec)
 {
-	Vec* sub_recs = reader->reader_data;
-	//reader->table?
+	Schema* sub_schema = reader->reader_data;
+	Vec* sub_col_vec = sub_schema->columns;
+	Vec* sub_recs = reader->subquery_recs;
+
+	int i = 0;
+	Column** sub_cols = vec_begin(sub_col_vec);
+
+	for (; i < sub_col_vec->size; ++i) {
+		StringView sv;
+		column_get_stringview(&sv, sub_cols[i], sub_recs);
+		String* s = vec_at(rec->_field_data, i);
+		string_copy_from_stringview(s, &sv);
+		StringView* rec_sv = vec_at(rec->fields, i);
+		rec_sv->data = s->data;
+		rec_sv->len = s->size;
+	}
+
 	return FQL_GOOD;
 }
 
+/* TODO */
 int select_subquery_reset(Reader* reader)
 {
-	return FQL_GOOD;
+	return FQL_FAIL;
 }

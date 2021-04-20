@@ -36,6 +36,7 @@ Process* process_construct(Process* proc, const char* action, Plan* plan)
 		,NULL                           /* root_group */
 		,plan->source_count             /* fifo_width */
 		,plan->plan_id                  /* plan_id */
+		,0                              /* subquery_plan_id */
 		,0                              /* root_fifo */
 		,false                          /* is_secondary */
 		,false                          /* is_passive */
@@ -75,14 +76,28 @@ void process_activate(Dnode* proc_node, Plan* plan)
 {
 	Process* proc = proc_node->data;
 	unsigned graph_size = plan->processes->nodes->size;
-	proc->root_group = vec_at(plan->recycle_groups, proc->plan_id);
+	_Bool is_subquery = proc->subquery_plan_id > 0;
+	if (is_subquery) {
+		proc->root_group = vec_at(plan->recycle_groups, proc->subquery_plan_id);
+	} else {
+		proc->root_group = vec_at(plan->recycle_groups, proc->plan_id);
+	}
 
 	if (!proc_node->is_root) {
 		proc->fifo_in[0] = fifo_new_(Vec*, FIFO_SIZE);
 		return;
 	}
 
-	vec_push_back(proc->root_group, &proc_node);
+	/* lol subquery hack
+	 * proc->root_group is subquery root
+	 * However, proc is a root of the upper query
+	 */
+	Vec* true_root_group = proc->root_group;
+	if (is_subquery) {
+		true_root_group = vec_at(plan->recycle_groups, proc->plan_id);
+	}
+
+	vec_push_back(true_root_group, &proc_node);
 	if (proc->root_fifo == 1) {
 		proc->fifo_in[0] = fifo_new_(Vec*, FIFO_SIZE);
 	}
@@ -94,6 +109,10 @@ void process_activate(Dnode* proc_node, Plan* plan)
 		Table* table = proc->proc_data;
 		Reader* reader = table->reader;
 		field_count = reader->max_col_idx + 1;
+	}
+	if (proc->action__ == &fql_read_subquery) {
+		Table* table = proc->proc_data;
+		field_count = table->schema->columns->size;
 	}
 
 	proc->records = vec_new_(Vec);
@@ -109,8 +128,7 @@ void process_activate(Dnode* proc_node, Plan* plan)
 		vec_resize(new_recs, proc->fifo_width);
 
 		Record** new_rec = vec_back(new_recs);
-		*new_rec = record_new(i);
-		vec_resize((*new_rec)->fields, field_count);
+		*new_rec = record_new(i, field_count, is_subquery);
 
 		Vec** recs = vec_at(buf, i);
 		*recs = new_recs;

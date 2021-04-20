@@ -23,6 +23,7 @@ struct process {
 	Vec* root_group;       /* Group of recyclable roots for this process */
 	int fifo_width;        /* Number of sources at this step */
 	int plan_id;           /* Plan ID for root grouping */
+	int subquery_plan_id;  /* plan ID for subquery */
 	int root_fifo;         /* Signify which fifo_inx is the root */
 	_Bool is_secondary;    /* fifo_out should link to a fifo_in1 */
 	_Bool is_passive;      /* denotes process that does nothing */

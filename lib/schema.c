@@ -247,7 +247,7 @@ int schema_resolve_source(struct fql_handle* fql, Table* table)
 	}
 
 	Record rec;
-	record_construct(&rec, 0);
+	record_construct(&rec, 0, 0, false);
 	table->reader->max_col_idx = INT_MAX;
 	table->reader->get_record__(table->reader, &rec);
 	char* delim = table_get_delim(table);

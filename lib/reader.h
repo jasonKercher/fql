@@ -28,6 +28,7 @@ enum read_type {
 struct reader {
 	enum read_type type;
 	void* reader_data;
+	struct vec* subquery_recs;
 	read_fn get_record__;
 	generic_data_fn free__;
 	reset_fn reset__;

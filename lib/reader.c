@@ -26,6 +26,7 @@ Reader* reader_construct(Reader* reader)
 	*reader = (Reader) {
 		 READ_UNDEFINED /* type */
 		,NULL           /* reader_data */
+		,NULL		/* subquery_recs */
 		,NULL           /* get_record__ */
 		,NULL           /* free__ */
 		,NULL           /* reset__ */
@@ -79,7 +80,7 @@ void reader_assign(Reader* reader, Table* table)
 		//reader->free__ = &query_free;
 		reader->get_record__ = &select_subquery_record;
 		reader->reset__ = &select_subquery_reset;
-		// subquery_init ?
+		reader->reader_data = table->schema;
 		break;
 	default:
 		fprintf(stderr, "%d: unknown read_type\n", reader->type);

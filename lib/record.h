@@ -9,6 +9,7 @@
 
 struct record {
 	struct vec* fields;
+	struct vec* _field_data;
 	struct csv_record* libcsv_rec;
 	String* rec_cpy;
 	StringView rec_raw;
@@ -18,8 +19,8 @@ struct record {
 };
 typedef struct record Record;
 
-struct record* record_new(unsigned idx);
-struct record* record_construct(struct record*, unsigned idx);
+struct record* record_new(unsigned idx, unsigned n, _Bool owns_recs);
+struct record* record_construct(struct record*, unsigned idx, unsigned n, _Bool owns_recs);
 void record_free(struct record*);
 void record_destroy(struct record*);
 

@@ -65,11 +65,11 @@ int fql_read_subquery(Dgraph* proc_graph, Process* proc)
 {
 	Table* table = proc->proc_data;
 	Reader* reader = table->reader;
-	Vec** recs = fifo_peek(proc->fifo_in[0]);
+	Vec** recs = fifo_peek(proc->fifo_in[1]);
 	Record** rec = vec_back(*recs);
 
-	Vec** sub_recs = fifo_get(proc->fifo_in[1]);
-	reader->reader_data = *sub_recs;
+	Vec** sub_recs = fifo_get(proc->fifo_in[0]);
+	reader->subquery_recs = *sub_recs;
 
 	int ret = reader->get_record__(reader, *rec);
 
@@ -83,7 +83,7 @@ int fql_read_subquery(Dgraph* proc_graph, Process* proc)
 		return 0;
 	}
 
-	fifo_consume(proc->fifo_in[0]);
+	fifo_consume(proc->fifo_in[1]);
 
 	_recycle_recs(proc, *sub_recs, (*sub_recs)->size);
 

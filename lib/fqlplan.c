@@ -206,10 +206,12 @@ void _from(Plan* plan, Query* query)
 	} else {
 		from_proc = process_new("subquery select", plan);
 		from_proc->action__ = &fql_read_subquery;
+		from_proc->root_fifo = 1;
 		from_node = dgraph_add_data(plan->processes, from_proc);
+		from_node->is_root = true;
 		Plan* subquery_plan = plan_build(table_iter->subquery, from_node);
+		from_proc->subquery_plan_id = subquery_plan->plan_id;
 		dgraph_consume(plan->processes, subquery_plan->processes);
-		//vec_push_back(plan->recycle_groups, subquery_plan->
 	}
 	table_iter->read_proc = from_proc;
 	from_proc->proc_data = table_iter;
@@ -218,7 +220,7 @@ void _from(Plan* plan, Query* query)
 
 	plan->current->out[0] = from_node;
 	plan->current = from_node;
-	Dnode* join_proc_node = NULL;
+	Dnode* join_node = NULL;
 
 	for (++table_iter; table_iter != vec_end(query->sources); ++table_iter) {
 		Process* join_proc = NULL;
@@ -239,18 +241,18 @@ void _from(Plan* plan, Query* query)
 			Dnode* read_node = dgraph_add_data(plan->processes, read_proc);
 			read_node->is_root = true;
 
-			join_proc_node = dgraph_add_data(plan->processes, join_proc);
-			read_node->out[0] = join_proc_node;
+			join_node = dgraph_add_data(plan->processes, join_proc);
+			read_node->out[0] = join_node;
 		} else {
 			join_proc = _new_join_proc(table_iter->join_type, "cartesian", plan);
 			join_proc->action__ = &fql_cartesian_join;
-			join_proc_node = dgraph_add_data(plan->processes, join_proc);
-			join_proc_node->is_root = true;
 			join_proc->root_fifo = 1;
+			join_node = dgraph_add_data(plan->processes, join_proc);
+			join_node->is_root = true;
 		}
 		join_proc->proc_data = table_iter;
-		plan->current->out[0] = join_proc_node;
-		plan->current = join_proc_node;
+		plan->current->out[0] = join_node;
+		plan->current = join_node;
 
 		if (table_iter->condition != NULL) {
 			_logicgroup_process(plan, table_iter->condition, is_hash_join);
@@ -289,10 +291,7 @@ void _operation(Plan* plan, Query* query, Dnode* entry)
 		op_apply_process(query, plan);
 		return;
 	}
-
 	plan->op_true->out[0] = entry;
-	Process* entry_proc = entry->data;
-	entry_proc->plan_id = plan->plan_id;
 
 	/* We are selecting in a subquery. The process
 	 * that reads from the subquery will read what
