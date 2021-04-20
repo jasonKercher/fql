@@ -24,6 +24,7 @@ void op_preop(struct fql_handle*);
 _Bool op_has_delim(void*);
 void op_set_delim(void*, const char*);
 void op_apply_process(struct query*, struct fql_plan*);
+void op_finalize(struct query*);
 void op_free(void* op);
 
 #ifdef __cplusplus

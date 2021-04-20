@@ -36,5 +36,6 @@ int schema_resolve(struct fql_handle*);
 
 void schema_add_column(struct schema*, struct column*);
 void schema_apply_column_alias(struct schema* schema, const char* alias);
+void schema_finalize(struct schema*);
 
 #endif /* SCHEMA_H */

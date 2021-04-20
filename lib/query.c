@@ -9,15 +9,15 @@
 #include "util/dgraph.h"
 #include "util/util.h"
 
-Query* query_new(int id)
+Query* query_new(int id, _Bool is_subquery)
 {
 	Query* new_query = NULL;
 	malloc_(new_query, sizeof(*new_query));
 
-	return query_construct(new_query, id);
+	return query_construct(new_query, id, is_subquery);
 }
 
-Query* query_construct(Query* query, int id)
+Query* query_construct(Query* query, int id, _Bool is_subquery)
 {
 	*query = (Query) {
 		 NULL                   /* plan */
@@ -38,6 +38,7 @@ Query* query_construct(Query* query, int id)
 		,MODE_UNDEFINED         /* mode */
 		,LOGIC_UNDEFINED        /* logic_mode */
 		,JOIN_FROM              /* join */
+		,is_subquery            /* is_subquery */
 	};
 
 	return query;
@@ -224,6 +225,11 @@ void query_apply_table_alias(Query* query, const char* alias)
 	Table* table = vec_back(query->sources);
 	string_strcpy(&table->alias, alias);
 }
+
+//void query_select_finalize(Query* query)
+//{
+//	select_finalize(query->op);
+//}
 
 void _add_function(Query* query, Function* func, enum field_type type)
 {

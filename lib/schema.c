@@ -61,6 +61,23 @@ void schema_apply_column_alias(Schema* schema, const char* alias)
 	string_strcpy(&(*col)->alias, alias);
 }
 
+void schema_finalize(Schema* schema)
+{
+	/* This is a separate step because between adding
+	 * a new column and now, we could have applied a
+	 * new alias to the column. We don't care about a
+	 * column name once it has an alias.
+	 */
+	schema->col_map = hashmap_new_(Column*,
+				       schema->columns->size * 2,
+				       HASHMAP_PROP_NOCASE);
+
+	Column** it = vec_begin(schema->columns);
+	for (; it != vec_end(schema->columns); ++it) {
+		hashmap_set(schema->col_map, (*it)->alias.data, it);
+	}
+}
+
 int schema_resolve_file(Table* table)
 {
 	if (table->source_type == SOURCE_SUBQUERY) {
@@ -170,8 +187,6 @@ success_return:
 
 void schema_assign_header(Table* table, Record* rec)
 {
-	table->schema->col_map = hashmap_new_(Column*, rec->fields->size * 2, HASHMAP_PROP_NOCASE);
-
 	int i = 0;
 	StringView* it = vec_begin(rec->fields);
 	for (; it != vec_end(rec->fields); ++it) {
@@ -184,11 +199,10 @@ void schema_assign_header(Table* table, Record* rec)
 		new_col->table = table;
 		new_col->field_type = FIELD_STRING;
 
-		/* add to hash map for easy searching */
-		hashmap_set(table->schema->col_map, col_str.data, &new_col);
-
 		string_destroy(&col_str);
 	}
+
+	schema_finalize(table->schema);
 }
 
 int schema_resolve_source(struct fql_handle* fql, Table* table)
@@ -449,6 +463,8 @@ int schema_resolve_query(struct fql_handle* fql, Query* query)
 	if (schema_assign_columns(op_cols, sources)) {
 		return FQL_FAIL;
 	}
+
+	op_finalize(query);
 
 	return FQL_GOOD;
 }

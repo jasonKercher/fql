@@ -60,6 +60,18 @@ void op_set_delim(void* op, const char* delim)
 	}
 }
 
+void op_finalize(Query* query)
+{
+	enum op* type = query->op;
+
+	switch (*type) {
+	case OP_SELECT:
+		select_finalize(query->op, query);
+		break;
+	default:
+		;
+	}
+}
 void op_apply_process(Query* query, Plan* plan)
 {
 	enum op* type = query->op;

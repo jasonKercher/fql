@@ -60,10 +60,6 @@ Plan* plan_construct(Plan* plan, Query* query)
 		}
 	}
 
-	/* source_count is a temporary variable used to keep track
-	 * of the current number of sources as the plan is built.
-	 * Setting the member (source_count) to 0 is correct here.
-	 */
 	Process* start = process_new("start", plan);
 	start->is_passive = true;
 	plan->current = dgraph_add_data(plan->processes, start);
@@ -101,7 +97,6 @@ void plan_destroy(void* generic_plan)
 
 /* build process nodes from logic graph
  * assign processes for true and false
- * return beginning process
  */
 void _logic_to_process(Process* logic_proc, LogicGroup* lg)
 {
@@ -214,6 +209,7 @@ void _from(Plan* plan, Query* query)
 		from_node = dgraph_add_data(plan->processes, from_proc);
 		Plan* subquery_plan = plan_build(table_iter->subquery, from_node);
 		dgraph_consume(plan->processes, subquery_plan->processes);
+		//vec_push_back(plan->recycle_groups, subquery_plan->
 	}
 	table_iter->read_proc = from_proc;
 	from_proc->proc_data = table_iter;
@@ -300,7 +296,7 @@ void _operation(Plan* plan, Query* query, Dnode* entry)
 
 	/* We are selecting in a subquery. The process
 	 * that reads from the subquery will read what
-	 * is needed and recycle the record back into 
+	 * is needed and recycle the record back into
 	 * the subquery.
 	 *
 	 * This reading process will take the place of
@@ -317,7 +313,7 @@ void _limit(Plan* plan, Query* query) { }
 
 /* In an effort to make building of the process graph easier
  * passive nodes are used as a sort of link between the steps.
- * Passive nodes always point to the next node on out[0]
+ * TODO: Fix my shit design
  */
 void _clear_passive(Plan* plan)
 {
@@ -338,7 +334,6 @@ void _clear_passive(Plan* plan)
 		}
 
 		/* Check branch 1 */
-		/* TODO: Fix my shit design */
 		_Bool first_pass = true;
 		while (nodes[i]->out[1] != NULL) {
 			Process* proc = nodes[i]->out[1]->data;
@@ -422,11 +417,6 @@ void _make_pipes(Plan* plan)
 			proc->fifo_out[0] = (proc->is_secondary) ?
 					    proc0->fifo_in[1] :
 					    proc0->fifo_in[0];
-			//if (proc->fifo_out[0] == NULL) {
-			//        fprintf (stderr,
-			//		 "fifo missing for `%s'\n",
-			//		 (char*)proc0->action_msg->data);
-			//}
 		}
 
 		if ((*nodes)->out[1] != NULL) {
@@ -434,11 +424,6 @@ void _make_pipes(Plan* plan)
 			proc->fifo_out[1] = (proc->is_secondary) ?
 					    proc1->fifo_in[1] :
 					    proc1->fifo_in[0];
-			//if (proc->fifo_out[1] == NULL) {
-			//        fprintf (stderr,
-			//		 "fifo missing for `%s'\n",
-			//		 (char*)proc1->action_msg->data);
-			//}
 		}
 	}
 
@@ -463,6 +448,10 @@ Plan* plan_build(Query* query, Dnode* entry)
 	_clear_passive(plan);
 	/* Reset root vec after passive removed */
 	dgraph_get_roots(plan->processes);
+	
+	if (query->is_subquery) {
+		return plan;
+	}
 	_activate_procs(plan);
 	_make_pipes(plan);
 	_update_pipes(plan->processes);

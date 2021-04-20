@@ -81,7 +81,7 @@ int _expand_asterisk(Vec* col_vec, Table* table, unsigned src_idx, unsigned* col
 	return table->schema->columns->size;
 }
 
-void _expand_asterisks(Query* query, _Bool check_schema)
+void _expand_asterisks(Query* query, _Bool force_expansion)
 {
 	Select* select = query->op;
 	Vec* col_vec = select->schema->columns;
@@ -95,7 +95,8 @@ void _expand_asterisks(Query* query, _Bool check_schema)
 
 		Table* table = vec_at(query->sources, (*col)->src_idx);
 
-		if (check_schema &&
+		if (!force_expansion &&
+		    !query->is_subquery &&
 		    string_eq(table->schema->delimiter, select->schema->delimiter)) {
 			continue;
 		}
@@ -115,7 +116,7 @@ void select_connect_api(Query* query, Vec* api)
 {
 	Select* select = query->op;
 	select->select__ = &select_record_api;
-	_expand_asterisks(query, false);
+	_expand_asterisks(query, true);
 	vec_resize(api, select->schema->columns->size);
 	select->api = api;
 }
@@ -139,8 +140,6 @@ void select_apply_process(Query* query, Plan* plan)
 		column_cat_description(*col, proc->action_msg);
 	}
 
-	_expand_asterisks(query, true);
-
 	proc = plan->op_false->data;
 	proc->is_passive = true;
 }
@@ -148,6 +147,12 @@ void select_apply_process(Query* query, Plan* plan)
 void select_apply_column_alias(Select* select, const char* alias)
 {
 	schema_apply_column_alias(select->schema, alias);
+}
+
+void select_finalize(Select* select, Query* query)
+{
+	_expand_asterisks(query, false);
+	schema_finalize(select->schema);
 }
 
 void select_preop(Select* select, Query* query)
