@@ -171,6 +171,9 @@ int fql_exec_all_plans(struct fql_handle* fql)
 int fql_exec(struct fql_handle* fql, const char* query_str)
 {
 	int plan_count = fql_make_plans(fql, query_str);
+	if (plan_count == FQL_FAIL) {
+		return FQL_FAIL;
+	}
 	int ret = 0;
 	if (!fql->props.dry_run) {
 		ret = fql_exec_plans(fql, plan_count);
@@ -194,7 +197,9 @@ int fql_make_plans(struct fql_handle* fql, const char* query_str)
 		return FQL_FAIL;
 	}
 
-	build_plans(fql->query_list);
+	if (build_plans(fql->query_list)) {
+		return FQL_FAIL;
+	}
 
 	if (fql->props.print_plan) {
 		print_plans(fql->query_list);

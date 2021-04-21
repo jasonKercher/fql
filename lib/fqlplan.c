@@ -181,10 +181,11 @@ Process* _new_join_proc(enum join_type type, const char* algorithm, Plan* plan)
 	return process_new(buffer, plan);
 }
 
-void _from(Plan* plan, Query* query)
+/* Lol */
+int _from(Plan* plan, Query* query)
 {
 	if (query->sources->size == 0) {
-		return;
+		return FQL_GOOD;
 	}
 
 	String action_msg;
@@ -210,6 +211,9 @@ void _from(Plan* plan, Query* query)
 		from_node = dgraph_add_data(plan->processes, from_proc);
 		from_node->is_root = true;
 		Plan* subquery_plan = plan_build(table_iter->subquery, from_node);
+		if (subquery_plan == NULL) {
+			return FQL_FAIL;
+		}
 		from_proc->subquery_plan_id = subquery_plan->plan_id;
 		dgraph_consume(plan->processes, subquery_plan->processes);
 	}
@@ -223,6 +227,14 @@ void _from(Plan* plan, Query* query)
 	Dnode* join_node = NULL;
 
 	for (++table_iter; table_iter != vec_end(query->sources); ++table_iter) {
+
+		/* TODO */
+		if (table_iter->source_type == SOURCE_SUBQUERY) {
+			fputs("currently cannot join with a"
+			      "sub-query on the right side\n", stderr);
+			return FQL_FAIL;
+		}
+
 		Process* join_proc = NULL;
 		_Bool is_hash_join = (table_iter->condition->join_logic != NULL);
 		if (is_hash_join) {
@@ -231,14 +243,34 @@ void _from(Plan* plan, Query* query)
 			table_hash_join_init(table_iter);
 			process_add_second_input(join_proc);
 
-			string_sprintf(&action_msg, "%s: %s", table_iter->reader->file_name.data, "mmap read");
-			Process* read_proc = process_new(action_msg.data, plan);
+			Process* read_proc = NULL;
+			Dnode* read_node = NULL;
+
+			//if (table_iter->source_type == SOURCE_TABLE) {
+				string_sprintf(&action_msg,
+					       "%s: %s",
+					       table_iter->reader->file_name.data,
+					       "mmap read");
+
+				read_proc = process_new(action_msg.data, plan);
+				read_proc->action__ = &fql_read;
+				read_node = dgraph_add_data(plan->processes, read_proc);
+			//} else {
+			//	read_proc = process_new("subquery select", plan);
+			//	read_proc->action__ = &fql_read_subquery;
+			//	read_proc->root_fifo = 1;
+			//	read_node = dgraph_add_data(plan->processes, read_proc);
+			//	read_node->is_root = true;
+			//	Plan* subquery_plan = plan_build(table_iter->subquery, read_node);
+			//	if (subquery_plan == NULL) {
+			//		return FQL_FAIL;
+			//	}
+			//	read_proc->subquery_plan_id = subquery_plan->plan_id;
+			//	dgraph_consume(plan->processes, subquery_plan->processes);
+			//}
 			table_iter->read_proc = read_proc;
 			read_proc->proc_data = table_iter;
-			read_proc->action__ = &fql_read;
 			read_proc->is_secondary = true;
-
-			Dnode* read_node = dgraph_add_data(plan->processes, read_proc);
 			read_node->is_root = true;
 
 			join_node = dgraph_add_data(plan->processes, join_proc);
@@ -260,6 +292,8 @@ void _from(Plan* plan, Query* query)
 	}
 
 	string_destroy(&action_msg);
+
+	return FQL_GOOD;
 }
 
 void _where(Plan* plan, Query* query)
@@ -434,7 +468,10 @@ Plan* plan_build(Query* query, Dnode* entry)
 	Plan* plan = query->plan;
 
 	/* Query */
-	_from(plan, query);
+	if (_from(plan, query)) {
+		plan_free(plan);
+		return NULL;
+	}
 	_where(plan, query);
 	_group(plan, query);
 	_having(plan, query);
@@ -464,10 +501,12 @@ int build_plans(Queue* query_list)
 
 	for (; node; node = node->next) {
 		Query* query = node->data;
-		plan_build(query, NULL);
+		if (plan_build(query, NULL) == NULL) {
+			return FQL_FAIL;
+		}
 	}
 
-	return 0;
+	return FQL_GOOD;
 }
 
 void _col_sep(int n)

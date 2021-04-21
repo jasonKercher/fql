@@ -53,7 +53,7 @@ void process_node_free(Dnode* proc_node)
 
 void process_free(Process* proc, _Bool is_root)
 {
-	if (is_root) {
+	if (is_root && proc->records != NULL) {
 		Vec* it = vec_begin(proc->records);
 		for (; it != vec_end(proc->records); ++it) {
 			Record** rec = vec_back(it);
