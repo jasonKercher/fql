@@ -5,6 +5,7 @@
 #include "reader.h"
 #include "util/util.h"
 
+#define SUBQUERY_HASH_TABLE_INITIAL_SIZE 512
 
 Table* table_new(char* name,
 		 const char* alias,
@@ -148,6 +149,11 @@ void hashjoin_free(struct hashjoin* join)
 
 size_t _guess_row_count(Table* table)
 {
+	/* Just allow the hash map to grow with it */
+	if (table->subquery != NULL) {
+		return SUBQUERY_HASH_TABLE_INITIAL_SIZE / 2;
+	}
+
 	size_t guess = 0;
 	size_t total_length = 0;
 

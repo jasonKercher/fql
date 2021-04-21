@@ -96,7 +96,7 @@ void _expand_asterisks(Query* query, _Bool force_expansion)
 		Table* table = vec_at(query->sources, (*col)->src_idx);
 
 		if (table->subquery == NULL  /* Is a subquery source */
-		    && force_expansion
+		    && !force_expansion
 		    && query->query_id == 0  /* Is in main query */
 		    && string_eq(table->schema->delimiter, select->schema->delimiter)) {
 			continue;
