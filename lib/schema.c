@@ -72,9 +72,11 @@ void schema_finalize(Schema* schema)
 				       schema->columns->size * 2,
 				       HASHMAP_PROP_NOCASE);
 
-	Column** it = vec_begin(schema->columns);
-	for (; it != vec_end(schema->columns); ++it) {
-		hashmap_set(schema->col_map, (*it)->alias.data, it);
+	int i = 0;
+	Column** col = vec_begin(schema->columns);
+	for (; i < schema->columns->size; ++i) {
+		col[i]->location = i;
+		hashmap_set(schema->col_map, col[i]->alias.data, &col[i]);
 	}
 }
 
