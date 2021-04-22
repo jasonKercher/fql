@@ -28,6 +28,7 @@ struct process {
 	_Bool is_secondary;    /* fifo_out should link to a fifo_in1 */
 	_Bool is_passive;      /* denotes process that does nothing */
 	_Bool is_enabled;      /* enabled means it still has data to process */
+	_Bool is_const;        /* Should only run 1 time */
 };
 typedef struct process Process;
 

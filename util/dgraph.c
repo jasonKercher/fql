@@ -102,6 +102,10 @@ void* dgraph_remove(Dgraph* graph, Dnode** node)
 
 Dnode** _guess_root(Dgraph* graph)
 {
+	if (vec_empty(graph->nodes)) {
+		return NULL;
+	}
+
 	/* reset */
 	Dnode** it = vec_begin(graph->nodes);
 	for (; it != vec_end(graph->nodes); ++it) {

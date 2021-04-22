@@ -41,6 +41,7 @@ Process* process_construct(Process* proc, const char* action, Plan* plan)
 		,false                          /* is_secondary */
 		,false                          /* is_passive */
 		,true                           /* is_enabled */
+		,false                          /* is_const */
 	};
 
 	return proc;
@@ -100,6 +101,9 @@ void process_activate(Dnode* proc_node, Plan* plan)
 	vec_push_back(true_root_group, &proc_node);
 	if (proc->root_fifo == 1) {
 		proc->fifo_in[0] = fifo_new_(Vec*, FIFO_SIZE);
+		if (proc->is_const) {
+			fifo_advance(proc->fifo_in[0]);
+		}
 	}
 
 	proc->fifo_in[proc->root_fifo] = fifo_new_(Vec*, FIFO_SIZE * graph_size);
@@ -137,8 +141,7 @@ void process_activate(Dnode* proc_node, Plan* plan)
 	/* TODO: once we stop hard coding fifo size,
 	 *       this if block can go.
 	 */
-	if (proc->action__ != &fql_read
-	 && proc->action__ != &fql_read_subquery) {
+	if (proc->is_const) {
 		fifo_advance(proc->fifo_in[proc->root_fifo]);
 		return;
 	}

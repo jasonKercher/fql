@@ -462,6 +462,15 @@ void _make_pipes(Plan* plan)
 
 }
 
+void _mark_roots_const(Vec* roots)
+{
+	Dnode** it = vec_begin(roots);
+	for (; it != vec_end(roots); ++it) {
+		Process* proc = (*it)->data;
+		proc->is_const = true;
+	}
+}
+
 Plan* plan_build(Query* query, Dnode* entry)
 {
 	query->plan = plan_new(query);
@@ -482,8 +491,18 @@ Plan* plan_build(Query* query, Dnode* entry)
 	//_print_plan(plan);
 
 	_clear_passive(plan);
-	/* Reset root vec after passive removed */
+
+	if (vec_empty(plan->processes->nodes)) {
+		Process* entry_proc = entry->data;
+		entry_proc->is_const = true;
+		return plan;
+	}
+
 	dgraph_get_roots(plan->processes);
+
+	if (vec_empty(query->sources)) {
+		_mark_roots_const(plan->processes->_roots);
+	}
 
 	if (query->query_id != 0) { /* is subquery */
 		return plan;

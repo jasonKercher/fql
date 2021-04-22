@@ -1,5 +1,5 @@
-TESTS = check_hashmap check_constants check_read check_logic check_join
-check_PROGRAMS = check_hashmap check_constants check_read check_logic check_join
+TESTS = check_hashmap check_constants check_read check_logic check_join check_subquery
+check_PROGRAMS = check_hashmap check_constants check_read check_logic check_join check_subquery
 
 check_hashmap_SOURCES = $(top_builddir)/util/hashmap.h check_hashmap.c
 check_hashmap_CFLAGS = @CHECK_CFLAGS@
@@ -22,6 +22,12 @@ check_logic_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_logic.c
 check_logic_CFLAGS = @CHECK_CFLAGS@
 check_logic_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+
+check_subquery_SOURCES = $(top_builddir)/lib/include/fql.h \
+			check_common.h check_common.c \
+			check_subquery.c
+check_subquery_CFLAGS = @CHECK_CFLAGS@
+check_subquery_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 
 check_join_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_common.h check_common.c \
