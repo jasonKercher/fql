@@ -64,19 +64,24 @@ void schema_apply_column_alias(Schema* schema, const char* alias)
 void schema_finalize(Schema* schema)
 {
 	/* This is a separate step because between adding
-	 * a new column and now, we could have applied a
+	 * a new column and _here_, we could have applied a
 	 * new alias to the column. We don't care about a
 	 * column name once it has an alias.
 	 */
 	schema->col_map = hashmap_new_(Column*,
-				       schema->columns->size * 2,
-				       HASHMAP_PROP_NOCASE);
+	                               schema->columns->size * 2,
+	                               HASHMAP_PROP_NOCASE);
 
 	int i = 0;
 	Column** col = vec_begin(schema->columns);
 	for (; i < schema->columns->size; ++i) {
 		col[i]->location = i;
 		hashmap_set(schema->col_map, col[i]->alias.data, &col[i]);
+	}
+
+	if (schema->delimiter[0] == '\0') {
+		schema->delimiter[0] = ',';
+		schema->delimiter[1] = '\0';
 	}
 }
 

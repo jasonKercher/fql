@@ -19,7 +19,7 @@ START_TEST(test_subquery_const)
 
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 1);
-	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_int_eq(fields[0].type, FQL_INT);
 	ck_assert_int_eq(fields[0].data.i, 7);
 
 	rows = fql_step(fql, &fields);
