@@ -336,6 +336,7 @@ int _asterisk_resolve(Vec* columns, Vec* sources)
 {
 	int i = 0;
 	for (; i < columns->size; ++i) {
+		int col_idx = i;
 		Column** col = vec_at(columns, i);
 		if ((*col)->expr != EXPR_ASTERISK) {
 			continue;
@@ -350,6 +351,7 @@ int _asterisk_resolve(Vec* columns, Vec* sources)
 					Column* new_col = column_new(EXPR_ASTERISK, NULL, "");
 					new_col->src_idx = j;
 					vec_insert(columns, ++i, &new_col);
+					col = vec_at(columns, col_idx);
 				} else {
 					(*col)->src_idx = j;
 				}

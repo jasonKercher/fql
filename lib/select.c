@@ -61,6 +61,7 @@ void _resize_raw_rec(Vec* raw_rec, unsigned size)
 	}
 }
 
+/* This should be in schema.c */
 int _expand_asterisk(Vec* col_vec, Table* table, unsigned src_idx, unsigned* col_idx)
 {
 	Vec* src_col_vec = table->schema->columns;
