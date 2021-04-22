@@ -88,9 +88,11 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 TESTS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
-	check_read$(EXEEXT) check_logic$(EXEEXT) check_join$(EXEEXT)
+	check_read$(EXEEXT) check_logic$(EXEEXT) check_join$(EXEEXT) \
+	check_subquery$(EXEEXT)
 check_PROGRAMS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
-	check_read$(EXEEXT) check_logic$(EXEEXT) check_join$(EXEEXT)
+	check_read$(EXEEXT) check_logic$(EXEEXT) check_join$(EXEEXT) \
+	check_subquery$(EXEEXT)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -143,6 +145,14 @@ check_read_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_read_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_read_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+am_check_subquery_OBJECTS = check_subquery-check_common.$(OBJEXT) \
+	check_subquery-check_subquery.$(OBJEXT)
+check_subquery_OBJECTS = $(am_check_subquery_OBJECTS)
+check_subquery_DEPENDENCIES = $(top_builddir)/lib/libfql.la
+check_subquery_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(check_subquery_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
+	$@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -166,7 +176,9 @@ am__depfiles_remade = ./$(DEPDIR)/check_constants-check_common.Po \
 	./$(DEPDIR)/check_logic-check_common.Po \
 	./$(DEPDIR)/check_logic-check_logic.Po \
 	./$(DEPDIR)/check_read-check_common.Po \
-	./$(DEPDIR)/check_read-check_read.Po
+	./$(DEPDIR)/check_read-check_read.Po \
+	./$(DEPDIR)/check_subquery-check_common.Po \
+	./$(DEPDIR)/check_subquery-check_subquery.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -188,10 +200,10 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(check_constants_SOURCES) $(check_hashmap_SOURCES) \
 	$(check_join_SOURCES) $(check_logic_SOURCES) \
-	$(check_read_SOURCES)
+	$(check_read_SOURCES) $(check_subquery_SOURCES)
 DIST_SOURCES = $(check_constants_SOURCES) $(check_hashmap_SOURCES) \
 	$(check_join_SOURCES) $(check_logic_SOURCES) \
-	$(check_read_SOURCES)
+	$(check_read_SOURCES) $(check_subquery_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -572,6 +584,12 @@ check_logic_SOURCES = $(top_builddir)/lib/include/fql.h \
 
 check_logic_CFLAGS = @CHECK_CFLAGS@
 check_logic_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+check_subquery_SOURCES = $(top_builddir)/lib/include/fql.h \
+			check_common.h check_common.c \
+			check_subquery.c
+
+check_subquery_CFLAGS = @CHECK_CFLAGS@
+check_subquery_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 check_join_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_common.h check_common.c \
 			check_join.c
@@ -641,6 +659,10 @@ check_read$(EXEEXT): $(check_read_OBJECTS) $(check_read_DEPENDENCIES) $(EXTRA_ch
 	@rm -f check_read$(EXEEXT)
 	$(AM_V_CCLD)$(check_read_LINK) $(check_read_OBJECTS) $(check_read_LDADD) $(LIBS)
 
+check_subquery$(EXEEXT): $(check_subquery_OBJECTS) $(check_subquery_DEPENDENCIES) $(EXTRA_check_subquery_DEPENDENCIES) 
+	@rm -f check_subquery$(EXEEXT)
+	$(AM_V_CCLD)$(check_subquery_LINK) $(check_subquery_OBJECTS) $(check_subquery_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -656,6 +678,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_logic-check_logic.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_read-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_read-check_read.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_subquery-check_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_subquery-check_subquery.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -809,6 +833,34 @@ check_read-check_read.obj: check_read.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_read.c' object='check_read-check_read.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_read_CFLAGS) $(CFLAGS) -c -o check_read-check_read.obj `if test -f 'check_read.c'; then $(CYGPATH_W) 'check_read.c'; else $(CYGPATH_W) '$(srcdir)/check_read.c'; fi`
+
+check_subquery-check_common.o: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_subquery_CFLAGS) $(CFLAGS) -MT check_subquery-check_common.o -MD -MP -MF $(DEPDIR)/check_subquery-check_common.Tpo -c -o check_subquery-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_subquery-check_common.Tpo $(DEPDIR)/check_subquery-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_subquery-check_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_subquery_CFLAGS) $(CFLAGS) -c -o check_subquery-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+
+check_subquery-check_common.obj: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_subquery_CFLAGS) $(CFLAGS) -MT check_subquery-check_common.obj -MD -MP -MF $(DEPDIR)/check_subquery-check_common.Tpo -c -o check_subquery-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_subquery-check_common.Tpo $(DEPDIR)/check_subquery-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_subquery-check_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_subquery_CFLAGS) $(CFLAGS) -c -o check_subquery-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+
+check_subquery-check_subquery.o: check_subquery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_subquery_CFLAGS) $(CFLAGS) -MT check_subquery-check_subquery.o -MD -MP -MF $(DEPDIR)/check_subquery-check_subquery.Tpo -c -o check_subquery-check_subquery.o `test -f 'check_subquery.c' || echo '$(srcdir)/'`check_subquery.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_subquery-check_subquery.Tpo $(DEPDIR)/check_subquery-check_subquery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_subquery.c' object='check_subquery-check_subquery.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_subquery_CFLAGS) $(CFLAGS) -c -o check_subquery-check_subquery.o `test -f 'check_subquery.c' || echo '$(srcdir)/'`check_subquery.c
+
+check_subquery-check_subquery.obj: check_subquery.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_subquery_CFLAGS) $(CFLAGS) -MT check_subquery-check_subquery.obj -MD -MP -MF $(DEPDIR)/check_subquery-check_subquery.Tpo -c -o check_subquery-check_subquery.obj `if test -f 'check_subquery.c'; then $(CYGPATH_W) 'check_subquery.c'; else $(CYGPATH_W) '$(srcdir)/check_subquery.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_subquery-check_subquery.Tpo $(DEPDIR)/check_subquery-check_subquery.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_subquery.c' object='check_subquery-check_subquery.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_subquery_CFLAGS) $(CFLAGS) -c -o check_subquery-check_subquery.obj `if test -f 'check_subquery.c'; then $(CYGPATH_W) 'check_subquery.c'; else $(CYGPATH_W) '$(srcdir)/check_subquery.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1044,6 +1096,13 @@ check_join.log: check_join$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+check_subquery.log: check_subquery$(EXEEXT)
+	@p='check_subquery$(EXEEXT)'; \
+	b='check_subquery'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .test.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -1146,6 +1205,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/check_logic-check_logic.Po
 	-rm -f ./$(DEPDIR)/check_read-check_common.Po
 	-rm -f ./$(DEPDIR)/check_read-check_read.Po
+	-rm -f ./$(DEPDIR)/check_subquery-check_common.Po
+	-rm -f ./$(DEPDIR)/check_subquery-check_subquery.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1200,6 +1261,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/check_logic-check_logic.Po
 	-rm -f ./$(DEPDIR)/check_read-check_common.Po
 	-rm -f ./$(DEPDIR)/check_read-check_read.Po
+	-rm -f ./$(DEPDIR)/check_subquery-check_common.Po
+	-rm -f ./$(DEPDIR)/check_subquery-check_subquery.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

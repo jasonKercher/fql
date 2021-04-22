@@ -8,13 +8,17 @@
 
 void _recycle_specific(Process* proc, Vec* recs, int index)
 {
+	Dnode** root_node = vec_at(proc->root_group, index);
+	Process* root = (*root_node)->data;
+	
+	if (root->is_const) {
+		return;
+	}
+
 	Record** rec = vec_at(recs, index);
 	if (--(*rec)->ref_count > 0 || !(*rec)->is_recyclable) {
 		return;
 	}
-
-	Dnode** root_node = vec_at(proc->root_group, index);
-	Process* root = (*root_node)->data;
 
 	Vec* proc_recs = vec_at(root->records, (*rec)->idx);
 
@@ -85,7 +89,7 @@ int fql_read_subquery(Dgraph* proc_graph, Process* proc)
 
 	fifo_consume(proc->fifo_in[1]);
 
-	if (*sub_recs != NULL) {
+	if (!proc->is_const) {
 		_recycle_recs(proc, *sub_recs, (*sub_recs)->size);
 	}
 
