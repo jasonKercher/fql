@@ -74,8 +74,8 @@ int _expand_asterisk(Vec* col_vec, Table* table, unsigned src_idx, unsigned* col
 		new_col->data_source = *it;
 		new_col->src_idx = src_idx;
 		new_col->field_type = (*it)->field_type;
-		vec_insert(col_vec, *col_idx, &new_col);
 		++(*col_idx);
+		vec_insert(col_vec, *col_idx, &new_col);
 	}
 
 	return table->schema->columns->size;
@@ -102,12 +102,13 @@ void _expand_asterisks(Query* query, _Bool force_expansion)
 			continue;
 		}
 
-		unsigned asterisk_index = i++;
+		unsigned asterisk_index = i;
 		_expand_asterisk(col_vec, table, (*col)->src_idx, &i);
 
 		Column** asterisk_col = vec_at(col_vec, asterisk_index);
 		column_free(*asterisk_col);
 		vec_remove(col_vec, asterisk_index);
+		--i;
 	}
 
 	_resize_raw_rec(select->writer->raw_rec, col_vec->size);
