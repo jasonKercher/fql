@@ -137,7 +137,8 @@ void process_activate(Dnode* proc_node, Plan* plan)
 	/* TODO: once we stop hard coding fifo size,
 	 *       this if block can go.
 	 */
-	if (proc->action__ != &fql_read) {
+	if (proc->action__ != &fql_read
+	 && proc->action__ != &fql_read_subquery) {
 		fifo_advance(proc->fifo_in[proc->root_fifo]);
 		return;
 	}
