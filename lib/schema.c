@@ -298,6 +298,9 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
 			Function* func = (*it)->field.fn;
 			function_validate(func);
 			schema_assign_columns_limited(func->args, sources, limit);
+			if(function_op_resolve(func, &(*it)->field_type)) {
+				return FQL_FAIL;
+			}
 			_evaluate_if_const(*it);
 			continue;
 		}
@@ -463,6 +466,10 @@ int schema_resolve_query(struct fql_handle* fql, Query* query)
 		if (i > 0 && !fql->props.force_cartesian) {
 			_resolve_join_conditions(table, i);
 		}
+	}
+
+	if (schema_assign_columns(query->validation_list, query->sources)) {
+		return FQL_FAIL;
 	}
 
 	Vec* op_cols = op_get_validation_list(query->op);

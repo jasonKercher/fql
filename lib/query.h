@@ -34,13 +34,14 @@ enum logic_mode {
 /** Query **/
 struct query {
 	struct fql_plan* plan;          /* execution plan */
-	struct vec* sources;            /* struct source */
-	struct logicgroup* where;       /* struct logicgroup */
+	struct vec* sources;            /* struct table */
+	struct logicgroup* where;
+	struct vec* validation_list;    /* for no-source tables */
 	struct vec* groups;             /* struct expression */
 	struct queue* having;           /* struct expression */
 	struct expression* limit;       /* TOP */
 	void* op;                       /* Operation structure */
-	int query_id;			/* Query ID */
+	int query_id;                   /* Query ID */
 	int query_total;                /* Query Total */
 
 	/* All the variables below are temporaries for

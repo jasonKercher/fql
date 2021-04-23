@@ -23,11 +23,12 @@ Query* query_construct(Query* query, int id)
 		 NULL                   /* plan */
 		,vec_new_(Table)        /* sources */
 		,NULL                   /* where */
+		,vec_new_(Column*)      /* validation_list */
 		,vec_new_(Column*)      /* groups */
 		,NULL                   /* having */
 		,NULL                   /* limit */
 		,NULL                   /* operation */
-		,id
+		,id                     /* query_id */
 		,0                      /* query_total */
 
 		,NULL                   /* logic_stack */
@@ -55,6 +56,7 @@ void query_free(void* generic_query)
 	op_free(query->op);
 	vec_free(query->sources);
 	logicgroup_free(query->where);
+	vec_free(query->validation_list);
 	vec_free(query->groups);
 	queue_free_data(&query->having);
 	free_(query->limit);
@@ -68,11 +70,9 @@ void _add_validation_column(Query* query, Column* col)
 	 * some retarded query like:
 	 * SELECT 'hello'
 	 * WHERE 1 = 0
-	 * There is no need to validate anything here
-	 * since columns are either variables or
-	 * constants that will optimize away.
 	 */
 	if (vec_empty(query->sources)) {
+		vec_push_back(query->validation_list, &col);
 		return;
 	}
 
@@ -126,7 +126,7 @@ void query_add_column(Query* query, char* col_name, const char* table_id)
 	/* TODO: This is sort of misplaced. Only acting as a default, but
 	 *       it should be set when schema is applied.
 	 */
-	col->field_type = FIELD_STRING;
+	//col->field_type = FIELD_STRING;
 }
 
 void query_add_asterisk(Query* query, const char* table_id)
@@ -148,10 +148,6 @@ int query_add_constant(Query* query, const char* s, int len)
 		((char*) col->buf.data)[len-2] = '\0';
 		--col->buf.size;
 		col->field.s = &col->buf;
-		//String* literal = string_from_char_ptr(s + 1);
-		//((char*) literal->data)[len-2] = '\0';
-		//--literal->size;
-		//col->field.s = literal;
 	} else {
 		if (strhaschar(s, '.')) {
 			type = FIELD_FLOAT;
@@ -259,9 +255,9 @@ void query_enter_operator(Query* query, enum expr_operator op)
 void query_exit_function(Query* query)
 {
 	Column* col = stack_pop(&query->function_stack);
-	if (function_op_resolve(col->field.fn, &col->field_type)) {
-		;/* TODO: stop here */
-	}
+	//if (function_op_resolve(col->field.fn, &col->field_type)) {
+	//	;/* TODO: stop here */
+	//}
 }
 
 /*** Scroll below this comment at your own risk ***/

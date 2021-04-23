@@ -26,14 +26,11 @@ Function* function_new_op(enum expr_operator op)
 	*new_func = (Function) {
 		 &not_implemented       /* caller */
 		,vec_new_(Column*)      /* args */
-		//,{ 0 }                  /* ret_buf */
 		,""                     /* name */
 		,op                     /* operator */
 		,2                      /* arg_min */
 		,2                      /* arg_max */
 	};
-
-	//string_construct(&new_func->ret_buf);
 
 	return new_func;
 }
@@ -58,11 +55,6 @@ int function_op_resolve(Function* func, enum field_type* type)
 	}
 
 	*type = field_determine_type(col0->field_type, col1->field_type);
-
-	func->caller = scalar_matrix[func->op][*type];
-	if (func->caller == NULL) {
-		return _invalid_type(func);
-	}
 
 	switch (func->op) {
 	case OPERATOR_PLUS:
@@ -96,6 +88,10 @@ int function_op_resolve(Function* func, enum field_type* type)
 		;
 	}
 
+	func->caller = scalar_matrix[func->op][*type];
+	if (func->caller == NULL) {
+		return _invalid_type(func);
+	}
 
 	return FQL_GOOD;
 }
@@ -105,7 +101,6 @@ Function* function_construct(Function* func, const char* func_name, enum field_t
 	*func = (Function) {
 		 &not_implemented       /* caller */
 		,vec_new_(Column*)      /* args */
-		//,{ 0 }                  /* ret_buf */
 		,""                     /* name */
 		,OPERATOR_NONE          /* op */
 		,0                      /* arg_min */

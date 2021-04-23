@@ -141,6 +141,7 @@ int column_try_assign_source(Column* col, Table* table, int idx)
 	if (src_col != NULL) {
 		col->data_source = *src_col;
 		col->src_idx = idx;
+		col->field_type = (*src_col)->field_type;
 		if (col->data_source->location > table->reader->max_col_idx) {
 			table->reader->max_col_idx = col->data_source->location;
 		}
