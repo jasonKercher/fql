@@ -155,13 +155,13 @@ START_TEST(test_subquery_nested)
 	int field_count = 0;
 	int rows = 0;
 
-	//44b72d44	70	30279
-	//3138b3f8	b0	154715
-	plan_count = fql_make_plans(fql, "select shnt from ("
-					 "  select baz shnt from ("
-				         "    select * from t1 where right(bar, 1) = 0"
-					 "  )"
-					 ")  ");
+	//8ab25d8f	f8	75882
+	//c1519b0d	c8	87082
+	plan_count = fql_make_plans(fql, "select shnt from (           "
+					 "  select bar shnt from (     "
+				         "    select * from t1 where right(baz, 2) = 82"
+					 "  )                          "
+					 ")                            ");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -171,8 +171,9 @@ START_TEST(test_subquery_nested)
 	ck_assert_int_eq(rows, 1);
 	ck_assert_int_eq(fields[0].type, FQL_STRING);
 
-	ck_assert_str_eq(fields[0].data.s, "30279");
-	ck_assert_str_eq(fields[0].data.s, "154715");
+	ck_assert_str_eq(fields[0].data.s, "f8");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "c8");
 
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 0);

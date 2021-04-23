@@ -172,13 +172,15 @@ int column_get_int(long* ret, Column* col, Vec* recs)
 	case EXPR_FUNCTION:
 	{
 		Function* func = col->field.fn;
+		/* TODO: maybe struct this?? */
 		union field new_field;
+		enum field_type new_field_type = col->field_type;
 		if (col->field_type == FIELD_STRING) {
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
 		func->caller(func, &new_field, recs);
-		if (field_to_int(ret, &new_field, &col->field_type)) {
+		if (field_to_int(ret, &new_field, &new_field_type)) {
 			return FQL_FAIL;
 		}
 		break;
@@ -213,12 +215,13 @@ int column_get_float(double* ret, Column* col, Vec* recs)
 	{
 		Function* func = col->field.fn;
 		union field new_field;
+		enum field_type new_field_type = col->field_type;
 		if (col->field_type == FIELD_STRING) {
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
 		func->caller(func, &new_field, recs);
-		if (field_to_float(ret, &new_field, &col->field_type)) {
+		if (field_to_float(ret, &new_field, &new_field_type)) {
 			return FQL_FAIL;
 		}
 		break;
@@ -250,12 +253,13 @@ int column_get_stringview(StringView* ret, Column* col, Vec* recs)
 	{
 		Function* func = col->field.fn;
 		union field new_field;
+		enum field_type new_field_type = col->field_type;
 		if (col->field_type == FIELD_STRING) {
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
 		func->caller(func, &new_field, recs);
-		if (field_to_stringview(ret, &new_field, &col->field_type)) {
+		if (field_to_stringview(ret, &new_field, &new_field_type)) {
 			return FQL_FAIL;
 		}
 		break;
