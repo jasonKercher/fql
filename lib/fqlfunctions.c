@@ -171,7 +171,7 @@ int fql_op_mult_i(struct function* fn, union field* ret, struct vec* rec)
 
 	if (u0 != 0 
 	 && (result / u0 != u1 
-	     || neg + result > LONG_MAX)) {
+	     || result > LONG_MAX + neg)) {
 		fputs("Arithmetic overflow detected\n", stderr);
 		return FQL_FAIL;
 	}
