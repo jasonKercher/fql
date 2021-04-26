@@ -6,6 +6,8 @@ check_constants
 check_logic
 check_read
 check_join
+check_difficult
+check_failure
 check_subquery
 
 *~

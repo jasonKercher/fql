@@ -150,7 +150,33 @@ int fql_op_mult_i(struct function* fn, union field* ret, struct vec* rec)
 		return FQL_FAIL;
 	}
 
-	ret->i = n0 * n1;
+	unsigned long u0 = 0;
+	unsigned long u1 = 0;
+	_Bool neg = false;
+	/* Use unsigned so not undefined behavior */
+	if (n0 < 0) {
+		u0 = n0 * -1;
+		neg = true;
+	} else {
+		u0 = n0;
+	}
+
+	if (n1 < 0) {
+		u1 = n1 * -1;
+		neg = !neg;
+	} else {
+		u1 = n1;
+	}
+	unsigned long result = u0 * u1;
+
+	if (u0 != 0 
+	 && (result / u0 != u1 
+	     || neg + result > LONG_MAX)) {
+		fputs("Arithmetic overflow detected\n", stderr);
+		return FQL_FAIL;
+	}
+
+	ret->i = (neg) ? -1 * result : result;	
 
 	return FQL_GOOD;
 }

@@ -114,7 +114,7 @@ START_TEST(test_failure_runtime)
 	ck_assert_int_eq(rows, FQL_FAIL);
 
 	/* arithmetic overflow */
-	plan_count = fql_make_plans(fql, "select 123433333 * baz from t1");
+	plan_count = fql_make_plans(fql, "select 123433333123412 * baz from t1");
 	ck_assert_int_eq(plan_count, 1);
 	do {
 		rows = fql_step(fql, &fields);

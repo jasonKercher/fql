@@ -222,7 +222,7 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 	}
 
 	int ret = process_step(plan);
-	if (ret == 0) {
+	if (ret == 0 || ret == FQL_FAIL) {
 		Query* query = queue_dequeue(&fql->query_list);
 		query_free(query);
 
