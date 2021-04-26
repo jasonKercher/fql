@@ -179,7 +179,9 @@ int column_get_int(long* ret, Column* col, Vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		func->caller(func, &new_field, recs);
+		if (func->call__(func, &new_field, recs)) { 
+			return FQL_FAIL;
+		}
 		if (field_to_int(ret, &new_field, &new_field_type)) {
 			return FQL_FAIL;
 		}
@@ -220,7 +222,9 @@ int column_get_float(double* ret, Column* col, Vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		func->caller(func, &new_field, recs);
+		if (func->call__(func, &new_field, recs)) {
+			return FQL_FAIL;
+		}
 		if (field_to_float(ret, &new_field, &new_field_type)) {
 			return FQL_FAIL;
 		}
@@ -258,7 +262,9 @@ int column_get_stringview(StringView* ret, Column* col, Vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		func->caller(func, &new_field, recs);
+		if (func->call__(func, &new_field, recs)) {
+			return FQL_FAIL;
+		}
 		if (field_to_stringview(ret, &new_field, &new_field_type)) {
 			return FQL_FAIL;
 		}

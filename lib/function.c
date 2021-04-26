@@ -24,7 +24,7 @@ Function* function_new_op(enum expr_operator op)
 	malloc_(new_func, sizeof(*new_func));
 
 	*new_func = (Function) {
-		 &not_implemented       /* caller */
+		 &not_implemented       /* call__ */
 		,vec_new_(Column*)      /* args */
 		,""                     /* name */
 		,op                     /* operator */
@@ -88,8 +88,8 @@ int function_op_resolve(Function* func, enum field_type* type)
 		;
 	}
 
-	func->caller = scalar_matrix[func->op][*type];
-	if (func->caller == NULL) {
+	func->call__ = scalar_matrix[func->op][*type];
+	if (func->call__ == NULL) {
 		return _invalid_type(func);
 	}
 
@@ -99,7 +99,7 @@ int function_op_resolve(Function* func, enum field_type* type)
 Function* function_construct(Function* func, const char* func_name, enum field_type* type)
 {
 	*func = (Function) {
-		 &not_implemented       /* caller */
+		 &not_implemented       /* call__ */
 		,vec_new_(Column*)      /* args */
 		,""                     /* name */
 		,OPERATOR_NONE          /* op */
@@ -159,14 +159,14 @@ Function* function_construct(Function* func, const char* func_name, enum field_t
 	else if (istring_eq(func_name, "DATEPART")){ return func; }
 	else if (istring_eq(func_name, "ISNULL")){ return func; }
 	else if (istring_eq(func_name, "LEFT")) {
-		func->caller = &fql_left;
+		func->call__ = &fql_left;
 		*type = FIELD_STRING;
 		return func;
 	}
 	else if (istring_eq(func_name, "NULLIF")){ return func; }
 	else if (istring_eq(func_name, "PATINDEX")){ return func; }
 	else if (istring_eq(func_name, "RIGHT")) {
-		func->caller = &fql_right;
+		func->call__ = &fql_right;
 		*type = FIELD_STRING;
 		return func;
 	}

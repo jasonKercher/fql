@@ -1,4 +1,6 @@
 #include "function.h"
+#include <stdio.h>
+#include <limits.h>
 #include "fql.h"
 #include "column.h"
 
@@ -52,6 +54,17 @@ int fql_op_plus_i(struct function* fn, union field* ret, struct vec* rec)
 		return FQL_FAIL;
 	}
 	if (column_get_int(&n1, args[1], rec)) {
+		return FQL_FAIL;
+	}
+
+	/* Detect overflow */
+	if (n0 > 0 && n1 > 0 
+	 && (unsigned long) n0 + (unsigned long) n1 > LONG_MAX) {
+		fputs("Arithmetic overflow detected\n", stderr);
+		return FQL_FAIL;
+	} else if (n0 < 0 && n1 < 0
+	 && (unsigned long) -n0 + (unsigned long) -n1 > LONG_MAX) {
+		fputs("Arithmetic overflow detected\n", stderr);
 		return FQL_FAIL;
 	}
 
@@ -171,6 +184,11 @@ int fql_op_divi_i(struct function* fn, union field* ret, struct vec* rec)
 		return FQL_FAIL;
 	}
 
+	if (n1 == 0) {
+		fputs("Division by zero\n", stderr);
+		return FQL_FAIL;
+	}
+
 	ret->i = n0 / n1;
 
 	return FQL_GOOD;
@@ -185,6 +203,11 @@ int fql_op_divi_f(struct function* fn, union field* ret, struct vec* rec)
 		return FQL_FAIL;
 	}
 	if (column_get_float(&n1, args[1], rec)) {
+		return FQL_FAIL;
+	}
+
+	if (n1 == 0) {
+		fputs("Division by zero\n", stderr);
 		return FQL_FAIL;
 	}
 

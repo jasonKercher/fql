@@ -191,7 +191,9 @@ int fql_make_plans(struct fql_handle* fql, const char* query_str)
 	}
 	fql->query_str = strdup(query_str);
 
-	analyze_query(fql);
+	if (analyze_query(fql)) {
+		return FQL_FAIL;
+	}
 
 	if (schema_resolve(fql)) {
 		return FQL_FAIL;

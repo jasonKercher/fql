@@ -11,16 +11,18 @@
 
 void _trim_end_chars(std::string& s, char start, char end)
 {
-	if(s.length() > 1)  //next if statement would crash if 0 or 1
-	    if(s[0] == start && s[s.length() - 1] == end)
+	if(s.length() <= 1) {
+		return;
+	}
+	if(s[0] == start && s[s.length() - 1] == end) {
 		s = s.substr(1, s.length() - 2);
+	}
 }
 
 void _find_replace(std::string& s, const std::string& match, const std::string replacement)
 {
 	size_t pos = 0;
-	while ((pos = s.find(match, pos)) != std::string::npos)
-	{
+	while ((pos = s.find(match, pos)) != std::string::npos) {
 	     s.replace(pos, match.length(), replacement);
 	     pos += replacement.length();
 	}
@@ -35,6 +37,11 @@ ListenerInterface::ListenerInterface(struct fql_handle* fql, const std::vector<s
 
 	_next_list = TOK_UNDEFINED;
 	_current_list = TOK_UNDEFINED;
+}
+
+int ListenerInterface::get_return_code()
+{
+	return _return_code;
 }
 
 void ListenerInterface::enterSelect_list(TSqlParser::Select_listContext * ctx)
@@ -229,8 +236,9 @@ void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx)
 	if (new_str[0] == '\'' && new_str.length() > 2) {
 		_find_replace(new_str, "''", "'");
 	}
-	/* TODO: handle FQL_FAIL here */
-	query_add_constant(_query, new_str.c_str(), new_str.length());
+	if (query_add_constant(_query, new_str.c_str(), new_str.length())) {
+		_return_code = FQL_FAIL;
+	}
 }
 void ListenerInterface::exitConstant(TSqlParser::ConstantContext * ctx) { }
 
@@ -455,7 +463,7 @@ void ListenerInterface::enterEveryRule(antlr4::ParserRuleContext * ctx)
 			std::cerr << "\nCAUTION: Overriding the above warnings! Results may be incorrect!\n";
 		} else {
 			std::cerr << "\nTerminated: Use -O to Override at your own risk.\n";
-			exit(EXIT_FAILURE);
+			_return_code = FQL_FAIL;
 		}
 	}
 }

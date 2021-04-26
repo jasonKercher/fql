@@ -1,5 +1,19 @@
 #include "check_common.h"
 
+/* t1.tsv
+foo	bar	baz
+44b72d44	70	30279
+b8e63822	cb	38922
+46a1bad3	5f	30119
+8ab25d8f	f8	75882
+282a4957	6c	121263
+3138b3f8	b0	154715
+18e25713	1e	100092
+c1519b0d	c8	87082
+6ed156a7	ae	229701
+*/
+
+
 /* t2.csv
 foo,bar,baz
 f4a2dd5d,12,30279
@@ -142,6 +156,45 @@ START_TEST(test_join_functions)
 }
 END_TEST
 
+START_TEST(test_join_multiple)
+{
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
+
+	fql_set_force_cartesian(fql, 1);
+	plan_count = fql_make_plans(fql, "select t1.bar, t2.bar, x.bar"
+			                 " from t1"
+					 " join t2"
+					 "    on t1.baz = t2.baz"
+					 " join t2 X"
+					 "    on left(t1.foo, 2) = right(x.foo, 2)");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 3);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_int_eq(fields[1].type, FQL_STRING);
+	ck_assert_int_eq(fields[2].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "70");
+	ck_assert_str_eq(fields[1].data.s, "12");
+	ck_assert_str_eq(fields[2].data.s, "a6");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "6c");
+	ck_assert_str_eq(fields[1].data.s, "8c");
+	ck_assert_str_eq(fields[2].data.s, "00");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+}
+END_TEST
+
 Suite* fql_join_suite(void)
 {
 	Suite* s;
@@ -153,9 +206,7 @@ Suite* fql_join_suite(void)
 	tcase_add_test(tc_join, test_hashjoin_asterisk);
 	tcase_add_test(tc_join, test_force_cartesian_join);
 	tcase_add_test(tc_join, test_join_functions);
-	//tcase_add_test(tc_join, test_join_t1_asterisk);
-	//tcase_add_test(tc_join, test_join_const);
-	//tcase_add_test(tc_join, test_join_operators);
+	tcase_add_test(tc_join, test_join_multiple);
 
 	suite_add_tcase(s, tc_join);
 

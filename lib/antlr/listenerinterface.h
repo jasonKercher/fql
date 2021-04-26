@@ -36,6 +36,7 @@ private:
 	int _next_list;
 	int _current_list;
 	int _query_id = 0;
+	int _return_code = 0;
 	bool _on_asterisk = false;
 
 	void _no_impl(const std::string&, int);
@@ -43,6 +44,7 @@ public:
 	ListenerInterface(struct fql_handle*, const std::vector<std::string>&);
 	void enterEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
 	void exitEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
+	int get_return_code();
 
 
 

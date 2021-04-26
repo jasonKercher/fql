@@ -267,13 +267,13 @@ int schema_resolve_source(struct fql_handle* fql, Table* table)
 	return FQL_GOOD;
 }
 
-void _evaluate_if_const(Column* col)
+int _evaluate_if_const(Column* col)
 {
 	Function* func = col->field.fn;
 	Column** it = vec_begin(func->args);
 	for (; it != vec_end(func->args); ++it) {
 		if ((*it)->expr != EXPR_CONST) {
-			return;
+			return FQL_GOOD;
 		}
 	}
 
@@ -283,11 +283,15 @@ void _evaluate_if_const(Column* col)
 		new_field.s = &col->buf;
 		string_clear(new_field.s);
 	}
-	func->caller(func, &new_field, NULL);
+	if (func->call__(func, &new_field, NULL)) {
+		return FQL_FAIL;
+	}
 
 	function_free(func);
 	col->expr = EXPR_CONST;
 	col->field = new_field;
+
+	return FQL_GOOD;
 }
 
 int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
@@ -301,7 +305,9 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
 			if(function_op_resolve(func, &(*it)->field_type)) {
 				return FQL_FAIL;
 			}
-			_evaluate_if_const(*it);
+			if (_evaluate_if_const(*it)) {
+				return FQL_FAIL;
+			}
 			continue;
 		}
 		if ((*it)->expr != EXPR_COLUMN_NAME) {

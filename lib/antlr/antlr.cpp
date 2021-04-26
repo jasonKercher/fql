@@ -37,6 +37,6 @@ int analyze_query(struct fql_handle* fql)
 
 	antlr4::tree::ParseTreeWalker::DEFAULT.walk(&analyzer, tree);
 
-	return 0;
+	return analyzer.get_return_code();
 
 }
