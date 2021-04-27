@@ -10,6 +10,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					table.h table.c \
 					schema.h schema.c \
 					column.h column.c \
+					group.h group.c \
 					operation.h operation.c \
 					reader.h reader.c libcsvread.c mmapcsvread.c \
 					writer.h writer.c \

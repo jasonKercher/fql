@@ -24,7 +24,7 @@ Query* query_construct(Query* query, int id)
 		,vec_new_(Table)        /* sources */
 		,NULL                   /* where */
 		,vec_new_(Column*)      /* validation_list */
-		,vec_new_(Column*)      /* groups */
+		,group_new()            /* groupby */
 		,NULL                   /* having */
 		,NULL                   /* limit */
 		,NULL                   /* operation */
@@ -57,7 +57,7 @@ void query_free(void* generic_query)
 	vec_free(query->sources);
 	logicgroup_free(query->where);
 	vec_free(query->validation_list);
-	vec_free(query->groups);
+	group_free(query->groupby);
 	queue_free_data(&query->having);
 	free_(query->limit);
 	free_(query->expr);
@@ -105,7 +105,7 @@ int _distribute_column(Query* query, Column* col)
 		_add_validation_column(query, col);
 		break;
 	case MODE_GROUPBY:
-		vec_push_back(query->groups, &col);
+		vec_push_back(query->groupby->columns, &col);
 		_add_validation_column(query, col);
 		break;
 	default:

@@ -246,6 +246,7 @@ int _from(Plan* plan, Query* query)
 			Process* read_proc = NULL;
 			Dnode* read_node = NULL;
 
+			/* TODO: subquery on right side of join */
 			//if (table_iter->source_type == SOURCE_TABLE) {
 				string_sprintf(&action_msg,
 					       "%s: %s",
@@ -307,10 +308,11 @@ void _where(Plan* plan, Query* query)
 
 void _group(Plan* plan, Query* query)
 {
-	if (query->groups->size == 0) {
+	if (vec_empty(query->groupby->columns)) {
 		return;
 	}
-	Process* group_proc = process_new("GROUP BY", plan);
+	Process* group_proc = process_new("GROUP BY ", plan);
+	group_cat_description(query->groupby, group_proc);
 	Dnode* group_node = dgraph_add_data(plan->processes, group_proc);
 	plan->current->out[0] = group_node;
 	plan->current = group_node;

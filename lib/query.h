@@ -10,6 +10,7 @@ extern "C" {
 
 #include "fqlplan.h"
 #include "table.h"
+#include "group.h"
 #include "function.h"
 #include "operation.h"
 #include "logic.h"
@@ -37,7 +38,7 @@ struct query {
 	struct vec* sources;            /* struct table */
 	struct logicgroup* where;
 	struct vec* validation_list;    /* for no-source tables */
-	struct vec* groups;             /* struct expression */
+	struct group* groupby;          /* struct expression */
 	struct queue* having;           /* struct expression */
 	struct expression* limit;       /* TOP */
 	void* op;                       /* Operation structure */

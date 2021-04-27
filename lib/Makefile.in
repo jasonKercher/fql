@@ -134,9 +134,10 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libfql_la_DEPENDENCIES = antlr/libantlr.la ../util/libutil.la
 am_libfql_la_OBJECTS = libfql.lo fqlplan.lo process.lo fqlprocesses.lo \
-	query.lo table.lo schema.lo column.lo operation.lo reader.lo \
-	libcsvread.lo mmapcsvread.lo writer.lo logic.lo fqllogic.lo \
-	select.lo function.lo fqlfunctions.lo record.lo field.lo
+	query.lo table.lo schema.lo column.lo group.lo operation.lo \
+	reader.lo libcsvread.lo mmapcsvread.lo writer.lo logic.lo \
+	fqllogic.lo select.lo function.lo fqlfunctions.lo record.lo \
+	field.lo
 libfql_la_OBJECTS = $(am_libfql_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -163,13 +164,14 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/column.Plo ./$(DEPDIR)/field.Plo \
 	./$(DEPDIR)/fqlfunctions.Plo ./$(DEPDIR)/fqllogic.Plo \
 	./$(DEPDIR)/fqlplan.Plo ./$(DEPDIR)/fqlprocesses.Plo \
-	./$(DEPDIR)/function.Plo ./$(DEPDIR)/libcsvread.Plo \
-	./$(DEPDIR)/libfql.Plo ./$(DEPDIR)/logic.Plo \
-	./$(DEPDIR)/mmapcsvread.Plo ./$(DEPDIR)/operation.Plo \
-	./$(DEPDIR)/process.Plo ./$(DEPDIR)/query.Plo \
-	./$(DEPDIR)/reader.Plo ./$(DEPDIR)/record.Plo \
-	./$(DEPDIR)/schema.Plo ./$(DEPDIR)/select.Plo \
-	./$(DEPDIR)/table.Plo ./$(DEPDIR)/writer.Plo
+	./$(DEPDIR)/function.Plo ./$(DEPDIR)/group.Plo \
+	./$(DEPDIR)/libcsvread.Plo ./$(DEPDIR)/libfql.Plo \
+	./$(DEPDIR)/logic.Plo ./$(DEPDIR)/mmapcsvread.Plo \
+	./$(DEPDIR)/operation.Plo ./$(DEPDIR)/process.Plo \
+	./$(DEPDIR)/query.Plo ./$(DEPDIR)/reader.Plo \
+	./$(DEPDIR)/record.Plo ./$(DEPDIR)/schema.Plo \
+	./$(DEPDIR)/select.Plo ./$(DEPDIR)/table.Plo \
+	./$(DEPDIR)/writer.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -398,6 +400,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					table.h table.c \
 					schema.h schema.c \
 					column.h column.c \
+					group.h group.c \
 					operation.h operation.c \
 					reader.h reader.c libcsvread.c mmapcsvread.c \
 					writer.h writer.c \
@@ -494,6 +497,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fqlplan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fqlprocesses.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/function.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/group.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcsvread.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/logic.Plo@am__quote@ # am--include-marker
@@ -770,6 +774,7 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/fqlplan.Plo
 	-rm -f ./$(DEPDIR)/fqlprocesses.Plo
 	-rm -f ./$(DEPDIR)/function.Plo
+	-rm -f ./$(DEPDIR)/group.Plo
 	-rm -f ./$(DEPDIR)/libcsvread.Plo
 	-rm -f ./$(DEPDIR)/libfql.Plo
 	-rm -f ./$(DEPDIR)/logic.Plo
@@ -835,6 +840,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/fqlplan.Plo
 	-rm -f ./$(DEPDIR)/fqlprocesses.Plo
 	-rm -f ./$(DEPDIR)/function.Plo
+	-rm -f ./$(DEPDIR)/group.Plo
 	-rm -f ./$(DEPDIR)/libcsvread.Plo
 	-rm -f ./$(DEPDIR)/libfql.Plo
 	-rm -f ./$(DEPDIR)/logic.Plo
