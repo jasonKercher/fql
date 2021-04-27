@@ -192,15 +192,15 @@ int fql_make_plans(struct fql_handle* fql, const char* query_str)
 	fql->query_str = strdup(query_str);
 
 	if (analyze_query(fql)) {
-		return FQL_FAIL;
+		goto make_plans_fail;
 	}
 
 	if (schema_resolve(fql)) {
-		return FQL_FAIL;
+		goto make_plans_fail;
 	}
 
 	if (build_plans(fql->query_list)) {
-		return FQL_FAIL;
+		goto make_plans_fail;
 	}
 
 	if (fql->props.print_plan) {
@@ -208,6 +208,10 @@ int fql_make_plans(struct fql_handle* fql, const char* query_str)
 	}
 
 	return queue_count(fql->query_list);
+
+make_plans_fail:
+	queue_free_func(&fql->query_list, query_free);
+	return FQL_FAIL;
 }
 
 int fql_step(struct fql_handle* fql, struct fql_field** fields)

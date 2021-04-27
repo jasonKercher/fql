@@ -45,7 +45,7 @@ int fql_right(Function* fn, union field* ret, Vec* rec)
 }
 
 /* Opertor functions */
-int fql_op_plus_i(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_plus_i(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	long n0 = 0;
@@ -73,7 +73,7 @@ int fql_op_plus_i(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_plus_f(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_plus_f(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	double n0 = 0;
@@ -90,7 +90,7 @@ int fql_op_plus_f(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_plus_s(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_plus_s(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	StringView s0;
@@ -104,7 +104,7 @@ int fql_op_plus_s(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_minus_i(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_minus_i(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	long n0 = 0;
@@ -121,7 +121,7 @@ int fql_op_minus_i(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_minus_f(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_minus_f(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	double n0 = 0;
@@ -138,7 +138,7 @@ int fql_op_minus_f(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_mult_i(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_mult_i(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	long n0 = 0;
@@ -181,7 +181,7 @@ int fql_op_mult_i(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_mult_f(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_mult_f(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	double n0 = 0;
@@ -198,7 +198,7 @@ int fql_op_mult_f(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_divi_i(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_divi_i(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	long n0 = 0;
@@ -220,7 +220,7 @@ int fql_op_divi_i(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_divi_f(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_divi_f(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	double n0 = 0;
@@ -242,7 +242,7 @@ int fql_op_divi_f(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_mod_i(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_mod_i(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	long n0 = 0;
@@ -259,7 +259,7 @@ int fql_op_mod_i(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_mod_f(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_mod_f(Function* fn, union field* ret, Vec* rec)
 {
 	//Column** args = fn->args->data;
 	//double n0 = 0;
@@ -276,7 +276,7 @@ int fql_op_mod_f(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_or(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_bit_or(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	long n0 = 0;
@@ -293,7 +293,7 @@ int fql_op_bit_or(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_and(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_bit_and(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	long n0 = 0;
@@ -310,7 +310,7 @@ int fql_op_bit_and(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_xor(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_bit_xor(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	long n0 = 0;
@@ -327,7 +327,7 @@ int fql_op_bit_xor(struct function* fn, union field* ret, struct vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_not(struct function* fn, union field* ret, struct vec* rec)
+int fql_op_bit_not(Function* fn, union field* ret, Vec* rec)
 {
 	Column** args = fn->args->data;
 	long n0 = 0;
@@ -341,3 +341,33 @@ int fql_op_bit_not(struct function* fn, union field* ret, struct vec* rec)
 }
 
 
+int fql_op_unary_minus_i(Function* fn, union field* ret, Vec* rec)
+{
+	Column** args = fn->args->data;
+	long n0 = 0;
+	if (column_get_int(&n0, args[0], rec)) {
+		return FQL_FAIL;
+	}
+
+	if (n0 == LONG_MIN) {
+		fputs("Arithmetic overflow detected\n", stderr);
+		return FQL_FAIL;
+	}
+
+	ret->i = -n0;
+
+	return FQL_GOOD;
+}
+
+int fql_op_unary_minus_f(Function* fn, union field* ret, Vec* rec)
+{
+	Column** args = fn->args->data;
+	double n0 = 0;
+	if (column_get_float(&n0, args[0], rec)) {
+		return FQL_FAIL;
+	}
+
+	ret->f = -n0;
+
+	return FQL_GOOD;
+}

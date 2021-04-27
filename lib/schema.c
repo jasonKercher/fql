@@ -300,9 +300,13 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
 	for (; it != vec_end(columns); ++it) {
 		if ((*it)->expr == EXPR_FUNCTION) {
 			Function* func = (*it)->field.fn;
-			function_validate(func);
-			schema_assign_columns_limited(func->args, sources, limit);
+			if (schema_assign_columns_limited(func->args, sources, limit)) {
+				return FQL_FAIL;
+			}
 			if(function_op_resolve(func, &(*it)->field_type)) {
+				return FQL_FAIL;
+			}
+			if (function_validate(func)) {
 				return FQL_FAIL;
 			}
 			if (_evaluate_if_const(*it)) {

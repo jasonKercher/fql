@@ -81,8 +81,15 @@ int function_op_resolve(Function* func, enum field_type* type)
 	case OPERATOR_BIT_XOR:
 		strncpy_(func->name, "BIT_XOR", FUNC_NAME_MAX);
 		break;
-	case OPERATOR_BIT_NOT:
+	case OPERATOR_UNARY_BIT_NOT:
+		func->arg_min = 1;
+		func->arg_max = 1;
 		strncpy_(func->name, "BIT_NOT", FUNC_NAME_MAX);
+		break;
+	case OPERATOR_UNARY_MINUS:
+		func->arg_min = 1;
+		func->arg_max = 1;
+		strncpy_(func->name, "UNARY_MINUS", FUNC_NAME_MAX);
 		break;
 	default:
 		;

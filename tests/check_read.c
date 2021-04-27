@@ -316,6 +316,49 @@ START_TEST(test_read_operators)
 }
 END_TEST
 
+START_TEST(test_read_unary)
+{
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
+
+	/* string operators */
+	plan_count = fql_make_plans(fql, "select -(baz+0) from t1");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_INT);
+
+	ck_assert_int_eq(fields[0].data.i, -30279);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, -38922);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, -30119);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, -75882);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, -121263);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, -154715);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, -100092);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, -87082);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(fields[0].data.i, -229701);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+}
+END_TEST
+
 
 START_TEST(test_read_functions)
 {
@@ -392,6 +435,7 @@ Suite* fql_read_suite(void)
 	tcase_add_test(tc_read, test_read_t1_asterisk);
 	tcase_add_test(tc_read, test_read_const);
 	tcase_add_test(tc_read, test_read_operators);
+	tcase_add_test(tc_read, test_read_unary);
 	tcase_add_test(tc_read, test_read_functions);
 
 	suite_add_tcase(s, tc_read);

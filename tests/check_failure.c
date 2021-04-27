@@ -88,12 +88,24 @@ START_TEST(test_failure_const_runtime)
 	plan_count = fql_make_plans(fql, "select 's' + 1");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
 
-	/* arithmetic overflow */
+	/* addition overflow */
 	plan_count = fql_make_plans(fql, "select -9223372036854775806 + -124");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* multiplictaion overflow */
+	plan_count = fql_make_plans(fql, "select -922337203685477580 * 124");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
 
 	/* divide by 0 */
 	plan_count = fql_make_plans(fql, "select 101 / 0");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* Unary overflow */
+	plan_count = fql_make_plans(fql, "select -(-9223372036854775808)");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* function args */
+	plan_count = fql_make_plans(fql, "select left('1234')");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
 }
 END_TEST

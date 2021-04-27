@@ -126,13 +126,14 @@ void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemConte
 
 void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx)
 {
-	if (ctx->getTokens(TSqlParser::LEFT).size()) {
+	/* TODO: Convert to use ctx->LEFT(), etc... */
+	if (ctx->LEFT()) {
 		_query->join = JOIN_LEFT;
-	} else if (ctx->getTokens(TSqlParser::RIGHT).size()) {
+	} else if (ctx->RIGHT()) {
 		_query->join = JOIN_RIGHT;
-	} else if (ctx->getTokens(TSqlParser::FULL).size()) {
+	} else if (ctx->FULL()) {
 		_query->join = JOIN_FULL;
-	} else if (ctx->getTokens(TSqlParser::CROSS).size()) {
+	} else if (ctx->CROSS()) {
 		_query->join = JOIN_CROSS;
 	} else {
 		_query->join = JOIN_INNER;
@@ -245,8 +246,24 @@ void ListenerInterface::exitConstant(TSqlParser::ConstantContext * ctx) { }
 void ListenerInterface::enterSign(TSqlParser::SignContext * ctx) { }
 void ListenerInterface::exitSign(TSqlParser::SignContext * ctx) { }
 
-void ListenerInterface::enterUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx) { }
-void ListenerInterface::exitUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx) { }
+void ListenerInterface::enterUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx)
+{
+	if (ctx->MINUS()) {
+		query_enter_operator(_query, OPERATOR_UNARY_MINUS);
+		return;
+	}
+
+	if (ctx->BIT_NOT()) {
+		query_enter_operator(_query, OPERATOR_UNARY_BIT_NOT);
+	}
+}
+void ListenerInterface::exitUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx) 
+{
+	if (ctx->MINUS()
+	 || ctx->BIT_NOT()) {
+		query_exit_function(_query);
+	}
+}
 
 void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 {
@@ -328,35 +345,34 @@ void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext
 
 void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx)
 {
-	if        (!ctx->getTokens(TSqlParser::PLUS).empty()) {
+	if        (ctx->PLUS()) {
 		query_enter_operator(_query, OPERATOR_PLUS);
-	} else if (!ctx->getTokens(TSqlParser::MINUS).empty()) {
+	} else if (ctx->MINUS()) {
 		query_enter_operator(_query, OPERATOR_MINUS);
-	} else if (!ctx->getTokens(TSqlParser::STAR).empty()) {
+	} else if (ctx->STAR()) {
 		query_enter_operator(_query, OPERATOR_MULTIPY);
-	} else if (!ctx->getTokens(TSqlParser::DIVIDE).empty()) {
+	} else if (ctx->DIVIDE()) {
 		query_enter_operator(_query, OPERATOR_DIVIDE);
-	} else if (!ctx->getTokens(TSqlParser::MODULE).empty()) {
+	} else if (ctx->MODULE()) {
 		query_enter_operator(_query, OPERATOR_MODULE);
-	} else if (!ctx->getTokens(TSqlParser::BIT_OR).empty()) {
+	} else if (ctx->BIT_OR()) {
 		query_enter_operator(_query, OPERATOR_BIT_OR);
-	} else if (!ctx->getTokens(TSqlParser::BIT_AND).empty()) {
+	} else if (ctx->BIT_AND()) {
 		query_enter_operator(_query, OPERATOR_BIT_AND);
-	} else if (!ctx->getTokens(TSqlParser::BIT_XOR).empty()) {
+	} else if (ctx->BIT_XOR()) {
 		query_enter_operator(_query, OPERATOR_BIT_XOR);
 	}
 }
 void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx)
 {
-	if (
-		!ctx->getTokens(TSqlParser::PLUS).empty()
-	     || !ctx->getTokens(TSqlParser::MINUS).empty()
-	     || !ctx->getTokens(TSqlParser::STAR).empty()
-	     || !ctx->getTokens(TSqlParser::DIVIDE).empty()
-	     || !ctx->getTokens(TSqlParser::MODULE).empty()
-	     || !ctx->getTokens(TSqlParser::BIT_OR).empty()
-	     || !ctx->getTokens(TSqlParser::BIT_AND).empty()
-	     || !ctx->getTokens(TSqlParser::BIT_XOR).empty()) {
+	if (ctx->PLUS()
+	 || ctx->MINUS()
+	 || ctx->STAR()
+	 || ctx->DIVIDE()
+	 || ctx->MODULE()
+	 || ctx->BIT_OR()
+	 || ctx->BIT_AND()
+	 || ctx->BIT_XOR()) {
 		query_exit_function(_query);
 	}
 

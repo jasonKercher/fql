@@ -6,7 +6,7 @@
 
 #define FUNC_NAME_MAX 100
 
-#define OPERATOR_COUNT 9
+#define OPERATOR_COUNT 10
 enum expr_operator {
 	OPERATOR_NONE = -1,
 	OPERATOR_PLUS,
@@ -17,7 +17,8 @@ enum expr_operator {
 	OPERATOR_BIT_OR,
 	OPERATOR_BIT_AND,
 	OPERATOR_BIT_XOR,
-	OPERATOR_BIT_NOT,
+	OPERATOR_UNARY_BIT_NOT,
+	OPERATOR_UNARY_MINUS,
 };
 
 struct function;
@@ -63,18 +64,21 @@ int fql_op_bit_or(struct function*, union field* ret, struct vec* rec);
 int fql_op_bit_and(struct function*, union field* ret, struct vec* rec);
 int fql_op_bit_xor(struct function*, union field* ret, struct vec* rec);
 int fql_op_bit_not(struct function*, union field* ret, struct vec* rec);
+int fql_op_unary_minus_i(struct function*, union field* ret, struct vec* rec);
+int fql_op_unary_minus_f(struct function*, union field* ret, struct vec* rec);
 
 /* order is important here */
 static scalar_f scalar_matrix[OPERATOR_COUNT][FIELD_TYPE_COUNT] = {
-	{&fql_op_plus_i,  &fql_op_plus_f, &fql_op_plus_s},
-	{&fql_op_minus_i, &fql_op_minus_f, NULL},
-	{&fql_op_mult_i,  &fql_op_mult_f, NULL},
-	{&fql_op_divi_i,  &fql_op_divi_f, NULL},
-	{&fql_op_mod_i,   NULL,           NULL},
-	{&fql_op_bit_or,  NULL,           NULL},
-	{&fql_op_bit_and, NULL,           NULL},
-	{&fql_op_bit_xor, NULL,           NULL},
-	{&fql_op_bit_not, NULL,           NULL},
+	{&fql_op_plus_i,        &fql_op_plus_f,        &fql_op_plus_s},
+	{&fql_op_minus_i,       &fql_op_minus_f,       NULL},
+	{&fql_op_mult_i,        &fql_op_mult_f,        NULL},
+	{&fql_op_divi_i,        &fql_op_divi_f,        NULL},
+	{&fql_op_mod_i,         NULL,                  NULL},
+	{&fql_op_bit_or,        NULL,                  NULL},
+	{&fql_op_bit_and,       NULL,                  NULL},
+	{&fql_op_bit_xor,       NULL,                  NULL},
+	{&fql_op_bit_not,       NULL,                  NULL},
+	{&fql_op_unary_minus_i, &fql_op_unary_minus_f, NULL}
 };
 
 
