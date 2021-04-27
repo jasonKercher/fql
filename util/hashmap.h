@@ -11,13 +11,13 @@
 
 struct hm_entry {
 	uint64_t hash;     /* Store the calculated hash for resize */
-	size_t val_idx;  /* Index for _entries */
+	size_t val_idx;    /* Index for _entries */
 	size_t key_idx;    /* Index to start of key */
-	unsigned key_len;  /* key length. No NULL bytes in _keybuf */
+	unsigned key_len;
 };
 
 struct hashmap;
-typedef uint64_t(*hash_fn)(const struct hashmap*, const char* key, int* n);
+typedef uint64_t(*hash_fn)(const struct hashmap*, const char* key, unsigned* n);
 
 struct hashmap {
 	struct vec values;
@@ -39,10 +39,12 @@ struct hashmap* hashmap_construct(struct hashmap*, const unsigned elem_size, siz
 void hashmap_free(struct hashmap*);
 void hashmap_destroy(struct hashmap*);
 
-void hashmap_nset(struct hashmap*, const char* key, void*, int);
+void hashmap_nset(struct hashmap*, const char* key, void*, unsigned);
 #define hashmap_set(m_, key_, data_) hashmap_nset(m_, key_, data_, strlen(key_))
-void* hashmap_nget(struct hashmap*, const char* key, int);
+void hashmap_composite_set(struct hashmap*, const struct vec* key, void*);
+void* hashmap_nget(struct hashmap*, const char* key, unsigned);
 #define hashmap_get(m_, key_) hashmap_nget(m_, key_, strlen(key_))
+void* hashmap_composite_get(struct hashmap*, const struct vec* key);
 
 typedef struct hashmap MultiMap;
 
@@ -52,7 +54,7 @@ MultiMap* multimap_construct(MultiMap*, const unsigned elem_size, size_t limit, 
 #define multimap_construct_(h_, T_, limit_, props_) multimap_construct(h_, sizeof(T_), limit_, props_)
 void multimap_free(MultiMap*);
 void multimap_destroy(MultiMap*);
-void multimap_nset(MultiMap*, const char* key, void*, int);
+void multimap_nset(MultiMap*, const char* key, void*, unsigned);
 #define multimap_set(m_, key_, data_) multimap_nset(m_, key_, data_, strlen(key_))
 #define multimap_nget(m_, key_, n_) hashmap_nget(m_, key_, n_)
 #define multimap_get(m_, key_) hashmap_nget(m_, key_, strlen(key_))

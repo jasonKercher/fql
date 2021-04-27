@@ -23,10 +23,10 @@ enum expr_operator {
 
 struct function;
 
-typedef int(*scalar_f)(struct function*, union field* ret, struct vec* rec);
+typedef int(*scalar_fn)(struct function*, union field* ret, struct vec* rec);
 
 struct function {
-	scalar_f call__;
+	scalar_fn call__;
 	struct vec* args;
 	char name[FUNC_NAME_MAX];
 	enum expr_operator op;
@@ -68,7 +68,7 @@ int fql_op_unary_minus_i(struct function*, union field* ret, struct vec* rec);
 int fql_op_unary_minus_f(struct function*, union field* ret, struct vec* rec);
 
 /* order is important here */
-static scalar_f scalar_matrix[OPERATOR_COUNT][FIELD_TYPE_COUNT] = {
+static scalar_fn scalar_matrix[OPERATOR_COUNT][FIELD_TYPE_COUNT] = {
 	{&fql_op_plus_i,        &fql_op_plus_f,        &fql_op_plus_s},
 	{&fql_op_minus_i,       &fql_op_minus_f,       NULL},
 	{&fql_op_mult_i,        &fql_op_mult_f,        NULL},

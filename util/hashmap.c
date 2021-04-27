@@ -1,5 +1,6 @@
 #include "hashmap.h"
 #include "util.h"
+#include "stringview.h"
 
 /* Hashing based on FNV-1 */
 const uint64_t _OFFSET = 14695981039346656037UL;
@@ -16,11 +17,11 @@ size_t _next_power_of_2 (const size_t n)
 	return  value;
 }
 
-uint64_t _hash(const HashMap* m, const char* key, int* n);
-uint64_t _hash_nocase(const HashMap* m, const char* key, int* n);
-uint64_t _hash_rtrim(const HashMap* m, const char* key, int* n);
-uint64_t _hash_nocase_rtrim(const HashMap* m, const char* key, int* n);
-struct hm_entry* _get_entry(HashMap* m, const char* key, int key_len, uint64_t* hash);
+uint64_t _hash(const HashMap* m, const char* key, unsigned* n);
+uint64_t _hash_nocase(const HashMap* m, const char* key, unsigned* n);
+uint64_t _hash_rtrim(const HashMap* m, const char* key, unsigned* n);
+uint64_t _hash_nocase_rtrim(const HashMap* m, const char* key, unsigned* n);
+struct hm_entry* _get_entry(HashMap* m, const char* key, unsigned key_len, uint64_t* hash);
 void _increase_size(HashMap* m);
 
 HashMap* hashmap_new(const unsigned elem_size, size_t limit, const unsigned props)
@@ -84,7 +85,7 @@ void hashmap_destroy(HashMap* m)
 	free_(m->_keybuf);
 }
 
-void hashmap_nset(HashMap* m, const char* key, void* data, int n)
+void hashmap_nset(HashMap* m, const char* key, void* data, unsigned n)
 {
 	uint64_t hash = 0;
 	struct hm_entry* entry = _get_entry(m, key, n, &hash);
@@ -104,7 +105,12 @@ void hashmap_nset(HashMap* m, const char* key, void* data, int n)
 	}
 }
 
-void* hashmap_nget(HashMap* m, const char* key, int n)
+void hashmap_composite_set(struct hashmap* m, const Vec* key, void* data)
+{
+
+}
+
+void* hashmap_nget(HashMap* m, const char* key, unsigned n)
 {
 	uint64_t hash = 0;
 	struct hm_entry* entry = _get_entry(m, key, n, &hash);
@@ -114,6 +120,11 @@ void* hashmap_nget(HashMap* m, const char* key, int n)
 	}
 
 	return vec_at(&m->values, entry->val_idx);
+}
+
+void* hashmap_composite_get(struct hashmap* m, const Vec* key)
+{
+	return NULL;
 }
 
 /* elem size is Vec elements now */
@@ -148,7 +159,7 @@ void multimap_destroy(MultiMap* m)
 	hashmap_destroy(m);
 }
 
-void multimap_nset(MultiMap* m, const char* key, void* data, int n)
+void multimap_nset(MultiMap* m, const char* key, void* data, unsigned n)
 {
 	uint64_t hash = 0;
 	struct hm_entry* entry = _get_entry(m, key, n, &hash);
@@ -172,11 +183,11 @@ void multimap_nset(MultiMap* m, const char* key, void* data, int n)
 	}
 }
 
-uint64_t _hash(const HashMap* m, const char* key, int* n)
+uint64_t _hash(const HashMap* m, const char* key, unsigned* n)
 {
 	uint64_t hash = _OFFSET;
 	char* keyptr = &m->_keybuf[m->_keybuf_head];
-	int i = 0;
+	unsigned i = 0;
 
 	for (; i < *n; ++i, ++keyptr) {
 		*keyptr = key[i];
@@ -187,11 +198,11 @@ uint64_t _hash(const HashMap* m, const char* key, int* n)
 	return hash;
 }
 
-uint64_t _hash_nocase(const HashMap* m, const char* key, int* n)
+uint64_t _hash_nocase(const HashMap* m, const char* key, unsigned* n)
 {
 	uint64_t hash = _OFFSET;
 	char* keyptr = &m->_keybuf[m->_keybuf_head];
-	int i = 0;
+	unsigned i = 0;
 
 	for (; i < *n; ++i, ++keyptr) {
 		*keyptr = tolower(key[i]);
@@ -202,13 +213,13 @@ uint64_t _hash_nocase(const HashMap* m, const char* key, int* n)
 	return hash;
 }
 
-uint64_t _hash_rtrim(const HashMap* m, const char* key, int* n)
+uint64_t _hash_rtrim(const HashMap* m, const char* key, unsigned* n)
 {
-	int last_not_space_n = *n;
+	unsigned last_not_space_n = *n;
 	uint64_t hash = _OFFSET;
 	uint64_t last_not_space_hash = hash;
 	char* keyptr = &m->_keybuf[m->_keybuf_head];
-	int i = 0;
+	unsigned i = 0;
 
 	for (; i < *n; ++i, ++keyptr) {
 		*keyptr = key[i];
@@ -224,13 +235,13 @@ uint64_t _hash_rtrim(const HashMap* m, const char* key, int* n)
 	return last_not_space_hash;
 }
 
-uint64_t _hash_nocase_rtrim(const HashMap* m, const char* key, int* n)
+uint64_t _hash_nocase_rtrim(const HashMap* m, const char* key, unsigned* n)
 {
-	int last_not_space_n = *n;
+	unsigned last_not_space_n = *n;
 	uint64_t hash = _OFFSET;
 	uint64_t last_not_space_hash = hash;
 	char* keyptr = &m->_keybuf[m->_keybuf_head];
-	int i = 0;
+	unsigned i = 0;
 
 	for (; i < *n; ++i, ++keyptr) {
 		*keyptr = tolower(key[i]);
@@ -246,7 +257,39 @@ uint64_t _hash_nocase_rtrim(const HashMap* m, const char* key, int* n)
 	return last_not_space_hash;
 }
 
-struct hm_entry* _get_entry(HashMap* m, const char* key, int key_len, uint64_t* hash)
+struct hm_entry* _composite_get_entry(HashMap* m, const Vec* composite, uint64_t* hash)
+{
+	size_t keybuf_head_store = m->_keybuf_head;
+	StringView* it = vec_begin(composite);
+
+	*hash = 0;
+
+	for (; it != vec_end(composite); ++it) {
+		if (m->_keybuf_head + it->len > m->_keybuf_len) {
+			m->_keybuf_len *= 2;
+			realloc_(m->_keybuf, m->_keybuf_len);
+		}
+
+		*hash += m->get_hash__(m, it->data, &it->len);
+	}
+
+	return NULL;
+
+	//size_t idx = (size_t)(*hash & (m->_limit-1));
+
+	///* use memcmp instead of strcmp in case non-char* key */
+	//struct hm_entry* entry = &m->_entries[idx];
+	//while (entry->val_idx != _NONE && (
+	//	       entry->key_len != key_len
+	//	    || memcmp(&m->_keybuf[entry->key_idx], &m->_keybuf[m->_keybuf_head], key_len) != 0)) {
+	//	idx = (idx + 1) % m->_limit;
+	//	entry = &m->_entries[idx];
+	//}
+
+	//return entry;
+}
+
+struct hm_entry* _get_entry(HashMap* m, const char* key, unsigned key_len, uint64_t* hash)
 {
 	if (m->_keybuf_head + key_len > m->_keybuf_len) {
 		m->_keybuf_len *= 2;
@@ -281,10 +324,10 @@ void _increase_size(HashMap* m)
 	for (; i < old_limit; ++i) {
 		size_t idx = (size_t)(src_entries[i].hash & (m->_limit-1));
 
-		/* Same logic as _get_entry */	
+		/* Same logic as _get_entry */
 		struct hm_entry* dest_entry = &m->_entries[idx];
 		while (dest_entry->val_idx != _NONE && (
-			       dest_entry->key_len != src_entries[i].key_len 
+			       dest_entry->key_len != src_entries[i].key_len
 			    || memcmp(&m->_keybuf[dest_entry->key_idx],
 				      &m->_keybuf[m->_keybuf_head],
 				      src_entries[i].key_len) != 0)) {

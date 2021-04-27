@@ -105,7 +105,7 @@ int _distribute_column(Query* query, Column* col)
 		_add_validation_column(query, col);
 		break;
 	case MODE_GROUPBY:
-		vec_push_back(query->groupby->columns, &col);
+		group_add_column(query->groupby, col);
 		_add_validation_column(query, col);
 		break;
 	default:
