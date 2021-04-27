@@ -77,6 +77,10 @@ START_TEST(test_failure_columns)
 }
 END_TEST
 
+/* Unfortunately, fql fails to keep up with SQL Server here.
+ * Many of the following queries will avoid overflows on SQL
+ * Server by utilizing arbitrary precision types.
+ */
 START_TEST(test_failure_const_runtime)
 {
 	struct fql_field* fields = NULL;
@@ -90,6 +94,10 @@ START_TEST(test_failure_const_runtime)
 
 	/* addition overflow */
 	plan_count = fql_make_plans(fql, "select -9223372036854775806 + -124");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* subtraction overflow */
+	plan_count = fql_make_plans(fql, "select -9223372036854775806 - 124");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
 
 	/* multiplictaion overflow */

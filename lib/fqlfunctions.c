@@ -58,12 +58,12 @@ int fql_op_plus_i(Function* fn, union field* ret, Vec* rec)
 	}
 
 	/* Detect overflow */
-	if (n0 > 0 && n1 > 0 
-	 && (unsigned long) n0 + (unsigned long) n1 > LONG_MAX) {
+	if (n0 > 0 && n1 > 0
+	 && (unsigned long) n0 + (unsigned long) n1 > (unsigned long) LONG_MAX) {
 		fputs("Arithmetic overflow detected\n", stderr);
 		return FQL_FAIL;
 	} else if (n0 < 0 && n1 < 0
-	 && (unsigned long) -n0 + (unsigned long) -n1 > LONG_MAX) {
+	 && (unsigned long) -n0 + (unsigned long) -n1 > (unsigned long) LONG_MAX + 1) {
 		fputs("Arithmetic overflow detected\n", stderr);
 		return FQL_FAIL;
 	}
@@ -113,6 +113,17 @@ int fql_op_minus_i(Function* fn, union field* ret, Vec* rec)
 		return FQL_FAIL;
 	}
 	if (column_get_int(&n1, args[1], rec)) {
+		return FQL_FAIL;
+	}
+
+	/* Detect overflow */
+	if (n0 > 0 && n1 < 0
+	 && (unsigned long) n0 + (unsigned long) -n1 > (unsigned long) LONG_MAX) {
+		fputs("Arithmetic overflow detected\n", stderr);
+		return FQL_FAIL;
+	} else if (n0 < 0 && n1 > 0
+	 && (unsigned long) -n0 + (unsigned long) n1 > (unsigned long) LONG_MAX + 1) {
+		fputs("Arithmetic overflow detected\n", stderr);
 		return FQL_FAIL;
 	}
 
@@ -169,14 +180,14 @@ int fql_op_mult_i(Function* fn, union field* ret, Vec* rec)
 	}
 	unsigned long result = u0 * u1;
 
-	if (u0 != 0 
-	 && (result / u0 != u1 
+	if (u0 != 0
+	 && (result / u0 != u1
 	     || result > LONG_MAX + neg)) {
 		fputs("Arithmetic overflow detected\n", stderr);
 		return FQL_FAIL;
 	}
 
-	ret->i = (neg) ? -1 * result : result;	
+	ret->i = (neg) ? -1 * result : result;
 
 	return FQL_GOOD;
 }

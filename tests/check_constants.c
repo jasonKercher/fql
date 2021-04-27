@@ -207,6 +207,23 @@ START_TEST(test_const_operators)
 	ck_assert_int_eq(rows, 0);
 	ck_assert_int_eq(fql_field_count(fql), 0);
 
+
+	/* max out LONG_MIN */
+	plan_count = fql_make_plans(fql, "select -9223372036854775806 + -2");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_INT);
+	ck_assert_int_eq(fields[0].data.i, -9223372036854775807 - 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+
 }
 END_TEST
 
