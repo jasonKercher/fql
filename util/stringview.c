@@ -30,6 +30,14 @@ StringView* stringview_construct_from_string(StringView* sv, String* s)
 	return sv;
 }
 
+void stringview_set(StringView* sv, char* s)
+{
+	*sv = (StringView) {
+		 s
+		,strlen(s)
+	};
+}
+
 void stringview_free(StringView* sv)
 {
 	free_(sv);

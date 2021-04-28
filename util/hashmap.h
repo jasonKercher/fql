@@ -22,6 +22,8 @@ typedef uint64_t(*hash_fn)(const struct hashmap*, const char* key, unsigned* n);
 struct hashmap {
 	struct vec values;
 	struct hm_entry* _entries;
+	struct vec* _keys;     /* only for compositemap */
+	struct vec* _key_temp; /* only for compositemap */
 	hash_fn get_hash__;
 	size_t _limit;
 	char* _keybuf;
@@ -41,10 +43,8 @@ void hashmap_destroy(struct hashmap*);
 
 void hashmap_nset(struct hashmap*, const char* key, void*, unsigned);
 #define hashmap_set(m_, key_, data_) hashmap_nset(m_, key_, data_, strlen(key_))
-void hashmap_composite_set(struct hashmap*, const struct vec* key, void*);
 void* hashmap_nget(struct hashmap*, const char* key, unsigned);
 #define hashmap_get(m_, key_) hashmap_nget(m_, key_, strlen(key_))
-void* hashmap_composite_get(struct hashmap*, const struct vec* key);
 
 typedef struct hashmap MultiMap;
 
@@ -59,5 +59,15 @@ void multimap_nset(MultiMap*, const char* key, void*, unsigned);
 #define multimap_nget(m_, key_, n_) hashmap_nget(m_, key_, n_)
 #define multimap_get(m_, key_) hashmap_nget(m_, key_, strlen(key_))
 
+typedef struct hashmap CompositeMap;
 
-#endif
+CompositeMap* compositemap_new(const unsigned elem_size, size_t limit, const unsigned props);
+#define compositemap_new_(T_, limit_, props_) compositemap_new(sizeof(T_), limit_, props_)
+CompositeMap* compositemap_construct(CompositeMap*, const unsigned elem_size, size_t limit, const unsigned props);
+#define compositemap_construct_(h_, T_, limit_, props_) compositemap_construct(h_, sizeof(T_), limit_, props_)
+void compositemap_free(CompositeMap*);
+void compositemap_destroy(CompositeMap*);
+void compositemap_set(CompositeMap*, const struct vec* key, void*);
+void* compositemap_get(CompositeMap*, const struct vec* key);
+
+#endif  /* HASHMAP_H */

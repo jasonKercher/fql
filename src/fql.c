@@ -56,17 +56,17 @@ void clean_up(int x)
 
 int main (int argc, char **argv)
 {
-	/* Set up signal handling */
-	struct sigaction act;
-	/* sigset_t and sa_flags only set to shut up valgrind */
-	sigset_t vg_shutup = { {0} };
-	act.sa_mask = vg_shutup;
-	act.sa_flags = 0;
-	act.sa_handler = clean_up;
-	sigaction(SIGINT, &act, NULL);
-	sigaction(SIGQUIT, &act, NULL);
-	sigaction(SIGTERM, &act, NULL);
-	sigaction(SIGHUP, &act, NULL);
+	///* Set up signal handling */
+	//struct sigaction act;
+	///* sigset_t and sa_flags only set to shut up valgrind */
+	//sigset_t vg_shutup = { {0} };
+	//act.sa_mask = vg_shutup;
+	//act.sa_flags = 0;
+	//act.sa_handler = clean_up;
+	//sigaction(SIGINT, &act, NULL);
+	//sigaction(SIGQUIT, &act, NULL);
+	//sigaction(SIGTERM, &act, NULL);
+	//sigaction(SIGHUP, &act, NULL);
 
 	int c = 0;
 
