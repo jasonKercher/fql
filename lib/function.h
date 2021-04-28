@@ -44,11 +44,11 @@ void function_free(Function* func);
 int function_validate(struct function*);
 void function_add_column(struct function* func, void* col);
 
-/* Scalar function list */
+/* Scalar functions list */
 int fql_left(struct function*, union field* ret, struct vec* rec);
 int fql_right(struct function*, union field* ret, struct vec* rec);
 
-/* operator functions */
+/* scalar operators */
 int fql_op_plus_i(struct function*, union field* ret, struct vec* rec);
 int fql_op_plus_f(struct function*, union field* ret, struct vec* rec);
 int fql_op_plus_s(struct function*, union field* ret, struct vec* rec);
@@ -68,7 +68,7 @@ int fql_op_unary_minus_i(struct function*, union field* ret, struct vec* rec);
 int fql_op_unary_minus_f(struct function*, union field* ret, struct vec* rec);
 
 /* order is important here */
-static scalar_fn scalar_matrix[OPERATOR_COUNT][FIELD_TYPE_COUNT] = {
+static scalar_fn scalar_ops[OPERATOR_COUNT][FIELD_TYPE_COUNT] = {
 	{&fql_op_plus_i,        &fql_op_plus_f,        &fql_op_plus_s},
 	{&fql_op_minus_i,       &fql_op_minus_f,       NULL},
 	{&fql_op_mult_i,        &fql_op_mult_f,        NULL},

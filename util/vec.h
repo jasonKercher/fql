@@ -49,9 +49,10 @@ void vec_clear(struct vec*);
 void vec_shrink_to_fit(struct vec*);
 
 void* vec_add_one(struct vec*);
-void vec_set(struct vec*, size_t, void*);
-void vec_insert(struct vec*, size_t, void*);
-void vec_push_back(struct vec*, void*);
+void vec_set(struct vec*, size_t, const void*);
+void vec_append(struct vec*, const void* src, size_t);
+void vec_insert(struct vec*, size_t, const void*);
+void vec_push_back(struct vec*, const void*);
 
 void vec_extend(struct vec* dest, const struct vec* src);
 void vec_erase(struct vec*, void*);

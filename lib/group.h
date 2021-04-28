@@ -8,26 +8,33 @@
 
 struct group;
 
-union aggdata {
-	long i;
-	double f;
-	String* s;
+struct aggresult {
+	union {
+		long i;
+		double f;
+		String s;
+	} data;
+	unsigned cnt;
 };
 
-typedef int(*aggregate_fn)(struct group*, struct vec* rec);
+struct aggregate;
+typedef int(*aggregate_fn)(struct aggregate*, struct group*, struct vec* rec);
 
 struct aggregate {
-	union aggdata _agg;
+	struct vec results;
 	aggregate_fn call__;
-	unsigned count;
 };
 typedef struct aggregate Aggregate;
 
+int fql_count(struct aggregate*, struct group*, struct vec* rec, unsigned idx);
+
 struct group {
-	struct vec* columns;
-	struct vec* aggregates;
-	struct hashmap* groups;
+	struct vec columns;
+	struct vec aggregates;
+	struct vec _indicies;
+	struct vec _raw;
 	struct vec _composite;  /* temporary */
+	CompositeMap groups;
 };
 typedef struct group Group;
 
@@ -38,5 +45,7 @@ void group_destroy(struct group*);
 
 void group_add_column(struct group*, struct column*);
 void group_cat_description(struct group*, struct process*);
+
+int group_record(struct group*, struct vec* rec);
 
 #endif  /* GROUP_H */

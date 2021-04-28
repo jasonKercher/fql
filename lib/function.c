@@ -95,7 +95,7 @@ int function_op_resolve(Function* func, enum field_type* type)
 		;
 	}
 
-	func->call__ = scalar_matrix[func->op][*type];
+	func->call__ = scalar_ops[func->op][*type];
 	if (func->call__ == NULL) {
 		return _invalid_type(func);
 	}

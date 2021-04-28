@@ -308,10 +308,12 @@ void _where(Plan* plan, Query* query)
 
 void _group(Plan* plan, Query* query)
 {
-	if (vec_empty(query->groupby->columns)) {
+	if (vec_empty(&query->groupby->columns)) {
 		return;
 	}
 	Process* group_proc = process_new("GROUP BY ", plan);
+	group_proc->action__ = &fql_groupby;
+	group_proc->proc_data = query->groupby;
 	group_cat_description(query->groupby, group_proc);
 	Dnode* group_node = dgraph_add_data(plan->processes, group_proc);
 	plan->current->out[0] = group_node;

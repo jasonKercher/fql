@@ -1,6 +1,7 @@
 #include "fql.h"
 #include "reader.h"
 #include "process.h"
+#include "group.h"
 #include "select.h"
 #include "record.h"
 #include "column.h"
@@ -272,6 +273,17 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
 	fifo_add(proc->fifo_out[1], &rightrecs);
 
 	return 1;
+}
+
+int fql_groupby(Dgraph* proc_graph, Process* proc)
+{
+	Vec** recs = fifo_get(proc->fifo_in[0]);
+
+	Group* group = proc->proc_data;
+	group_record(group, *recs);
+
+	fifo_add(proc->fifo_out[0], recs);
+	return 0;
 }
 
 int fql_no_op(Dgraph* proc_graph, Process* proc)

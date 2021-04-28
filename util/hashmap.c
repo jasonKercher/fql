@@ -235,6 +235,12 @@ void compositemap_set(CompositeMap* m, const struct vec* key, void* data)
 
 void* compositemap_get(CompositeMap* m, const struct vec* key)
 {
+	/* Should only execute one time */
+	if (m->_key_temp == NULL) {
+		m->_key_temp = vec_new_(StringView);
+		vec_resize(m->_key_temp, key->size);
+	}
+
 	uint64_t hash = 0;
 	unsigned key_len = 0;
 	struct hm_entry* entry = _composite_get_entry(m, key, &key_len, &hash);

@@ -133,13 +133,23 @@ void* vec_add_one(Vec* vec)
 	return vec_back(vec);
 }
 
-void vec_set(Vec* vec, size_t n, void* src)
+void vec_set(Vec* vec, size_t n, const void* src)
 {
 	void* dest = vec_at(vec, n);
 	memcpy(dest, src, vec->_elem_size);
 }
 
-void vec_insert(Vec* vec, size_t n, void* src)
+void vec_append(Vec* vec, const void* src, size_t n)
+{
+	vec->size += n;
+	while (vec->_alloc <= vec->size) {
+		vec_reserve(vec, vec->_alloc * 2);
+	}
+
+	memcpy(vec_end(vec), src, n * vec->_elem_size);
+}
+
+void vec_insert(Vec* vec, size_t n, const void* src)
 {
 	vec_add_one(vec);
 	char* dest = vec_at(vec, n);
@@ -149,7 +159,7 @@ void vec_insert(Vec* vec, size_t n, void* src)
 	vec_set(vec, n, src);
 }
 
-void vec_push_back(Vec* vec, void* item)
+void vec_push_back(Vec* vec, const void* item)
 {
 	memcpy(vec_add_one(vec), item, vec->_elem_size);
 }
