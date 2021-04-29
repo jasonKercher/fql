@@ -23,7 +23,7 @@ Group* group_construct(Group* group)
 			        unsigned,
 				128,
 				HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
-	
+
 	return group;
 }
 
@@ -62,6 +62,7 @@ void group_cat_description(Group* group, Process* proc)
 int group_record(Group* group, Vec* recs)
 {
 	size_t raw_size = group->_raw.size;
+	size_t running_size = raw_size;
 
 	Column** cols = vec_begin(&group->columns);
 	int i = 0;
@@ -81,7 +82,7 @@ int group_record(Group* group, Vec* recs)
 				return FQL_FAIL;
 			}
 			vec_append(&group->_raw, &num_i, sizeof(long));
-			sv->data = vec_back(&group->_raw);
+			sv->data = (char*)vec_end(&group->_raw) - sizeof(long);
 			sv->len = sizeof(long);
 			break;
 		case FIELD_FLOAT:
@@ -89,27 +90,30 @@ int group_record(Group* group, Vec* recs)
 				return FQL_FAIL;
 			}
 			vec_append(&group->_raw, &num_f, sizeof(double));
-			sv->data = vec_back(&group->_raw);
+			sv->data = (char*)vec_end(&group->_raw) - sizeof(double);
 			sv->len = sizeof(double);
 		default:
 			;
 		}
-		
-		vec_push_back(&group->_indicies, &group->_raw.size);
+
+		vec_push_back(&group->_indicies, &running_size);
+		running_size += sv->len;
 	}
 
 	unsigned group_count = group->groups.values.size;
 	unsigned* idx_ptr = compositemap_get(&group->groups, &group->_composite);
 	unsigned idx = 0;
+	int ret = 0;
 	if (idx_ptr == NULL) {
 		idx = group_count;
 		compositemap_set(&group->groups, &group->_composite, &group_count);
+		ret = 1;
 	} else {
 		idx = *idx_ptr;
 		vec_resize(&group->_raw, raw_size);
-		vec_resize(&group->_indicies, 
-		           group_count / group->columns.size);
+		vec_resize(&group->_indicies,
+		group_count / group->columns.size);
 	}
 
-	return FQL_GOOD;
+	return ret;
 }

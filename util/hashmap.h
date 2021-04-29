@@ -19,6 +19,12 @@ struct hm_entry {
 struct hashmap;
 typedef uint64_t(*hash_fn)(const struct hashmap*, const char* key, unsigned* n);
 
+/* For compositemapping _keybuf */
+struct _keyloc {
+	size_t idx;
+	unsigned len;
+};
+
 struct hashmap {
 	struct vec values;
 	struct hm_entry* _entries;

@@ -188,7 +188,7 @@ CompositeMap* compositemap_new(const unsigned elem_size, size_t limit, const uns
 CompositeMap* compositemap_construct(CompositeMap* m, const unsigned elem_size, size_t limit, const unsigned props)
 {
 	hashmap_construct(m, elem_size, limit, props);
-	m->_keys = vec_new_(StringView);
+	m->_keys = vec_new_(struct _keyloc);
 	vec_reserve(m->_keys, m->_limit);
 	return m;
 }
@@ -209,7 +209,7 @@ void compositemap_set(CompositeMap* m, const struct vec* key, void* data)
 {
 	/* Should only execute one time */
 	if (m->_key_temp == NULL) {
-		m->_key_temp = vec_new_(StringView);
+		m->_key_temp = vec_new_(struct _keyloc);
 		vec_resize(m->_key_temp, key->size);
 	}
 
@@ -219,7 +219,7 @@ void compositemap_set(CompositeMap* m, const struct vec* key, void* data)
 
 	if (entry->val_idx == _NONE) {  /* New value */
 		entry->key_idx = m->_keys->size;
-		entry->key_len = key->size;
+		entry->key_len = key_len;
 		entry->val_idx = m->values.size;
 		entry->hash = hash;
 		m->_keybuf_head += key_len;
@@ -237,7 +237,7 @@ void* compositemap_get(CompositeMap* m, const struct vec* key)
 {
 	/* Should only execute one time */
 	if (m->_key_temp == NULL) {
-		m->_key_temp = vec_new_(StringView);
+		m->_key_temp = vec_new_(struct _keyloc);
 		vec_resize(m->_key_temp, key->size);
 	}
 
@@ -252,12 +252,14 @@ void* compositemap_get(CompositeMap* m, const struct vec* key)
 	return vec_at(&m->values, entry->val_idx);
 }
 
-_Bool _composite_eq(StringView* key0, StringView* key1, int n)
+_Bool _composite_eq(CompositeMap* m, struct hm_entry* ent, unsigned n)
 {
+	struct _keyloc* kl0 = vec_at(m->_keys, ent->key_idx);
+	struct _keyloc* kl1 = vec_begin(m->_key_temp);
 	unsigned i = 0;
 	for (; i < n; ++i)  {
-		if (key0[i].len != key1[i].len
-		 || memcmp(key0[i].data, key1[i].data, key1[i].len)) {
+		if (kl0[i].len != kl1[i].len
+		 || memcmp(&m->_keybuf[kl0[i].idx], &m->_keybuf[kl1[i].idx], kl0[i].len)) {
 			return false;
 		}
 	}
@@ -283,9 +285,9 @@ struct hm_entry* _composite_get_entry(CompositeMap* m, const Vec* key, unsigned*
 		*hash *= (++i) * m->get_hash__(m, it->data, &len);
 		*key_len += len;
 
-		StringView* sv = vec_at(m->_key_temp, i-1);
-		sv->data = &m->_keybuf[m->_keybuf_head];
-		sv->len = len;
+		struct _keyloc* kl = vec_at(m->_key_temp, i-1);
+		kl->idx = m->_keybuf_head;
+		kl->len = len;
 
 		m->_keybuf_head += len;
 	}
@@ -294,8 +296,7 @@ struct hm_entry* _composite_get_entry(CompositeMap* m, const Vec* key, unsigned*
 	struct hm_entry* entry = &m->_entries[idx];
 
 	while (entry->val_idx != _NONE
-	    && !_composite_eq(vec_at(m->_keys, entry->key_idx),
-	                      vec_begin(m->_key_temp), key->size)) {
+	    && !_composite_eq(m, entry, key->size)) {
 		idx = (idx + 1) % m->_limit;
 		entry = &m->_entries[idx];
 	}
@@ -414,11 +415,17 @@ void _increase_size(HashMap* m)
 
 	size_t i = 0;
 	for (; i < old_limit; ++i) {
+		if (src_entries[i].val_idx == _NONE) {
+			continue;
+		}
+
 		size_t idx = (size_t)(src_entries[i].hash & (m->_limit-1));
 
 		struct hm_entry* dest_entry = &m->_entries[idx];
 
-		/* No need to check equality here because it is assumed new */
+		/* No need to check equality here because
+		 * we are assuming uniqueness
+		 */
 		while (dest_entry->val_idx != _NONE) {
 			idx = (idx + 1) % m->_limit;
 			dest_entry = &m->_entries[idx];

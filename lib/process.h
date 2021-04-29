@@ -29,6 +29,8 @@ struct process {
 	_Bool is_passive;      /* denotes process that does nothing */
 	_Bool is_enabled;      /* enabled means it still has data to process */
 	_Bool is_const;        /* Should only run 1 time */
+	_Bool wait_on_in0;     /* Allow process to start before in0 populated */
+	_Bool must_complete_before_advancing; /* Basically just for GROUP BY */
 };
 typedef struct process Process;
 

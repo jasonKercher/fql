@@ -42,6 +42,8 @@ Process* process_construct(Process* proc, const char* action, Plan* plan)
 		,false                          /* is_passive */
 		,true                           /* is_enabled */
 		,false                          /* is_const */
+		,true                           /* wait_on_in0 */
+		,false                          /* must_complete_before_advancing */
 	};
 
 	return proc;
@@ -199,7 +201,7 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
 		/* Check to see that there is something to process
 		 * as well as a place for it to go.
 		 */
-		if (fifo_is_empty(proc->fifo_in[0]) ||
+		if (proc->wait_on_in0 && fifo_is_empty(proc->fifo_in[0]) ||
 		    (proc->fifo_out[0] && !fifo_is_receivable(proc->fifo_out[0])) ||
 		    (proc->fifo_out[1] && !fifo_is_receivable(proc->fifo_out[1]))) {
 			continue;
@@ -252,7 +254,7 @@ void* _thread_exec(void* data)
 	Process* proc = tdata->proc_node->data;
 
 	while (proc->is_enabled) {
-		if (fifo_is_empty(proc->fifo_in[0])) {
+		if (proc->wait_on_in0 && fifo_is_empty(proc->fifo_in[0])) {
 			if (!proc->fifo_in[0]->is_open) {
 				process_disable(proc);
 				break;
