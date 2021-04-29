@@ -275,13 +275,30 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
 	return 1;
 }
 
+int _dump_grouping(Process* proc)
+{
+	Group* group = proc->proc_data;
+	return FQL_GOOD;
+}
+
 int fql_groupby(Dgraph* proc_graph, Process* proc)
 {
+	if (proc->wait_on_in0_end && !proc->wait_on_in0) {
+		int ret =_dump_grouping(proc);
+		switch (ret) {
+		case FQL_FAIL:
+			return FQL_FAIL;
+		case FQL_GOOD:
+			return FQL_GOOD;
+		default:
+			process_disable(proc);
+		}
+	}
 	Vec** recs = fifo_get(proc->fifo_in[0]);
 
 	Group* group = proc->proc_data;
 	int ret = group_record(group, *recs);
-	if (ret == 1) {
+	if (!proc->wait_on_in0_end && ret == 1) {
 		fifo_add(proc->fifo_out[0], recs);
 	} else {
 		_recycle_recs(proc, *recs, (*recs)->size);

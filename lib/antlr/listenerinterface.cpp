@@ -257,7 +257,7 @@ void ListenerInterface::enterUnary_operator_expression(TSqlParser::Unary_operato
 		query_enter_operator(_query, OPERATOR_UNARY_BIT_NOT);
 	}
 }
-void ListenerInterface::exitUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx) 
+void ListenerInterface::exitUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx)
 {
 	if (ctx->MINUS()
 	 || ctx->BIT_NOT()) {
@@ -460,6 +460,12 @@ void ListenerInterface::exitQuery_expression(TSqlParser::Query_expressionContext
 
 void ListenerInterface::enterQuery_specification(TSqlParser::Query_specificationContext * ctx) { }
 void ListenerInterface::exitQuery_specification(TSqlParser::Query_specificationContext * ctx) { }
+
+void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx) { }
+void ListenerInterface::exitAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx) { }
+
+void ListenerInterface::enterAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * ctx) { }
+void ListenerInterface::exitAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * ctx) { }
 
 
 /* Every Rule Operations */
@@ -1723,9 +1729,6 @@ void ListenerInterface::exitIFF(TSqlParser::IFFContext * ctx) { }
 void ListenerInterface::enterRANKING_WINDOWED_FUNC(TSqlParser::RANKING_WINDOWED_FUNCContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitRANKING_WINDOWED_FUNC(TSqlParser::RANKING_WINDOWED_FUNCContext * ctx) { }
 
-void ListenerInterface::enterAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * ctx) { }
-
 void ListenerInterface::enterANALYTIC_WINDOWED_FUNC(TSqlParser::ANALYTIC_WINDOWED_FUNCContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitANALYTIC_WINDOWED_FUNC(TSqlParser::ANALYTIC_WINDOWED_FUNCContext * ctx) { }
 
@@ -1776,9 +1779,6 @@ void ListenerInterface::exitTable_value_constructor(TSqlParser::Table_value_cons
 
 void ListenerInterface::enterRanking_windowed_function(TSqlParser::Ranking_windowed_functionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitRanking_windowed_function(TSqlParser::Ranking_windowed_functionContext * ctx) { }
-
-void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx) { }
 
 void ListenerInterface::enterAnalytic_windowed_function(TSqlParser::Analytic_windowed_functionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitAnalytic_windowed_function(TSqlParser::Analytic_windowed_functionContext * ctx) { }
