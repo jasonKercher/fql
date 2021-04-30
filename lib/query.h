@@ -10,12 +10,79 @@ extern "C" {
 
 #include "fqlplan.h"
 #include "table.h"
-#include "group.h"
-#include "function.h"
+//#include "function.h"
 #include "operation.h"
 #include "logic.h"
 #include "util/queue.h"
 #include "util/vec.h"
+
+enum aggregate_function {
+	AGG_UNDEFINED,
+	AGG_AVG,
+	AGG_CHECKSUM_AGG,
+	AGG_COUNT,
+	AGG_COUNT_BIG,
+	AGG_GROUPING,
+	AGG_GROUPING_ID,
+	//AGG_LR_BRACKET,
+	AGG_MAX,
+	AGG_MIN,
+	//AGG_RR_BRACKET,
+	//AGG_STAR,
+	AGG_STDEV,
+	AGG_STDEVP,
+	AGG_SUM,
+	AGG_VAR,
+	AGG_VARP,
+};
+
+enum scalar_function {
+	SCALAR_UNDEFINED,
+	SCALAR_ABS,
+	SCALAR_ASCII,
+	SCALAR_CEILING,
+	SCALAR_CHAR,
+	SCALAR_CHARINDEX,
+	SCALAR_CHECKSUM,
+	SCALAR_DATALENGTH,
+	SCALAR_DAY,
+	SCALAR_FLOOR,
+	SCALAR_ISDATE,
+	SCALAR_ISNUMERIC,
+	SCALAR_LEFT,
+	SCALAR_LEN,
+	SCALAR_LOWER,
+	SCALAR_LTRIM,
+	SCALAR_MONTH,
+	SCALAR_NCHAR,
+	SCALAR_PATINDEX,
+	SCALAR_RAND,
+	SCALAR_REPLACE,
+	SCALAR_RIGHT,
+	SCALAR_ROUND,
+	SCALAR_RTRIM,
+	SCALAR_SIGN,
+	SCALAR_SPACE,
+	SCALAR_STR,
+	SCALAR_SUBSTRING,
+	SCALAR_UPPER,
+	SCALAR_USER_NAME,
+	SCALAR_YEAR,
+};
+
+enum expr_operator {
+	OPERATOR_NONE = -1,
+	OPERATOR_PLUS,
+	OPERATOR_MINUS,
+	OPERATOR_MULTIPY,
+	OPERATOR_DIVIDE,
+	OPERATOR_MODULE,
+	OPERATOR_BIT_OR,
+	OPERATOR_BIT_AND,
+	OPERATOR_BIT_XOR,
+	OPERATOR_UNARY_BIT_NOT,
+	OPERATOR_UNARY_MINUS,
+};
 
 enum mode {
 	MODE_UNDEFINED,
@@ -31,6 +98,8 @@ enum logic_mode {
 	LOGIC_WHERE,
 	LOGIC_JOIN,
 };
+
+struct group;
 
 /** Query **/
 struct query {
@@ -69,11 +138,11 @@ void query_add_column(struct query*, char*, const char* table);
 void query_add_asterisk(struct query*, const char* table);
 void query_add_source(struct query*, struct stack**, const char*);
 void query_add_subquery_source(struct query*, struct query*, const char*);
-void query_set_distinct(struct query*);
 void query_apply_table_alias(struct query*, const char*);
-//void query_select_finalize(struct query*);
+void query_set_distinct(struct query*);
+int query_add_aggregate(struct query*, enum aggregate_function);
 
-void query_enter_function(struct query*, const char*);
+int query_enter_function(struct query*, enum scalar_function);
 void query_exit_function(struct query*);
 void query_enter_operator(struct query*, enum expr_operator op);
 

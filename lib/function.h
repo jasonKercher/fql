@@ -2,25 +2,12 @@
 #define FUNCTION_H
 
 #include "field.h"
+#include "query.h"
 #include "util/vec.h"
 
 #define FUNC_NAME_MAX 100
 
 #define OPERATOR_COUNT 10
-enum expr_operator {
-	OPERATOR_NONE = -1,
-	OPERATOR_PLUS,
-	OPERATOR_MINUS,
-	OPERATOR_MULTIPY,
-	OPERATOR_DIVIDE,
-	OPERATOR_MODULE,
-	OPERATOR_BIT_OR,
-	OPERATOR_BIT_AND,
-	OPERATOR_BIT_XOR,
-	OPERATOR_UNARY_BIT_NOT,
-	OPERATOR_UNARY_MINUS,
-};
-
 struct function;
 
 typedef int(*scalar_fn)(struct function*, union field* ret, struct vec* rec);
@@ -28,19 +15,20 @@ typedef int(*scalar_fn)(struct function*, union field* ret, struct vec* rec);
 struct function {
 	scalar_fn call__;
 	struct vec* args;
-	char name[FUNC_NAME_MAX];
 	enum expr_operator op;
+	enum scalar_function type;
 	unsigned arg_min;
 	unsigned arg_max;
 };
 typedef struct function Function;
 
-struct function* function_new(const char*, enum field_type*);
+struct function* function_new(enum scalar_function, enum field_type*);
 int function_op_resolve(Function* func, enum field_type*);
 struct function* function_new_op(enum expr_operator);
-struct function* function_construct(struct function*, const char*, enum field_type*);
-void function_free(Function* func);
+struct function* function_construct(struct function*, enum scalar_function, enum field_type*);
+void function_free(struct function*);
 
+const char* function_get_name(struct function*);
 int function_validate(struct function*);
 void function_add_column(struct function* func, void* col);
 

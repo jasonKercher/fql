@@ -4,6 +4,7 @@
 #include "process.h"
 #include "reader.h"
 #include "record.h"
+#include "function.h"
 #include "util/util.h"
 
 Column* column_new(enum expr_type expr, void* data, const char* table_name)
@@ -78,7 +79,7 @@ void column_cat_description(Column* col, String* msg)
 	case EXPR_FUNCTION:
 	{
 		Function* func = col->field.fn;
-		string_strcat(msg, func->name);
+		string_strcat(msg, function_get_name(func));
 		string_push_back(msg, '(');
 
 		Column** it = vec_begin(func->args);

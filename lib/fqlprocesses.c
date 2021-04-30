@@ -275,6 +275,20 @@ int fql_hash_join(Dgraph* proc_graph, Process* proc)
 	return 1;
 }
 
+int fql_distinct(Dgraph* proc_graph, Process* proc)
+{
+	Vec** recs = fifo_get(proc->fifo_in[0]);
+
+	Group* group = proc->proc_data;
+	int ret = group_record(group, *recs);
+	if (ret == 1) {
+		fifo_add(proc->fifo_out[0], recs);
+	} else {
+		_recycle_recs(proc, *recs, (*recs)->size);
+	}
+	return 1;
+}
+
 int _dump_grouping(Process* proc)
 {
 	Group* group = proc->proc_data;

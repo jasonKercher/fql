@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "column.h"
+#include "group.h"
 #include "logic.h"
 #include "process.h"
 #include "query.h"

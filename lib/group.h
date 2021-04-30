@@ -1,6 +1,7 @@
 #ifndef GROUP_H
 #define GROUP_H
 
+#include "query.h"
 #include "column.h"
 #include "process.h"
 #include "util/vec.h"
@@ -25,6 +26,8 @@ struct aggregate {
 	aggregate_fn call__;
 };
 typedef struct aggregate Aggregate;
+
+int aggregate_resolve(struct aggregate*, enum aggregate_function);
 
 int fql_count(struct aggregate*, struct group*, struct vec* rec, unsigned idx);
 

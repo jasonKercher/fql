@@ -2,10 +2,12 @@
 
 #include <stdbool.h>
 
-#include "field.h"
 #include "fql.h"
-#include "logic.h"
 #include "select.h"
+#include "logic.h"
+#include "group.h"
+#include "field.h"
+#include "function.h"
 #include "util/dgraph.h"
 #include "util/util.h"
 
@@ -220,21 +222,22 @@ void query_add_subquery_source(Query* query,
 
 }
 
-void query_set_distinct(Query* query)
-{
-	query->distinct = group_new();
-}
-
 void query_apply_table_alias(Query* query, const char* alias)
 {
 	Table* table = vec_back(query->sources);
 	string_strcpy(&table->alias, alias);
 }
 
-//void query_select_finalize(Query* query)
-//{
-//	select_finalize(query->op);
-//}
+void query_set_distinct(Query* query)
+{
+	query->distinct = group_new();
+}
+
+int query_add_aggregate(Query* query, enum aggregate_function agg_type)
+{
+	Aggregate* agg = vec_add_one(&query->groupby->aggregates);
+	return aggregate_resolve(agg, agg_type);
+}
 
 void _add_function(Query* query, Function* func, enum field_type type)
 {
@@ -242,17 +245,24 @@ void _add_function(Query* query, Function* func, enum field_type type)
 	col->field_type = type;
 
 	if (_distribute_column(query, col)) {
-		fprintf(stderr, "Unhandled function: %s\n", func->name);
+		fprintf(stderr,
+			"Unhandled function: %s\n",
+			function_get_name(func));
 		return;
 	}
 	stack_push(&query->function_stack, col);
 }
 
-void query_enter_function(Query* query, const char* func_name)
+int query_enter_function(Query* query, enum scalar_function scalar_type)
 {
 	enum field_type type = FIELD_UNDEFINED;
-	Function* func = function_new(func_name, &type);
+	Function* func = function_new(scalar_type, &type);
+	if (func->call__ == NULL) {
+		return FQL_FAIL;
+	}
 	_add_function(query, func, type);
+
+	return FQL_GOOD;
 }
 
 void query_enter_operator(Query* query, enum expr_operator op)
@@ -269,8 +279,6 @@ void query_exit_function(Query* query)
 	//	;/* TODO: stop here */
 	//}
 }
-
-/*** Scroll below this comment at your own risk ***/
 
 void query_set_logic_comparison(Query* query, const char* op)
 {

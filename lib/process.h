@@ -58,6 +58,7 @@ int fql_select(struct dgraph*, struct process*);
 int fql_logic(struct dgraph*, struct process*);
 int fql_cartesian_join(struct dgraph*, struct process*);
 int fql_hash_join(struct dgraph*, struct process*);
+int fql_distinct(struct dgraph*, struct process*);
 int fql_groupby(struct dgraph*, struct process*);
 int fql_no_op(struct dgraph*, struct process*);
 

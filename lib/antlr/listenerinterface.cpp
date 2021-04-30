@@ -329,7 +329,42 @@ void ListenerInterface::exitSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext *
 
 void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx)
 {
-	query_enter_function(_query, ctx->getText().c_str());
+	int ret = 0;
+
+	if (ctx->ABS())        ret = query_enter_function(_query, SCALAR_ABS);
+	if (ctx->ASCII())      ret = query_enter_function(_query, SCALAR_ASCII);
+	if (ctx->CEILING())    ret = query_enter_function(_query, SCALAR_CEILING);
+	if (ctx->CHAR())       ret = query_enter_function(_query, SCALAR_CHAR);
+	if (ctx->CHARINDEX())  ret = query_enter_function(_query, SCALAR_CHARINDEX);
+	if (ctx->CHECKSUM())   ret = query_enter_function(_query, SCALAR_CHECKSUM);
+	if (ctx->DATALENGTH()) ret = query_enter_function(_query, SCALAR_DATALENGTH);
+	if (ctx->DAY())        ret = query_enter_function(_query, SCALAR_DAY);
+	if (ctx->FLOOR())      ret = query_enter_function(_query, SCALAR_FLOOR);
+	if (ctx->ISDATE())     ret = query_enter_function(_query, SCALAR_ISDATE);
+	if (ctx->ISNUMERIC())  ret = query_enter_function(_query, SCALAR_ISNUMERIC);
+	if (ctx->LEFT())       ret = query_enter_function(_query, SCALAR_LEFT);
+	if (ctx->LEN())        ret = query_enter_function(_query, SCALAR_LEN);
+	if (ctx->LOWER())      ret = query_enter_function(_query, SCALAR_LOWER);
+	if (ctx->LTRIM())      ret = query_enter_function(_query, SCALAR_LTRIM);
+	if (ctx->MONTH())      ret = query_enter_function(_query, SCALAR_MONTH);
+	if (ctx->NCHAR())      ret = query_enter_function(_query, SCALAR_NCHAR);
+	if (ctx->PATINDEX())   ret = query_enter_function(_query, SCALAR_PATINDEX);
+	if (ctx->RAND())       ret = query_enter_function(_query, SCALAR_RAND);
+	if (ctx->REPLACE())    ret = query_enter_function(_query, SCALAR_REPLACE);
+	if (ctx->RIGHT())      ret = query_enter_function(_query, SCALAR_RIGHT);
+	if (ctx->ROUND())      ret = query_enter_function(_query, SCALAR_ROUND);
+	if (ctx->RTRIM())      ret = query_enter_function(_query, SCALAR_RTRIM);
+	if (ctx->SIGN())       ret = query_enter_function(_query, SCALAR_SIGN);
+	if (ctx->SPACE())      ret = query_enter_function(_query, SCALAR_SPACE);
+	if (ctx->STR())        ret = query_enter_function(_query, SCALAR_STR);
+	if (ctx->SUBSTRING())  ret = query_enter_function(_query, SCALAR_SUBSTRING);
+	if (ctx->UPPER())      ret = query_enter_function(_query, SCALAR_UPPER);
+	if (ctx->USER_NAME())  ret = query_enter_function(_query, SCALAR_USER_NAME);
+	if (ctx->YEAR())       ret = query_enter_function(_query, SCALAR_YEAR);
+
+	if (ret) {
+		_return_code = ret;
+	}
 }
 void ListenerInterface::exitScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx) { }
 
@@ -341,6 +376,7 @@ void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContex
 
 void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx)
 {
+
 }
 
 void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx)
@@ -458,7 +494,7 @@ void ListenerInterface::exitPredicate(TSqlParser::PredicateContext * ctx) { }
 void ListenerInterface::enterQuery_expression(TSqlParser::Query_expressionContext * ctx) { }
 void ListenerInterface::exitQuery_expression(TSqlParser::Query_expressionContext * ctx) { }
 
-void ListenerInterface::enterQuery_specification(TSqlParser::Query_specificationContext * ctx) 
+void ListenerInterface::enterQuery_specification(TSqlParser::Query_specificationContext * ctx)
 {
 	if (ctx->DISTINCT()) {
 		query_set_distinct(_query);
@@ -466,11 +502,53 @@ void ListenerInterface::enterQuery_specification(TSqlParser::Query_specification
 }
 void ListenerInterface::exitQuery_specification(TSqlParser::Query_specificationContext * ctx) { }
 
-void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx) { }
+void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx)
+{
+	int ret = 0;
+	if (ctx->AVG())
+		ret = query_add_aggregate(_query, AGG_AVG);
+	else if (ctx->CHECKSUM_AGG())
+		ret = query_add_aggregate(_query, AGG_CHECKSUM_AGG);
+	else if (ctx->COUNT())
+		ret = query_add_aggregate(_query, AGG_COUNT);
+	else if (ctx->COUNT_BIG())
+		ret = query_add_aggregate(_query, AGG_COUNT_BIG);
+	else if (ctx->GROUPING())
+		ret = query_add_aggregate(_query, AGG_GROUPING);
+	else if (ctx->GROUPING_ID())
+		ret = query_add_aggregate(_query, AGG_GROUPING_ID);
+	//else if (ctx->LR_BRACKET())
+	//	ret = query_add_aggregate(_query, AGG_LR_BRACKET);
+	else if (ctx->MAX())
+		ret = query_add_aggregate(_query, AGG_MAX);
+	else if (ctx->MIN())
+		ret = query_add_aggregate(_query, AGG_MIN);
+	//else if (ctx->RR_BRACKET())
+	//	ret = query_add_aggregate(_query, AGG_RR_BRACKET);
+	//else if (ctx->STAR())
+	//	ret = query_add_aggregate(_query, AGG_STAR);
+	else if (ctx->STDEV())
+		ret = query_add_aggregate(_query, AGG_STDEV);
+	else if (ctx->STDEVP())
+		ret = query_add_aggregate(_query, AGG_STDEVP);
+	else if (ctx->SUM())
+		ret = query_add_aggregate(_query, AGG_SUM);
+	else if (ctx->VAR())
+		ret = query_add_aggregate(_query, AGG_VAR);
+	else if (ctx->VARP())
+		ret = query_add_aggregate(_query, AGG_VARP);
+
+	if (ret) {
+		_return_code = ret;
+	}
+}
 void ListenerInterface::exitAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx) { }
 
 void ListenerInterface::enterAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * ctx) { }
 void ListenerInterface::exitAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * ctx) { }
+
+void ListenerInterface::enterAll_distinct_expression(TSqlParser::All_distinct_expressionContext * ctx) { }
+void ListenerInterface::exitAll_distinct_expression(TSqlParser::All_distinct_expressionContext * ctx) { }
 
 
 /* Every Rule Operations */
@@ -1787,9 +1865,6 @@ void ListenerInterface::exitRanking_windowed_function(TSqlParser::Ranking_window
 
 void ListenerInterface::enterAnalytic_windowed_function(TSqlParser::Analytic_windowed_functionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitAnalytic_windowed_function(TSqlParser::Analytic_windowed_functionContext * ctx) { }
-
-void ListenerInterface::enterAll_distinct_expression(TSqlParser::All_distinct_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitAll_distinct_expression(TSqlParser::All_distinct_expressionContext * ctx) { }
 
 void ListenerInterface::enterOver_clause(TSqlParser::Over_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitOver_clause(TSqlParser::Over_clauseContext * ctx) { }

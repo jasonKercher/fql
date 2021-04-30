@@ -2,20 +2,68 @@
 
 #include "fql.h"
 #include "column.h"
+#include "query.h"
 #include "util/util.h"
+
+static const char* scalar_str[] = {
+	"UNDEFINED",
+	"ABS",
+	"ASCII",
+	"CEILING",
+	"CHAR",
+	"CHARINDEX",
+	"CHECKSUM",
+	"DATALENGTH",
+	"DAY",
+	"FLOOR",
+	"ISDATE",
+	"ISNUMERIC",
+	"LEFT",
+	"LEN",
+	"LOWER",
+	"LTRIM",
+	"MONTH",
+	"NCHAR",
+	"PATINDEX",
+	"RAND",
+	"REPLACE",
+	"RIGHT",
+	"ROUND",
+	"RTRIM",
+	"SIGN",
+	"SPACE",
+	"STR",
+	"SUBSTRING",
+	"UPPER",
+	"USER_NAME",
+	"YEAR",
+};
+
+static const char* op_str[] = {
+	"PLUS",
+	"MINUS",
+	"MULTIPY",
+	"DIVIDE",
+	"MODULE",
+	"BIT_OR",
+	"BIT_AND",
+	"BIT_XOR",
+	"UNARY_BIT_NOT",
+	"UNARY_MINUS",
+};
 
 int not_implemented(Function* fn, union field* f, Vec* rec)
 {
-	fprintf(stderr, "function not implemented: %s\n", fn->name);
+	fprintf(stderr, "function not implemented: %s\n", scalar_str[fn->type]);
 	return 0;
 }
 
-Function* function_new(const char* func_name, enum field_type* type)
+Function* function_new(enum scalar_function scalar_type, enum field_type* type)
 {
 	Function* new_func = NULL;
 	malloc_(new_func, sizeof(*new_func));
 
-	return function_construct(new_func, func_name, type);
+	return function_construct(new_func, scalar_type, type);
 }
 
 Function* function_new_op(enum expr_operator op)
@@ -26,8 +74,8 @@ Function* function_new_op(enum expr_operator op)
 	*new_func = (Function) {
 		 &not_implemented       /* call__ */
 		,vec_new_(Column*)      /* args */
-		,""                     /* name */
 		,op                     /* operator */
+		,SCALAR_UNDEFINED	/* type */
 		,2                      /* arg_min */
 		,2                      /* arg_max */
 	};
@@ -37,7 +85,7 @@ Function* function_new_op(enum expr_operator op)
 
 int _invalid_type(Function* fn)
 {
-	fprintf(stderr, "Invalid type for %s operation\n", fn->name);
+	fprintf(stderr, "Invalid type for %s operation\n", op_str[fn->type]);
 	return FQL_FAIL;
 }
 
@@ -57,39 +105,13 @@ int function_op_resolve(Function* func, enum field_type* type)
 	*type = field_determine_type(col0->field_type, col1->field_type);
 
 	switch (func->op) {
-	case OPERATOR_PLUS:
-		strncpy_(func->name, "PLUS", FUNC_NAME_MAX);
-		break;
-	case OPERATOR_MINUS:
-		strncpy_(func->name, "MINUS", FUNC_NAME_MAX);
-		break;
-	case OPERATOR_MULTIPY:
-		strncpy_(func->name, "MULTIPLY", FUNC_NAME_MAX);
-		break;
-	case OPERATOR_DIVIDE:
-		strncpy_(func->name, "DIVIDE", FUNC_NAME_MAX);
-		break;
-	case OPERATOR_MODULE:
-		strncpy_(func->name, "MODULE", FUNC_NAME_MAX);
-		break;
-	case OPERATOR_BIT_OR:
-		strncpy_(func->name, "BIT_OR", FUNC_NAME_MAX);
-		break;
-	case OPERATOR_BIT_AND:
-		strncpy_(func->name, "BIT_AND", FUNC_NAME_MAX);
-		break;
-	case OPERATOR_BIT_XOR:
-		strncpy_(func->name, "BIT_XOR", FUNC_NAME_MAX);
-		break;
 	case OPERATOR_UNARY_BIT_NOT:
 		func->arg_min = 1;
 		func->arg_max = 1;
-		strncpy_(func->name, "BIT_NOT", FUNC_NAME_MAX);
 		break;
 	case OPERATOR_UNARY_MINUS:
 		func->arg_min = 1;
 		func->arg_max = 1;
-		strncpy_(func->name, "UNARY_MINUS", FUNC_NAME_MAX);
 		break;
 	default:
 		;
@@ -103,103 +125,119 @@ int function_op_resolve(Function* func, enum field_type* type)
 	return FQL_GOOD;
 }
 
-Function* function_construct(Function* func, const char* func_name, enum field_type* type)
+Function* function_construct(Function* func, enum scalar_function scalar_type, enum field_type* type)
 {
 	*func = (Function) {
 		 &not_implemented       /* call__ */
 		,vec_new_(Column*)      /* args */
-		,""                     /* name */
 		,OPERATOR_NONE          /* op */
+		,scalar_type            /* type */
 		,0                      /* arg_min */
 		,0                      /* arg_max */
 	};
 
-	strncpy_(func->name, func_name, FUNC_NAME_MAX);
-	//string_construct(&func->ret_buf);
-
-	func->arg_min = 0;
-	func->arg_max = 0;
-	if      (istring_eq(func_name, "CURRENT_TIMESTAMP")){ return func; }
-	else if (istring_eq(func_name, "GETDATE")){ return func; }
-	else if (istring_eq(func_name, "GETUTCDATE")){ return func; }
-	else if (istring_eq(func_name, "CURRENT_USER")){ return func; }
-	else if (istring_eq(func_name, "SYSTEM_USER")){ return func; }
-	else if (istring_eq(func_name, "SESSION_USER")){ return func; }
+	//func->arg_min = 0;
+	//func->arg_max = 0;
+	//CURRENT_TIMESTAMP
+	//GETDATE
+	//GETUTCDATE
+	//CURRENT_USER
+	//SYSTEM_USER
+	//SESSION_USER
 
 	func->arg_min = 0;
 	func->arg_max = 1;
-	if (istring_eq(func_name, "RAND")){ return func; }
-	if (istring_eq(func_name, "USER_NAME")){ return func; }
+	switch (scalar_type) {
+	case SCALAR_RAND: return func;
+	case SCALAR_USER_NAME: return func;
+	default:
+		;
+	}
 
 	func->arg_min = 1;
 	func->arg_max = 1;
-	if      (istring_eq(func_name, "ABS")){ return func; }
-	else if (istring_eq(func_name, "ASCII")){ return func; }
-	else if (istring_eq(func_name, "CAST")) /* ???? */{ return func; }
-	else if (istring_eq(func_name, "CEILING")){ return func; }
-	else if (istring_eq(func_name, "CHAR")){ return func; }
-	else if (istring_eq(func_name, "DATALENGTH")) { return func; }
-	else if (istring_eq(func_name, "DAY")){ return func; }
-	else if (istring_eq(func_name, "FLOOR")){ return func; }
-	else if (istring_eq(func_name, "ISDATE")){ return func; }
-	else if (istring_eq(func_name, "ISNUMERIC")){ return func; }
-	else if (istring_eq(func_name, "LEN")) { return func; }
-	else if (istring_eq(func_name, "LOWER")){ return func; }
-	else if (istring_eq(func_name, "LTRIM")){ return func; }
-	else if (istring_eq(func_name, "MONTH")){ return func; }
-	else if (istring_eq(func_name, "NCHAR")){ return func; }
-	else if (istring_eq(func_name, "RTRIM")){ return func; }
-	else if (istring_eq(func_name, "SESSIONPROPERTY")){ return func; }
-	else if (istring_eq(func_name, "SPACE")){ return func; }
-	else if (istring_eq(func_name, "TRY_CAST")){ return func; }
-	else if (istring_eq(func_name, "UPPER")){ return func; }
-	else if (istring_eq(func_name, "SIGN")){ return func; }
-	else if (istring_eq(func_name, "YEAR")){ return func; }
+	switch (scalar_type) {
+	case SCALAR_ABS: return func;
+	case SCALAR_ASCII: return func;
+	case SCALAR_CEILING: return func;
+	case SCALAR_CHAR: return func;
+	case SCALAR_DATALENGTH: return func;
+	case SCALAR_DAY: return func;
+	case SCALAR_FLOOR: return func;
+	case SCALAR_ISDATE: return func;
+	case SCALAR_ISNUMERIC: return func;
+	case SCALAR_LEN: return func;
+	case SCALAR_LOWER: return func;
+	case SCALAR_LTRIM: return func;
+	case SCALAR_MONTH: return func;
+	case SCALAR_NCHAR: return func;
+	case SCALAR_RTRIM: return func;
+	//case SCALAR_SESSIONPROPERTY: return func;
+	case SCALAR_SPACE: return func;
+	//case SCALAR_TRY_CAST: return func;
+	case SCALAR_UPPER: return func;
+	case SCALAR_SIGN: return func;
+	case SCALAR_YEAR: return func;
+	default:
+		;
+	}
 
 	func->arg_min = 1;
 	func->arg_max = 3;
-	if (istring_eq(func_name, "STR")){ return func; }
+	switch (scalar_type) {
+	case SCALAR_STR: return func;
+	default:
+		;
+	}
 
 	func->arg_min = 2;
 	func->arg_max = 2;
-	if      (istring_eq(func_name, "DATENAME")){ return func; }
-	else if (istring_eq(func_name, "DATEPART")){ return func; }
-	else if (istring_eq(func_name, "ISNULL")){ return func; }
-	else if (istring_eq(func_name, "LEFT")) {
+	switch (scalar_type) {
+	//case SCALAR_DATENAME: return func;
+	//case SCALAR_DATEPART: return func;
+	//case SCALAR_ISNULL: return func;
+	case SCALAR_LEFT:
 		func->call__ = &fql_left;
 		*type = FIELD_STRING;
 		return func;
-	}
-	else if (istring_eq(func_name, "NULLIF")){ return func; }
-	else if (istring_eq(func_name, "PATINDEX")){ return func; }
-	else if (istring_eq(func_name, "RIGHT")) {
+	//case SCALAR_NULLIF: return func;
+	case SCALAR_PATINDEX: return func;
+	case SCALAR_RIGHT:
 		func->call__ = &fql_right;
 		*type = FIELD_STRING;
 		return func;
+	default:
+		;
 	}
 
 	func->arg_min = 2;
 	func->arg_max = 3;
-	if      (istring_eq(func_name, "CONVERT")){ return func; }
-	else if (istring_eq(func_name, "ROUND")){ return func; }
-	else if (istring_eq(func_name, "TRY_CONVERT")){ return func; }
+	switch (scalar_type) {
+	//case SCALAR_CONVERT: return func;
+	case SCALAR_ROUND: return func;
+	//case SCALAR_TRY_CONVERT: return func;
+	default: ;
+	}
 
 	func->arg_min = 3;
 	func->arg_max = 3;
-	if      (istring_eq(func_name, "CHARINDEX")){ return func; }
-	else if (istring_eq(func_name, "DATEADD")){ return func; }
-	else if (istring_eq(func_name, "DATEDIFF")){ return func; }
-	else if (istring_eq(func_name, "REPLACE")){ return func; }
-	else if (istring_eq(func_name, "SUBSTRING")) { return func; }
+	switch (scalar_type) {
+	case SCALAR_CHARINDEX: return func;
+	//case SCALAR_DATEADD: return func;
+	//case SCALAR_DATEDIFF: return func;
+	case SCALAR_REPLACE: return func;
+	case SCALAR_SUBSTRING: return func;
+	default: ;
+	}
 
-	func->arg_min = 4;
-	func->arg_max = 4;
-	if (istring_eq(func_name, "STUFF")){ return func; }
+	//func->arg_min = 4;
+	//func->arg_max = 4;
+	//STUFF
 
-	func->arg_min = 2;
-	func->arg_max = 10000;
-	if      (istring_eq(func_name, "COALESCE")){ return func; }
-	else if (istring_eq(func_name, "CONCAT")){ return func; }
+	//func->arg_min = 2;
+	//func->arg_max = 10000;
+	//COALESCE
+	//CONCAT
 
 	return func;
 }
@@ -215,6 +253,11 @@ void function_free(Function* func)
 	free_(func);
 }
 
+const char* function_get_name(Function* func)
+{
+	return scalar_str[func->type];
+}
+
 int function_validate(Function* func)
 {
 	int argc = func->args->size;
@@ -224,11 +267,11 @@ int function_validate(Function* func)
 	if (func->arg_min == func->arg_max) {
 		fprintf(stderr,
 			"Function `%s' expected %d argument(s)... Found %d\n",
-			func->name, func->arg_min, argc);
+			scalar_str[func->type], func->arg_min, argc);
 	} else {
 		fprintf(stderr,
 			"Function `%s' expected between %d and %d arguments... Found %d\n",
-			func->name, func->arg_min, func->arg_max, argc);
+			scalar_str[func->type], func->arg_min, func->arg_max, argc);
 	}
 	return FQL_FAIL;
 }

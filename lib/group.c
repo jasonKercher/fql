@@ -1,8 +1,34 @@
 #include "group.h"
 #include "column.h"
-#include "function.h"
+#include "query.h"
 #include "util/util.h"
 #include "util/stringview.h"
+
+static const char* agg_str[14] = {
+	"UNDEFINED",
+	"AVG",
+	"CHECKSUM_AGG",
+	"COUNT",
+	"COUNT_BIG",
+	"GROUPING",
+	"GROUPING_ID",
+	"MAX",
+	"MIN",
+	"STDEV",
+	"STDEVP",
+	"SUM",
+	"VAR",
+	"VARP",
+};
+
+int aggregate_resolve(Aggregate* agg, enum aggregate_function agg_type)
+{
+	switch (agg_type) {
+	default:
+		fprintf(stderr, "Aggregate function `%s' not yet implemented\n", agg_str[agg_type]);
+		return FQL_FAIL;
+	}
+}
 
 Group* group_new()
 {
