@@ -29,6 +29,9 @@ Group* group_construct(Group* group)
 
 void group_free(Group* group)
 {
+	if (group == NULL) {
+		return;
+	}
 	group_destroy(group);
 	free_(group);
 }

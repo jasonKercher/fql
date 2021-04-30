@@ -308,16 +308,25 @@ void _where(Plan* plan, Query* query)
 
 void _group(Plan* plan, Query* query)
 {
-	if (vec_empty(&query->groupby->columns)) {
-		return;
+	if (!vec_empty(&query->groupby->columns)) {
+		Process* group_proc = process_new("GROUP BY ", plan);
+		group_proc->action__ = &fql_groupby;
+		group_proc->proc_data = query->groupby;
+		group_cat_description(query->groupby, group_proc);
+		Dnode* group_node = dgraph_add_data(plan->processes, group_proc);
+		plan->current->out[0] = group_node;
+		plan->current = group_node;
 	}
-	Process* group_proc = process_new("GROUP BY ", plan);
-	group_proc->action__ = &fql_groupby;
-	group_proc->proc_data = query->groupby;
-	group_cat_description(query->groupby, group_proc);
-	Dnode* group_node = dgraph_add_data(plan->processes, group_proc);
-	plan->current->out[0] = group_node;
-	plan->current = group_node;
+
+	if (query->distinct) {
+		Process* group_proc = process_new("DISTINCT ", plan);
+		group_proc->action__ = &fql_groupby;
+		group_proc->proc_data = query->distinct;
+		group_cat_description(query->distinct, group_proc);
+		Dnode* group_node = dgraph_add_data(plan->processes, group_proc);
+		plan->current->out[0] = group_node;
+		plan->current = group_node;
+	}
 }
 
 void _having(Plan* plan, Query* query) { }

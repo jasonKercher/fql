@@ -34,16 +34,17 @@ enum logic_mode {
 
 /** Query **/
 struct query {
-	struct fql_plan* plan;          /* execution plan */
-	struct vec* sources;            /* struct table */
+	struct fql_plan* plan;
+	struct vec* sources;
 	struct logicgroup* where;
 	struct vec* validation_list;    /* for no-source tables */
-	struct group* groupby;          /* struct expression */
-	struct queue* having;           /* struct expression */
+	struct group* groupby;
+	struct group* distinct;
+	struct queue* having;
 	struct expression* limit;       /* TOP */
 	void* op;                       /* Operation structure */
-	int query_id;                   /* Query ID */
-	int query_total;                /* Query Total */
+	int query_id;
+	int query_total;
 
 	/* All the variables below are temporaries for
 	 * tracking the query as antlr traverses it
@@ -66,8 +67,9 @@ void query_free(void*);
 int query_add_constant(Query*, const char*, int);
 void query_add_column(struct query*, char*, const char* table);
 void query_add_asterisk(struct query*, const char* table);
-void query_add_subquery_source(struct query*, struct query*, const char*);
 void query_add_source(struct query*, struct stack**, const char*);
+void query_add_subquery_source(struct query*, struct query*, const char*);
+void query_set_distinct(struct query*);
 void query_apply_table_alias(struct query*, const char*);
 //void query_select_finalize(struct query*);
 

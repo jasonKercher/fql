@@ -458,7 +458,12 @@ void ListenerInterface::exitPredicate(TSqlParser::PredicateContext * ctx) { }
 void ListenerInterface::enterQuery_expression(TSqlParser::Query_expressionContext * ctx) { }
 void ListenerInterface::exitQuery_expression(TSqlParser::Query_expressionContext * ctx) { }
 
-void ListenerInterface::enterQuery_specification(TSqlParser::Query_specificationContext * ctx) { }
+void ListenerInterface::enterQuery_specification(TSqlParser::Query_specificationContext * ctx) 
+{
+	if (ctx->DISTINCT()) {
+		query_set_distinct(_query);
+	}
+}
 void ListenerInterface::exitQuery_specification(TSqlParser::Query_specificationContext * ctx) { }
 
 void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx) { }

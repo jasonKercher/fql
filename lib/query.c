@@ -25,6 +25,7 @@ Query* query_construct(Query* query, int id)
 		,NULL                   /* where */
 		,vec_new_(Column*)      /* validation_list */
 		,group_new()            /* groupby */
+		,NULL                   /* distinct */
 		,NULL                   /* having */
 		,NULL                   /* limit */
 		,NULL                   /* operation */
@@ -58,6 +59,7 @@ void query_free(void* generic_query)
 	logicgroup_free(query->where);
 	vec_free(query->validation_list);
 	group_free(query->groupby);
+	group_free(query->distinct);
 	queue_free_data(&query->having);
 	free_(query->limit);
 	free_(query->expr);
@@ -99,6 +101,9 @@ int _distribute_column(Query* query, Column* col)
 	switch(query->mode) {
 	case MODE_SELECT:
 		select_add_column(query->op, col);
+		if (query->distinct) {
+			group_add_column(query->distinct, col);
+		}
 		break;
 	case MODE_SEARCH:
 		_add_logic_column(query, col);
@@ -213,6 +218,11 @@ void query_add_subquery_source(Query* query,
 				 query->sources->size - 1,
 				 query->join);
 
+}
+
+void query_set_distinct(Query* query)
+{
+	query->distinct = group_new();
 }
 
 void query_apply_table_alias(Query* query, const char* alias)
