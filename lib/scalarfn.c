@@ -6,6 +6,70 @@
 
 #include "util/stringview.h"
 
+
+/* naive utf8 handling. If I cared, I'd use libicu. */
+int _get_byte_count(char c, unsigned limit)
+{
+	if ((c & 0x80) == 0) {
+		return 1;
+	}
+
+	int n = 0;
+	if ((c & 0xE0) == 0xC0) {
+		n = 2;
+	} else if ((c & 0xF0) == 0xE0) {
+		n = 3;
+	} else if ((c & 0xF8) == 0xF0) {
+		n = 4;
+	} else {
+		fputs("Invalid UTF-8 sequence\n", stderr);
+		return FQL_FAIL;
+	}
+
+	if (n > limit) {
+		fputs("Invalid UTF-8 sequence\n", stderr);
+		return FQL_FAIL;
+	}
+	return n;
+}
+
+int _get_rev_byte_count(const char* s, unsigned limit)
+{
+	if ((*s & 0x80) == 0) {
+		return 1;
+	}
+
+	int i = 0;
+	for (; (s[i] & 0xC0) == 0x80 && -i < limit; --i);
+
+	if (-i >= limit) {
+		fputs("Invalid UTF-8 sequence\n", stderr);
+		return FQL_FAIL;
+	}
+
+	/* Check Leading byte */
+	_Bool valid = false;
+	switch (-i+1) {
+	case 2:
+		valid = ((s[i] & 0xE0) == 0xC0);
+		break;
+	case 3:
+		valid = ((s[i] & 0xF0) == 0xE0);
+		break;
+	case 4:
+		valid = ((s[i] & 0xF8) == 0xF0);
+		break;
+	}
+
+	if (!valid) {
+		fputs("Invalid UTF-8 sequence\n", stderr);
+		return FQL_FAIL;
+	}
+
+	return -i+1;
+}
+
+
 /* ret is assumed to be of the correct type */
 
 int fql_left(Function* fn, union field* ret, Vec* rec)
@@ -18,10 +82,30 @@ int fql_left(Function* fn, union field* ret, Vec* rec)
 		return FQL_FAIL;
 	}
 
-	int i = 0;
-	for (; i < n && i < s.len; ++i) {
-		string_push_back(ret->s, s.data[i]);
+	if (n > s.len) {
+		string_strncpy(ret->s, s.data, s.len);
+		return FQL_GOOD;
 	}
+
+	if (fn->char_as_byte) {
+		string_strncpy(ret->s, s.data, n);
+		return FQL_GOOD;
+	}
+
+	int i = 0;
+	unsigned offset = 0;
+	unsigned bytes = 0;
+	for (; i < n && i+offset < s.len; ++i) {
+		int b = _get_byte_count(s.data[i+offset], s.len - i);
+		if (b == FQL_FAIL) {
+			return FQL_FAIL;
+		}
+		bytes += b;
+		offset += b - 1;
+	}
+
+	string_strncpy(ret->s, s.data, bytes);
+
 
 	return FQL_GOOD;
 }
@@ -36,10 +120,30 @@ int fql_right(Function* fn, union field* ret, Vec* rec)
 		return FQL_FAIL;
 	}
 
-	int i = s.len - n;
-	for (; i < s.len; ++i) {
-		string_push_back(ret->s, s.data[i]);
+	if (n > s.len) {
+		string_strncpy(ret->s, s.data, n);
+		return FQL_GOOD;
 	}
+
+	if (fn->char_as_byte) {
+		int i = s.len - n;
+		string_strncpy(ret->s, &s.data[i], n);
+		return FQL_GOOD;
+	}
+
+	int i = s.len - 1;
+	unsigned char_count = 0;
+	unsigned bytes = 0;
+	for (; i >= 0 && char_count < n; ++char_count) {
+		int b = _get_rev_byte_count(&s.data[i], i+1);
+		if (b == FQL_FAIL) {
+			return FQL_FAIL;
+		}
+		bytes += b;
+		i -= b;
+	}
+
+	string_strncpy(ret->s, &s.data[i+1], bytes);
 
 	return FQL_GOOD;
 }

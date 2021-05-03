@@ -47,6 +47,7 @@ void string_append_stringview(String*, struct stringview*);
 /* char interface */
 void string_push_back(String*, char);
 void string_strcat(String*, const char*);
+void string_strncat(String*, const char*, size_t);
 void string_strcpy(String*, const char*);
 void string_strncpy(String*, const char*, size_t);
 void string_sprintf(String* s, const char* fmt, ...);

@@ -122,6 +122,15 @@ void string_strcat(String* dest, const char* src)
 	memcpy(end, src, len + 1);
 }
 
+void string_strncat(String* dest, const char* src, size_t n)
+{
+	int index = dest->size;
+	vec_resize(dest, dest->size + n);
+	char* end = vec_at(dest, index);
+	memcpy(end, src, n);
+	end[n] = '\0';
+}
+
 void string_strcpy(String* dest, const char* src)
 {
 	size_t len = strlen(src);

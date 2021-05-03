@@ -253,10 +253,10 @@ void _add_function(Query* query, Function* func, enum field_type type)
 	stack_push(&query->function_stack, col);
 }
 
-int query_enter_function(Query* query, enum scalar_function scalar_type)
+int query_enter_function(Query* query, enum scalar_function scalar_type, int char_as_byte)
 {
 	enum field_type type = FIELD_UNDEFINED;
-	Function* func = function_new(scalar_type, &type);
+	Function* func = function_new(scalar_type, &type, char_as_byte);
 	if (func->call__ == NULL) {
 		return FQL_FAIL;
 	}

@@ -142,7 +142,7 @@ void query_apply_table_alias(struct query*, const char*);
 void query_set_distinct(struct query*);
 int query_add_aggregate(struct query*, enum aggregate_function);
 
-int query_enter_function(struct query*, enum scalar_function);
+int query_enter_function(struct query*, enum scalar_function, int);
 void query_exit_function(struct query*);
 void query_enter_operator(struct query*, enum expr_operator op);
 

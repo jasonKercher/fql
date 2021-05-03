@@ -19,6 +19,7 @@ struct fql_handle {
 		int print_plan;
 		int threading;
 		int verbose;
+		int char_as_byte;
 	} props;
 };
 

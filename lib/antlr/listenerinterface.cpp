@@ -362,7 +362,7 @@ void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_na
 	if (ctx->USER_NAME())  fn = SCALAR_USER_NAME;
 	if (ctx->YEAR())       fn = SCALAR_YEAR;
 
-	int ret = query_enter_function(_query, fn);
+	int ret = query_enter_function(_query, fn, _fql->props.char_as_byte);
 
 	if (ret) {
 		_return_code = ret;

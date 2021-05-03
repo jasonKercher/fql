@@ -15,6 +15,9 @@ static const char* help_string = "\n No Help here !\n\n";
 void parseargs(struct fql_handle* handle, char c)
 {
 	switch (c) {
+	case 'b':
+		fql_set_char_as_byte(handle, 1);
+		break;
 	case 'C':
 		fql_set_force_cartesian(handle, 1);
 		break;
@@ -76,8 +79,9 @@ int main (int argc, char **argv)
 	{
 		/* long option, (no) arg, 0, short option */
 		//{"verbose", no_argument, 0, 'v'},
-		{"force-cartesian",no_argument, 0, 'C' },
-		{"dry-run",no_argument, 0, 'd' },
+		{"char-as-byte", no_argument, 0, 'b'},
+		{"force-cartesian",no_argument, 0, 'C'},
+		{"dry-run",no_argument, 0, 'd'},
 		{"no-header", no_argument, 0, 'h'},
 		{"help", no_argument, 0, 'H'},
 		{"override-warnings", no_argument, 0, 'O'},
@@ -91,7 +95,7 @@ int main (int argc, char **argv)
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
 
-	while ( (c = getopt_long (argc, argv, "CdHhOps:S:tv",
+	while ( (c = getopt_long (argc, argv, "bCdHhOps:S:tv",
 					long_options, &option_index)) != -1)
 			parseargs(handle, c);
 

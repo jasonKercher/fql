@@ -52,88 +52,30 @@ static const char* op_str[] = {
 	"UNARY_MINUS",
 };
 
-int not_implemented(Function* fn, union field* f, Vec* rec)
+int _not_implemented(Function* fn, union field* f, Vec* rec)
 {
 	fprintf(stderr, "function not implemented: %s\n", scalar_str[fn->type]);
 	return 0;
 }
 
-Function* function_new(enum scalar_function scalar_type, enum field_type* type)
+Function* function_new(enum scalar_function scalar_type, enum field_type* type, int char_as_byte)
 {
 	Function* new_func = NULL;
 	malloc_(new_func, sizeof(*new_func));
 
-	return function_construct(new_func, scalar_type, type);
+	return function_construct(new_func, scalar_type, type, char_as_byte);
 }
 
-Function* function_new_op(enum expr_operator op)
-{
-	Function* new_func = NULL;
-	malloc_(new_func, sizeof(*new_func));
-
-	*new_func = (Function) {
-		 &not_implemented       /* call__ */
-		,vec_new_(Column*)      /* args */
-		,op                     /* operator */
-		,SCALAR_UNDEFINED	/* type */
-		,2                      /* arg_min */
-		,2                      /* arg_max */
-	};
-
-	return new_func;
-}
-
-int _invalid_type(Function* fn)
-{
-	fprintf(stderr, "Invalid type for %s operation\n", op_str[fn->type]);
-	return FQL_FAIL;
-}
-
-int function_op_resolve(Function* func, enum field_type* type)
-{
-	if (func->op == OPERATOR_NONE) {
-		return FQL_GOOD;
-	}
-
-	Column** args = func->args->data;
-	Column* col0 = args[0];
-	Column* col1 = col0;
-	if (func->args->size == 2) {
-		col1 = args[1];
-	}
-
-	*type = field_determine_type(col0->field_type, col1->field_type);
-
-	switch (func->op) {
-	case OPERATOR_UNARY_BIT_NOT:
-		func->arg_min = 1;
-		func->arg_max = 1;
-		break;
-	case OPERATOR_UNARY_MINUS:
-		func->arg_min = 1;
-		func->arg_max = 1;
-		break;
-	default:
-		;
-	}
-
-	func->call__ = scalar_ops[func->op][*type];
-	if (func->call__ == NULL) {
-		return _invalid_type(func);
-	}
-
-	return FQL_GOOD;
-}
-
-Function* function_construct(Function* func, enum scalar_function scalar_type, enum field_type* type)
+Function* function_construct(Function* func, enum scalar_function scalar_type, enum field_type* type, int char_as_byte)
 {
 	*func = (Function) {
-		 &not_implemented       /* call__ */
+		 &_not_implemented       /* call__ */
 		,vec_new_(Column*)      /* args */
 		,OPERATOR_NONE          /* op */
 		,scalar_type            /* type */
 		,0                      /* arg_min */
 		,0                      /* arg_max */
+		,char_as_byte           /* char_as_byte */
 	};
 
 	//func->arg_min = 0;
@@ -251,6 +193,66 @@ void function_free(Function* func)
 	vec_free(func->args);
 	//string_destroy(&func->ret_buf);
 	free_(func);
+}
+
+Function* function_new_op(enum expr_operator op)
+{
+	Function* new_func = NULL;
+	malloc_(new_func, sizeof(*new_func));
+
+	*new_func = (Function) {
+		 &_not_implemented      /* call__ */
+		,vec_new_(Column*)      /* args */
+		,op                     /* operator */
+		,SCALAR_UNDEFINED       /* type */
+		,2                      /* arg_min */
+		,2                      /* arg_max */
+		,false                  /* char_as_byte */
+	};
+
+	return new_func;
+}
+
+int _invalid_type(Function* fn)
+{
+	fprintf(stderr, "Invalid type for %s operation\n", op_str[fn->type]);
+	return FQL_FAIL;
+}
+
+int function_op_resolve(Function* func, enum field_type* type)
+{
+	if (func->op == OPERATOR_NONE) {
+		return FQL_GOOD;
+	}
+
+	Column** args = func->args->data;
+	Column* col0 = args[0];
+	Column* col1 = col0;
+	if (func->args->size == 2) {
+		col1 = args[1];
+	}
+
+	*type = field_determine_type(col0->field_type, col1->field_type);
+
+	switch (func->op) {
+	case OPERATOR_UNARY_BIT_NOT:
+		func->arg_min = 1;
+		func->arg_max = 1;
+		break;
+	case OPERATOR_UNARY_MINUS:
+		func->arg_min = 1;
+		func->arg_max = 1;
+		break;
+	default:
+		;
+	}
+
+	func->call__ = scalar_ops[func->op][*type];
+	if (func->call__ == NULL) {
+		return _invalid_type(func);
+	}
+
+	return FQL_GOOD;
 }
 
 const char* function_get_name(Function* func)

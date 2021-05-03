@@ -41,6 +41,7 @@ void fql_set_print_plan(struct fql_handle*, int);
 void fql_set_in_delim(struct fql_handle*, const char*);
 void fql_set_out_delim(struct fql_handle*, const char*);
 void fql_set_threading(struct fql_handle*, int);
+void fql_set_char_as_byte(struct fql_handle*, int);
 void fql_set_force_cartesian(struct fql_handle*, int);
 
 /* executing */

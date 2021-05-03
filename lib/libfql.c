@@ -35,6 +35,7 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 			,false  /* print_plan */
 			,false  /* threading */
 			,false  /* verbose */
+			,false  /* char_as_byte */
 		}  /* props */
 	};
 	return fql;
@@ -124,6 +125,11 @@ void fql_set_out_delim(struct fql_handle* fql, const char* delim)
 void fql_set_threading(struct fql_handle* fql, int threading)
 {
 	fql->props.threading = threading;
+}
+
+void fql_set_char_as_byte(struct fql_handle* fql, int char_as_byte)
+{
+	fql->props.char_as_byte = char_as_byte;
 }
 
 void fql_set_force_cartesian(struct fql_handle* fql, int force_cartesian)
