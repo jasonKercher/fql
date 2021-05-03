@@ -327,6 +327,22 @@ START_TEST(test_const_functions)
 	ck_assert_int_eq(rows, 0);
 	ck_assert_int_eq(fql_field_count(fql), 0);
 
+	/* UTF-8 */
+	plan_count = fql_make_plans(fql, "select left('αβΩ', 1)");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "α");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+
 	/* RIGHT */
 	plan_count = fql_make_plans(fql, "select right('testing fql', 4)");
 	ck_assert_int_eq(plan_count, 1);
@@ -338,6 +354,22 @@ START_TEST(test_const_functions)
 	ck_assert_int_eq(rows, 1);
 	ck_assert_int_eq(fields[0].type, FQL_STRING);
 	ck_assert_str_eq(fields[0].data.s, " fql");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+
+	/* UTF-8 */
+	plan_count = fql_make_plans(fql, "select right('αβΩ', 1)");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "Ω");
 
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 0);
