@@ -329,38 +329,40 @@ void ListenerInterface::exitSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext *
 
 void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx)
 {
-	int ret = 0;
+	enum scalar_function fn = SCALAR_UNDEFINED;
 
-	if (ctx->ABS())        ret = query_enter_function(_query, SCALAR_ABS);
-	if (ctx->ASCII())      ret = query_enter_function(_query, SCALAR_ASCII);
-	if (ctx->CEILING())    ret = query_enter_function(_query, SCALAR_CEILING);
-	if (ctx->CHAR())       ret = query_enter_function(_query, SCALAR_CHAR);
-	if (ctx->CHARINDEX())  ret = query_enter_function(_query, SCALAR_CHARINDEX);
-	if (ctx->CHECKSUM())   ret = query_enter_function(_query, SCALAR_CHECKSUM);
-	if (ctx->DATALENGTH()) ret = query_enter_function(_query, SCALAR_DATALENGTH);
-	if (ctx->DAY())        ret = query_enter_function(_query, SCALAR_DAY);
-	if (ctx->FLOOR())      ret = query_enter_function(_query, SCALAR_FLOOR);
-	if (ctx->ISDATE())     ret = query_enter_function(_query, SCALAR_ISDATE);
-	if (ctx->ISNUMERIC())  ret = query_enter_function(_query, SCALAR_ISNUMERIC);
-	if (ctx->LEFT())       ret = query_enter_function(_query, SCALAR_LEFT);
-	if (ctx->LEN())        ret = query_enter_function(_query, SCALAR_LEN);
-	if (ctx->LOWER())      ret = query_enter_function(_query, SCALAR_LOWER);
-	if (ctx->LTRIM())      ret = query_enter_function(_query, SCALAR_LTRIM);
-	if (ctx->MONTH())      ret = query_enter_function(_query, SCALAR_MONTH);
-	if (ctx->NCHAR())      ret = query_enter_function(_query, SCALAR_NCHAR);
-	if (ctx->PATINDEX())   ret = query_enter_function(_query, SCALAR_PATINDEX);
-	if (ctx->RAND())       ret = query_enter_function(_query, SCALAR_RAND);
-	if (ctx->REPLACE())    ret = query_enter_function(_query, SCALAR_REPLACE);
-	if (ctx->RIGHT())      ret = query_enter_function(_query, SCALAR_RIGHT);
-	if (ctx->ROUND())      ret = query_enter_function(_query, SCALAR_ROUND);
-	if (ctx->RTRIM())      ret = query_enter_function(_query, SCALAR_RTRIM);
-	if (ctx->SIGN())       ret = query_enter_function(_query, SCALAR_SIGN);
-	if (ctx->SPACE())      ret = query_enter_function(_query, SCALAR_SPACE);
-	if (ctx->STR())        ret = query_enter_function(_query, SCALAR_STR);
-	if (ctx->SUBSTRING())  ret = query_enter_function(_query, SCALAR_SUBSTRING);
-	if (ctx->UPPER())      ret = query_enter_function(_query, SCALAR_UPPER);
-	if (ctx->USER_NAME())  ret = query_enter_function(_query, SCALAR_USER_NAME);
-	if (ctx->YEAR())       ret = query_enter_function(_query, SCALAR_YEAR);
+	if (ctx->ABS())        fn = SCALAR_ABS;
+	if (ctx->ASCII())      fn = SCALAR_ASCII;
+	if (ctx->CEILING())    fn = SCALAR_CEILING;
+	if (ctx->CHAR())       fn = SCALAR_CHAR;
+	if (ctx->CHARINDEX())  fn = SCALAR_CHARINDEX;
+	if (ctx->CHECKSUM())   fn = SCALAR_CHECKSUM;
+	if (ctx->DATALENGTH()) fn = SCALAR_DATALENGTH;
+	if (ctx->DAY())        fn = SCALAR_DAY;
+	if (ctx->FLOOR())      fn = SCALAR_FLOOR;
+	if (ctx->ISDATE())     fn = SCALAR_ISDATE;
+	if (ctx->ISNUMERIC())  fn = SCALAR_ISNUMERIC;
+	if (ctx->LEFT())       fn = SCALAR_LEFT;
+	if (ctx->LEN())        fn = SCALAR_LEN;
+	if (ctx->LOWER())      fn = SCALAR_LOWER;
+	if (ctx->LTRIM())      fn = SCALAR_LTRIM;
+	if (ctx->MONTH())      fn = SCALAR_MONTH;
+	if (ctx->NCHAR())      fn = SCALAR_NCHAR;
+	if (ctx->PATINDEX())   fn = SCALAR_PATINDEX;
+	if (ctx->RAND())       fn = SCALAR_RAND;
+	if (ctx->REPLACE())    fn = SCALAR_REPLACE;
+	if (ctx->RIGHT())      fn = SCALAR_RIGHT;
+	if (ctx->ROUND())      fn = SCALAR_ROUND;
+	if (ctx->RTRIM())      fn = SCALAR_RTRIM;
+	if (ctx->SIGN())       fn = SCALAR_SIGN;
+	if (ctx->SPACE())      fn = SCALAR_SPACE;
+	if (ctx->STR())        fn = SCALAR_STR;
+	if (ctx->SUBSTRING())  fn = SCALAR_SUBSTRING;
+	if (ctx->UPPER())      fn = SCALAR_UPPER;
+	if (ctx->USER_NAME())  fn = SCALAR_USER_NAME;
+	if (ctx->YEAR())       fn = SCALAR_YEAR;
+
+	int ret = query_enter_function(_query, fn);
 
 	if (ret) {
 		_return_code = ret;
@@ -381,24 +383,23 @@ void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext
 
 void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx)
 {
-	if        (ctx->PLUS()) {
-		query_enter_operator(_query, OPERATOR_PLUS);
-	} else if (ctx->MINUS()) {
-		query_enter_operator(_query, OPERATOR_MINUS);
-	} else if (ctx->STAR()) {
-		query_enter_operator(_query, OPERATOR_MULTIPY);
-	} else if (ctx->DIVIDE()) {
-		query_enter_operator(_query, OPERATOR_DIVIDE);
-	} else if (ctx->MODULE()) {
-		query_enter_operator(_query, OPERATOR_MODULE);
-	} else if (ctx->BIT_OR()) {
-		query_enter_operator(_query, OPERATOR_BIT_OR);
-	} else if (ctx->BIT_AND()) {
-		query_enter_operator(_query, OPERATOR_BIT_AND);
-	} else if (ctx->BIT_XOR()) {
-		query_enter_operator(_query, OPERATOR_BIT_XOR);
+	enum expr_operator op = OPERATOR_NONE;
+	if      (ctx->PLUS())    op = OPERATOR_PLUS;
+	else if (ctx->MINUS())   op = OPERATOR_MINUS;
+	else if (ctx->STAR())    op = OPERATOR_MULTIPY;
+	else if (ctx->DIVIDE())  op = OPERATOR_DIVIDE;
+	else if (ctx->MODULE())  op = OPERATOR_MODULE;
+	else if (ctx->BIT_OR())  op = OPERATOR_BIT_OR;
+	else if (ctx->BIT_AND()) op = OPERATOR_BIT_AND;
+	else if (ctx->BIT_XOR()) op = OPERATOR_BIT_XOR;
+	if (op == OPERATOR_NONE) {
+		//_return_code = FQL_FAIL;
+		return;
 	}
+
+	query_enter_operator(_query, op);
 }
+
 void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx)
 {
 	if (ctx->PLUS()
@@ -504,39 +505,25 @@ void ListenerInterface::exitQuery_specification(TSqlParser::Query_specificationC
 
 void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx)
 {
-	int ret = 0;
-	if (ctx->AVG())
-		ret = query_add_aggregate(_query, AGG_AVG);
-	else if (ctx->CHECKSUM_AGG())
-		ret = query_add_aggregate(_query, AGG_CHECKSUM_AGG);
-	else if (ctx->COUNT())
-		ret = query_add_aggregate(_query, AGG_COUNT);
-	else if (ctx->COUNT_BIG())
-		ret = query_add_aggregate(_query, AGG_COUNT_BIG);
-	else if (ctx->GROUPING())
-		ret = query_add_aggregate(_query, AGG_GROUPING);
-	else if (ctx->GROUPING_ID())
-		ret = query_add_aggregate(_query, AGG_GROUPING_ID);
-	//else if (ctx->LR_BRACKET())
-	//	ret = query_add_aggregate(_query, AGG_LR_BRACKET);
-	else if (ctx->MAX())
-		ret = query_add_aggregate(_query, AGG_MAX);
-	else if (ctx->MIN())
-		ret = query_add_aggregate(_query, AGG_MIN);
-	//else if (ctx->RR_BRACKET())
-	//	ret = query_add_aggregate(_query, AGG_RR_BRACKET);
-	//else if (ctx->STAR())
-	//	ret = query_add_aggregate(_query, AGG_STAR);
-	else if (ctx->STDEV())
-		ret = query_add_aggregate(_query, AGG_STDEV);
-	else if (ctx->STDEVP())
-		ret = query_add_aggregate(_query, AGG_STDEVP);
-	else if (ctx->SUM())
-		ret = query_add_aggregate(_query, AGG_SUM);
-	else if (ctx->VAR())
-		ret = query_add_aggregate(_query, AGG_VAR);
-	else if (ctx->VARP())
-		ret = query_add_aggregate(_query, AGG_VARP);
+	enum aggregate_function fn = AGG_UNDEFINED;
+	if (ctx->AVG())               fn = AGG_AVG;
+	else if (ctx->CHECKSUM_AGG()) fn = AGG_CHECKSUM_AGG;
+	else if (ctx->COUNT())        fn = AGG_COUNT;
+	else if (ctx->COUNT_BIG())    fn = AGG_COUNT_BIG;
+	else if (ctx->GROUPING())     fn = AGG_GROUPING;
+	else if (ctx->GROUPING_ID())  fn = AGG_GROUPING_ID;
+	//else if (ctx->LR_BRACKET())   fn = AGG_LR_BRACKET;
+	else if (ctx->MAX())          fn = AGG_MAX;
+	else if (ctx->MIN())          fn = AGG_MIN;
+	//else if (ctx->RR_BRACKET())   fn = AGG_RR_BRACKET;
+	//else if (ctx->STAR())         fn = AGG_STAR;
+	else if (ctx->STDEV())        fn = AGG_STDEV;
+	else if (ctx->STDEVP())       fn = AGG_STDEVP;
+	else if (ctx->SUM())          fn = AGG_SUM;
+	else if (ctx->VAR())          fn = AGG_VAR;
+	else if (ctx->VARP())         fn = AGG_VARP;
+
+	int ret = query_add_aggregate(_query, fn);
 
 	if (ret) {
 		_return_code = ret;
