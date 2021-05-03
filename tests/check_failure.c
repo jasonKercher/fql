@@ -148,6 +148,23 @@ START_TEST(test_failure_runtime)
 		rows = fql_step(fql, &fields);
 	} while (rows == 1);
 	ck_assert_int_eq(rows, FQL_FAIL);
+
+	/* Invalid UTF-8 */
+	plan_count = fql_make_plans(fql, "select left(foo, 1) from invalid_utf8");
+	ck_assert_int_eq(plan_count, 1);
+	do {
+		rows = fql_step(fql, &fields);
+	} while (rows == 1);
+	ck_assert_int_eq(rows, FQL_FAIL);
+
+	plan_count = fql_make_plans(fql, "select right(foo, 2) from invalid_utf8");
+	ck_assert_int_eq(plan_count, 1);
+	do {
+		rows = fql_step(fql, &fields);
+	} while (rows == 1);
+	ck_assert_int_eq(rows, FQL_FAIL);
+
+
 }
 END_TEST
 
