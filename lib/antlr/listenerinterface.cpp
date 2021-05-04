@@ -249,12 +249,12 @@ void ListenerInterface::exitSign(TSqlParser::SignContext * ctx) { }
 void ListenerInterface::enterUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx)
 {
 	if (ctx->MINUS()) {
-		query_enter_operator(_query, OPERATOR_UNARY_MINUS);
+		query_enter_operator(_query, SCALAR_OP_UNARY_MINUS);
 		return;
 	}
 
 	if (ctx->BIT_NOT()) {
-		query_enter_operator(_query, OPERATOR_UNARY_BIT_NOT);
+		query_enter_operator(_query, SCALAR_OP_UNARY_BIT_NOT);
 	}
 }
 void ListenerInterface::exitUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx)
@@ -383,16 +383,16 @@ void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext
 
 void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx)
 {
-	enum expr_operator op = OPERATOR_NONE;
-	if      (ctx->PLUS())    op = OPERATOR_PLUS;
-	else if (ctx->MINUS())   op = OPERATOR_MINUS;
-	else if (ctx->STAR())    op = OPERATOR_MULTIPY;
-	else if (ctx->DIVIDE())  op = OPERATOR_DIVIDE;
-	else if (ctx->MODULE())  op = OPERATOR_MODULE;
-	else if (ctx->BIT_OR())  op = OPERATOR_BIT_OR;
-	else if (ctx->BIT_AND()) op = OPERATOR_BIT_AND;
-	else if (ctx->BIT_XOR()) op = OPERATOR_BIT_XOR;
-	if (op == OPERATOR_NONE) {
+	enum scalar_function op = SCALAR_UNDEFINED;
+	if      (ctx->PLUS())    op = SCALAR_OP_PLUS;
+	else if (ctx->MINUS())   op = SCALAR_OP_MINUS;
+	else if (ctx->STAR())    op = SCALAR_OP_MULTIPY;
+	else if (ctx->DIVIDE())  op = SCALAR_OP_DIVIDE;
+	else if (ctx->MODULE())  op = SCALAR_OP_MODULE;
+	else if (ctx->BIT_OR())  op = SCALAR_OP_BIT_OR;
+	else if (ctx->BIT_AND()) op = SCALAR_OP_BIT_AND;
+	else if (ctx->BIT_XOR()) op = SCALAR_OP_BIT_XOR;
+	if (op == SCALAR_UNDEFINED) {
 		//_return_code = FQL_FAIL;
 		return;
 	}

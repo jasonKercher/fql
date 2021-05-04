@@ -113,7 +113,6 @@ int _distribute_column(Query* query, Column* col)
 		break;
 	case MODE_GROUPBY:
 		group_add_column(query->groupby, col);
-		//_add_validation_column(query, col);
 		break;
 	default:
 		return FQL_FAIL;
@@ -129,11 +128,6 @@ void query_add_column(Query* query, char* col_name, const char* table_id)
 		free_(col_name);
 		return;
 	}
-
-	/* TODO: This is sort of misplaced. Only acting as a default, but
-	 *       it should be set when schema is applied.
-	 */
-	//col->field_type = FIELD_STRING;
 }
 
 void query_add_asterisk(Query* query, const char* table_id)
@@ -265,19 +259,16 @@ int query_enter_function(Query* query, enum scalar_function scalar_type, int cha
 	return FQL_GOOD;
 }
 
-void query_enter_operator(Query* query, enum expr_operator op)
+void query_enter_operator(Query* query, enum scalar_function op)
 {
 	enum field_type type = FIELD_UNDEFINED;
-	Function* func = function_new_op(op);
+	Function* func = function_new(op, &type, true); 
 	_add_function(query, func, FIELD_UNDEFINED);
 }
 
 void query_exit_function(Query* query)
 {
 	Column* col = stack_pop(&query->function_stack);
-	//if (function_op_resolve(col->field.fn, &col->field_type)) {
-	//	;/* TODO: stop here */
-	//}
 }
 
 void query_set_logic_comparison(Query* query, const char* op)

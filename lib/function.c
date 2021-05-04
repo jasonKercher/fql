@@ -69,14 +69,18 @@ Function* function_new(enum scalar_function scalar_type, enum field_type* type, 
 Function* function_construct(Function* func, enum scalar_function scalar_type, enum field_type* type, int char_as_byte)
 {
 	*func = (Function) {
-		 &_not_implemented       /* call__ */
+		 &_not_implemented      /* call__ */
 		,vec_new_(Column*)      /* args */
-		,OPERATOR_NONE          /* op */
 		,scalar_type            /* type */
 		,0                      /* arg_min */
 		,0                      /* arg_max */
 		,char_as_byte           /* char_as_byte */
 	};
+
+	/* If this is an operator, we don't have enough info */
+	if (scalar_type <= SCALAR_OP_UNARY_MINUS) {
+		return func;
+	}
 
 	//func->arg_min = 0;
 	//func->arg_max = 0;
@@ -195,35 +199,14 @@ void function_free(Function* func)
 	free_(func);
 }
 
-Function* function_new_op(enum expr_operator op)
-{
-	Function* new_func = NULL;
-	malloc_(new_func, sizeof(*new_func));
-
-	*new_func = (Function) {
-		 &_not_implemented      /* call__ */
-		,vec_new_(Column*)      /* args */
-		,op                     /* operator */
-		,SCALAR_UNDEFINED       /* type */
-		,2                      /* arg_min */
-		,2                      /* arg_max */
-		,false                  /* char_as_byte */
-	};
-
-	return new_func;
-}
-
-int _invalid_type(Function* fn)
-{
-	fprintf(stderr, "Invalid type for %s operation\n", op_str[fn->type]);
-	return FQL_FAIL;
-}
-
 int function_op_resolve(Function* func, enum field_type* type)
 {
-	if (func->op == OPERATOR_NONE) {
+	if (func->type > SCALAR_OP_UNARY_MINUS) {
 		return FQL_GOOD;
 	}
+
+	func->arg_min = 2;
+	func->arg_max = 2;
 
 	Column** args = func->args->data;
 	Column* col0 = args[0];
@@ -234,12 +217,12 @@ int function_op_resolve(Function* func, enum field_type* type)
 
 	*type = field_determine_type(col0->field_type, col1->field_type);
 
-	switch (func->op) {
-	case OPERATOR_UNARY_BIT_NOT:
+	switch (func->type) {
+	case SCALAR_OP_UNARY_BIT_NOT:
 		func->arg_min = 1;
 		func->arg_max = 1;
 		break;
-	case OPERATOR_UNARY_MINUS:
+	case SCALAR_OP_UNARY_MINUS:
 		func->arg_min = 1;
 		func->arg_max = 1;
 		break;
@@ -247,9 +230,10 @@ int function_op_resolve(Function* func, enum field_type* type)
 		;
 	}
 
-	func->call__ = scalar_ops[func->op][*type];
+	func->call__ = scalar_ops[func->type][*type];
 	if (func->call__ == NULL) {
-		return _invalid_type(func);
+		fprintf(stderr, "Invalid type for %s operation\n", op_str[func->type]);
+		return FQL_FAIL;
 	}
 
 	return FQL_GOOD;

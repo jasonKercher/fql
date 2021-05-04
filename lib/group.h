@@ -15,7 +15,7 @@ struct aggresult {
 		double f;
 		String s;
 	} data;
-	unsigned cnt;
+	unsigned qty;
 };
 
 struct aggregate;
@@ -32,12 +32,13 @@ int aggregate_resolve(struct aggregate*, enum aggregate_function);
 int fql_count(struct aggregate*, struct group*, struct vec* rec, unsigned idx);
 
 struct group {
+	CompositeMap* expr_map;
+	CompositeMap val_map;
 	struct vec columns;
 	struct vec aggregates;
 	struct vec _indicies;
 	struct vec _raw;
 	struct vec _composite;  /* temporary */
-	CompositeMap groups;
 };
 typedef struct group Group;
 

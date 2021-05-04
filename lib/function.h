@@ -15,7 +15,6 @@ typedef int(*scalar_fn)(struct function*, union field* ret, struct vec* rec);
 struct function {
 	scalar_fn call__;
 	struct vec* args;
-	enum expr_operator op;
 	enum scalar_function type;
 	unsigned arg_min;
 	unsigned arg_max;
@@ -25,7 +24,6 @@ typedef struct function Function;
 
 struct function* function_new(enum scalar_function, enum field_type*, int char_as_byte);
 int function_op_resolve(Function* func, enum field_type*);
-struct function* function_new_op(enum expr_operator);
 struct function* function_construct(struct function*, enum scalar_function, enum field_type*, int);
 void function_free(struct function*);
 

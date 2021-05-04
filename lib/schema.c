@@ -454,12 +454,153 @@ void _resolve_join_conditions(Table* right_table, int right_idx)
 	//vec_free(right_table->condition->joinable);
 }
 
-int _group_validation(struct fql_handle* fql, Query* query)
+enum _expr_map {
+	MAP_UNDEFINED,
+	MAP_CONST_INT,
+	MAP_CONST_FLOAT,
+	MAP_CONST_STRING,
+	MAP_COLUMN,
+	MAP_FUNCTION,
+};
+
+int _map_expression(Vec* key, Column* col)
 {
-	if (schema_assign_columns(&query->groupby->columns, query->sources)) {
+	enum _expr_map map_type = MAP_UNDEFINED;
+	StringView type_sv;
+	StringView val_sv;
+	switch(col->expr) {
+	case EXPR_CONST:
+		switch(col->field_type) {
+		case FIELD_INT:
+			map_type = MAP_CONST_INT;
+			val_sv.data = (char*)&col->field.i;
+			val_sv.len = sizeof(long);
+			break;
+		case FIELD_FLOAT:
+			map_type = MAP_CONST_FLOAT;
+			val_sv.data = (char*)&col->field.f;
+			val_sv.len = sizeof(double);
+			break;
+		case FIELD_STRING:
+			map_type = MAP_CONST_STRING;
+			val_sv.data = col->field.s->data;
+			val_sv.len = col->field.s->size;
+		default:
+			;
+		}
+
+		break;
+	case EXPR_COLUMN_NAME:
+		map_type = MAP_COLUMN;
+		val_sv.data = (char*)&col->data_source;
+		val_sv.len = sizeof(Column*);
+		break;
+	case EXPR_FUNCTION:
+		map_type = MAP_FUNCTION;
+		val_sv.data = (char*)&col->field.fn->type;
+		val_sv.len = sizeof(enum scalar_function);
+		break;
+	default:
+		fputs("Unexpected expression\n", stderr);
 		return FQL_FAIL;
 	}
+
+	type_sv.data = (char*) &type_sv;
+	type_sv.len = sizeof(enum _expr_map);
+
+	vec_push_back(key, &type_sv);
+	vec_push_back(key, &val_sv);
+
+	if (map_type != MAP_FUNCTION) {
+		return FQL_GOOD;
+	}
+
+	Column** it = vec_begin(col->field.fn->args);
+	for (; it != vec_end(col->field.fn->args); ++it) {
+		if (_map_expression(key, *it)) {
+			return FQL_FAIL;
+		}
+	}
+
+	return FQL_GOOD;
+}
+
+int _op_find_group(CompositeMap* expr_map, Column* col, Vec* key)
+{
+	if (col->expr == EXPR_CONST) {
+		return FQL_GOOD;
+	}
+
+	vec_clear(key);
+	if (_map_expression(key, col)) {
+		return FQL_FAIL;
+	}
+	Column** result = compositemap_get(expr_map, key);
+	if (result != NULL) {
+		col->src_idx = 0;
+		col->data_source = *result;
+		return FQL_GOOD;
+	}
+
+	/* TODO: drop else if */
+	if (col->expr == EXPR_COLUMN_NAME) {
+		fprintf(stderr,
+			"Column `%s' does not match a grouping\n",
+			col->alias.data);
+		return FQL_FAIL;
+	} else if (col->expr != EXPR_FUNCTION) {
+		fprintf(stderr,
+			"Column `%s' unexpected expression\n",
+			col->alias.data);
+		return FQL_FAIL;
+	}
+
+	Column** it = vec_begin(col->field.fn->args);
+	for (; it != vec_end(col->field.fn->args); ++it) {
+		if (_op_find_group(expr_map, *it, key)) {
+			return FQL_FAIL;
+		}
+	}
+	return FQL_GOOD;
+}
+
+int _group_validation(struct fql_handle* fql, Query* query)
+{
+	/* verify group columns and build composite key for each */
+	Vec* group_cols = &query->groupby->columns;
+	if (schema_assign_columns(group_cols, query->sources)) {
+		return FQL_FAIL;
+	}
+
+	CompositeMap* expr_map = compositemap_new_(Column*,
+	                                          group_cols->size * 2,
+	                                          HASHMAP_PROP_NOCASE |
+	                                          HASHMAP_PROP_RTRIM);
+	query->groupby->expr_map = expr_map;
+	Vec key;
+	vec_construct_(&key, StringView);
+
+	Column** it = vec_begin(group_cols);
+	for (; it != vec_end(group_cols); ++it) {
+		vec_clear(&key);
+		if (_map_expression(&key, *it)) {
+			vec_destroy(&key);
+			return FQL_FAIL;
+		}
+		compositemap_set(expr_map, &key, it);
+	}
+
+	/* Now, we need to match *all* op columns to a group */
 	Vec* op_cols = op_get_validation_list(query->op);
+	it = vec_begin(op_cols);
+	for (; it != vec_end(op_cols); ++it) {
+		if (_op_find_group(expr_map, *it, &key)) {
+			vec_destroy(&key);
+			return FQL_FAIL;
+		}
+	}
+
+	vec_destroy(&key);
 
 	return FQL_GOOD;
 }

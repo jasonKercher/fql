@@ -37,7 +37,17 @@ enum aggregate_function {
 };
 
 enum scalar_function {
-	SCALAR_UNDEFINED,
+	SCALAR_UNDEFINED = -1,
+	SCALAR_OP_PLUS,
+	SCALAR_OP_MINUS,
+	SCALAR_OP_MULTIPY,
+	SCALAR_OP_DIVIDE,
+	SCALAR_OP_MODULE,
+	SCALAR_OP_BIT_OR,
+	SCALAR_OP_BIT_AND,
+	SCALAR_OP_BIT_XOR,
+	SCALAR_OP_UNARY_BIT_NOT,
+	SCALAR_OP_UNARY_MINUS,
 	SCALAR_ABS,
 	SCALAR_ASCII,
 	SCALAR_CEILING,
@@ -68,20 +78,6 @@ enum scalar_function {
 	SCALAR_UPPER,
 	SCALAR_USER_NAME,
 	SCALAR_YEAR,
-};
-
-enum expr_operator {
-	OPERATOR_NONE = -1,
-	OPERATOR_PLUS,
-	OPERATOR_MINUS,
-	OPERATOR_MULTIPY,
-	OPERATOR_DIVIDE,
-	OPERATOR_MODULE,
-	OPERATOR_BIT_OR,
-	OPERATOR_BIT_AND,
-	OPERATOR_BIT_XOR,
-	OPERATOR_UNARY_BIT_NOT,
-	OPERATOR_UNARY_MINUS,
 };
 
 enum mode {
@@ -144,7 +140,7 @@ int query_add_aggregate(struct query*, enum aggregate_function);
 
 int query_enter_function(struct query*, enum scalar_function, int);
 void query_exit_function(struct query*);
-void query_enter_operator(struct query*, enum expr_operator op);
+void query_enter_operator(struct query*, enum scalar_function op);
 
 /* Search building functions */
 void query_set_logic_comparison(struct query*, const char*);

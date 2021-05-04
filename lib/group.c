@@ -40,15 +40,16 @@ Group* group_new()
 
 Group* group_construct(Group* group)
 {
+	group->expr_map = NULL;
+	compositemap_construct_(&group->val_map,
+			        unsigned,
+				128,
+				HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 	vec_construct_(&group->columns, Column*);
 	vec_construct_(&group->aggregates, Aggregate);
 	vec_construct_(&group->_indicies, size_t);
 	vec_construct_(&group->_raw, char);
 	vec_construct_(&group->_composite, StringView);
-	compositemap_construct_(&group->groups,
-			        unsigned,
-				128,
-				HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 
 	return group;
 }
@@ -63,16 +64,20 @@ void group_free(Group* group)
 }
 void group_destroy(Group* group)
 {
+	if (group->expr_map != NULL) {
+		compositemap_free(group->expr_map);
+	}
+	compositemap_destroy(&group->val_map);
 	vec_destroy(&group->columns);
 	vec_destroy(&group->aggregates);
 	vec_destroy(&group->_indicies);
 	vec_destroy(&group->_raw);
 	vec_destroy(&group->_composite);
-	compositemap_destroy(&group->groups);
 }
 
 void group_add_column(Group* group, Column* col)
 {
+	col->src_idx = group->columns.size;
 	vec_push_back(&group->columns, &col);
 	vec_add_one(&group->_composite);
 }
@@ -129,13 +134,13 @@ int group_record(Group* group, Vec* recs)
 		running_size += sv->len;
 	}
 
-	unsigned group_count = group->groups.values.size;
-	unsigned* idx_ptr = compositemap_get(&group->groups, &group->_composite);
+	unsigned group_count = group->val_map.values.size;
+	unsigned* idx_ptr = compositemap_get(&group->val_map, &group->_composite);
 	unsigned idx = 0;
 	int ret = 0;
 	if (idx_ptr == NULL) {
 		idx = group_count;
-		compositemap_set(&group->groups, &group->_composite, &group_count);
+		compositemap_set(&group->val_map, &group->_composite, &group_count);
 		ret = 1;
 	} else {
 		idx = *idx_ptr;
