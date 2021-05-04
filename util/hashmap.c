@@ -218,8 +218,8 @@ void compositemap_set(CompositeMap* m, const struct vec* key, void* data)
 	/* Should only execute one time */
 	if (m->_key_temp == NULL) {
 		m->_key_temp = vec_new_(struct _keyloc);
-		vec_resize(m->_key_temp, key->size);
 	}
+	vec_resize(m->_key_temp, key->size);
 
 	uint64_t hash = 0;
 	unsigned key_len = 0;
@@ -246,8 +246,8 @@ void* compositemap_get(CompositeMap* m, const struct vec* key)
 	/* Should only execute one time */
 	if (m->_key_temp == NULL) {
 		m->_key_temp = vec_new_(struct _keyloc);
-		vec_resize(m->_key_temp, key->size);
 	}
+	vec_resize(m->_key_temp, key->size);
 
 	uint64_t hash = 0;
 	unsigned key_len = 0;
@@ -284,7 +284,7 @@ struct hm_entry* _composite_get_entry(CompositeMap* m, const Vec* key, unsigned*
 	unsigned i = 0;
 
 	for (; it != vec_end(key); ++it) {
-		if (m->_keybuf_head + it->len > m->_keybuf_len) {
+		while (m->_keybuf_head + it->len > m->_keybuf_len) {
 			m->_keybuf_len *= 2;
 			realloc_(m->_keybuf, m->_keybuf_len);
 		}

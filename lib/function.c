@@ -6,7 +6,16 @@
 #include "util/util.h"
 
 static const char* scalar_str[] = {
-	"UNDEFINED",
+	"PLUS",
+	"MINUS",
+	"MULTIPY",
+	"DIVIDE",
+	"MODULE",
+	"BIT_OR",
+	"BIT_AND",
+	"BIT_XOR",
+	"UNARY_BIT_NOT",
+	"UNARY_MINUS",
 	"ABS",
 	"ASCII",
 	"CEILING",
@@ -37,19 +46,6 @@ static const char* scalar_str[] = {
 	"UPPER",
 	"USER_NAME",
 	"YEAR",
-};
-
-static const char* op_str[] = {
-	"PLUS",
-	"MINUS",
-	"MULTIPY",
-	"DIVIDE",
-	"MODULE",
-	"BIT_OR",
-	"BIT_AND",
-	"BIT_XOR",
-	"UNARY_BIT_NOT",
-	"UNARY_MINUS",
 };
 
 int _not_implemented(Function* fn, union field* f, Vec* rec)
@@ -232,7 +228,7 @@ int function_op_resolve(Function* func, enum field_type* type)
 
 	func->call__ = scalar_ops[func->type][*type];
 	if (func->call__ == NULL) {
-		fprintf(stderr, "Invalid type for %s operation\n", op_str[func->type]);
+		fprintf(stderr, "Invalid type for %s operation\n", scalar_str[func->type]);
 		return FQL_FAIL;
 	}
 

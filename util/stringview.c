@@ -12,21 +12,13 @@ StringView* stringview_new(char* s, unsigned len)
 
 StringView* stringview_construct(StringView* sv, char* s, unsigned len)
 {
-	*sv = (StringView) {
-		 s
-		,len
-	};
-
+	stringview_nset(sv, s, len);
 	return sv;
 }
 
 StringView* stringview_construct_from_string(StringView* sv, String* s)
 {
-	*sv = (StringView) {
-		 s->data
-		,s->size
-	};
-
+	stringview_set_string(sv, s);
 	return sv;
 }
 
@@ -35,6 +27,22 @@ void stringview_set(StringView* sv, char* s)
 	*sv = (StringView) {
 		 s
 		,strlen(s)
+	};
+}
+
+void stringview_nset(StringView* sv, char* s, unsigned n)
+{
+	*sv = (StringView) {
+		 s
+		,n
+	};
+}
+
+void stringview_set_string(StringView* sv, String* s)
+{
+	*sv = (StringView) {
+		 s->data
+		,s->size
 	};
 }
 
