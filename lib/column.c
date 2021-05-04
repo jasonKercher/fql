@@ -163,6 +163,11 @@ int column_get_int(long* ret, Column* col, Vec* recs)
 	case EXPR_COLUMN_NAME:
 	{
 		Record** rec = vec_at(recs, col->src_idx);
+		if ((*rec)->fields->size <= col->data_source->location) {
+			string_clear(&col->buf);
+			*ret = 0;
+			return FQL_GOOD;
+		}
 		StringView* sv = vec_at((*rec)->fields, col->data_source->location);
 		string_copy_from_stringview(&col->buf, sv);
 		if (str2long(ret, col->buf.data)) {
@@ -207,6 +212,11 @@ int column_get_float(double* ret, Column* col, Vec* recs)
 	case EXPR_COLUMN_NAME:
 	{
 		Record** rec = vec_at(recs, col->src_idx);
+		if ((*rec)->fields->size <= col->data_source->location) {
+			string_clear(&col->buf);
+			*ret = 0;
+			return FQL_GOOD;
+		}
 		StringView* sv = vec_at((*rec)->fields, col->data_source->location);
 		string_copy_from_stringview(&col->buf, sv);
 		if (str2double(ret, col->buf.data)) {
@@ -249,6 +259,12 @@ int column_get_stringview(StringView* ret, Column* col, Vec* recs)
 	case EXPR_COLUMN_NAME:
 	{
 		Record** rec = vec_at(recs, col->src_idx);
+		if ((*rec)->fields->size <= col->data_source->location) {
+			string_clear(&col->buf);
+			ret->data = col->buf.data;
+			ret->len = 0;
+			return FQL_GOOD;
+		}
 		StringView* sv = vec_at((*rec)->fields, col->data_source->location);
 		ret->data = sv->data;
 		ret->len = sv->len;

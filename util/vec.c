@@ -141,12 +141,10 @@ void vec_set(Vec* vec, size_t n, const void* src)
 
 void vec_append(Vec* vec, const void* src, size_t n)
 {
-	while (vec->_alloc <= vec->size + n) {
-		vec_reserve(vec, vec->_alloc * 2);
-	}
-
-	memcpy(vec_end(vec), src, n * vec->_elem_size);
-	vec->size += n;
+	size_t old_size = vec->size;
+	vec_resize(vec, vec->size + n);
+	void* end = vec_at(vec, old_size);
+	memcpy(end, src, n * vec->_elem_size);
 }
 
 void vec_insert(Vec* vec, size_t n, const void* src)
