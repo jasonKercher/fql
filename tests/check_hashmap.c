@@ -14,6 +14,7 @@ int twelve = 12;
 int test = 100;
 int Test = 101;
 int test_ = 102;
+int varible_size_key = 141;
 
 void sets()
 {
@@ -80,6 +81,10 @@ void compositemap_sets()
 
 	_build_composite(it, "test ", "Test", "test");
 	compositemap_set(m, key, &test_);
+
+	_build_composite(it, "one", "two", "something");
+	vec_resize(key, 2);
+	compositemap_set(m, key, &varible_size_key);
 }
 
 START_TEST(test_hashmap_basic)
@@ -475,7 +480,15 @@ START_TEST(test_compositemap_basic)
 	void* no_match = compositemap_get(m, key);
 	ck_assert_ptr_null(no_match);
 
+	_build_composite(it, "one", "two", "something else");
+	vec_resize(key, 2);
+	val = *(int*)compositemap_get(m, key);
+	ck_assert_int_eq(val, varible_size_key);
+
+	vec_free(key);
+
 	compositemap_free(m);
+
 }
 END_TEST
 
@@ -519,6 +532,13 @@ START_TEST(test_compositemap_nocase)
 	_build_composite(it, "test ", "test", "NOPE");
 	void* no_match = compositemap_get(m, key);
 	ck_assert_ptr_null(no_match);
+
+	_build_composite(it, "one", "two", "something else");
+	vec_resize(key, 2);
+	val = *(int*)compositemap_get(m, key);
+	ck_assert_int_eq(val, varible_size_key);
+
+	vec_free(key);
 
 	compositemap_free(m);
 }
@@ -565,6 +585,13 @@ START_TEST(test_compositemap_rtrim)
 	void* no_match = compositemap_get(m, key);
 	ck_assert_ptr_null(no_match);
 
+	_build_composite(it, "one", "two", "something else");
+	vec_resize(key, 2);
+	val = *(int*)compositemap_get(m, key);
+	ck_assert_int_eq(val, varible_size_key);
+
+	vec_free(key);
+
 	compositemap_free(m);
 }
 END_TEST
@@ -609,6 +636,13 @@ START_TEST(test_compositemap_nocase_rtrim)
 	_build_composite(it, "test ", "test", "NOPE");
 	void* no_match = compositemap_get(m, key);
 	ck_assert_ptr_null(no_match);
+
+	_build_composite(it, "one", "two", "something else");
+	vec_resize(key, 2);
+	val = *(int*)compositemap_get(m, key);
+	ck_assert_int_eq(val, varible_size_key);
+
+	vec_free(key);
 
 	compositemap_free(m);
 }

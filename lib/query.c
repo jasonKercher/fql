@@ -113,7 +113,7 @@ int _distribute_column(Query* query, Column* col)
 		break;
 	case MODE_GROUPBY:
 		group_add_column(query->groupby, col);
-		_add_validation_column(query, col);
+		//_add_validation_column(query, col);
 		break;
 	default:
 		return FQL_FAIL;

@@ -10,6 +10,7 @@
 #include "select.h"
 #include "table.h"
 #include "reader.h"
+#include "group.h"
 #include "operation.h"
 #include "util/util.h"
 #include "util/vec.h"
@@ -453,6 +454,16 @@ void _resolve_join_conditions(Table* right_table, int right_idx)
 	//vec_free(right_table->condition->joinable);
 }
 
+int _group_validation(struct fql_handle* fql, Query* query)
+{
+	if (schema_assign_columns(&query->groupby->columns, query->sources)) {
+		return FQL_FAIL;
+	}
+	Vec* op_cols = op_get_validation_list(query->op);
+
+	return FQL_GOOD;
+}
+
 int schema_resolve_query(struct fql_handle* fql, Query* query)
 {
 	Vec* sources = query->sources;
@@ -482,11 +493,17 @@ int schema_resolve_query(struct fql_handle* fql, Query* query)
 		return FQL_FAIL;
 	}
 
+	/* Skip validating groups if no group columns */
 	Vec* op_cols = op_get_validation_list(query->op);
 	if (_asterisk_resolve(op_cols, sources)) {
 		return FQL_FAIL;
 	}
 	if (schema_assign_columns(op_cols, sources)) {
+		return FQL_FAIL;
+	}
+	if ((!vec_empty(&query->groupby->columns)
+	  || !vec_empty(&query->groupby->aggregates))
+	 && _group_validation(fql, query)) {
 		return FQL_FAIL;
 	}
 

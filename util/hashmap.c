@@ -205,6 +205,14 @@ void compositemap_destroy(CompositeMap* m)
 	hashmap_destroy(m);
 }
 
+/* NOTE: entry->key_len takes on a new meaning
+ *       for a CompositeMap. In a normal HashMap,
+ *       key_len is the length of the key. For a
+ *       CompositeMap, key_len is loses that
+ *       meaning since a key can consist of multiple 
+ *       individual keys. key_len represents the 
+ *       number of elements in the key.
+ */
 void compositemap_set(CompositeMap* m, const struct vec* key, void* data)
 {
 	/* Should only execute one time */
@@ -219,7 +227,7 @@ void compositemap_set(CompositeMap* m, const struct vec* key, void* data)
 
 	if (entry->val_idx == _NONE) {  /* New value */
 		entry->key_idx = m->_keys->size;
-		entry->key_len = key_len;
+		entry->key_len = key->size;
 		entry->val_idx = m->values.size;
 		entry->hash = hash;
 		m->_keybuf_head += key_len;
@@ -252,12 +260,12 @@ void* compositemap_get(CompositeMap* m, const struct vec* key)
 	return vec_at(&m->values, entry->val_idx);
 }
 
-_Bool _composite_eq(CompositeMap* m, struct hm_entry* ent, unsigned n)
+_Bool _composite_eq(CompositeMap* m, struct hm_entry* ent)
 {
 	struct _keyloc* kl0 = vec_at(m->_keys, ent->key_idx);
 	struct _keyloc* kl1 = vec_begin(m->_key_temp);
 	unsigned i = 0;
-	for (; i < n; ++i)  {
+	for (; i < ent->key_len; ++i)  {
 		if (kl0[i].len != kl1[i].len
 		 || memcmp(&m->_keybuf[kl0[i].idx], &m->_keybuf[kl1[i].idx], kl0[i].len)) {
 			return false;
@@ -295,8 +303,9 @@ struct hm_entry* _composite_get_entry(CompositeMap* m, const Vec* key, unsigned*
 	size_t idx = (size_t)(*hash & (m->_limit-1));
 	struct hm_entry* entry = &m->_entries[idx];
 
-	while (entry->val_idx != _NONE
-	    && !_composite_eq(m, entry, key->size)) {
+	while (entry->val_idx != _NONE && (
+		    entry->key_len != key->size 
+	         || !_composite_eq(m, entry))) {
 		idx = (idx + 1) % m->_limit;
 		entry = &m->_entries[idx];
 	}

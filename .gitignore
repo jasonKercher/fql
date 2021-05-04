@@ -10,7 +10,7 @@ check_difficult
 check_failure
 check_subquery
 
-test.sql
+run.sql
 
 *~
 
