@@ -267,8 +267,13 @@ void* _thread_exec(void* data)
 	while (proc->is_enabled) {
 		if (proc->wait_for_in0 && fifo_is_empty(proc->fifo_in[0])) {
 			if (!proc->fifo_in[0]->is_open) {
-				process_disable(proc);
-				break;
+				if (proc->wait_for_in0_end) {
+					proc->wait_for_in0 = false;
+					continue;
+				} else {
+					process_disable(proc);
+					break;
+				}
 			}
 			if (tdata->proc_node->is_root) {
 				fifo_wait_for_add(proc->fifo_in[0]);

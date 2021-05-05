@@ -293,7 +293,8 @@ int fql_distinct(Dgraph* proc_graph, Process* proc)
 int fql_groupby(Dgraph* proc_graph, Process* proc)
 {
 	Group* group = proc->proc_data;
-	if (!proc->fifo_in[0]->is_open) {
+	if (!proc->fifo_in[0]->is_open
+	 && fifo_is_empty(proc->fifo_in[0])) {
 		Vec** recs = fifo_get(proc->fifo_in[1]);
 		Record** rec = vec_at(*recs, 0);
 
