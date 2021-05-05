@@ -104,6 +104,11 @@ int _distribute_column(Query* query, Column* col)
 	switch(query->mode) {
 	case MODE_SELECT:
 		select_add_column(query->op, col);
+
+		/* TODO */
+		if (col->expr == EXPR_AGGREGATE && query->distinct) {
+			fputs("Currently unsafe to mix DISTINCT and GROUP BY\n", stderr);
+		}
 		if (query->distinct) {
 			group_add_column(query->distinct, col);
 		}
@@ -235,10 +240,16 @@ int query_add_aggregate(Query* query, enum aggregate_function agg_type)
 		return FQL_FAIL;
 	}
 	vec_push_back(&query->groupby->aggregates, &agg);
-	Column* col = column_new(EXPR_AGGREGATE, agg, "");
-	if (_distribute_column(query, col)) {
+
+	Column* group_col = column_new(EXPR_AGGREGATE, agg, "");
+	group_add_column(query->groupby, group_col);
+
+	Column* op_col = column_new(EXPR_AGGREGATE, agg, "");
+	op_col->data_source = group_col;
+	if (_distribute_column(query, op_col)) {
 		return FQL_FAIL;
 	}
+	
 	return FQL_GOOD;
 }
 

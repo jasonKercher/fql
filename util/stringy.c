@@ -157,7 +157,7 @@ void string_sprintf(String* s, const char* fmt, ...)
 	va_copy(args2, args);
 	int len = vsnprintf(NULL, 0, fmt, args);
 	va_end(args);
-	vec_resize(s, len+1);
+	vec_resize(s, len);
 	vsnprintf(s->data, len+1, fmt, args2);
 	va_end(args2);
 }

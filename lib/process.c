@@ -113,10 +113,12 @@ void process_activate(Dnode* proc_node, Plan* plan)
 
 	int field_count = 1;
 
+	_Bool owns_data = true;
 	if (proc->action__ == &fql_read) {
 		Table* table = proc->proc_data;
 		Reader* reader = table->reader;
 		field_count = reader->max_col_idx + 1;
+		owns_data = false;
 	}
 	else if (proc->action__ == &fql_read_subquery) {
 		Table* table = proc->proc_data;
@@ -140,7 +142,7 @@ void process_activate(Dnode* proc_node, Plan* plan)
 		vec_resize(new_recs, proc->fifo_width);
 
 		Record** new_rec = vec_back(new_recs);
-		*new_rec = record_new(i, field_count, is_subquery);
+		*new_rec = record_new(i, field_count, owns_data);
 
 		Vec** recs = vec_at(buf, i);
 		*recs = new_recs;

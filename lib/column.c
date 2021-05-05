@@ -173,6 +173,7 @@ int column_try_assign_source(Column* col, Table* table, int idx)
 int column_get_int(long* ret, Column* col, Vec* recs)
 {
 	switch (col->expr) {
+	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME:
 	{
 		Record** rec = vec_at(recs, col->src_idx);
@@ -206,8 +207,6 @@ int column_get_int(long* ret, Column* col, Vec* recs)
 		}
 		break;
 	}
-	case EXPR_AGGREGATE:
-		break; /* TODO */
 	case EXPR_CONST:
 		if (field_to_int(ret, &col->field, &col->field_type)) {
 			return FQL_FAIL;
@@ -224,6 +223,7 @@ int column_get_int(long* ret, Column* col, Vec* recs)
 int column_get_float(double* ret, Column* col, Vec* recs)
 {
 	switch (col->expr) {
+	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME:
 	{
 		Record** rec = vec_at(recs, col->src_idx);
@@ -256,8 +256,6 @@ int column_get_float(double* ret, Column* col, Vec* recs)
 		}
 		break;
 	}
-	case EXPR_AGGREGATE:
-		break; /* TODO */
 	case EXPR_CONST:
 		if (field_to_float(ret, &col->field, &col->field_type)) {
 			return FQL_FAIL;
@@ -273,6 +271,7 @@ int column_get_float(double* ret, Column* col, Vec* recs)
 int column_get_stringview(StringView* ret, Column* col, Vec* recs)
 {
 	switch (col->expr) {
+	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME:
 	{
 		Record** rec = vec_at(recs, col->src_idx);
@@ -304,8 +303,6 @@ int column_get_stringview(StringView* ret, Column* col, Vec* recs)
 		}
 		break;
 	}
-	case EXPR_AGGREGATE:
-		break; /* TODO */
 	case EXPR_CONST:
 		if (field_to_stringview(ret, &col->field, &col->field_type)) {
 			return FQL_FAIL;

@@ -319,15 +319,6 @@ int fql_groupby(Dgraph* proc_graph, Process* proc)
 		}
 	}
 
-	if (!vec_empty(&group->aggregates)) {
-		Aggregate** it = vec_begin(&group->aggregates);
-		for (; it != vec_end(&group->aggregates); ++it) {
-			if ((*it)->call__(*it, group, *recs)) {
-				return FQL_FAIL;
-			}
-		}
-	}
-
 	_recycle_recs(proc, *recs, (*recs)->size);
 	return 1;
 }

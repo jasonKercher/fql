@@ -39,7 +39,10 @@ Aggregate* aggregate_construct(Aggregate* agg, enum aggregate_function agg_type)
 		 { 0 }
 		,NULL
 		,agg_type
+		,FIELD_UNDEFINED
 	};
+
+	vec_construct_(&agg->results, struct aggresult);
 
 	if (_resolve(agg)) {
 		return NULL;
@@ -53,21 +56,22 @@ void aggregate_free(Aggregate* agg)
 	free_(agg);
 }
 
-void aggregate_destroy(Aggregate* agg)
-{
-	vec_destroy(&agg->results);
-}
+void aggregate_destroy(Aggregate* agg) { }
 
 const char* aggregate_get_name(Aggregate* agg)
 {
-	return agg_str[agg->type];
+	return agg_str[agg->agg_type];
 }
 
 int _resolve(Aggregate* agg)
 {
-	switch (agg->type) {
+	switch (agg->agg_type) {
+	case AGG_COUNT:
+		agg->call__ = &fql_count;
+		agg->data_type = FIELD_INT;
+		return FQL_GOOD;
 	default:
-		fprintf(stderr, "Aggregate function `%s' not yet implemented\n", agg_str[agg->type]);
+		fprintf(stderr, "Aggregate function `%s' not yet implemented\n", agg_str[agg->agg_type]);
 		return FQL_FAIL;
 	}
 }

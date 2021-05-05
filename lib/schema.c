@@ -543,6 +543,10 @@ int _op_find_group(CompositeMap* expr_map, Column* col, Vec* key)
 		return FQL_GOOD;
 	}
 
+	if (col->expr == EXPR_AGGREGATE) {
+		col->src_idx = 0;
+		return FQL_GOOD;
+	}
 	vec_clear(key);
 	if (_map_expression(key, col)) {
 		return FQL_FAIL;
@@ -599,6 +603,9 @@ int _group_validation(struct fql_handle* fql, Query* query)
 
 	Column** it = vec_begin(group_cols);
 	for (; it != vec_end(group_cols); ++it) {
+		if ((*it)->expr == EXPR_AGGREGATE) {
+			continue;
+		}
 		vec_clear(&key);
 		if (_map_expression(&key, *it)) {
 			vec_destroy(&key);
