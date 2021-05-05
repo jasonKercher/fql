@@ -180,12 +180,14 @@ void dgraph_traverse_reset(Dgraph* graph)
 
 Dnode* dgraph_traverse(Dgraph* graph)
 {
-	if (fifo_is_empty(graph->_trav)) {
+	while (fifo_is_empty(graph->_trav)) {
 		if (graph->_root_idx >= graph->_roots->size) {
 			return NULL;
 		}
 		Dnode** node = vec_at(graph->_roots, graph->_root_idx++);
-		/* Assert node not visited */
+		if ((*node)->visit_count) {
+			continue;
+		}
 		fifo_add(graph->_trav, node);
 		return dgraph_traverse(graph);
 	}

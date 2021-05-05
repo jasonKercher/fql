@@ -481,14 +481,14 @@ int _map_expression(Vec* key, Column* col)
 		switch(col->field_type) {
 		case FIELD_INT:
 			map_type = &_c_int;
-			stringview_nset(&val_sv, 
-					(char*)&col->field.f, 
+			stringview_nset(&val_sv,
+					(char*)&col->field.f,
 					sizeof(double));
 			break;
 		case FIELD_FLOAT:
 			map_type = &_c_float;
-			stringview_nset(&val_sv, 
-					(char*)&col->field.f, 
+			stringview_nset(&val_sv,
+					(char*)&col->field.f,
 					sizeof(double));
 			break;
 		case FIELD_STRING:
@@ -501,13 +501,13 @@ int _map_expression(Vec* key, Column* col)
 		break;
 	case EXPR_COLUMN_NAME:
 		map_type = &_col;
-		stringview_nset(&val_sv, 
+		stringview_nset(&val_sv,
 				(char*)&col->data_source,
 				sizeof(Column*));
 		break;
 	case EXPR_FUNCTION:
 		map_type = &_func;
-		stringview_nset(&val_sv, 
+		stringview_nset(&val_sv,
 				(char*)&col->field.fn->type,
 				sizeof(enum scalar_function));
 		break;
@@ -516,8 +516,8 @@ int _map_expression(Vec* key, Column* col)
 		return FQL_FAIL;
 	}
 
-	stringview_nset(&type_sv, 
-			(char*) map_type, 
+	stringview_nset(&type_sv,
+			(char*) map_type,
 			sizeof(enum _expr_type));
 
 	vec_push_back(key, &type_sv);
@@ -551,10 +551,15 @@ int _op_find_group(CompositeMap* expr_map, Column* col, Vec* key)
 	if (result != NULL) {
 		col->src_idx = 0;
 		col->data_source = *result;
+		/* The operation (select) will not be evaluating
+		 * the expression.  It is simply going to read
+		 * from the grouping as if it were a column.
+		 */
+		col->expr = EXPR_COLUMN_NAME;
 		return FQL_GOOD;
 	}
 
-	/* TODO: drop else if */
+	/* TODO: this logic */
 	if (col->expr == EXPR_COLUMN_NAME) {
 		fprintf(stderr,
 			"Column `%s' does not match a grouping\n",

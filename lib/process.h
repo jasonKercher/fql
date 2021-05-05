@@ -13,24 +13,24 @@ struct process;
 typedef int (process_fn)(struct dgraph*, struct process*);
 
 struct process {
-	pthread_t thread;      /* pthread handle */
-	struct vec* records;   /* This is the owned record data for roots */
-	process_fn* action__;  /* function pointer for process */
-	Fifo* fifo_in[2];      /* ring buffer of records */
-	Fifo* fifo_out[2];     /* default next process fifo */
-	void* proc_data;       /* process specific data */
-	String* action_msg;    /* Message that prints with plan */
-	Vec* root_group;       /* Group of recyclable roots for this process */
-	int fifo_width;        /* Number of sources at this step */
-	int plan_id;           /* Plan ID for root grouping */
-	int subquery_plan_id;  /* plan ID for subquery */
-	int root_fifo;         /* Signify which fifo_inx is the root */
-	_Bool is_secondary;    /* fifo_out should link to a fifo_in1 */
-	_Bool is_passive;      /* denotes process that does nothing */
-	_Bool is_enabled;      /* enabled means it still has data to process */
-	_Bool is_const;        /* Should only run 1 time */
-	_Bool wait_on_in0;     /* Allow process to start before in0 populated */
-	_Bool wait_on_in0_end; /* Basically just for GROUP BY */
+	pthread_t thread;       /* pthread handle */
+	struct vec* records;    /* This is the owned record data for roots */
+	process_fn* action__;   /* function pointer for process */
+	Fifo* fifo_in[2];       /* ring buffer of records */
+	Fifo* fifo_out[2];      /* default next process fifo */
+	void* proc_data;        /* process specific data */
+	String* action_msg;     /* Message that prints with plan */
+	Vec* root_group;        /* Group of recyclable roots for this process */
+	int fifo_width;         /* Number of sources at this step */
+	int plan_id;            /* Plan ID for root grouping */
+	int subquery_plan_id;   /* plan ID for subquery */
+	int root_fifo;          /* Signify which fifo_inx is the root */
+	_Bool is_secondary;     /* fifo_out should link to a fifo_in1 */
+	_Bool is_passive;       /* denotes process that does nothing */
+	_Bool is_enabled;       /* enabled means it still has data to process */
+	_Bool is_const;         /* Should only run 1 time */
+	_Bool wait_for_in0;     /* Allow process to start before in0 populated */
+	_Bool wait_for_in0_end; /* Do not kill process if in0 proc terminated */
 };
 typedef struct process Process;
 

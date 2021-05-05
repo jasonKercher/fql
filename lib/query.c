@@ -6,6 +6,7 @@
 #include "select.h"
 #include "logic.h"
 #include "group.h"
+#include "aggregate.h"
 #include "field.h"
 #include "function.h"
 #include "util/dgraph.h"
@@ -229,8 +230,16 @@ void query_set_distinct(Query* query)
 
 int query_add_aggregate(Query* query, enum aggregate_function agg_type)
 {
-	Aggregate* agg = vec_add_one(&query->groupby->aggregates);
-	return aggregate_resolve(agg, agg_type);
+	Aggregate* agg = aggregate_new(agg_type);
+	if (agg == NULL) {
+		return FQL_FAIL;
+	}
+	vec_push_back(&query->groupby->aggregates, &agg);
+	Column* col = column_new(EXPR_AGGREGATE, agg, "");
+	if (_distribute_column(query, col)) {
+		return FQL_FAIL;
+	}
+	return FQL_GOOD;
 }
 
 void _add_function(Query* query, Function* func, enum field_type type)
@@ -262,7 +271,7 @@ int query_enter_function(Query* query, enum scalar_function scalar_type, int cha
 void query_enter_operator(Query* query, enum scalar_function op)
 {
 	enum field_type type = FIELD_UNDEFINED;
-	Function* func = function_new(op, &type, true); 
+	Function* func = function_new(op, &type, true);
 	_add_function(query, func, FIELD_UNDEFINED);
 }
 

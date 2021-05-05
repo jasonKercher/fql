@@ -4,6 +4,7 @@
 #include "process.h"
 #include "reader.h"
 #include "record.h"
+#include "aggregate.h"
 #include "function.h"
 #include "util/util.h"
 
@@ -44,6 +45,12 @@ Column* column_construct(Column* col, enum expr_type expr, void* data, const cha
 		break;
 	case EXPR_FUNCTION:
 		col->field.fn = data;
+		string_construct(&col->alias);
+		break;
+	case EXPR_AGGREGATE:
+		col->field.agg = data;
+		string_construct(&col->alias);
+		break;
 	default:
 		string_construct(&col->alias);
 	}
@@ -58,6 +65,9 @@ void column_free(void* generic_col)
 	switch(col->expr) {
 	case EXPR_FUNCTION:
 		function_free(col->field.fn);
+		break;
+	case EXPR_AGGREGATE:
+		aggregate_free(col->field.agg);
 		break;
 	default:
 		;
@@ -92,6 +102,9 @@ void column_cat_description(Column* col, String* msg)
 		string_push_back(msg, ')');
 		break;
 	}
+	case EXPR_AGGREGATE:
+		string_strcat(msg, aggregate_get_name(col->field.agg));
+		break;
 	case EXPR_CONST:
 		switch (col->field_type) {
 		case FIELD_STRING:
@@ -185,7 +198,7 @@ int column_get_int(long* ret, Column* col, Vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		if (func->call__(func, &new_field, recs)) { 
+		if (func->call__(func, &new_field, recs)) {
 			return FQL_FAIL;
 		}
 		if (field_to_int(ret, &new_field, &new_field_type)) {
@@ -193,6 +206,8 @@ int column_get_int(long* ret, Column* col, Vec* recs)
 		}
 		break;
 	}
+	case EXPR_AGGREGATE:
+		break; /* TODO */
 	case EXPR_CONST:
 		if (field_to_int(ret, &col->field, &col->field_type)) {
 			return FQL_FAIL;
@@ -241,6 +256,8 @@ int column_get_float(double* ret, Column* col, Vec* recs)
 		}
 		break;
 	}
+	case EXPR_AGGREGATE:
+		break; /* TODO */
 	case EXPR_CONST:
 		if (field_to_float(ret, &col->field, &col->field_type)) {
 			return FQL_FAIL;
@@ -287,6 +304,8 @@ int column_get_stringview(StringView* ret, Column* col, Vec* recs)
 		}
 		break;
 	}
+	case EXPR_AGGREGATE:
+		break; /* TODO */
 	case EXPR_CONST:
 		if (field_to_stringview(ret, &col->field, &col->field_type)) {
 			return FQL_FAIL;

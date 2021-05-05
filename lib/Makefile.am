@@ -11,12 +11,13 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					schema.h schema.c \
 					column.h column.c \
 					group.h group.c \
+					aggregate.h aggregate.c aggregatefn.c \
 					operation.h operation.c \
 					reader.h reader.c libcsvread.c mmapcsvread.c \
 					writer.h writer.c \
 					logic.h logic.c fqllogic.c \
 					select.h select.c \
-					function.h function.c scalarfn.c aggregatefn.c \
+					function.h function.c scalarfn.c \
 					record.h record.c \
 					field.h field.c
 libfql_la_LDFLAGS = -lcsv -lantlr4-runtime -pthread

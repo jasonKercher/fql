@@ -2,34 +2,11 @@
 #define GROUP_H
 
 #include "query.h"
+#include "record.h"
 #include "column.h"
 #include "process.h"
 #include "util/vec.h"
 #include "util/hashmap.h"
-
-struct group;
-
-struct aggresult {
-	union {
-		long i;
-		double f;
-		String s;
-	} data;
-	unsigned qty;
-};
-
-struct aggregate;
-typedef int(*aggregate_fn)(struct aggregate*, struct group*, struct vec* rec);
-
-struct aggregate {
-	struct vec results;
-	aggregate_fn call__;
-};
-typedef struct aggregate Aggregate;
-
-int aggregate_resolve(struct aggregate*, enum aggregate_function);
-
-int fql_count(struct aggregate*, struct group*, struct vec* rec, unsigned idx);
 
 struct group {
 	CompositeMap* expr_map;
@@ -39,6 +16,7 @@ struct group {
 	struct vec _indicies;
 	struct vec _raw;
 	struct vec _composite;  /* temporary */
+	size_t _dump_idx;
 };
 typedef struct group Group;
 
@@ -51,5 +29,6 @@ void group_add_column(struct group*, struct column*);
 void group_cat_description(struct group*, struct process*);
 
 int group_record(struct group*, struct vec* rec);
+int group_dump_record(struct group* group, struct record* rec);
 
 #endif  /* GROUP_H */

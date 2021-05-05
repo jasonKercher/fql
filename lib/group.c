@@ -1,34 +1,7 @@
 #include "group.h"
-#include "column.h"
-#include "query.h"
+#include "aggregate.h"
 #include "util/util.h"
 #include "util/stringview.h"
-
-static const char* agg_str[14] = {
-	"UNDEFINED",
-	"AVG",
-	"CHECKSUM_AGG",
-	"COUNT",
-	"COUNT_BIG",
-	"GROUPING",
-	"GROUPING_ID",
-	"MAX",
-	"MIN",
-	"STDEV",
-	"STDEVP",
-	"SUM",
-	"VAR",
-	"VARP",
-};
-
-int aggregate_resolve(Aggregate* agg, enum aggregate_function agg_type)
-{
-	switch (agg_type) {
-	default:
-		fprintf(stderr, "Aggregate function `%s' not yet implemented\n", agg_str[agg_type]);
-		return FQL_FAIL;
-	}
-}
 
 Group* group_new()
 {
@@ -40,16 +13,19 @@ Group* group_new()
 
 Group* group_construct(Group* group)
 {
-	group->expr_map = NULL;
+	memset(group, 0, sizeof(*group));
 	compositemap_construct_(&group->val_map,
 			        unsigned,
 				128,
 				HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 	vec_construct_(&group->columns, Column*);
-	vec_construct_(&group->aggregates, Aggregate);
+	vec_construct_(&group->aggregates, Aggregate*);
 	vec_construct_(&group->_indicies, size_t);
 	vec_construct_(&group->_raw, char);
 	vec_construct_(&group->_composite, StringView);
+
+	size_t zero = 0;
+	vec_push_back(&group->_indicies, &zero);
 
 	return group;
 }
@@ -130,8 +106,12 @@ int group_record(Group* group, Vec* recs)
 			;
 		}
 
-		vec_push_back(&group->_indicies, &running_size);
+		/* NOTE: running size is incremented first, because it should
+		 *       mark the beginning of the next element. _indicies.size
+		 *       should always be number of elements + 1.
+		 */
 		running_size += sv->len;
+		vec_push_back(&group->_indicies, &running_size);
 	}
 
 	unsigned group_count = group->val_map.values.size;
@@ -150,4 +130,29 @@ int group_record(Group* group, Vec* recs)
 	}
 
 	return ret;
+}
+
+int group_dump_record(Group* group, Record* rec)
+{
+	if (group->_dump_idx + 1 >= group->_indicies.size) {
+		return -1;
+	}
+
+	size_t* idx = vec_at(&group->_indicies, group->_dump_idx);
+	unsigned len = *(idx+1) - *idx;
+	
+	int i = 0;
+	Column** group_cols = vec_begin(&group->columns);
+	StringView* rec_svs = vec_begin(rec->fields);
+	for (; i < group->columns.size; ++i) {
+		if (group_cols[i]->expr == EXPR_AGGREGATE) {
+			continue; /* TODO */
+		}
+		stringview_nset(&rec_svs[i],
+				vec_at(&group->_raw, *idx),
+				len);
+	}
+
+	++group->_dump_idx;
+	return FQL_GOOD;
 }

@@ -309,19 +309,23 @@ void _where(Plan* plan, Query* query)
 
 void _group(Plan* plan, Query* query)
 {
-	if (!vec_empty(&query->groupby->columns)) {
+	if (!vec_empty(&query->groupby->columns)
+	 || !vec_empty(&query->groupby->aggregates)) {
 		Process* group_proc = process_new("GROUP BY ", plan);
 		group_proc->action__ = &fql_groupby;
 		group_proc->proc_data = query->groupby;
+		group_proc->wait_for_in0_end = true;
+		group_proc->root_fifo = 1;
 		group_cat_description(query->groupby, group_proc);
 		Dnode* group_node = dgraph_add_data(plan->processes, group_proc);
+		group_node->is_root = true;
 		plan->current->out[0] = group_node;
 		plan->current = group_node;
 	}
 
 	if (query->distinct) {
 		Process* group_proc = process_new("DISTINCT ", plan);
-		group_proc->action__ = &fql_groupby;
+		group_proc->action__ = &fql_distinct;
 		group_proc->proc_data = query->distinct;
 		group_cat_description(query->distinct, group_proc);
 		Dnode* group_node = dgraph_add_data(plan->processes, group_proc);

@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include "fql.h"
 #include "table.h"
+#include "group.h"
 #include "operation.h"
 #include "reader.h"
 #include "record.h"
@@ -42,8 +43,8 @@ Process* process_construct(Process* proc, const char* action, Plan* plan)
 		,false                          /* is_passive */
 		,true                           /* is_enabled */
 		,false                          /* is_const */
-		,true                           /* wait_on_in0 */
-		,false                          /* must_complete_before_advancing */
+		,true                           /* wait_for_in0 */
+		,false                          /* wait_for_in0_end */
 	};
 
 	return proc;
@@ -111,14 +112,19 @@ void process_activate(Dnode* proc_node, Plan* plan)
 	proc->fifo_in[proc->root_fifo] = fifo_new_(Vec*, FIFO_SIZE * graph_size);
 
 	int field_count = 1;
+
 	if (proc->action__ == &fql_read) {
 		Table* table = proc->proc_data;
 		Reader* reader = table->reader;
 		field_count = reader->max_col_idx + 1;
 	}
-	if (proc->action__ == &fql_read_subquery) {
+	else if (proc->action__ == &fql_read_subquery) {
 		Table* table = proc->proc_data;
 		field_count = table->schema->columns->size;
+	}
+	else if (proc->action__ == &fql_groupby) {
+		Group* group = proc->proc_data;
+		field_count = group->columns.size;
 	}
 
 	proc->records = vec_new_(Vec);
@@ -192,18 +198,23 @@ int _exec_one_pass(Plan* plan, Dgraph* proc_graph)
 		if (!proc->is_enabled) {
 			continue;
 		}
-		if (!proc->fifo_in[0]->is_open && fifo_is_empty(proc->fifo_in[0])) {
-			process_disable(proc);
-			continue;
+		if (proc->wait_for_in0
+		 && !proc->fifo_in[0]->is_open 
+		 && fifo_is_empty(proc->fifo_in[0])) {
+			if (proc->wait_for_in0_end) {
+				proc->wait_for_in0 = false;
+			} else {
+				process_disable(proc);
+				continue;
+			}
 		}
-		//++run_count;
 
 		/* Check to see that there is something to process
 		 * as well as a place for it to go.
 		 */
-		if (proc->wait_on_in0 && fifo_is_empty(proc->fifo_in[0]) ||
-		    (proc->fifo_out[0] && !fifo_is_receivable(proc->fifo_out[0])) ||
-		    (proc->fifo_out[1] && !fifo_is_receivable(proc->fifo_out[1]))) {
+		if (proc->wait_for_in0 && fifo_is_empty(proc->fifo_in[0])
+		 || (proc->fifo_out[0] && !fifo_is_receivable(proc->fifo_out[0]))
+		 || (proc->fifo_out[1] && !fifo_is_receivable(proc->fifo_out[1]))) {
 			continue;
 		}
 		int ret = proc->action__(proc_graph, proc);
@@ -254,7 +265,7 @@ void* _thread_exec(void* data)
 	Process* proc = tdata->proc_node->data;
 
 	while (proc->is_enabled) {
-		if (proc->wait_on_in0 && fifo_is_empty(proc->fifo_in[0])) {
+		if (proc->wait_for_in0 && fifo_is_empty(proc->fifo_in[0])) {
 			if (!proc->fifo_in[0]->is_open) {
 				process_disable(proc);
 				break;

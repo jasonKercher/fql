@@ -2,6 +2,7 @@
 #include "reader.h"
 #include "process.h"
 #include "group.h"
+#include "aggregate.h"
 #include "select.h"
 #include "record.h"
 #include "column.h"
@@ -11,7 +12,7 @@ void _recycle_specific(Process* proc, Vec* recs, int index)
 {
 	Dnode** root_node = vec_at(proc->root_group, index);
 	Process* root = (*root_node)->data;
-	
+
 	if (root->is_const) {
 		return;
 	}
@@ -289,34 +290,44 @@ int fql_distinct(Dgraph* proc_graph, Process* proc)
 	return 1;
 }
 
-int _dump_grouping(Process* proc)
-{
-	Group* group = proc->proc_data;
-	return FQL_GOOD;
-}
-
 int fql_groupby(Dgraph* proc_graph, Process* proc)
 {
-	if (proc->wait_on_in0_end && !proc->wait_on_in0) {
-		int ret =_dump_grouping(proc);
+	Group* group = proc->proc_data;
+	if (!proc->fifo_in[0]->is_open) {
+		Vec** recs = fifo_get(proc->fifo_in[1]);
+		Record** rec = vec_at(*recs, 0);
+
+		int ret = group_dump_record(group, *rec);
 		switch (ret) {
 		case FQL_FAIL:
 			return FQL_FAIL;
 		case FQL_GOOD:
-			return FQL_GOOD;
+			fifo_add(proc->fifo_out[0], recs);
+			return 1;
 		default:
 			process_disable(proc);
+			return 0;
 		}
 	}
 	Vec** recs = fifo_get(proc->fifo_in[0]);
 
-	Group* group = proc->proc_data;
-	int ret = group_record(group, *recs);
-	if (!proc->wait_on_in0_end && ret == 1) {
-		fifo_add(proc->fifo_out[0], recs);
-	} else {
-		_recycle_recs(proc, *recs, (*recs)->size);
+	if (!vec_empty(&group->columns)) {
+		int ret = group_record(group, *recs);
+		if (ret == FQL_FAIL) {
+			return FQL_FAIL;
+		}
 	}
+
+	if (!vec_empty(&group->aggregates)) {
+		Aggregate** it = vec_begin(&group->aggregates);
+		for (; it != vec_end(&group->aggregates); ++it) {
+			if ((*it)->call__(*it, group, *recs)) {
+				return FQL_FAIL;
+			}
+		}
+	}
+
+	_recycle_recs(proc, *recs, (*recs)->size);
 	return 1;
 }
 

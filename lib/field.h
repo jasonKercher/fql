@@ -15,9 +15,11 @@ enum field_type {
 };
 
 struct function;
+struct aggregate;
 
 union field {
 	struct function* fn;
+	struct aggregate* agg;
 	String* s;
 	double f;
 	long i;
