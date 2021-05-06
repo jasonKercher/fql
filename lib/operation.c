@@ -10,7 +10,7 @@ Vec* op_get_validation_list(void* op)
 
 	switch (*type) {
 	case OP_SELECT:
-		return ((Select*) op)->schema->columns;
+		return ((select*) op)->schema->columns;
 	default:
 		return NULL;
 	}
@@ -20,7 +20,7 @@ Vec* op_get_validation_list(void* op)
 
 void op_preop(struct fql_handle* fql)
 {
-	Query* query = fql->query_list->data;
+	query* query = fql->query_list->data;
 	enum op* type = query->op;
 
 	switch (*type) {
@@ -60,7 +60,7 @@ void op_set_delim(void* op, const char* delim)
 	}
 }
 
-void op_finalize(Query* query)
+void op_finalize(query* query)
 {
 	enum op* type = query->op;
 
@@ -72,7 +72,7 @@ void op_finalize(Query* query)
 		;
 	}
 }
-void op_apply_process(Query* query, Plan* plan)
+void op_apply_process(query* query, plan* plan)
 {
 	enum op* type = query->op;
 

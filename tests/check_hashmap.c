@@ -2,9 +2,9 @@
 #include "util/stringview.h"
 #include "util/hashmap.h"
 
-typedef HashMap HashMap;
+//typedef hashmap hashmap;
 
-HashMap* m = NULL;
+Hashmap* m = NULL;
 
 int one = 1;
 int two = 2;
@@ -40,7 +40,7 @@ void multimap_sets()
 	multimap_set(m, "test ", &test_);
 }
 
-void _build_composite(StringView* key, const char* c0, const char* c1, const char* c2)
+void _build_composite(stringview* key, const char* c0, const char* c1, const char* c2)
 {
 	static char s0[15];
 	static char s1[15];
@@ -56,9 +56,9 @@ void _build_composite(StringView* key, const char* c0, const char* c1, const cha
 
 void compositemap_sets()
 {
-	Vec* key = vec_new_(StringView);
+	vec* key = vec_new_(stringview);
 	vec_resize(key, 3);
-	StringView* it = vec_begin(key);
+	stringview* it = vec_begin(key);
 
 	char s0[15];
 	char s1[15];
@@ -211,7 +211,7 @@ START_TEST(test_multimap_basic)
 	multimap_sets();
 
 	int val = 0;
-	Vec* vec = NULL;
+	vec* vec = NULL;
 
 	vec = multimap_get(m, "one");
 	ck_assert_int_eq(vec->size, 2);
@@ -240,7 +240,7 @@ START_TEST(test_multimap_basic)
 	val = *(int*) vec_at(vec, 0);
 	ck_assert_int_eq(val, test);
 
-	vec = multimap_get(m, "Test");
+	vec = multimap_get(m, "test");
 	ck_assert_int_eq(vec->size, 1);
 	val = *(int*) vec_at(vec, 0);
 	ck_assert_int_eq(val, Test);
@@ -381,7 +381,7 @@ START_TEST(test_multimap_nocase_rtrim)
 	multimap_sets();
 
 	int val = 0;
-	Vec* vec = NULL;
+	vec* vec = NULL;
 
 	vec = multimap_get(m, "one");
 	ck_assert_int_eq(vec->size, 2);
@@ -448,9 +448,9 @@ START_TEST(test_compositemap_basic)
 
 	compositemap_sets();
 
-	Vec* key = vec_new_(StringView);
+	vec* key = vec_new_(stringview);
 	vec_resize(key, 3);
-	StringView* it = vec_begin(key);
+	stringview* it = vec_begin(key);
 
 	_build_composite(it, "one", "two", "three");
 	val = *(int*)compositemap_get(m, key);
@@ -501,9 +501,9 @@ START_TEST(test_compositemap_nocase)
 
 	compositemap_sets();
 
-	Vec* key = vec_new_(StringView);
+	vec* key = vec_new_(stringview);
 	vec_resize(key, 3);
-	StringView* it = vec_begin(key);
+	stringview* it = vec_begin(key);
 
 	_build_composite(it, "one", "two", "three");
 	val = *(int*)compositemap_get(m, key);
@@ -553,9 +553,9 @@ START_TEST(test_compositemap_rtrim)
 
 	compositemap_sets();
 
-	Vec* key = vec_new_(StringView);
+	vec* key = vec_new_(stringview);
 	vec_resize(key, 3);
-	StringView* it = vec_begin(key);
+	stringview* it = vec_begin(key);
 
 	_build_composite(it, "one", "two", "three");
 	val = *(int*)compositemap_get(m, key);
@@ -605,9 +605,9 @@ START_TEST(test_compositemap_nocase_rtrim)
 
 	compositemap_sets();
 
-	Vec* key = vec_new_(StringView);
+	vec* key = vec_new_(stringview);
 	vec_resize(key, 3);
-	StringView* it = vec_begin(key);
+	stringview* it = vec_begin(key);
 
 	_build_composite(it, "one", "two", "three");
 	val = *(int*)compositemap_get(m, key);

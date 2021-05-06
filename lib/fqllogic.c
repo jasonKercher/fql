@@ -40,10 +40,10 @@
  *
  * 'hello' = 'Hello   '
  */
-int _fql_stringview_compare(StringView* sv0, StringView* sv1)
+int _fql_stringview_compare(stringview* sv0, stringview* sv1)
 {
-	StringView* short_sv = sv0;
-	StringView* long_sv = sv1;
+	stringview* short_sv = sv0;
+	stringview* long_sv = sv1;
 	if (sv0->len > sv1->len) {
 		short_sv = sv1;
 		long_sv = sv0;
@@ -70,7 +70,7 @@ int _fql_stringview_compare(StringView* sv0, StringView* sv1)
 }
 
 
-int fql_logic_eq_i(Logic* logic, Vec* recs)
+int fql_logic_eq_i(logic* logic, vec* recs)
 {
 	long n0 = 0;
 	long n1 = 0;
@@ -78,7 +78,7 @@ int fql_logic_eq_i(Logic* logic, Vec* recs)
 	return (n0 == n1);
 }
 
-int fql_logic_eq_f(Logic* logic, Vec* recs)
+int fql_logic_eq_f(logic* logic, vec* recs)
 {
 	double n0 = 0;
 	double n1 = 0;
@@ -86,14 +86,14 @@ int fql_logic_eq_f(Logic* logic, Vec* recs)
 	return (n0 == n1);
 }
 
-int fql_logic_eq_s(Logic* logic, Vec* recs)
+int fql_logic_eq_s(logic* logic, vec* recs)
 {
-	StringView sv0, sv1;
+	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
 	return (_fql_stringview_compare(&sv0, &sv1) == 0);
 }
 
-int fql_logic_ne_i(Logic* logic, Vec* recs)
+int fql_logic_ne_i(logic* logic, vec* recs)
 {
 	long n0 = 0;
 	long n1 = 0;
@@ -101,7 +101,7 @@ int fql_logic_ne_i(Logic* logic, Vec* recs)
 	return (n0 != n1);
 }
 
-int fql_logic_ne_f(Logic* logic, Vec* recs)
+int fql_logic_ne_f(logic* logic, vec* recs)
 {
 	double n0 = 0;
 	double n1 = 0;
@@ -109,14 +109,14 @@ int fql_logic_ne_f(Logic* logic, Vec* recs)
 	return (n0 != n1);
 }
 
-int fql_logic_ne_s(Logic* logic, Vec* recs)
+int fql_logic_ne_s(logic* logic, vec* recs)
 {
-	StringView sv0, sv1;
+	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
 	return (_fql_stringview_compare(&sv0, &sv1) != 0);
 }
 
-int fql_logic_gt_i(Logic* logic, Vec* recs)
+int fql_logic_gt_i(logic* logic, vec* recs)
 {
 	long n0 = 0;
 	long n1 = 0;
@@ -124,7 +124,7 @@ int fql_logic_gt_i(Logic* logic, Vec* recs)
 	return (n0 > n1);
 }
 
-int fql_logic_gt_f(Logic* logic, Vec* recs)
+int fql_logic_gt_f(logic* logic, vec* recs)
 {
 	double n0 = 0;
 	double n1 = 0;
@@ -132,14 +132,14 @@ int fql_logic_gt_f(Logic* logic, Vec* recs)
 	return (n0 > n1);
 }
 
-int fql_logic_gt_s(Logic* logic, Vec* recs)
+int fql_logic_gt_s(logic* logic, vec* recs)
 {
-	StringView sv0, sv1;
+	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
 	return (_fql_stringview_compare(&sv0, &sv1) > 0);
 }
 
-int fql_logic_ge_i(Logic* logic, Vec* recs)
+int fql_logic_ge_i(logic* logic, vec* recs)
 {
 	long n0 = 0;
 	long n1 = 0;
@@ -147,7 +147,7 @@ int fql_logic_ge_i(Logic* logic, Vec* recs)
 	return (n0 >= n1);
 }
 
-int fql_logic_ge_f(Logic* logic, Vec* recs)
+int fql_logic_ge_f(logic* logic, vec* recs)
 {
 	double n0 = 0;
 	double n1 = 0;
@@ -155,14 +155,14 @@ int fql_logic_ge_f(Logic* logic, Vec* recs)
 	return (n0 >= n1);
 }
 
-int fql_logic_ge_s(Logic* logic, Vec* recs)
+int fql_logic_ge_s(logic* logic, vec* recs)
 {
-	StringView sv0, sv1;
+	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
 	return (_fql_stringview_compare(&sv0, &sv1) >= 0);
 }
 
-int fql_logic_lt_i(Logic* logic, Vec* recs)
+int fql_logic_lt_i(logic* logic, vec* recs)
 {
 	long n0 = 0;
 	long n1 = 0;
@@ -170,7 +170,7 @@ int fql_logic_lt_i(Logic* logic, Vec* recs)
 	return (n0 < n1);
 }
 
-int fql_logic_lt_f(Logic* logic, Vec* recs)
+int fql_logic_lt_f(logic* logic, vec* recs)
 {
 	double n0 = 0;
 	double n1 = 0;
@@ -178,14 +178,14 @@ int fql_logic_lt_f(Logic* logic, Vec* recs)
 	return (n0 < n1);
 }
 
-int fql_logic_lt_s(Logic* logic, Vec* recs)
+int fql_logic_lt_s(logic* logic, vec* recs)
 {
-	StringView sv0, sv1;
+	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
 	return (_fql_stringview_compare(&sv0, &sv1) < 0);
 }
 
-int fql_logic_le_i(Logic* logic, Vec* recs)
+int fql_logic_le_i(logic* logic, vec* recs)
 {
 	long n0 = 0;
 	long n1 = 0;
@@ -193,7 +193,7 @@ int fql_logic_le_i(Logic* logic, Vec* recs)
 	return (n0 <= n1);
 }
 
-int fql_logic_le_f(Logic* logic, Vec* recs)
+int fql_logic_le_f(logic* logic, vec* recs)
 {
 	double n0 = 0;
 	double n1 = 0;
@@ -201,32 +201,32 @@ int fql_logic_le_f(Logic* logic, Vec* recs)
 	return (n0 <= n1);
 }
 
-int fql_logic_le_s(Logic* logic, Vec* recs)
+int fql_logic_le_s(logic* logic, vec* recs)
 {
-	StringView sv0, sv1;
+	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
 	return (_fql_stringview_compare(&sv0, &sv1) <= 0);
 }
 
-int fql_logic_like(Logic* logic, Vec* recs)
+int fql_logic_like(logic* logic, vec* recs)
 {
 	fputs("logical like not yet implemented\n", stderr);
 	return FQL_FAIL;
 }
 
-int fql_logic_not_like(Logic* logic, Vec* recs)
+int fql_logic_not_like(logic* logic, vec* recs)
 {
 	fputs("logical like not yet implemented\n", stderr);
 	return FQL_FAIL;
 }
 
-int fql_logic_is_null(Logic* logic, Vec* recs)
+int fql_logic_is_null(logic* logic, vec* recs)
 {
 	fputs("logical NULL check not yet implemented\n", stderr);
 	return FQL_FAIL;
 }
 
-int fql_logic_not_null(Logic* logic, Vec* recs)
+int fql_logic_not_null(logic* logic, vec* recs)
 {
 	fputs("logical NULL check not yet implemented\n", stderr);
 	return FQL_FAIL;

@@ -7,15 +7,15 @@
 
 Logic* logic_new()
 {
-	Logic* new_logic = NULL;
+	logic* new_logic = NULL;
 	malloc_(new_logic, sizeof(*new_logic));
 
 	return logic_construct(new_logic);
 }
 
-Logic* logic_construct(Logic* logic)
+Logic* logic_construct(logic* logic)
 {
-	*logic = (Logic) {
+	*logic = (logic) {
 		 {NULL, NULL}    /* col */
 		,NULL            /* proc */
 		,FIELD_UNDEFINED /* data_type */
@@ -25,7 +25,7 @@ Logic* logic_construct(Logic* logic)
 	return logic;
 }
 
-void logic_free(Logic* logic)
+void logic_free(logic* logic)
 {
 	if (logic == NULL) {
 		return;
@@ -35,7 +35,7 @@ void logic_free(Logic* logic)
 	free_(logic);
 }
 
-void logic_assign_process(Logic* logic, Process* proc)
+void logic_assign_process(logic* logic, process* proc)
 {
 	logic->data_type = field_determine_type(logic->col[0]->field_type,
 					        logic->col[1]->field_type);
@@ -82,7 +82,7 @@ void logic_assign_process(Logic* logic, Process* proc)
 	column_cat_description(logic->col[1], proc->action_msg);
 }
 
-void logic_add_column(Logic* logic, struct column* col)
+void logic_add_column(logic* logic, struct column* col)
 {
 	if (logic->col[0] == NULL) {
 		logic->col[0] = col;
@@ -91,7 +91,7 @@ void logic_add_column(Logic* logic, struct column* col)
 	logic->col[1] = col;
 }
 
-void logic_set_comparison(Logic* logic, const char* op)
+void logic_set_comparison(logic* logic, const char* op)
 {
 	if(string_eq(op, "="))
 		logic->comp_type = COMP_EQ;
@@ -115,17 +115,17 @@ void logic_set_comparison(Logic* logic, const char* op)
 		logic->comp_type = COMP_NOT_NULL;
 }
 
-LogicGroup* logicgroup_new(enum logicgroup_type type)
+Logicgroup* logicgroup_new(enum logicgroup_type type)
 {
-	LogicGroup* new_lg = NULL;
+	logicgroup* new_lg = NULL;
 	malloc_(new_lg, sizeof(*new_lg));
 
 	return logicgroup_construct(new_lg, type);
 }
 
-LogicGroup* logicgroup_construct(LogicGroup* lg, enum logicgroup_type type)
+Logicgroup* logicgroup_construct(logicgroup* lg, enum logicgroup_type type)
 {
-	*lg = (LogicGroup) {
+	*lg = (logicgroup) {
 		 type   /* type */
 		,{ 0 }  /* items */
 		,NULL   /* joinable */
@@ -133,19 +133,19 @@ LogicGroup* logicgroup_construct(LogicGroup* lg, enum logicgroup_type type)
 		,NULL   /* condition */
 	};
 
-	vec_construct_(&lg->items, LogicGroup*);
+	vec_construct_(&lg->items, logicgroup*);
 
 	return lg;
 }
 
-void logicgroup_free(LogicGroup* lg)
+void logicgroup_free(logicgroup* lg)
 {
 	if (lg == NULL) {
 		return;
 	}
 	unsigned i = 0;
 	for (; i < lg->items.size; ++i) {
-		LogicGroup** lg_item = vec_at(&lg->items, i);
+		logicgroup** lg_item = vec_at(&lg->items, i);
 		logic_free((*lg_item)->condition);
 		logicgroup_free(*lg_item);
 	}
@@ -156,32 +156,32 @@ void logicgroup_free(LogicGroup* lg)
 	free_(lg);
 }
 
-void _get_condition_count(LogicGroup* lg, unsigned* count)
+void _get_condition_count(logicgroup* lg, unsigned* count)
 {
 	if (lg->type == LG_NOT) {
 		++(*count);
 	}
-	LogicGroup** it = vec_begin(&lg->items);
+	logicgroup** it = vec_begin(&lg->items);
 	for (; it != vec_end(&lg->items); ++it) {
 		_get_condition_count(*it, count);
 	}
 }
 
-unsigned logicgroup_get_condition_count(LogicGroup* lg)
+unsigned logicgroup_get_condition_count(logicgroup* lg)
 {
 	unsigned count = 0;
 	_get_condition_count(lg, &count);
 	return count;
 }
 
-/* Essentially the same as logicgroup_eval.
- * Every logic is true except the one provided.
- * The point is to determine if that logic MUST be
+/* essentially the same as logicgroup_eval.
+ * every logic is true except the one provided.
+ * the point is to determine if that logic MUST be
  * true for the group to evaluate to true.
  */
-int logic_can_be_false(LogicGroup* lg, Logic* check_logic)
+int logic_can_be_false(logicgroup* lg, logic* check_logic)
 {
-	LogicGroup** it = vec_begin(&lg->items);
+	logicgroup** it = vec_begin(&lg->items);
 	if (lg->type == LG_NOT && lg->condition != NULL) {
 		if (lg->condition == check_logic) {
 			return 0;
@@ -202,14 +202,14 @@ int logic_can_be_false(LogicGroup* lg, Logic* check_logic)
 	return ret;
 }
 
-/* Evaluate the logic statement
- * The skip argument is for logic that can
+/* evaluate the logic statement
+ * the skip argument is for logic that can
  * be assumed true because it was evaluated
  * prior to calling this function.
  */
-int logicgroup_eval(LogicGroup* lg, Vec* recs, Logic* skip)
+int logicgroup_eval(logicgroup* lg, vec* recs, logic* skip)
 {
-	LogicGroup** it = vec_begin(&lg->items);
+	logicgroup** it = vec_begin(&lg->items);
 	if (lg->type == LG_NOT && lg->condition != NULL) {
 		if (lg->condition == skip) {
 			return 1;

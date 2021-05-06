@@ -6,7 +6,7 @@
 #include "util/dgraph.h"
 
 /* COMP_FALSE and COMP_TRUE are passive processes
- * that are removed. They do not count.
+ * that are removed. they do not count.
  */
 #define COMP_COUNT 10
 enum comparison {
@@ -34,7 +34,7 @@ struct logic {
 	enum field_type data_type;
 	enum comparison comp_type;
 };
-typedef struct logic Logic;
+typedef struct logic logic;
 
 struct logic* logic_new();
 struct logic* logic_construct(struct logic*);
@@ -55,12 +55,12 @@ enum logicgroup_type {
 
 struct logicgroup {
 	enum logicgroup_type type;
-	struct vec items;               /* LogicGroup* */
+	struct vec items;               /* logicgroup* */
 	struct vec* joinable;
 	struct logic* join_logic;
 	struct logic* condition;
 };
-typedef struct logicgroup LogicGroup;
+typedef struct logicgroup logicgroup;
 
 struct logicgroup* logicgroup_new(enum logicgroup_type);
 struct logicgroup* logicgroup_construct(struct logicgroup*, enum logicgroup_type);

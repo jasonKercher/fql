@@ -8,14 +8,14 @@ extern "C" {
 #include <stdlib.h>
 
 /**
- * Doubly-linked list treated as a stack.
+ * doubly-linked list treated as a stack.
  */
 struct stack {
 	void* data;
 	struct stack* prev;
 	struct stack* next;
 };
-typedef struct stack Stack;
+typedef struct stack stack;
 
 struct stack* stack_push(struct stack** head, void*);
 void* stack_remove(struct stack** head, struct stack*);

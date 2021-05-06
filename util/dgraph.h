@@ -13,9 +13,9 @@ struct dnode {
 	int visit_count;
 	_Bool is_root;
 };
-typedef struct dnode Dnode;
+typedef struct dnode dnode;
 
-struct dnode* dnode_new(void*);
+//struct dnode* dnode_new(void*);
 struct dnode* dnode_construct(struct dnode*, void*);
 void* dnode_free(struct dnode*);
 
@@ -27,9 +27,9 @@ struct dgraph {
 	unsigned _root_idx;
 	_Bool _roots_good;
 };
-typedef struct dgraph Dgraph;
+typedef struct dgraph dgraph;
 
-struct dgraph* dgraph_new();
+//struct dgraph* dgraph_new();
 struct dgraph* dgraph_construct(struct dgraph*);
 void dgraph_shallow_free(struct dgraph*);
 void dgraph_free(struct dgraph*);

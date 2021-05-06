@@ -8,14 +8,14 @@ extern "C" {
 #include <stdlib.h>
 
 /**
- * Doubly-linked list treated as a queue
+ * doubly-linked list treated as a queue
  */
 struct queue {
 	void* data;
 	struct queue* prev;
 	struct queue* next;
 };
-typedef struct queue Queue;
+typedef struct queue queue;
 
 struct queue* queue_enqueue(struct queue** head, void*);
 void* queue_remove(struct queue** head, struct queue* node);

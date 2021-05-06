@@ -13,7 +13,7 @@ struct schema {
 	char name[TABLE_NAME_MAX];
 	char delimiter[DELIM_LEN_MAX];
 };
-typedef struct schema Schema;
+typedef struct schema schema;
 
 enum join_side {
 	SIDE_UNDEF,

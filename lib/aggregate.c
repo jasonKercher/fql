@@ -19,19 +19,19 @@ static const char* agg_str[14] = {
 	"VARP",
 };
 
-Aggregate* aggregate_new(enum aggregate_function agg_type)
+aggregate* aggregate_new(enum aggregate_function agg_type)
 {
-	Aggregate* new_agg = NULL;
+	aggregate* new_agg = NULL;
 	malloc_(new_agg, sizeof(*new_agg));
 
 	return aggregate_construct(new_agg, agg_type);
 }
 
-Aggregate* aggregate_construct(Aggregate* agg, enum aggregate_function agg_type)
+aggregate* aggregate_construct(aggregate* agg, enum aggregate_function agg_type)
 {
-	*agg = (Aggregate) {
+	*agg = (aggregate) {
 		 NULL
-		,vec_new_(Column*)
+		,vec_new_(column*)
 		,{ 0 }
 		,agg_type
 		,FIELD_UNDEFINED
@@ -42,13 +42,13 @@ Aggregate* aggregate_construct(Aggregate* agg, enum aggregate_function agg_type)
 	return agg;
 }
 
-void aggregate_free(Aggregate* agg)
+void aggregate_free(aggregate* agg)
 {
 	aggregate_destroy(agg);
 	free_(agg);
 }
 
-void aggregate_destroy(Aggregate* agg) 
+void aggregate_destroy(aggregate* agg) 
 { 
 	vec_free(agg->args);
 	if (agg->data_type == FIELD_STRING) {
@@ -60,17 +60,17 @@ void aggregate_destroy(Aggregate* agg)
 	vec_destroy(&agg->results);
 }
 
-const char* aggregate_get_name(Aggregate* agg)
+const char* aggregate_get_name(aggregate* agg)
 {
 	return agg_str[agg->agg_type];
 }
 
-void aggregate_add_column(Aggregate* agg, Column* col)
+void aggregate_add_column(aggregate* agg, column* col)
 {
 	vec_push_back(agg->args, &col);
 }
 
-int aggregate_resolve(Aggregate* agg)
+int aggregate_resolve(aggregate* agg)
 {
 	switch (agg->agg_type) {
 	case AGG_COUNT:

@@ -96,7 +96,7 @@ enum logic_mode {
 
 struct group;
 
-/** Query **/
+/** query **/
 struct query {
 	struct fql_plan* plan;
 	struct vec* sources;
@@ -106,15 +106,15 @@ struct query {
 	struct group* distinct;
 	struct queue* having;
 	struct expression* limit;       /* TOP */
-	void* op;                       /* Operation structure */
+	void* op;                       /* operation structure */
 	int query_id;
 	int query_total;
 
-	/* All the variables below are temporaries for
+	/* all the variables below are temporaries for
 	 * tracking the query as antlr traverses it
 	 */
 	struct stack* logic_stack;      /* used to build logic groups */
-	struct vec* joinable;           /* Denotes a joinable condition */
+	struct vec* joinable;           /* denotes a joinable condition */
 	struct stack* function_stack;   /* used to track function nesting */
 
 	struct expression* expr;
@@ -122,13 +122,13 @@ struct query {
 	enum logic_mode logic_mode;
 	enum join_type join;
 };
-typedef struct query Query;
+typedef struct query query;
 
 struct query* query_new(int id);
 struct query* query_construct(struct query*, int id);
 void query_free(void*);
 
-int query_add_constant(Query*, const char*, int);
+int query_add_constant(query*, const char*, int);
 void query_add_column(struct query*, char*, const char* table);
 void query_add_asterisk(struct query*, const char* table);
 void query_add_source(struct query*, struct stack**, const char*);
@@ -141,7 +141,7 @@ int query_enter_function(struct query*, enum scalar_function, int);
 void query_exit_function(struct query*);
 void query_enter_operator(struct query*, enum scalar_function op);
 
-/* Search building functions */
+/* search building functions */
 void query_set_logic_comparison(struct query*, const char*);
 
 void enter_search(struct query*);

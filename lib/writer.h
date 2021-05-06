@@ -31,9 +31,9 @@ struct writer {
 	write_fn write_record__;
 	generic_data_fn free__;
 	struct vec* raw_rec;
-	String file_name;
+	string file_name;
 };
-typedef struct writer Writer;
+typedef struct writer writer;
 
 struct writer* writer_new();
 struct writer* writer_construct(struct writer*);

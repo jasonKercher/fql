@@ -16,10 +16,10 @@ extern "C" {
 //struct table {
 //        struct reader* reader;
 //        struct schema* schema;
-//        String name;
+//        string name;
 //};
 
-/** Source **/
+/** source **/
 enum source_type {
 	SOURCE_TABLE,
 	SOURCE_SUBQUERY,
@@ -35,8 +35,8 @@ enum join_type {
 };
 
 struct table {
-	String name;
-	String alias;
+	string name;
+	string alias;
 	struct query* subquery;
 	struct reader* reader;
 	struct schema* schema;
@@ -48,7 +48,7 @@ struct table {
 	enum source_type source_type;
 	enum join_type join_type;
 };
-typedef struct table Table;
+typedef struct table table;
 
 struct table* table_new(char* name,
 			const char* alias,
@@ -75,7 +75,7 @@ struct hashjoin {
 	struct hashmap hash_data;
 	struct column* left_col;
 	struct column* right_col;
-	Vec* recs;
+	vec* recs;
 	enum join_side state;
 	unsigned rec_idx;
 };

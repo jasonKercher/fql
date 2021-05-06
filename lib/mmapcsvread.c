@@ -19,7 +19,7 @@ struct mmapcsv* mmapcsv_construct(struct mmapcsv* csv_data, size_t buflen)
 	*csv_data = (struct mmapcsv) {
 		 csv_reader_new()       /* csv_handle */
 		,{ NULL, 0 }            /* current */
-		,vec_new_(StringView)   /* raw */
+		,vec_new_(stringview)   /* raw */
 		,NULL                   /* rec_map */
 		,NULL                   /* mmap_base */
 		,0                      /* mp */
@@ -75,7 +75,7 @@ int mmapcsv_open(struct mmapcsv* csv, const char* file_name)
 	return FQL_GOOD;
 }
 
-int mmapcsv_getline(Reader* reader)
+int mmapcsv_getline(reader* reader)
 {
 	struct mmapcsv* csv = reader->reader_data;
 
@@ -106,7 +106,7 @@ int mmapcsv_getline(Reader* reader)
 	return EOF;
 }
 
-int mmapcsv_get_record(Reader* reader, Record* rec)
+int mmapcsv_get_record(reader* reader, record* rec)
 {
 	struct mmapcsv* csv = reader->reader_data;
 	if (reader->eof) {
@@ -130,12 +130,12 @@ int mmapcsv_get_record(Reader* reader, Record* rec)
 		return FQL_FAIL;
 	}
 
-	/* This should really never change unless we
-	 * want this to mean something (like NULLs).
+	/* this should really never change unless we
+	 * want this to mean something (like NULls).
 	 */
 	vec_resize(rec->fields, rec->libcsv_rec->size);
 
-	StringView* sv = vec_begin(rec->fields);
+	stringview* sv = vec_begin(rec->fields);
 	char** fields = rec->libcsv_rec->fields;
 
 	int i = 0;
@@ -155,7 +155,7 @@ int mmapcsv_get_record(Reader* reader, Record* rec)
 	return FQL_GOOD;
 }
 
-int mmapcsv_get_record_at(Reader* reader, Record* rec, char* location)
+int mmapcsv_get_record_at(reader* reader, record* rec, char* location)
 {
 	struct mmapcsv* csv = reader->reader_data;
 	reader->eof = false;
@@ -163,11 +163,11 @@ int mmapcsv_get_record_at(Reader* reader, Record* rec, char* location)
 	return mmapcsv_get_record(reader, rec);
 }
 
-int mmapcsv_reset(Reader* reader)
+int mmapcsv_reset(reader* reader)
 {
 	struct mmapcsv* csv = reader->reader_data;
 	reader->eof = false;
 	csv->mp = csv->mmap_base;
-	/* Skip header */
+	/* skip header */
 	return mmapcsv_getline(reader);
 }

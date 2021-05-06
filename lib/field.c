@@ -68,7 +68,7 @@ int field_to_float(double* ret, union field* field, enum field_type* type)
 	return FQL_GOOD;
 }
 
-int field_to_stringview(StringView* ret, union field* field, enum field_type* type)
+int field_to_stringview(stringview* ret, union field* field, enum field_type* type)
 {
 	switch (*type) {
 	case FIELD_STRING:
@@ -76,7 +76,7 @@ int field_to_stringview(StringView* ret, union field* field, enum field_type* ty
 	case FIELD_INT:
 	{
 		*type = FIELD_STRING;
-		String* s = string_new();
+		string* s = string_new();
 		string_sprintf(s, "%ld", field->i);
 		field->s = s;
 		break;
@@ -84,7 +84,7 @@ int field_to_stringview(StringView* ret, union field* field, enum field_type* ty
 	case FIELD_FLOAT:
 	{
 		*type = FIELD_STRING;
-		String* s = string_new();
+		string* s = string_new();
 		string_sprintf(s, "%lf", field->f);
 		field->s = s;
 		break;

@@ -48,7 +48,7 @@ static const char* scalar_str[] = {
 	"YEAR",
 };
 
-int _not_implemented(Function* fn, union field* f, Vec* rec)
+int _not_implemented(function* fn, union field* f, vec* rec)
 {
 	fprintf(stderr, "function not implemented: %s\n", scalar_str[fn->type]);
 	return 0;
@@ -56,24 +56,24 @@ int _not_implemented(Function* fn, union field* f, Vec* rec)
 
 Function* function_new(enum scalar_function scalar_type, enum field_type* type, int char_as_byte)
 {
-	Function* new_func = NULL;
+	function* new_func = NULL;
 	malloc_(new_func, sizeof(*new_func));
 
 	return function_construct(new_func, scalar_type, type, char_as_byte);
 }
 
-Function* function_construct(Function* func, enum scalar_function scalar_type, enum field_type* type, int char_as_byte)
+Function* function_construct(function* func, enum scalar_function scalar_type, enum field_type* type, int char_as_byte)
 {
-	*func = (Function) {
+	*func = (function) {
 		 &_not_implemented      /* call__ */
-		,vec_new_(Column*)      /* args */
+		,vec_new_(column*)      /* args */
 		,scalar_type            /* type */
 		,0                      /* arg_min */
 		,0                      /* arg_max */
 		,char_as_byte           /* char_as_byte */
 	};
 
-	/* If this is an operator, we don't have enough info */
+	/* if this is an operator, we don't have enough info */
 	if (scalar_type <= SCALAR_OP_UNARY_MINUS) {
 		return func;
 	}
@@ -184,9 +184,9 @@ Function* function_construct(Function* func, enum scalar_function scalar_type, e
 	return func;
 }
 
-void function_free(Function* func)
+void function_free(function* func)
 {
-	Column** it = vec_begin(func->args);
+	column** it = vec_begin(func->args);
 	for (; it != vec_end(func->args); ++it) {
 		column_free(*it);
 	}
@@ -195,7 +195,7 @@ void function_free(Function* func)
 	free_(func);
 }
 
-int function_op_resolve(Function* func, enum field_type* type)
+int function_op_resolve(function* func, enum field_type* type)
 {
 	if (func->type > SCALAR_OP_UNARY_MINUS) {
 		return FQL_GOOD;
@@ -204,9 +204,9 @@ int function_op_resolve(Function* func, enum field_type* type)
 	func->arg_min = 2;
 	func->arg_max = 2;
 
-	Column** args = func->args->data;
-	Column* col0 = args[0];
-	Column* col1 = col0;
+	column** args = func->args->data;
+	column* col0 = args[0];
+	column* col1 = col0;
 	if (func->args->size == 2) {
 		col1 = args[1];
 	}
@@ -228,19 +228,19 @@ int function_op_resolve(Function* func, enum field_type* type)
 
 	func->call__ = scalar_ops[func->type][*type];
 	if (func->call__ == NULL) {
-		fprintf(stderr, "Invalid type for %s operation\n", scalar_str[func->type]);
+		fprintf(stderr, "invalid type for %s operation\n", scalar_str[func->type]);
 		return FQL_FAIL;
 	}
 
 	return FQL_GOOD;
 }
 
-const char* function_get_name(Function* func)
+const char* function_get_name(function* func)
 {
 	return scalar_str[func->type];
 }
 
-int function_validate(Function* func)
+int function_validate(function* func)
 {
 	int argc = func->args->size;
 	if (argc >= func->arg_min && argc <= func->arg_max) {
@@ -248,17 +248,17 @@ int function_validate(Function* func)
 	}
 	if (func->arg_min == func->arg_max) {
 		fprintf(stderr,
-			"Function `%s' expected %d argument(s)... Found %d\n",
+			"function `%s' expected %d argument(s)... found %d\n",
 			scalar_str[func->type], func->arg_min, argc);
 	} else {
 		fprintf(stderr,
-			"Function `%s' expected between %d and %d arguments... Found %d\n",
+			"function `%s' expected between %d and %d arguments... found %d\n",
 			scalar_str[func->type], func->arg_min, func->arg_max, argc);
 	}
 	return FQL_FAIL;
 }
 
-void function_add_column(Function* func, void* col)
+void function_add_column(function* func, void* col)
 {
 	vec_push_back(func->args, &col);
 }

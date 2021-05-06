@@ -18,16 +18,16 @@
 
 Schema* schema_new()
 {
-	Schema* new_schema = NULL;
+	schema* new_schema = NULL;
 	malloc_(new_schema, sizeof(*new_schema));
 
 	return schema_construct(new_schema);
 }
 
-Schema* schema_construct(Schema* schema)
+Schema* schema_construct(schema* schema)
 {
-	*schema = (Schema) {
-		 vec_new_(Column*)      /* columns */
+	*schema = (schema) {
+		 vec_new_(column*)      /* columns */
 		,NULL                   /* col_map */
 		,""                     /* name */
 		,""                     /* delimiter */
@@ -38,9 +38,9 @@ Schema* schema_construct(Schema* schema)
 
 void schema_free(void* generic_schema)
 {
-	Schema* schema = generic_schema;
+	schema* schema = generic_schema;
 
-	Column** it = vec_begin(schema->columns);
+	column** it = vec_begin(schema->columns);
 	for (; it != vec_end(schema->columns); ++it) {
 		column_free(*it);
 	}
@@ -52,30 +52,30 @@ void schema_free(void* generic_schema)
 	free_(schema);
 }
 
-void schema_add_column(Schema* schema, Column* col)
+void schema_add_column(schema* schema, column* col)
 {
 	vec_push_back(schema->columns, &col);
 }
 
-void schema_apply_column_alias(Schema* schema, const char* alias)
+void schema_apply_column_alias(schema* schema, const char* alias)
 {
-	Column** col = vec_back(schema->columns);
+	column** col = vec_back(schema->columns);
 	string_strcpy(&(*col)->alias, alias);
 }
 
-void schema_finalize(Schema* schema)
+void schema_finalize(schema* schema)
 {
-	/* This is a separate step because between adding
+	/* this is a separate step because between adding
 	 * a new column and _here_, we could have applied a
-	 * new alias to the column. We don't care about a
+	 * new alias to the column. we don't care about a
 	 * column name once it has an alias.
 	 */
-	schema->col_map = hashmap_new_(Column*,
+	schema->col_map = hashmap_new_(column*,
 	                               schema->columns->size * 2,
 	                               HASHMAP_PROP_NOCASE);
 
 	int i = 0;
-	Column** col = vec_begin(schema->columns);
+	column** col = vec_begin(schema->columns);
 	for (; i < schema->columns->size; ++i) {
 		col[i]->location = i;
 		hashmap_set(schema->col_map, col[i]->alias.data, &col[i]);
@@ -87,14 +87,14 @@ void schema_finalize(Schema* schema)
 	}
 }
 
-int schema_resolve_file(Table* table)
+int schema_resolve_file(table* table)
 {
 	if (table->source_type == SOURCE_SUBQUERY) {
 		return FQL_GOOD;
 	}
-	String table_name_base;
-	String table_name_dir;
-	String file_noext;
+	string table_name_base;
+	string table_name_dir;
+	string file_noext;
 
 	string_construct(&table_name_base);
 	string_construct(&table_name_dir);
@@ -106,11 +106,11 @@ int schema_resolve_file(Table* table)
 	char* dir = dirname(table_name_dir.data);
 	char* base = basename(table_name_base.data);
 
-	Queue* files = dir_list_files(dir);
-	Queue* node = files;
+	queue* files = dir_list_files(dir);
+	queue* node = files;
 
 	int matches = 0;
-	/* Match exact */
+	/* match exact */
 	for (; node; node = node->next) {
 		if (string_eq(node->data, base)) {
 			++matches;
@@ -123,7 +123,7 @@ int schema_resolve_file(Table* table)
 		goto success_return;
 	}
 
-	/* Match exact ignoring case */
+	/* match exact ignoring case */
 	for (node = files; node; node = node->next) {
 		if (istring_eq(node->data, base)) {
 			++matches;
@@ -141,7 +141,7 @@ int schema_resolve_file(Table* table)
 		goto success_return;
 	}
 
-	/* Match file without extension */
+	/* match file without extension */
 	for (node = files; node; node = node->next) {
 		string_resize(&file_noext, strlen(node->data));
 		getnoext(file_noext.data, node->data);
@@ -161,7 +161,7 @@ int schema_resolve_file(Table* table)
 		goto success_return;
 	}
 
-	/* Match file without extension ignoring case */
+	/* match file without extension ignoring case */
 	for (node = files; node; node = node->next) {
 		string_resize(&file_noext, strlen(node->data));
 		getnoext(file_noext.data, node->data);
@@ -194,14 +194,14 @@ success_return:
 	return FQL_GOOD;
 }
 
-void schema_assign_header(Table* table, Record* rec)
+void schema_assign_header(table* table, record* rec)
 {
 	int i = 0;
-	StringView* it = vec_begin(rec->fields);
+	stringview* it = vec_begin(rec->fields);
 	for (; it != vec_end(rec->fields); ++it) {
-		String col_str;
+		string col_str;
 		string_construct_from_stringview(&col_str, it);
-		Column* new_col = column_new(EXPR_COLUMN_NAME, col_str.data, "");
+		column* new_col = column_new(EXPR_COLUMN_NAME, col_str.data, "");
 		schema_add_column(table->schema, new_col);
 
 		new_col->location = i++;
@@ -214,25 +214,25 @@ void schema_assign_header(Table* table, Record* rec)
 	schema_finalize(table->schema);
 }
 
-int schema_resolve_source(struct fql_handle* fql, Table* table)
+int schema_resolve_source(struct fql_handle* fql, table* table)
 {
 	if (!vec_empty(table->schema->columns)) {
-		return FQL_GOOD;  /* Schema already set */
+		return FQL_GOOD;  /* schema already set */
 	}
 
 	if (table->schema->name[0]) {
-		fputs("Not loading schema by name yet\n", stderr);
+		fputs("not loading schema by name yet\n", stderr);
 		return FQL_FAIL;  /* TODO: load schema by name */
 	}
 
 	if (table->source_type == SOURCE_SUBQUERY) {
 		schema_resolve_query(fql, table->subquery);
-		Select* select = table->subquery->op;
+		select* select = table->subquery->op;
 		table->schema = select->schema;
 		table->reader->type = READ_SUBQUERY;
 	} else {
 
-		/* If we've made it this far, we want to try
+		/* if we've made it this far, we want to try
 		 * and determine schema by reading the top
 		 * row of the file and assume a delimited
 		 * list of field names.
@@ -241,7 +241,7 @@ int schema_resolve_source(struct fql_handle* fql, Table* table)
 			return FQL_FAIL;
 		}
 
-		/* Retrieve schema using libcsv */
+		/* retrieve schema using libcsv */
 		if (table->join_type == JOIN_FROM) {
 			table->reader->type = READ_LIBCSV;
 		} else {
@@ -250,12 +250,12 @@ int schema_resolve_source(struct fql_handle* fql, Table* table)
 	}
 	reader_assign(table->reader, table);
 
-	/* Skip here if we *now* know schema */
+	/* skip here if we *now* know schema */
 	if (!vec_empty(table->schema->columns)) {
 		return FQL_GOOD;
 	}
 
-	Record rec;
+	record rec;
 	record_construct(&rec, 0, 0, false);
 	table->reader->max_col_idx = INT_MAX;
 	table->reader->get_record__(table->reader, &rec);
@@ -269,10 +269,10 @@ int schema_resolve_source(struct fql_handle* fql, Table* table)
 	return FQL_GOOD;
 }
 
-int _evaluate_if_const(Column* col)
+int _evaluate_if_const(column* col)
 {
-	Function* func = col->field.fn;
-	Column** it = vec_begin(func->args);
+	function* func = col->field.fn;
+	column** it = vec_begin(func->args);
 	for (; it != vec_end(func->args); ++it) {
 		if ((*it)->expr != EXPR_CONST) {
 			return FQL_GOOD;
@@ -296,12 +296,12 @@ int _evaluate_if_const(Column* col)
 	return FQL_GOOD;
 }
 
-int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
+int schema_assign_columns_limited(vec* columns, vec* sources, int limit)
 {
-	Column** it = vec_begin(columns);
+	column** it = vec_begin(columns);
 	for (; it != vec_end(columns); ++it) {
 		if ((*it)->expr == EXPR_FUNCTION) {
-			Function* func = (*it)->field.fn;
+			function* func = (*it)->field.fn;
 			if (schema_assign_columns_limited(func->args, sources, limit)) {
 				return FQL_FAIL;
 			}
@@ -324,7 +324,7 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
 		int j = 0;
 
 		for (; j <= limit; ++j) {
-			Table* search_table = vec_at(sources, j);
+			table* search_table = vec_at(sources, j);
 			if (string_empty(&(*it)->table_name) ||
 			    istring_eq((*it)->table_name.data, search_table->alias.data)) {
 				matches += column_try_assign_source(*it, search_table, j);
@@ -345,30 +345,30 @@ int schema_assign_columns_limited(Vec* columns, Vec* sources, int limit)
 	return FQL_GOOD;
 }
 
-int schema_assign_columns(Vec* columns, Vec* sources)
+int schema_assign_columns(vec* columns, vec* sources)
 {
 	return schema_assign_columns_limited(columns,
 					     sources,
 					     sources->size - 1);
 }
 
-int _asterisk_resolve(Vec* columns, Vec* sources)
+int _asterisk_resolve(vec* columns, vec* sources)
 {
 	int i = 0;
 	for (; i < columns->size; ++i) {
 		int col_idx = i;
-		Column** col = vec_at(columns, i);
+		column** col = vec_at(columns, i);
 		if ((*col)->expr != EXPR_ASTERISK) {
 			continue;
 		}
 		int matches = 0;
 		int j = 0;
 		for (; j < sources->size; ++j) {
-			Table* search_table = vec_at(sources, j);
+			table* search_table = vec_at(sources, j);
 			if (string_empty(&(*col)->table_name) ||
 			    istring_eq((*col)->table_name.data, search_table->alias.data)) {
 				if (matches > 0) {
-					Column* new_col = column_new(EXPR_ASTERISK, NULL, "");
+					column* new_col = column_new(EXPR_ASTERISK, NULL, "");
 					new_col->src_idx = j;
 					vec_insert(columns, ++i, &new_col);
 					col = vec_at(columns, col_idx);
@@ -381,7 +381,7 @@ int _asterisk_resolve(Vec* columns, Vec* sources)
 
 
 		if (matches == 0) {
-			fprintf(stderr, "Could not locate table `%s'\n", (*col)->table_name.data);
+			fprintf(stderr, "could not locate table `%s'\n", (*col)->table_name.data);
 			return FQL_FAIL;
 		}
 	}
@@ -389,15 +389,15 @@ int _asterisk_resolve(Vec* columns, Vec* sources)
 	return FQL_GOOD;
 }
 
-enum join_side _get_join_side(Column* col, int right_idx)
+enum join_side _get_join_side(column* col, int right_idx)
 {
 	switch (col->expr) {
 	case EXPR_COLUMN_NAME:
 		return (col->src_idx < right_idx) ? SIDE_LEFT : SIDE_RIGHT;
 	case EXPR_FUNCTION:
 	{
-		Function* func = col->field.fn;
-		Column** it = vec_begin(func->args);
+		function* func = col->field.fn;
+		column** it = vec_begin(func->args);
 		enum join_side side0 = SIDE_UNDEF;
 		for (; it != vec_end(func->args); ++it) {
 			enum join_side side1 = _get_join_side(*it, right_idx);
@@ -418,16 +418,16 @@ enum join_side _get_join_side(Column* col, int right_idx)
 }
 
 
-void _resolve_join_conditions(Table* right_table, int right_idx)
+void _resolve_join_conditions(table* right_table, int right_idx)
 {
 	if (right_table->condition == NULL ||
 	    right_table->condition->joinable == NULL) {
 		return;
 	}
 
-	Vec* joinable = right_table->condition->joinable;
+	vec* joinable = right_table->condition->joinable;
 
-	Logic** it = vec_begin(joinable);
+	logic** it = vec_begin(joinable);
 	for (; it != vec_end(joinable); ++it) {
 		enum join_side side0 = _get_join_side((*it)->col[0], right_idx);
 		if (side0 == SIDE_MIXED) {
@@ -451,7 +451,7 @@ void _resolve_join_conditions(Table* right_table, int right_idx)
 		}
 	}
 
-	/* No more need for this vector */
+	/* no more need for this vector */
 	//vec_free(right_table->condition->joinable);
 }
 
@@ -464,7 +464,7 @@ enum _expr_type {
 	MAP_FUNCTION,
 };
 
-int _map_expression(Vec* key, Column* col)
+int _map_expression(vec* key, column* col)
 {
 	/* I mean... heh? */
 	static const enum _expr_type _undef    = MAP_UNDEFINED;
@@ -475,8 +475,8 @@ int _map_expression(Vec* key, Column* col)
 	static const enum _expr_type _func     = MAP_FUNCTION;
 
 	const enum _expr_type* map_type = &_undef;
-	StringView type_sv;
-	StringView val_sv;
+	stringview type_sv;
+	stringview val_sv;
 	switch(col->expr) {
 	case EXPR_CONST:
 		switch(col->field_type) {
@@ -504,7 +504,7 @@ int _map_expression(Vec* key, Column* col)
 		map_type = &_col;
 		stringview_nset(&val_sv,
 				(char*)&col->data_source,
-				sizeof(Column*));
+				sizeof(column*));
 		break;
 	case EXPR_FUNCTION:
 		map_type = &_func;
@@ -513,7 +513,7 @@ int _map_expression(Vec* key, Column* col)
 				sizeof(enum scalar_function));
 		break;
 	default:
-		fputs("Unexpected expression\n", stderr);
+		fputs("unexpected expression\n", stderr);
 		return FQL_FAIL;
 	}
 
@@ -528,7 +528,7 @@ int _map_expression(Vec* key, Column* col)
 		return FQL_GOOD;
 	}
 
-	Column** it = vec_begin(col->field.fn->args);
+	column** it = vec_begin(col->field.fn->args);
 	for (; it != vec_end(col->field.fn->args); ++it) {
 		if (_map_expression(key, *it)) {
 			return FQL_FAIL;
@@ -538,7 +538,7 @@ int _map_expression(Vec* key, Column* col)
 	return FQL_GOOD;
 }
 
-int _op_find_group(CompositeMap* expr_map, Column* col, Vec* key)
+int _op_find_group(compositemap* expr_map, column* col, vec* key)
 {
 	if (col->expr == EXPR_CONST) {
 		return FQL_GOOD;
@@ -552,12 +552,12 @@ int _op_find_group(CompositeMap* expr_map, Column* col, Vec* key)
 	if (_map_expression(key, col)) {
 		return FQL_FAIL;
 	}
-	Column** result = compositemap_get(expr_map, key);
+	column** result = compositemap_get(expr_map, key);
 	if (result != NULL) {
 		col->src_idx = 0;
 		col->data_source = *result;
-		/* The operation (select) will not be evaluating
-		 * the expression.  It is simply going to read
+		/* the operation (select) will not be evaluating
+		 * the expression.  it is simply going to read
 		 * from the grouping as if it were a column.
 		 */
 		col->expr = EXPR_COLUMN_NAME;
@@ -567,17 +567,17 @@ int _op_find_group(CompositeMap* expr_map, Column* col, Vec* key)
 	/* TODO: this logic */
 	if (col->expr == EXPR_COLUMN_NAME) {
 		fprintf(stderr,
-			"Column `%s' does not match a grouping\n",
+			"column `%s' does not match a grouping\n",
 			(char*)col->alias.data);
 		return FQL_FAIL;
 	} else if (col->expr != EXPR_FUNCTION) {
 		fprintf(stderr,
-			"Column `%s' unexpected expression\n",
+			"column `%s' unexpected expression\n",
 			(char*)col->alias.data);
 		return FQL_FAIL;
 	}
 
-	Column** it = vec_begin(col->field.fn->args);
+	column** it = vec_begin(col->field.fn->args);
 	for (; it != vec_end(col->field.fn->args); ++it) {
 		if (_op_find_group(expr_map, *it, key)) {
 			return FQL_FAIL;
@@ -586,23 +586,23 @@ int _op_find_group(CompositeMap* expr_map, Column* col, Vec* key)
 	return FQL_GOOD;
 }
 
-int _group_validation(struct fql_handle* fql, Query* query)
+int _group_validation(struct fql_handle* fql, query* query)
 {
 	/* verify group columns and build composite key for each */
-	Vec* group_cols = &query->groupby->columns;
+	vec* group_cols = &query->groupby->columns;
 	if (schema_assign_columns(group_cols, query->sources)) {
 		return FQL_FAIL;
 	}
 
-	CompositeMap* expr_map = compositemap_new_(Column*,
+	compositemap* expr_map = compositemap_new_(column*,
 	                                          group_cols->size * 2,
 	                                          HASHMAP_PROP_NOCASE |
 	                                          HASHMAP_PROP_RTRIM);
 	query->groupby->expr_map = expr_map;
-	Vec key;
-	vec_construct_(&key, StringView);
+	vec key;
+	vec_construct_(&key, stringview);
 
-	Column** it = vec_begin(group_cols);
+	column** it = vec_begin(group_cols);
 	for (; it != vec_end(group_cols); ++it) {
 		if ((*it)->expr != EXPR_AGGREGATE) {
 			vec_clear(&key);
@@ -613,7 +613,7 @@ int _group_validation(struct fql_handle* fql, Query* query)
 			compositemap_set(expr_map, &key, it);
 			continue;
 		}
-		Aggregate* agg = (*it)->field.agg;
+		aggregate* agg = (*it)->field.agg;
 		if (schema_assign_columns(agg->args, query->sources)) {
 			return FQL_FAIL;
 		}
@@ -623,8 +623,8 @@ int _group_validation(struct fql_handle* fql, Query* query)
 		}
 	}
 
-	/* Now, we need to match *all* op columns to a group */
-	Vec* op_cols = op_get_validation_list(query->op);
+	/* now, we need to match *all* op columns to a group */
+	vec* op_cols = op_get_validation_list(query->op);
 	it = vec_begin(op_cols);
 	for (; it != vec_end(op_cols); ++it) {
 		if (_op_find_group(expr_map, *it, &key)) {
@@ -638,13 +638,13 @@ int _group_validation(struct fql_handle* fql, Query* query)
 	return FQL_GOOD;
 }
 
-int schema_resolve_query(struct fql_handle* fql, Query* query)
+int schema_resolve_query(struct fql_handle* fql, query* query)
 {
-	Vec* sources = query->sources;
+	vec* sources = query->sources;
 
 	int i = 0;
 	for (; i < sources->size; ++i) {
-		Table* table = vec_at(query->sources, i);
+		table* table = vec_at(query->sources, i);
 		if (schema_resolve_source(fql, table)) {
 			return FQL_FAIL;
 		}
@@ -667,8 +667,8 @@ int schema_resolve_query(struct fql_handle* fql, Query* query)
 		return FQL_FAIL;
 	}
 
-	/* Skip validating groups if no group columns */
-	Vec* op_cols = op_get_validation_list(query->op);
+	/* skip validating groups if no group columns */
+	vec* op_cols = op_get_validation_list(query->op);
 	if (_asterisk_resolve(op_cols, sources)) {
 		return FQL_FAIL;
 	}
@@ -688,9 +688,9 @@ int schema_resolve_query(struct fql_handle* fql, Query* query)
 
 int schema_resolve(struct fql_handle* fql)
 {
-	Queue* query_node = fql->query_list;
+	queue* query_node = fql->query_list;
 	for (; query_node; query_node = query_node->next) {
-		Query* query = query_node->data;
+		query* query = query_node->data;
 
 		if (fql->props.out_delim[0]) {
 			op_set_delim(query->op, fql->props.out_delim);

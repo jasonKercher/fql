@@ -2,11 +2,11 @@
 #include "util.h"
 #include "stringview.h"
 
-/* Hashing based on FNV-1 */
+/* hashing based on FNV-1 */
 const uint64_t _FNV1_INIT = 14695981039346656037UL;
 const uint64_t _PRIME = 1099511628211UL;
 const size_t _NONE = (size_t) -1;
-const double _FULL_PERCENT = .9;	/* Percent capacity where we increase size */
+const double _FULL_PERCENT = .9;	/* percent capacity where we increase size */
 
 size_t _next_power_of_2 (const size_t n)
 {
@@ -17,27 +17,27 @@ size_t _next_power_of_2 (const size_t n)
 	return  value;
 }
 
-uint64_t _hash(const HashMap* m, const char* key, unsigned* n);
-uint64_t _hash_nocase(const HashMap* m, const char* key, unsigned* n);
-uint64_t _hash_rtrim(const HashMap* m, const char* key, unsigned* n);
-uint64_t _hash_nocase_rtrim(const HashMap* m, const char* key, unsigned* n);
-struct hm_entry* _get_entry(HashMap* m, const char* key, unsigned* key_len, uint64_t* hash);
-void _increase_size(HashMap* m);
-struct hm_entry* _composite_get_entry(CompositeMap* m, const Vec* key, unsigned* key_len, uint64_t* hash);
+uint64_t _hash(const hashmap* m, const char* key, unsigned* n);
+uint64_t _hash_nocase(const hashmap* m, const char* key, unsigned* n);
+uint64_t _hash_rtrim(const hashmap* m, const char* key, unsigned* n);
+uint64_t _hash_nocase_rtrim(const hashmap* m, const char* key, unsigned* n);
+struct hm_entry* _get_entry(hashmap* m, const char* key, unsigned* key_len, uint64_t* hash);
+void _increase_size(hashmap* m);
+struct hm_entry* _composite_get_entry(compositemap* m, const vec* key, unsigned* key_len, uint64_t* hash);
 
 
-HashMap* hashmap_new(const unsigned elem_size, size_t limit, const unsigned props)
+hashmap* hashmap_new(const unsigned elem_size, size_t limit, const unsigned props)
 {
-	HashMap* new_map = NULL;
+	hashmap* new_map = NULL;
 	malloc_(new_map, sizeof(*new_map));
 	return hashmap_construct(new_map, elem_size, limit, props);
 }
 
-HashMap* hashmap_construct(HashMap* m, const unsigned elem_size, size_t limit, const unsigned props)
+hashmap* hashmap_construct(hashmap* m, const unsigned elem_size, size_t limit, const unsigned props)
 {
 	limit = _next_power_of_2(limit);
 
-	*m = (HashMap) {
+	*m = (hashmap) {
 		 { 0 }          /* values */
 		,NULL           /* _entries */
 		,NULL           /* _keys */
@@ -71,30 +71,30 @@ HashMap* hashmap_construct(HashMap* m, const unsigned elem_size, size_t limit, c
 	malloc_(m->_entries, sizeof(struct hm_entry) * limit);
 	memset(m->_entries, -1, sizeof(struct hm_entry) * limit);
 
-	malloc_(m->_keybuf, limit);  /* Expect this to grow */
+	malloc_(m->_keybuf, limit);  /* expect this to grow */
 
 	return m;
 }
 
-void hashmap_free(HashMap* m)
+void hashmap_free(hashmap* m)
 {
 	hashmap_destroy(m);
 	free_(m);
 }
 
-void hashmap_destroy(HashMap* m)
+void hashmap_destroy(hashmap* m)
 {
 	vec_destroy(&m->values);
 	free_(m->_entries);
 	free_(m->_keybuf);
 }
 
-void hashmap_nset(HashMap* m, const char* key, void* data, unsigned n)
+void hashmap_nset(hashmap* m, const char* key, void* data, unsigned n)
 {
 	uint64_t hash = 0;
 	struct hm_entry* entry = _get_entry(m, key, &n, &hash);
 
-	if (entry->val_idx == _NONE) {  /* New value */
+	if (entry->val_idx == _NONE) {  /* new value */
 		entry->key_idx = m->_keybuf_head;
 		entry->key_len = n;
 		entry->val_idx = m->values.size;
@@ -109,62 +109,62 @@ void hashmap_nset(HashMap* m, const char* key, void* data, unsigned n)
 	}
 }
 
-void* hashmap_nget(HashMap* m, const char* key, unsigned n)
+void* hashmap_nget(hashmap* m, const char* key, unsigned n)
 {
 	uint64_t hash = 0;
 	struct hm_entry* entry = _get_entry(m, key, &n, &hash);
 
-	if (entry->val_idx == _NONE) {  /* New value */
+	if (entry->val_idx == _NONE) {  /* new value */
 		return NULL;
 	}
 
 	return vec_at(&m->values, entry->val_idx);
 }
 
-/* elem size is Vec elements now */
-MultiMap* multimap_new(const unsigned elem_size, size_t limit, const unsigned props)
+/* elem size is vec elements now */
+multimap* multimap_new(const unsigned elem_size, size_t limit, const unsigned props)
 {
-	MultiMap* new_map = NULL;
+	multimap* new_map = NULL;
 	malloc_(new_map, sizeof(*new_map));
 	return multimap_construct(new_map, elem_size, limit, props);
 }
 
-MultiMap* multimap_construct(MultiMap* m, const unsigned elem_size, size_t limit, const unsigned props)
+multimap* multimap_construct(multimap* m, const unsigned elem_size, size_t limit, const unsigned props)
 {
-	hashmap_construct_(m, Vec, limit, props);
-	m->elem_size = elem_size;  /* This parameter is the elem_size of
+	hashmap_construct_(m, vec, limit, props);
+	m->elem_size = elem_size;  /* this parameter is the elem_size of
 				    * of the vectors created for each entry
 				    */
 	return m;
 }
 
-void multimap_free(MultiMap* m)
+void multimap_free(multimap* m)
 {
 	multimap_destroy(m);
 	free_(m);
 }
 
-void multimap_destroy(MultiMap* m)
+void multimap_destroy(multimap* m)
 {
-	Vec* it = vec_begin(&m->values);
+	vec* it = vec_begin(&m->values);
 	for (; it != vec_end(&m->values); ++it) {
 		vec_destroy(it);
 	}
 	hashmap_destroy(m);
 }
 
-void multimap_nset(MultiMap* m, const char* key, void* data, unsigned n)
+void multimap_nset(multimap* m, const char* key, void* data, unsigned n)
 {
 	uint64_t hash = 0;
 	struct hm_entry* entry = _get_entry(m, key, &n, &hash);
 
-	if (entry->val_idx == _NONE) {  /* New value */
+	if (entry->val_idx == _NONE) {  /* new value */
 		entry->key_idx = m->_keybuf_head;
 		entry->key_len = n;
 		entry->val_idx = m->values.size;
 		entry->hash = hash;
 		m->_keybuf_head += n;
-		Vec new_vec;
+		vec new_vec;
 		vec_construct(&new_vec, m->elem_size);
 		vec_push_back(&new_vec, data);
 		vec_push_back(&m->values, &new_vec);
@@ -172,20 +172,20 @@ void multimap_nset(MultiMap* m, const char* key, void* data, unsigned n)
 			_increase_size(m);
 		}
 	} else {
-		Vec* entryvec = vec_at(&m->values, entry->val_idx);
+		vec* entryvec = vec_at(&m->values, entry->val_idx);
 		vec_push_back(entryvec, data);
 	}
 }
 
-CompositeMap* compositemap_new(const unsigned elem_size, size_t limit, const unsigned props)
+compositemap* compositemap_new(const unsigned elem_size, size_t limit, const unsigned props)
 {
-	CompositeMap* new_map = NULL;
+	compositemap* new_map = NULL;
 	malloc_(new_map, sizeof(*new_map));
 
 	return compositemap_construct(new_map, elem_size, limit, props);
 }
 
-CompositeMap* compositemap_construct(CompositeMap* m, const unsigned elem_size, size_t limit, const unsigned props)
+compositemap* compositemap_construct(compositemap* m, const unsigned elem_size, size_t limit, const unsigned props)
 {
 	hashmap_construct(m, elem_size, limit, props);
 	m->_keys = vec_new_(struct _keyloc);
@@ -193,29 +193,29 @@ CompositeMap* compositemap_construct(CompositeMap* m, const unsigned elem_size, 
 	return m;
 }
 
-void compositemap_free(CompositeMap* m)
+void compositemap_free(compositemap* m)
 {
 	compositemap_destroy(m);
 	free_(m);
 }
 
-void compositemap_destroy(CompositeMap* m)
+void compositemap_destroy(compositemap* m)
 {
 	vec_free(m->_keys);
 	hashmap_destroy(m);
 }
 
 /* NOTE: entry->key_len takes on a new meaning
- *       for a CompositeMap. In a normal HashMap,
- *       key_len is the length of the key. For a
- *       CompositeMap, key_len is loses that
- *       meaning since a key can consist of multiple 
- *       individual keys. key_len represents the 
+ *       for a compositemap. in a normal hashmap,
+ *       key_len is the length of the key. for a
+ *       compositemap, key_len is loses that
+ *       meaning since a key can consist of multiple
+ *       individual keys. key_len represents the
  *       number of elements in the key.
  */
-void compositemap_set(CompositeMap* m, const struct vec* key, void* data)
+void compositemap_set(compositemap* m, const struct vec* key, void* data)
 {
-	/* Should only execute one time */
+	/* should only execute one time */
 	if (m->_key_temp == NULL) {
 		m->_key_temp = vec_new_(struct _keyloc);
 	}
@@ -225,7 +225,7 @@ void compositemap_set(CompositeMap* m, const struct vec* key, void* data)
 	unsigned key_len = 0;
 	struct hm_entry* entry = _composite_get_entry(m, key, &key_len, &hash);
 
-	if (entry->val_idx == _NONE) {  /* New value */
+	if (entry->val_idx == _NONE) {  /* new value */
 		entry->key_idx = m->_keys->size;
 		entry->key_len = key->size;
 		entry->val_idx = m->values.size;
@@ -241,9 +241,9 @@ void compositemap_set(CompositeMap* m, const struct vec* key, void* data)
 	}
 }
 
-void* compositemap_get(CompositeMap* m, const struct vec* key)
+void* compositemap_get(compositemap* m, const struct vec* key)
 {
-	/* Should only execute one time */
+	/* should only execute one time */
 	if (m->_key_temp == NULL) {
 		m->_key_temp = vec_new_(struct _keyloc);
 	}
@@ -260,7 +260,7 @@ void* compositemap_get(CompositeMap* m, const struct vec* key)
 	return vec_at(&m->values, entry->val_idx);
 }
 
-_Bool _composite_eq(CompositeMap* m, struct hm_entry* ent)
+_Bool _composite_eq(compositemap* m, struct hm_entry* ent)
 {
 	struct _keyloc* kl0 = vec_at(m->_keys, ent->key_idx);
 	struct _keyloc* kl1 = vec_begin(m->_key_temp);
@@ -275,9 +275,9 @@ _Bool _composite_eq(CompositeMap* m, struct hm_entry* ent)
 	return true;
 }
 
-struct hm_entry* _composite_get_entry(CompositeMap* m, const Vec* key, unsigned* key_len, uint64_t* hash)
+struct hm_entry* _composite_get_entry(compositemap* m, const vec* key, unsigned* key_len, uint64_t* hash)
 {
-	StringView* it = vec_begin(key);
+	stringview* it = vec_begin(key);
 
 	*hash = 1;
 	*key_len = 0;
@@ -304,7 +304,7 @@ struct hm_entry* _composite_get_entry(CompositeMap* m, const Vec* key, unsigned*
 	struct hm_entry* entry = &m->_entries[idx];
 
 	while (entry->val_idx != _NONE && (
-		    entry->key_len != key->size 
+		    entry->key_len != key->size
 	         || !_composite_eq(m, entry))) {
 		idx = (idx + 1) % m->_limit;
 		entry = &m->_entries[idx];
@@ -315,7 +315,7 @@ struct hm_entry* _composite_get_entry(CompositeMap* m, const Vec* key, unsigned*
 	return entry;
 }
 
-uint64_t _hash(const HashMap* m, const char* key, unsigned* n)
+uint64_t _hash(const hashmap* m, const char* key, unsigned* n)
 {
 	uint64_t hash = _FNV1_INIT;
 	char* keyptr = &m->_keybuf[m->_keybuf_head];
@@ -330,7 +330,7 @@ uint64_t _hash(const HashMap* m, const char* key, unsigned* n)
 	return hash;
 }
 
-uint64_t _hash_nocase(const HashMap* m, const char* key, unsigned* n)
+uint64_t _hash_nocase(const hashmap* m, const char* key, unsigned* n)
 {
 	uint64_t hash = _FNV1_INIT;
 	char* keyptr = &m->_keybuf[m->_keybuf_head];
@@ -345,7 +345,7 @@ uint64_t _hash_nocase(const HashMap* m, const char* key, unsigned* n)
 	return hash;
 }
 
-uint64_t _hash_rtrim(const HashMap* m, const char* key, unsigned* n)
+uint64_t _hash_rtrim(const hashmap* m, const char* key, unsigned* n)
 {
 	unsigned last_not_space_n = *n;
 	uint64_t hash = _FNV1_INIT;
@@ -367,7 +367,7 @@ uint64_t _hash_rtrim(const HashMap* m, const char* key, unsigned* n)
 	return last_not_space_hash;
 }
 
-uint64_t _hash_nocase_rtrim(const HashMap* m, const char* key, unsigned* n)
+uint64_t _hash_nocase_rtrim(const hashmap* m, const char* key, unsigned* n)
 {
 	unsigned last_not_space_n = *n;
 	uint64_t hash = _FNV1_INIT;
@@ -389,7 +389,7 @@ uint64_t _hash_nocase_rtrim(const HashMap* m, const char* key, unsigned* n)
 	return last_not_space_hash;
 }
 
-struct hm_entry* _get_entry(HashMap* m, const char* key, unsigned* key_len, uint64_t* hash)
+struct hm_entry* _get_entry(hashmap* m, const char* key, unsigned* key_len, uint64_t* hash)
 {
 	if (m->_keybuf_head + *key_len > m->_keybuf_len) {
 		m->_keybuf_len *= 2;
@@ -413,7 +413,7 @@ struct hm_entry* _get_entry(HashMap* m, const char* key, unsigned* key_len, uint
 	return entry;
 }
 
-void _increase_size(HashMap* m)
+void _increase_size(hashmap* m)
 {
 	size_t old_limit = m->_limit;
 	struct hm_entry* src_entries = m->_entries;
@@ -432,7 +432,7 @@ void _increase_size(HashMap* m)
 
 		struct hm_entry* dest_entry = &m->_entries[idx];
 
-		/* No need to check equality here because
+		/* no need to check equality here because
 		 * we are assuming uniqueness
 		 */
 		while (dest_entry->val_idx != _NONE) {

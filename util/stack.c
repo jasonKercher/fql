@@ -1,11 +1,11 @@
 #include "stack.h"
 #include "util.h"
 
-Stack* stack_push(Stack** head, void* data)
+stack* stack_push(stack** head, void* data)
 {
-	Stack* newnode = NULL;
+	stack* newnode = NULL;
 	malloc_(newnode, sizeof(*newnode));
-	*newnode = (Stack) {
+	*newnode = (stack) {
 		 data
 		,NULL
 		,*head
@@ -18,7 +18,7 @@ Stack* stack_push(Stack** head, void* data)
 	return newnode;
 }
 
-void stack_delete(Stack** head, Stack* node)
+void stack_delete(stack** head, stack* node)
 {
 	if (!node)
 		return;
@@ -27,7 +27,7 @@ void stack_delete(Stack** head, Stack* node)
 	free_(data);
 }
 
-void* stack_remove(Stack** head, Stack* node)
+void* stack_remove(stack** head, stack* node)
 {
 	if (!node)
 		return NULL;
@@ -45,60 +45,60 @@ void* stack_remove(Stack** head, Stack* node)
 	return data;
 }
 
-void* stack_pop(Stack** head)
+void* stack_pop(stack** head)
 {
 	return stack_remove(head, *head);
 }
 
-Stack* stack_top(Stack* node)
+stack* stack_top(stack* node)
 {
 	if (!node)
 		return NULL;
 
-	Stack* head = node;
+	stack* head = node;
 	while (head && head->prev)
 		head = head->prev;
 
 	return head;
 }
 
-Stack* stack_bottom(Stack* node)
+stack* stack_bottom(stack* node)
 {
 	if (!node)
 		return NULL;
 
-	Stack* last = node;
+	stack* last = node;
 	while (last && last->next)
 		last = last->next;
 
 	return last;
 }
 
-int stack_count(Stack* head)
+int stack_count(stack* head)
 {
 	if (!head)
 		return 0;
 
 	int count = 1;
-	Stack* last = head;
+	stack* last = head;
 	while ((last = last->next))
 		++count;
 
 	return count;
 }
 
-void stack_free_func(Stack** head, generic_data_fn free_func)
+void stack_free_func(stack** head, generic_data_fn free_func)
 {
 	for (; *head; stack_pop(head))
 		free_func((*head)->data);
 }
 
-void stack_free_data(Stack** head)
+void stack_free_data(stack** head)
 {
 	for (; *head; stack_delete(head, *head));
 }
 
-void stack_free(Stack** head)
+void stack_free(stack** head)
 {
 	for (; *head; stack_pop(head));
 }

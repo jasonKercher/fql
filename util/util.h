@@ -22,79 +22,72 @@ typedef int(*int_generic_data_fn)(void*);
 /**
  * malloc wrapper that does error checking
  */
-#define malloc_(dest_, size_) {         \
-	dest_ = malloc(size_);          \
-	if (!dest_) {                   \
-		perror("malloc");       \
-		exit(EXIT_FAILURE);     \
-	}                               \
-}
+#define malloc_(size_) ({            \
+	void* dest_ = malloc(size_); \
+	if (!dest_) {                \
+		perror("malloc");    \
+		exit(EXIT_FAILURE);  \
+	}                            \
+	dest_;                       \
+})
 
 /**
  * realloc wrapper that does error checking
  */
-#define realloc_(dest_, size_) {                \
-	void* new_dest_ = realloc(dest_, size_);\
-	if (!new_dest_) {                       \
-		perror("realloc");              \
-		exit(EXIT_FAILURE);             \
-	}                                       \
-	dest_ = new_dest_;                      \
-	new_dest_ = NULL;                       \
-}
+#define realloc_(dest_, size_) ({                \
+	void* new_dest_ = realloc(dest_, size_); \
+	if (!new_dest_) {                        \
+		perror("realloc");               \
+		exit(EXIT_FAILURE);              \
+	}                                        \
+	new_dest_;                               \
+})
 
 /**
- * Wrapper macro for non-posix function strdup
- * strdup allocates memory for us. If dest is already
+ * wrapper macro for non-posix function strdup
+ * strdup allocates memory for us. if dest is already
  * allocated memory, free it first.
  */
-#define strdup_(src_, dest_)  {                                         \
-	if (dest_)                                                      \
-		free(dest_);                                            \
-	dest_ = strdup(src_);                                           \
+#define strdup_(src_)  ({                                               \
+	char* dest_ = strdup(src_);                                     \
 	if (!dest_) {                                                   \
 		fprintf(stderr, "strdup failed on string %s.\n", src_); \
 		exit(EXIT_FAILURE);                                     \
 	}                                                               \
-}
+	dest_;                                                          \
+})
 
 /**
  * strncpy but guaranteed to end with '\0'
  */
-#define strncpy_(dest_, src_, n_) {     \
-	strncpy(dest_, src_, n_-1);     \
-	dest_[n_-1] = '\0';             \
+#define strncpy_(dest_, src_, n_) { \
+	strncpy(dest_, src_, n_-1); \
+	dest_[n_-1] = '\0';         \
 }
 
 /**
- * strncat but guaranteed to end with '\0'
- * TODO: Would be more efficient to just
- *       write this one from scratch...
+ * free pointer if not NULL and set to NULL
  */
-#define strncat_(dest_, src_, n_) {     \
-	int l0_ = strlen(dest_);        \
-	strncat(dest_, src_, l0_+n_-1); \
-	dest_[n_-1] = '\0';             \
+#define free_(ptr_) {              \
+	if (ptr_) {                \
+		free((void*)ptr_); \
+		ptr_ = NULL;       \
+	}                          \
 }
 
 
-/**
- * Free pointer if not NULL and set to NULL
- */
-#define free_(ptr_) {               \
-	if (ptr_) {                 \
-		free((void*)ptr_);  \
-		ptr_ = NULL;        \
-	}                           \
-}
+#define VA_ARGS(...) , ##__VA_ARGS__
+#define new_(T_, ...) ({                             \
+	T_* alloc_ = malloc_(sizeof(T_));            \
+	T_##_construct(alloc_ VA_ARGS(__VA_ARGS__)); \
+	alloc_;                                      \
+})
+
 
 
 /**
- * This function is a wrapper for the standard strtol
+ * this function is a wrapper for the standard strtol
  * function that also handles all errors internally.
- *
- * Returns:
- *      - parsed long int
  */
 int str2long(long*, const char* s);
 
@@ -103,9 +96,6 @@ int str2double(double*, const char* s);
 /**
  * charcount simply counts the occurences of char c
  * in the string s.
- *
- * Returns:
- *      - Number of occurences.
  */
 int charcount(const char* s, char c);
 int charncount(const char* s, char c, unsigned n);
@@ -113,7 +103,7 @@ int charncount(const char* s, char c, unsigned n);
 /**
  * strhaschar checks whether a char c exists within string s.
  *
- * Returns:
+ * returns:
  *      - 1 if yes
  *      - 0 if no
  */
@@ -130,7 +120,7 @@ void removecharat(char* s, int i);
  * randstr generates a random string of length n
  * out of all alpha-numeric characters.
  *
- * Returns:
+ * returns:
  *      - char* of random characters
  */
 char* randstr(char* s, const int n);
@@ -143,7 +133,7 @@ void getnoext(char* dest, const char* filename);
 
 /**
  * getext returns the extension from a provided filename
- * The returned char* will be allocated on the heap
+ * the returned char* will be allocated on the heap
  * and must be free'd!
  */
 char* getext(char* filename);
@@ -155,20 +145,20 @@ int string_eq(const char* s1, const char* s2);
 
 /**
  * istring_eq returns true if two strings are equal
- * while ignoring case.  It basically just inverts
+ * while ignoring case.  it basically just inverts
  * the return of strcasecmp.
  */
 int istring_eq(const char* s1, const char* s2);
 
 /**
- * Lower case a char* in place
+ * lower case a char* in place
  * NOTE:
- * Null terminator is assumed. Don't be stupid.
+ * null terminator is assumed. don't be stupid.
  */
 void string_to_lower(char* s);
 
 /**
- * Copy BSD's strnstr
+ * copy BSD's strnstr
  */
 char* strnstr(const char *s, const char *find, size_t slen);
 

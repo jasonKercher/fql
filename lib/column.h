@@ -7,7 +7,7 @@
 #include "util/stringview.h"
 #include "util/stringy.h"
 
-/** Expression **/
+/** expression **/
 enum expr_type {
 	EXPR_NONE,
 	EXPR_COLUMN_NAME,
@@ -20,31 +20,31 @@ enum expr_type {
 	EXPR_SUBQUERY_CONST,
 };
 
-/** Column **/
+/** column **/
 struct column {
 	enum expr_type expr;
 	struct table* table;
 	struct column* data_source;
-	String name;
-	String alias;
-	String table_name;
-	String buf;
+	string name;
+	string alias;
+	string table_name;
+	string buf;
 	enum field_type field_type;
 	union field field;
 	unsigned location;
 	unsigned width;
 	int src_idx;
 };
-typedef struct column Column;
+typedef struct column column;
 
 struct column* column_new(enum expr_type, void*, const char* table_id);
 struct column* column_construct(struct column*, enum expr_type, void*, const char*);
 void column_free(void*);
 
-void column_cat_description(struct column* col, String*);
+void column_cat_description(struct column* col, string*);
 int column_try_assign_source(struct column*, struct table*, int);
 
-/* Data Access */
+/* data access */
 int column_get_int(long*, struct column*, struct vec*);
 int column_get_float(double*, struct column*, struct vec*);
 int column_get_stringview(struct stringview*, struct column*, struct vec*);

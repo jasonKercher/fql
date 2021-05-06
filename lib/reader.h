@@ -32,11 +32,11 @@ struct reader {
 	read_fn get_record__;
 	generic_data_fn free__;
 	reset_fn reset__;
-	String file_name;
+	string file_name;
 	size_t max_col_idx;
 	_Bool eof;
 };
-typedef struct reader Reader;
+typedef struct reader reader;
 
 struct reader* reader_new();
 struct reader* reader_construct(struct reader*);
@@ -45,9 +45,9 @@ void reader_free(struct reader*);
 void reader_assign(struct reader*, struct table*);
 
 /**
- * Reader types own the data that is passed from
- * process to process. The records pass a vector
- * of fields in the form of read-only StringViews.
+ * reader types own the data that is passed from
+ * process to process. the records pass a vector
+ * of fields in the form of read-only stringviews.
  */
 
 void libcsv_reader_free(void*);

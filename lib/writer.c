@@ -10,14 +10,14 @@ void libcsv_writer_free(void* writer_data)
 	csv_writer_free(writer_data);
 }
 
-int libcsv_write_record(void* writer_data, Vec* col_vec, Vec* recs)
+int libcsv_write_record(void* writer_data, vec* col_vec, vec* recs)
 {
 	csv_writer* handle = writer_data;
 
-	Column** cols = vec_begin(col_vec);
+	column** cols = vec_begin(col_vec);
 	int i = 0;
 	for (; i < col_vec->size; ++i) {
-		StringView sv;
+		stringview sv;
 		if (i > 0) {
 			fputs(handle->delimiter, handle->file);
 		}
@@ -25,7 +25,7 @@ int libcsv_write_record(void* writer_data, Vec* col_vec, Vec* recs)
 		if (cols[i]->expr == EXPR_ASTERISK) {
 			int quote_store = handle->quotes;
 			handle->quotes = QUOTE_NONE;
-			Record** rec = vec_at(recs, cols[i]->src_idx);
+			record** rec = vec_at(recs, cols[i]->src_idx);
 			csv_nwrite_field(handle, (*rec)->rec_cpy->data, (*rec)->rec_cpy->size);
 			handle->quotes = quote_store;
 		}
@@ -44,26 +44,26 @@ int libcsv_write_record(void* writer_data, Vec* col_vec, Vec* recs)
 
 Writer* writer_new()
 {
-	Writer* new_writer = NULL;
+	writer* new_writer = NULL;
 	malloc_(new_writer, sizeof(*new_writer));
 
 	return writer_construct(new_writer);
 }
 
-Writer* writer_construct(Writer* writer)
+Writer* writer_construct(writer* writer)
 {
-	*writer = (Writer) {
+	*writer = (writer) {
 		 WRITE_UNDEFINED        /* type */
 		,NULL                   /* writer_data */
 		,NULL                   /* write_record__ */
 		,NULL                   /* free__ */
-		,vec_new_(String)       /* raw_rec */
+		,vec_new_(string)       /* raw_rec */
 		,{ 0 }                  /* file_name */
 	};
 
 	string_construct(&writer->file_name);
 
-	/* TODO: This should not be here. This should
+	/* TODO: this should not be here. this should
 	 *       be dependant on output schema
 	 */
 	writer->type = WRITE_LIBCSV;
@@ -72,7 +72,7 @@ Writer* writer_construct(Writer* writer)
        return writer;
 }
 
-void writer_free(Writer* writer)
+void writer_free(writer* writer)
 {
 	if (writer == NULL) {
 		return;
@@ -81,7 +81,7 @@ void writer_free(Writer* writer)
 		writer->free__(writer->writer_data);
 	}
 	string_destroy(&writer->file_name);
-	String* s = vec_begin(writer->raw_rec);
+	string* s = vec_begin(writer->raw_rec);
 	for (; s != vec_end(writer->raw_rec); ++s) {
 		string_destroy(s);
 	}
@@ -89,7 +89,7 @@ void writer_free(Writer* writer)
 	free_(writer);
 }
 
-void writer_set_delimiter(Writer* writer, const char* delim)
+void writer_set_delimiter(writer* writer, const char* delim)
 {
 	int ret = 0;
 	switch(writer->type) {
@@ -105,7 +105,7 @@ void writer_set_delimiter(Writer* writer, const char* delim)
 }
 
 
-void writer_assign(Writer* writer)
+void writer_assign(writer* writer)
 {
 	int ret = 0;
 	switch(writer->type) {

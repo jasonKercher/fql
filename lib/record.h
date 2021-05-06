@@ -11,13 +11,13 @@ struct record {
 	struct vec* fields;
 	struct vec* _field_data;
 	struct csv_record* libcsv_rec;
-	String* rec_cpy;
-	StringView rec_raw;
+	string* rec_cpy;
+	stringview rec_raw;
 	unsigned idx;
 	_Atomic int ref_count;
 	_Atomic _Bool is_recyclable;
 };
-typedef struct record Record;
+typedef struct record record;
 
 struct record* record_new(unsigned idx, unsigned n, _Bool owns_recs);
 struct record* record_construct(struct record*, unsigned idx, unsigned n, _Bool owns_recs);

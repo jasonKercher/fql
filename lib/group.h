@@ -9,8 +9,8 @@
 #include "util/hashmap.h"
 
 struct group {
-	CompositeMap* expr_map;
-	CompositeMap val_map;
+	compositemap* expr_map;
+	compositemap val_map;
 	struct vec columns;
 	struct vec aggregates;
 	struct vec _indicies;
@@ -18,7 +18,7 @@ struct group {
 	struct vec _composite;  /* temporary */
 	size_t _dump_idx;
 };
-typedef struct group Group;
+typedef struct group group;
 
 struct group* group_new();
 struct group* group_construct(struct group*);

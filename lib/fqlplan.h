@@ -18,7 +18,7 @@ struct fql_plan {
 	int plan_id;
 	_Bool has_stepped;
 };
-typedef struct fql_plan Plan;
+typedef struct fql_plan plan;
 
 struct fql_plan* plan_new(struct query*);
 struct fql_plan* plan_construct(struct fql_plan*, struct query*);

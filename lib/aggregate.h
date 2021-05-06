@@ -11,7 +11,7 @@ struct aggresult {
 	union {
 		long i;
 		double f;
-		String s;
+		string s;
 	} data;
 	unsigned qty;
 };
@@ -27,7 +27,7 @@ struct aggregate {
 	enum aggregate_function agg_type;
 	enum field_type data_type;
 };
-typedef struct aggregate Aggregate;
+typedef struct aggregate aggregate;
 
 struct aggregate* aggregate_new(enum aggregate_function);
 struct aggregate* aggregate_construct(struct aggregate*, enum aggregate_function);

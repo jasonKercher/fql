@@ -12,7 +12,7 @@ char* libcsv_get_delim(struct csv_reader* csv)
 	return csv->delimiter;
 }
 
-int libcsv_get_record(Reader* reader, Record* rec)
+int libcsv_get_record(reader* reader, record* rec)
 {
 	struct csv_reader* csv = reader->reader_data;
 
@@ -31,12 +31,12 @@ int libcsv_get_record(Reader* reader, Record* rec)
 		return EOF;
 	}
 
-	/* This should really never change...
+	/* this should really never change...
 	 * _guess_row_count relies on this
 	 */
 	vec_resize(rec->fields, rec->libcsv_rec->size);
 
-	StringView* sv = vec_begin(rec->fields);
+	stringview* sv = vec_begin(rec->fields);
 	char** fields = rec->libcsv_rec->fields;
 
 	int i = 0;
@@ -44,7 +44,7 @@ int libcsv_get_record(Reader* reader, Record* rec)
 		sv[i].data = fields[i];
 		/* TODO: (libcsv) would be nice if it created a trailing
 		 *       pointer that pointed at the ending NULL
-		 *       terminator. Then, this if block can go.
+		 *       terminator. then, this if block can go.
 		 */
 		if (i != rec->libcsv_rec->size - 1) {
 			sv[i].len = fields[i+1] - fields[i] - 1;
@@ -60,13 +60,13 @@ int libcsv_get_record(Reader* reader, Record* rec)
 	return FQL_GOOD;
 }
 
-int libcsv_reset(Reader* reader)
+int libcsv_reset(reader* reader)
 {
 	struct csv_reader* csv = reader->reader_data;
 	reader->eof = false;
 	csv_reader_reset(reader->reader_data);
 
-	/* Skip header */
+	/* skip header */
 	struct csv_record* libcsv_rec = csv_record_new();
 	int ret = csv_get_record_to(csv, libcsv_rec, reader->max_col_idx+1);
 	csv_record_free(libcsv_rec);

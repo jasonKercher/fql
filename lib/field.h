@@ -20,7 +20,7 @@ struct aggregate;
 union field {
 	struct function* fn;
 	struct aggregate* agg;
-	String* s;
+	string* s;
 	double f;
 	long i;
 };

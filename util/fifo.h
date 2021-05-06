@@ -13,14 +13,14 @@
 #endif
 
 /**
- * Naive Thread-safe Circular Buffer
- * This is designed for multiple producer/
- * single consumer. It is not thread-safe
+ * naive thread-safe circular buffer
+ * this is designed for multiple producer/
+ * single consumer. it is not thread-safe
  * for multiple consumers.
  */
 
 struct fifo {
-	Vec* buf;
+	vec* buf;
 	pthread_mutex_t head_mutex;
 	pthread_mutex_t tail_mutex;
 	pthread_mutex_t open_mutex;
@@ -32,13 +32,13 @@ struct fifo {
 	unsigned input_count;
 	_Bool is_open;
 };
-typedef struct fifo Fifo;
+typedef struct fifo fifo;
 
-struct fifo* fifo_new(size_t elem_size, unsigned buf_size);
-#define fifo_new_(T_, n_) fifo_new(sizeof(T_), n_)
+//struct fifo* fifo_new(size_t elem_size, unsigned buf_size);
+//#define fifo_new_(T_, n_) fifo_new(sizeof(T_), n_)
 
-struct fifo* fifo_construct(struct fifo*, size_t elem_size, unsigned buf_size);
-#define fifo_construct_(this_, T_, n_) fifo_construct(this_, sizeof(T_), n_)
+struct fifo* fifo_construct_s(struct fifo*, size_t elem_size, unsigned buf_size);
+#define fifo_construct(this_, T_, n_) fifo_construct(this_, sizeof(T_), n_)
 
 void fifo_free(struct fifo*);
 void fifo_destroy(struct fifo*);

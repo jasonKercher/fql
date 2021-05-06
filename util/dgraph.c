@@ -2,17 +2,17 @@
 
 #include "util.h"
 
-Dnode* dnode_new(void* data)
-{
-	Dnode* new_node = NULL;
-	malloc_(new_node, sizeof(*new_node));
+//dnode* dnode_new(void* data)
+//{
+//	dnode* new_node = NULL;
+//	malloc_(new_node, sizeof(*new_node));
+//
+//	return dnode_construct(new_node, data);
+//}
 
-	return dnode_construct(new_node, data);
-}
-
-Dnode* dnode_construct(Dnode* node, void* data)
+dnode* dnode_construct(dnode* node, void* data)
 {
-	*node = (Dnode) {
+	*node = (dnode) {
 		 data           /* data */
 		,{NULL, NULL}   /* out */
 		,0              /* visit_count */
@@ -22,36 +22,36 @@ Dnode* dnode_construct(Dnode* node, void* data)
 	return node;
 }
 
-void* dnode_free(Dnode* node)
+void* dnode_free(dnode* node)
 {
 	void* data = node->data;
 	free_(node);
 	return data;
 }
 
-Dgraph* dgraph_new()
-{
-	Dgraph* new_dgraph = NULL;
-	malloc_(new_dgraph, sizeof(*new_dgraph));
+//dgraph* dgraph_new()
+//{
+//	dgraph* new_dgraph = NULL;
+//	malloc_(new_dgraph, sizeof(*new_dgraph));
+//
+//	return dgraph_construct(new_dgraph);
+//}
 
-	return dgraph_construct(new_dgraph);
-}
-
-Dgraph* dgraph_construct(Dgraph* dgraph)
+dgraph* dgraph_construct(dgraph* graph)
 {
-	*dgraph = (Dgraph) {
-		 vec_new_(Dnode*)       /* nodes */
+	*graph = (dgraph) {
+		 vec_new_(dnode*)       /* nodes */
 		,NULL                   /* newest */
-		,fifo_new_(Dnode*, 5)   /* _trav */
-		,vec_new_(Dnode*)       /* _roots */
+		,fifo_new_(dnode*, 5)   /* _trav */
+		,vec_new_(dnode*)       /* _roots */
 		,0                      /* _root_idx */
 		,false                  /* _roots_good */
 	};
 
-	return dgraph;
+	return graph;
 }
 
-void dgraph_shallow_free(Dgraph* graph)
+void dgraph_shallow_free(dgraph* graph)
 {
 	vec_free(graph->nodes);
 	vec_free(graph->_roots);
@@ -59,10 +59,10 @@ void dgraph_shallow_free(Dgraph* graph)
 	free_(graph);
 }
 
-void dgraph_free(Dgraph* graph)
+void dgraph_free(dgraph* graph)
 {
 	unsigned i = 0;
-	Dnode** node = vec_begin(graph->nodes);
+	dnode** node = vec_begin(graph->nodes);
 	for (; i < graph->nodes->size; ++i) {
 		dnode_free(node[i]);
 	}
@@ -70,7 +70,7 @@ void dgraph_free(Dgraph* graph)
 }
 
 /* making a copy here */
-Dnode* dgraph_add_node(Dgraph* graph, Dnode* node)
+dnode* dgraph_add_node(dgraph* graph, dnode* node)
 {
 	vec_push_back(graph->nodes, &node);
 	graph->newest = node;
@@ -78,20 +78,20 @@ Dnode* dgraph_add_node(Dgraph* graph, Dnode* node)
 	return node;
 }
 
-Dnode* dgraph_add_data(Dgraph* graph, void* data)
+dnode* dgraph_add_data(dgraph* graph, void* data)
 {
-	Dnode* node = dnode_new(data);
+	dnode* node = dnode_new(data);
 	return dgraph_add_node(graph, node);
 }
 
-void dgraph_consume(Dgraph* dest, Dgraph* src)
+void dgraph_consume(dgraph* dest, dgraph* src)
 {
 	dest->_roots_good = false;
 	vec_extend(dest->nodes, src->nodes);
 	dgraph_shallow_free(src);
 }
 
-void* dgraph_remove(Dgraph* graph, Dnode** node)
+void* dgraph_remove(dgraph* graph, dnode** node)
 {
 	void* data = (*node)->data;
 	dnode_free(*node);
@@ -100,14 +100,14 @@ void* dgraph_remove(Dgraph* graph, Dnode** node)
 	return data;
 }
 
-Dnode** _guess_root(Dgraph* graph)
+dnode** _guess_root(dgraph* graph)
 {
 	if (vec_empty(graph->nodes)) {
 		return NULL;
 	}
 
 	/* reset */
-	Dnode** it = vec_begin(graph->nodes);
+	dnode** it = vec_begin(graph->nodes);
 	for (; it != vec_end(graph->nodes); ++it) {
 		(*it)->visit_count = 0;
 	}
@@ -125,7 +125,7 @@ Dnode** _guess_root(Dgraph* graph)
 
 	/* find min */
 	it = vec_begin(graph->nodes);
-	Dnode** min = it++;
+	dnode** min = it++;
 	for (; it != vec_end(graph->nodes); ++it) {
 		if ((*it)->visit_count < (*min)->visit_count) {
 			min = it;
@@ -136,21 +136,21 @@ Dnode** _guess_root(Dgraph* graph)
 	return min;
 }
 
-Vec* dgraph_get_roots(Dgraph* graph)
+vec* dgraph_get_roots(dgraph* graph)
 {
 	if (graph->_roots_good) {
 		return graph->_roots;
 	}
 
 	vec_clear(graph->_roots);
-	Dnode** it = vec_begin(graph->nodes);
+	dnode** it = vec_begin(graph->nodes);
 	for (; it != vec_end(graph->nodes); ++it) {
 		if ((*it)->is_root) {
 			vec_push_back(graph->_roots, it);
 		}
 	}
 
-	/* If no roots found, try to figure it out */
+	/* if no roots found, try to figure it out */
 	if (vec_empty(graph->_roots)) {
 		vec_push_back(graph->_roots, _guess_root(graph));
 	}
@@ -158,7 +158,7 @@ Vec* dgraph_get_roots(Dgraph* graph)
 	return graph->_roots;
 }
 
-void dgraph_traverse_reset(Dgraph* graph)
+void dgraph_traverse_reset(dgraph* graph)
 {
 	dgraph_get_roots(graph);
 
@@ -168,23 +168,23 @@ void dgraph_traverse_reset(Dgraph* graph)
 	graph->_root_idx = 1;
 
 	int i = 0;
-	Dnode** it = vec_begin(graph->nodes);
+	dnode** it = vec_begin(graph->nodes);
 	for (; it != vec_end(graph->nodes); ++it) {
 		(*it)->visit_count = 0;
 	}
 
-	/* Start at first discovered root */
+	/* start at first discovered root */
 	it = vec_begin(graph->_roots);
 	fifo_add(graph->_trav, it);
 }
 
-Dnode* dgraph_traverse(Dgraph* graph)
+dnode* dgraph_traverse(dgraph* graph)
 {
 	while (fifo_is_empty(graph->_trav)) {
 		if (graph->_root_idx >= graph->_roots->size) {
 			return NULL;
 		}
-		Dnode** node = vec_at(graph->_roots, graph->_root_idx++);
+		dnode** node = vec_at(graph->_roots, graph->_root_idx++);
 		if ((*node)->visit_count) {
 			continue;
 		}
@@ -192,7 +192,7 @@ Dnode* dgraph_traverse(Dgraph* graph)
 		return dgraph_traverse(graph);
 	}
 
-	Dnode** node = fifo_get(graph->_trav);
+	dnode** node = fifo_get(graph->_trav);
 	++(*node)->visit_count;
 
 	if ((*node)->out[0] != NULL && !(*node)->out[0]->visit_count) {

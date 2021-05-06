@@ -21,19 +21,19 @@
  * where each node represents a process
  */
 
-void _print_plan(Plan* plan);
+void _print_plan(plan* plan);
 
-Plan* plan_new(Query* query)
+plan* plan_new(query* query)
 {
-	Plan* new_plan = NULL;
+	plan* new_plan = NULL;
 	malloc_(new_plan, sizeof(*new_plan));
 
 	return plan_construct(new_plan, query);
 }
 
-Plan* plan_construct(Plan* plan, Query* query)
+plan* plan_construct(plan* plan, query* query)
 {
-	*plan = (Plan) {
+	*plan = (plan) {
 		 dgraph_new()      /* processes */
 		,NULL              /* op_true */
 		,NULL              /* op_false */
@@ -53,15 +53,15 @@ Plan* plan_construct(Plan* plan, Query* query)
 	plan->source_count = 0;
 
 	if (query->query_id == 0) {
-		plan->recycle_groups = vec_new_(Vec);
+		plan->recycle_groups = vec_new_(vec);
 		vec_resize(plan->recycle_groups, query->query_total);
-		Vec* it = vec_begin(plan->recycle_groups);
+		vec* it = vec_begin(plan->recycle_groups);
 		for (; it != vec_end(plan->recycle_groups); ++it) {
-			vec_construct_(it, Dnode*);
+			vec_construct_(it, dnode*);
 		}
 	}
 
-	Process* start = process_new("start", plan);
+	process* start = process_new("start", plan);
 	start->is_passive = true;
 	plan->current = dgraph_add_data(plan->processes, start);
 	dgraph_add_node(plan->processes, plan->op_true);
@@ -81,13 +81,13 @@ void plan_free(void* generic_plan)
 
 void plan_destroy(void* generic_plan)
 {
-	Plan* plan = generic_plan;
-	Dnode** it = vec_begin(plan->processes->nodes);
+	plan* plan = generic_plan;
+	dnode** it = vec_begin(plan->processes->nodes);
 	for (; it != vec_end(plan->processes->nodes); ++it) {
 		process_node_free(*it);
 	}
 	if (plan->recycle_groups != NULL) {
-		Vec* it = vec_begin(plan->recycle_groups);
+		vec* it = vec_begin(plan->recycle_groups);
 		for (; it != vec_end(plan->recycle_groups); ++it) {
 			vec_destroy(it);
 		}
@@ -99,7 +99,7 @@ void plan_destroy(void* generic_plan)
 /* build process nodes from logic graph
  * assign processes for true and false
  */
-void _logic_to_process(Process* logic_proc, LogicGroup* lg)
+void _logic_to_process(process* logic_proc, logicgroup* lg)
 {
 	switch (lg->type) {
 	case LG_ROOT:
@@ -115,11 +115,11 @@ void _logic_to_process(Process* logic_proc, LogicGroup* lg)
 		}
 		break;
 	default:
-		fprintf(stderr, "Unexpected logic group %d\n", lg->type);
+		fprintf(stderr, "unexpected logic group %d\n", lg->type);
 		return;
 	}
 
-	LogicGroup** it = vec_begin(&lg->items);
+	logicgroup** it = vec_begin(&lg->items);
 	for (; it != vec_end(&lg->items); ++it) {
 		_logic_to_process(logic_proc, *it);
 	}
@@ -127,13 +127,13 @@ void _logic_to_process(Process* logic_proc, LogicGroup* lg)
 	string_strcat(logic_proc->action_msg, ")");
 }
 
-void _logicgroup_process(Plan* plan, LogicGroup* lg, _Bool is_from_hash_join)
+void _logicgroup_process(plan* plan, logicgroup* lg, _bool is_from_hash_join)
 {
-	Process* logic_proc = process_new("", plan);
+	process* logic_proc = process_new("", plan);
 	logic_proc->action__ = &fql_logic;
 	logic_proc->proc_data = lg;
 	_logic_to_process(logic_proc, lg);
-	Dnode* logic_node = dgraph_add_data(plan->processes, logic_proc);
+	dnode* logic_node = dgraph_add_data(plan->processes, logic_proc);
 
 	if (is_from_hash_join) {
 		plan->current->out[1] = logic_node;
@@ -146,16 +146,16 @@ void _logicgroup_process(Plan* plan, LogicGroup* lg, _Bool is_from_hash_join)
 
 	logic_node->out[0] = plan->op_false;
 
-	Process* logic_true = process_new("Logic True", plan);
+	process* logic_true = process_new("logic true", plan);
 	logic_true->is_passive = true;
-	Dnode* logic_true_node = dgraph_add_data(plan->processes, logic_true);
+	dnode* logic_true_node = dgraph_add_data(plan->processes, logic_true);
 
 	logic_node->out[1] = logic_true_node;
 
 	plan->current = logic_true_node;
 }
 
-Process* _new_join_proc(enum join_type type, const char* algorithm, Plan* plan)
+process* _new_join_proc(enum join_type type, const char* algorithm, plan* plan)
 {
 	++plan->source_count;
 	char buffer[100];
@@ -182,19 +182,19 @@ Process* _new_join_proc(enum join_type type, const char* algorithm, Plan* plan)
 	return process_new(buffer, plan);
 }
 
-/* Lol */
-int _from(Plan* plan, Query* query)
+/* lol */
+int _from(plan* plan, query* query)
 {
 	if (query->sources->size == 0) {
 		return FQL_GOOD;
 	}
 
-	String action_msg;
+	string action_msg;
 	string_construct(&action_msg);
-	Table* table_iter = vec_begin(query->sources);
+	table* table_iter = vec_begin(query->sources);
 
-	Process* from_proc = NULL;
-	Dnode* from_node = NULL;
+	process* from_proc = NULL;
+	dnode* from_node = NULL;
 	++plan->source_count;
 	if (table_iter->source_type == SOURCE_TABLE) {
 		string_sprintf(&action_msg,
@@ -211,7 +211,7 @@ int _from(Plan* plan, Query* query)
 		from_proc->root_fifo = 1;
 		from_node = dgraph_add_data(plan->processes, from_proc);
 		from_node->is_root = true;
-		Plan* subquery_plan = plan_build(table_iter->subquery, from_node);
+		plan* subquery_plan = plan_build(table_iter->subquery, from_node);
 		if (subquery_plan == NULL) {
 			return FQL_FAIL;
 		}
@@ -225,7 +225,7 @@ int _from(Plan* plan, Query* query)
 
 	plan->current->out[0] = from_node;
 	plan->current = from_node;
-	Dnode* join_node = NULL;
+	dnode* join_node = NULL;
 
 	for (++table_iter; table_iter != vec_end(query->sources); ++table_iter) {
 
@@ -236,7 +236,7 @@ int _from(Plan* plan, Query* query)
 			return FQL_FAIL;
 		}
 
-		Process* join_proc = NULL;
+		process* join_proc = NULL;
 		_Bool is_hash_join = (table_iter->condition->join_logic != NULL);
 		if (is_hash_join) {
 			join_proc = _new_join_proc(table_iter->join_type, "hash", plan);
@@ -244,8 +244,8 @@ int _from(Plan* plan, Query* query)
 			table_hash_join_init(table_iter);
 			process_add_second_input(join_proc);
 
-			Process* read_proc = NULL;
-			Dnode* read_node = NULL;
+			process* read_proc = NULL;
+			dnode* read_node = NULL;
 
 			/* TODO: subquery on right side of join */
 			//if (table_iter->source_type == SOURCE_TABLE) {
@@ -298,7 +298,7 @@ int _from(Plan* plan, Query* query)
 	return FQL_GOOD;
 }
 
-void _where(Plan* plan, Query* query)
+void _where(plan* plan, query* query)
 {
 	if (query->where == NULL) {
 		return;
@@ -307,36 +307,36 @@ void _where(Plan* plan, Query* query)
 	_logicgroup_process(plan, query->where, false);
 }
 
-void _group(Plan* plan, Query* query)
+void _group(plan* plan, query* query)
 {
 	if (!vec_empty(&query->groupby->columns)
 	 || !vec_empty(&query->groupby->aggregates)) {
-		Process* group_proc = process_new("GROUP BY ", plan);
+		process* group_proc = process_new("GROUP BY ", plan);
 		group_proc->action__ = &fql_groupby;
 		group_proc->proc_data = query->groupby;
 		group_proc->wait_for_in0_end = true;
 		group_proc->root_fifo = 1;
 		group_cat_description(query->groupby, group_proc);
-		Dnode* group_node = dgraph_add_data(plan->processes, group_proc);
+		dnode* group_node = dgraph_add_data(plan->processes, group_proc);
 		group_node->is_root = true;
 		plan->current->out[0] = group_node;
 		plan->current = group_node;
 	}
 
 	if (query->distinct) {
-		Process* group_proc = process_new("DISTINCT ", plan);
+		process* group_proc = process_new("DISTINCT ", plan);
 		group_proc->action__ = &fql_distinct;
 		group_proc->proc_data = query->distinct;
 		group_cat_description(query->distinct, group_proc);
-		Dnode* group_node = dgraph_add_data(plan->processes, group_proc);
+		dnode* group_node = dgraph_add_data(plan->processes, group_proc);
 		plan->current->out[0] = group_node;
 		plan->current = group_node;
 	}
 }
 
-void _having(Plan* plan, Query* query) { }
+void _having(plan* plan, query* query) { }
 
-void _operation(Plan* plan, Query* query, Dnode* entry)
+void _operation(plan* plan, query* query, dnode* entry)
 {
 	plan->current->out[0] = plan->op_true;
 	if (entry == NULL) {
@@ -354,29 +354,29 @@ void _operation(Plan* plan, Query* query, Dnode* entry)
 	 * op_true so both op_true and op_false can be
 	 * marked as passive.
 	 */
-	Process* true_proc = plan->op_true->data;
+	process* true_proc = plan->op_true->data;
 	true_proc->is_passive = true;
-	Process* false_proc = plan->op_false->data;
+	process* false_proc = plan->op_false->data;
 	false_proc->is_passive = true;
 }
 
-void _limit(Plan* plan, Query* query) { }
+void _limit(plan* plan, query* query) { }
 
 /* In an effort to make building of the process graph easier
  * passive nodes are used as a sort of link between the steps.
  * TODO: Fix my shit design
  */
-void _clear_passive(Plan* plan)
+void _clear_passive(plan* plan)
 {
-	Vec* node_vec = plan->processes->nodes;
-	Dnode** nodes = vec_begin(node_vec);
+	vec* node_vec = plan->processes->nodes;
+	dnode** nodes = vec_begin(node_vec);
 	int i = 0;
 
-	/* Re-link nodes so passive ones get skipped during traversal */
+	/* re-link nodes so passive ones get skipped during traversal */
 	for (; i < node_vec->size; ++i) {
 		/* Check branch 0 */
 		while (nodes[i]->out[0] != NULL) {
-			Process* proc = nodes[i]->out[0]->data;
+			process* proc = nodes[i]->out[0]->data;
 			if (proc->is_passive) {
 			        nodes[i]->out[0] = nodes[i]->out[0]->out[0];
 			} else {
@@ -387,7 +387,7 @@ void _clear_passive(Plan* plan)
 		/* Check branch 1 */
 		_Bool first_pass = true;
 		while (nodes[i]->out[1] != NULL) {
-			Process* proc = nodes[i]->out[1]->data;
+			process* proc = nodes[i]->out[1]->data;
 			if (proc->is_passive) {
 			        if (nodes[i]->out[1]->out[1] != NULL) {
 			                nodes[i]->out[1] = nodes[i]->out[1]->out[1];
@@ -402,7 +402,7 @@ void _clear_passive(Plan* plan)
 
 	/* At this point, all passive nodes should be unreachable */
 	for (i = 0; i < node_vec->size;) {
-		Process* proc = nodes[i]->data;
+		process* proc = nodes[i]->data;
 		if (proc->is_passive) {
 			process_free(proc, false);
 			dgraph_remove(plan->processes, &nodes[i]);
@@ -421,17 +421,17 @@ void _clear_passive(Plan* plan)
  * Also, update the pipeline size. If we just waited
  * for each pipe to be half full, we could dead lock.
  */
-void _update_pipes(Dgraph* proc_graph)
+void _update_pipes(dgraph* proc_graph)
 {
 	while (dgraph_traverse(proc_graph));
 
-	Dnode** it = vec_begin(proc_graph->nodes);
+	dnode** it = vec_begin(proc_graph->nodes);
 	for (; it != vec_end(proc_graph->nodes); ++it) {
 		/* This should be impossible */
 		if ((*it)->visit_count == 0) {
 			return;
 		}
-		Process* proc = (*it)->data;
+		process* proc = (*it)->data;
 		proc->fifo_in[0]->input_count = (*it)->visit_count;
 
 		if (proc->fifo_in[1]) {
@@ -442,10 +442,10 @@ void _update_pipes(Dgraph* proc_graph)
 	dgraph_traverse_reset(proc_graph);
 }
 
-void _activate_procs(Plan* plan)
+void _activate_procs(plan* plan)
 {
-	Vec* node_vec = plan->processes->nodes;
-	Dnode** nodes = vec_begin(node_vec);
+	vec* node_vec = plan->processes->nodes;
+	dnode** nodes = vec_begin(node_vec);
 
 	for (; nodes != vec_end(node_vec); ++nodes) {
 	        process_activate(*nodes, plan);
@@ -456,22 +456,22 @@ void _activate_procs(Plan* plan)
  * by the process. Output fifos are just links to other processes'
  * fifos. This would read better if I called them pipes...
  */
-void _make_pipes(Plan* plan)
+void _make_pipes(plan* plan)
 {
-	Vec* node_vec = plan->processes->nodes;
-	Dnode** nodes = vec_begin(node_vec);
+	vec* node_vec = plan->processes->nodes;
+	dnode** nodes = vec_begin(node_vec);
 
 	for (; nodes != vec_end(node_vec); ++nodes) {
-		Process* proc = (*nodes)->data;
+		process* proc = (*nodes)->data;
 		if ((*nodes)->out[0] != NULL) {
-			Process* proc0 = (*nodes)->out[0]->data;
+			process* proc0 = (*nodes)->out[0]->data;
 			proc->fifo_out[0] = (proc->is_secondary) ?
 					    proc0->fifo_in[1] :
 					    proc0->fifo_in[0];
 		}
 
 		if ((*nodes)->out[1] != NULL) {
-			Process* proc1 = (*nodes)->out[1]->data;
+			process* proc1 = (*nodes)->out[1]->data;
 			proc->fifo_out[1] = (proc->is_secondary) ?
 					    proc1->fifo_in[1] :
 					    proc1->fifo_in[0];
@@ -480,21 +480,21 @@ void _make_pipes(Plan* plan)
 
 }
 
-void _mark_roots_const(Vec* roots)
+void _mark_roots_const(vec* roots)
 {
-	Dnode** it = vec_begin(roots);
+	dnode** it = vec_begin(roots);
 	for (; it != vec_end(roots); ++it) {
-		Process* proc = (*it)->data;
+		process* proc = (*it)->data;
 		proc->is_const = true;
 	}
 }
 
-Plan* plan_build(Query* query, Dnode* entry)
+plan* plan_build(query* query, dnode* entry)
 {
 	query->plan = plan_new(query);
-	Plan* plan = query->plan;
+	plan* plan = query->plan;
 
-	/* Query */
+	/* query */
 	if (_from(plan, query)) {
 		plan_free(plan);
 		return NULL;
@@ -511,7 +511,7 @@ Plan* plan_build(Query* query, Dnode* entry)
 	_clear_passive(plan);
 
 	if (vec_empty(plan->processes->nodes)) {
-		Process* entry_proc = entry->data;
+		process* entry_proc = entry->data;
 		entry_proc->is_const = true;
 		return plan;
 	}
@@ -532,12 +532,12 @@ Plan* plan_build(Query* query, Dnode* entry)
 	return plan;
 }
 
-int build_plans(Queue* query_list)
+int build_plans(queue* query_list)
 {
-	Queue* node = query_list;
+	queue* node = query_list;
 
 	for (; node; node = node->next) {
-		Query* query = node->data;
+		query* query = node->data;
 		if (plan_build(query, NULL) == NULL) {
 			return FQL_FAIL;
 		}
@@ -554,17 +554,17 @@ void _col_sep(int n)
 	fputs(PLAN_COLUMN_SEP, stderr);
 }
 
-void _print_plan(Plan* plan)
+void _print_plan(plan* plan)
 {
-	Dgraph* proc_graph = plan->processes;
-	Vec* nodes = proc_graph->nodes;
+	dgraph* proc_graph = plan->processes;
+	vec* nodes = proc_graph->nodes;
 
 	/* retrieve longest message */
 	int max_len = strlen("BRANCH 0");
 
-	Dnode** it = vec_begin(nodes);
+	dnode** it = vec_begin(nodes);
 	for (; it != vec_end(nodes); ++it) {
-		Process* proc = (*it)->data;
+		process* proc = (*it)->data;
 		int len = proc->action_msg->size;
 		if (len > max_len) {
 			max_len = len;
@@ -593,11 +593,11 @@ void _print_plan(Plan* plan)
 	}
 
 
-	/* Print adjacency list */
+	/* print adjacency list */
 	for (it = vec_begin(nodes); it != vec_end(nodes); ++it) {
 		fputc('\n', stderr);
 
-		Process* proc = (*it)->data;
+		process* proc = (*it)->data;
 		int len = proc->action_msg->size;
 		fputs(proc->action_msg->data, stderr);
 		_col_sep(max_len - len);
@@ -618,12 +618,12 @@ void _print_plan(Plan* plan)
 	fputs("\n", stderr);
 }
 
-void print_plans(Queue* query_list)
+void print_plans(queue* query_list)
 {
 	int i = 0;
-	Queue* node = query_list;
+	queue* node = query_list;
 	for (; node; node = node->next, ++i) {
-		Query* query = query_list->data;
+		query* query = query_list->data;
 		fprintf(stderr, "\nQUERY %d\n", ++i);
 		_print_plan(query->plan);
 	}

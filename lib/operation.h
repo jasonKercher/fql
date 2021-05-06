@@ -11,7 +11,7 @@ extern "C" {
 #include "fqlplan.h"
 #include "util/queue.h"
 
-/** Operation **/
+/** operation **/
 enum op {
 	OP_NONE,
 	OP_SELECT,

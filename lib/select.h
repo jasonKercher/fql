@@ -22,7 +22,7 @@ struct select {
 	struct writer* writer;
 	select_fn select__;
 };
-typedef struct select Select;
+typedef struct select select;
 
 struct select* select_new();
 struct select* select_construct(struct select*);

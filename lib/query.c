@@ -14,19 +14,19 @@
 
 Query* query_new(int id)
 {
-	Query* new_query = NULL;
+	query* new_query = NULL;
 	malloc_(new_query, sizeof(*new_query));
 
 	return query_construct(new_query, id);
 }
 
-Query* query_construct(Query* query, int id)
+Query* query_construct(query* query, int id)
 {
-	*query = (Query) {
+	*query = (query) {
 		 NULL                   /* plan */
-		,vec_new_(Table)        /* sources */
+		,vec_new_(table)        /* sources */
 		,NULL                   /* where */
-		,vec_new_(Column*)      /* validation_list */
+		,vec_new_(column*)      /* validation_list */
 		,group_new()            /* groupby */
 		,NULL                   /* distinct */
 		,NULL                   /* having */
@@ -50,10 +50,10 @@ Query* query_construct(Query* query, int id)
 
 void query_free(void* generic_query)
 {
-	Query* query = generic_query;
+	query* query = generic_query;
 
 	plan_free(query->plan);
-	Table* it = vec_begin(query->sources);
+	table* it = vec_begin(query->sources);
 	for (; it != vec_end(query->sources); ++it) {
 		table_destroy(it);
 	}
@@ -69,9 +69,9 @@ void query_free(void* generic_query)
 	free_(query);
 }
 
-void _add_validation_column(Query* query, Column* col)
+void _add_validation_column(query* query, column* col)
 {
-	/* If sources are empty we arrived here by way of
+	/* if sources are empty we arrived here by way of
 	 * some retarded query like:
 	 * SELECT 'hello'
 	 * WHERE 1 = 0
@@ -81,23 +81,23 @@ void _add_validation_column(Query* query, Column* col)
 		return;
 	}
 
-	Table* table = vec_back(query->sources);
+	table* table = vec_back(query->sources);
 	vec_push_back(table->validation_list, &col);
 }
 
-void _add_logic_column(Query* query, Column* col)
+void _add_logic_column(query* query, column* col)
 {
-	LogicGroup* lg = query->logic_stack->data;
+	logicgroup* lg = query->logic_stack->data;
 	if (lg->condition == NULL) {
 		lg->condition = logic_new();
 	}
 	logic_add_column(lg->condition, col);
 }
 
-int _distribute_column(Query* query, Column* col)
+int _distribute_column(query* query, column* col)
 {
 	if (query->function_stack) {
-		Column* fn_col = query->function_stack->data;
+		column* fn_col = query->function_stack->data;
 		function_add_column(fn_col->field.fn, col);
 		return FQL_GOOD;
 	}
@@ -107,7 +107,7 @@ int _distribute_column(Query* query, Column* col)
 
 		/* TODO */
 		if (col->expr == EXPR_AGGREGATE && query->distinct) {
-			fputs("Currently unsafe to mix DISTINCT and GROUP BY\n", stderr);
+			fputs("currently unsafe to mix DISTINCT and GROUP BY\n", stderr);
 		}
 		if (query->distinct) {
 			group_add_column(query->distinct, col);
@@ -122,7 +122,7 @@ int _distribute_column(Query* query, Column* col)
 		break;
 	case MODE_AGGREGATE:
 	 {
-		Aggregate** back = vec_back(&query->groupby->aggregates);
+		aggregate** back = vec_back(&query->groupby->aggregates);
 		aggregate_add_column(*back, col);
 		break;
 	 }
@@ -132,27 +132,27 @@ int _distribute_column(Query* query, Column* col)
 	return FQL_GOOD;
 }
 
-void query_add_column(Query* query, char* col_name, const char* table_id)
+void query_add_column(query* query, char* col_name, const char* table_id)
 {
-	Column* col = column_new(EXPR_COLUMN_NAME, col_name, table_id);
+	column* col = column_new(EXPR_COLUMN_NAME, col_name, table_id);
 	if (_distribute_column(query, col)) {
-		fprintf(stderr, "Unhandled COLUMN_NAME: %s\n", col_name);
+		fprintf(stderr, "unhandled COLUMN_NAME: %s\n", col_name);
 		free_(col_name);
 		return;
 	}
 }
 
-void query_add_asterisk(Query* query, const char* table_id)
+void query_add_asterisk(query* query, const char* table_id)
 {
-	Column* col = column_new(EXPR_ASTERISK, NULL, table_id);
+	column* col = column_new(EXPR_ASTERISK, NULL, table_id);
 	if (_distribute_column(query, col)) {
-		fprintf(stderr, "Unhandled asterisk\n");
+		fprintf(stderr, "unhandled asterisk\n");
 	}
 }
 
-int query_add_constant(Query* query, const char* s, int len)
+int query_add_constant(query* query, const char* s, int len)
 {
-	Column* col = column_new(EXPR_CONST, NULL, "");
+	column* col = column_new(EXPR_CONST, NULL, "");
 
 	enum field_type type = FIELD_UNDEFINED;
 	if (s[0] == '\'') {
@@ -177,7 +177,7 @@ int query_add_constant(Query* query, const char* s, int len)
 
 	col->field_type = type;
 	if (_distribute_column(query, col)) {
-		fprintf(stderr, "Unhandled constant expression: %d\n", query->mode);
+		fprintf(stderr, "unhandled constant expression: %d\n", query->mode);
 		return FQL_FAIL;
 	}
 
@@ -186,21 +186,21 @@ int query_add_constant(Query* query, const char* s, int len)
 
 
 /**
- * Create new table and source object
- * Assign name and schema if provided. source_stack
+ * create new table and source object
+ * assign name and schema if provided. source_stack
  * is a stack of allocated char* of the form:
  * object->schema->database->server
- * We ignore database and server for now.
+ * we ignore database and server for now.
  */
-void query_add_source(Query* query,
-		      Stack** source_stack,
+void query_add_source(query* query,
+		      stack** source_stack,
 		      const char* alias)
 {
 	char* table_name = stack_pop(source_stack);
 	char* schema_name = stack_pop(source_stack);
 
 	stack_free_data(source_stack);
-	Table* new_table = vec_add_one(query->sources);
+	table* new_table = vec_add_one(query->sources);
 	table_construct(new_table,
 			table_name,
 			alias,
@@ -215,11 +215,11 @@ void query_add_source(Query* query,
 	}
 }
 
-void query_add_subquery_source(Query* query,
-			       Query* subquery,
+void query_add_subquery_source(query* query,
+			       query* subquery,
 			       const char* alias)
 {
-	Table* new_table = vec_add_one(query->sources);
+	table* new_table = vec_add_one(query->sources);
 	table_construct_subquery(new_table,
 				 subquery,
 				 alias,
@@ -228,52 +228,52 @@ void query_add_subquery_source(Query* query,
 
 }
 
-void query_apply_table_alias(Query* query, const char* alias)
+void query_apply_table_alias(query* query, const char* alias)
 {
-	Table* table = vec_back(query->sources);
+	table* table = vec_back(query->sources);
 	string_strcpy(&table->alias, alias);
 }
 
-void query_set_distinct(Query* query)
+void query_set_distinct(query* query)
 {
 	query->distinct = group_new();
 }
 
-int query_add_aggregate(Query* query, enum aggregate_function agg_type)
+int query_add_aggregate(query* query, enum aggregate_function agg_type)
 {
-	Aggregate* agg = aggregate_new(agg_type);
+	aggregate* agg = aggregate_new(agg_type);
 	vec_push_back(&query->groupby->aggregates, &agg);
 
-	Column* group_col = column_new(EXPR_AGGREGATE, agg, "");
+	column* group_col = column_new(EXPR_AGGREGATE, agg, "");
 	group_add_column(query->groupby, group_col);
 
-	Column* op_col = column_new(EXPR_AGGREGATE, agg, "");
+	column* op_col = column_new(EXPR_AGGREGATE, agg, "");
 	op_col->data_source = group_col;
 	if (_distribute_column(query, op_col)) {
 		return FQL_FAIL;
 	}
-	
+
 	return FQL_GOOD;
 }
 
-void _add_function(Query* query, Function* func, enum field_type type)
+void _add_function(query* query, function* func, enum field_type type)
 {
-	Column* col = column_new(EXPR_FUNCTION, func, "");
+	column* col = column_new(EXPR_FUNCTION, func, "");
 	col->field_type = type;
 
 	if (_distribute_column(query, col)) {
 		fprintf(stderr,
-			"Unhandled function: %s\n",
+			"unhandled function: %s\n",
 			function_get_name(func));
 		return;
 	}
 	stack_push(&query->function_stack, col);
 }
 
-int query_enter_function(Query* query, enum scalar_function scalar_type, int char_as_byte)
+int query_enter_function(query* query, enum scalar_function scalar_type, int char_as_byte)
 {
 	enum field_type type = FIELD_UNDEFINED;
-	Function* func = function_new(scalar_type, &type, char_as_byte);
+	function* func = function_new(scalar_type, &type, char_as_byte);
 	if (func->call__ == NULL) {
 		return FQL_FAIL;
 	}
@@ -282,30 +282,30 @@ int query_enter_function(Query* query, enum scalar_function scalar_type, int cha
 	return FQL_GOOD;
 }
 
-void query_enter_operator(Query* query, enum scalar_function op)
+void query_enter_operator(query* query, enum scalar_function op)
 {
 	enum field_type type = FIELD_UNDEFINED;
-	Function* func = function_new(op, &type, true);
+	function* func = function_new(op, &type, true);
 	_add_function(query, func, FIELD_UNDEFINED);
 }
 
-void query_exit_function(Query* query)
+void query_exit_function(query* query)
 {
-	Column* col = stack_pop(&query->function_stack);
+	column* col = stack_pop(&query->function_stack);
 }
 
-void query_set_logic_comparison(Query* query, const char* op)
+void query_set_logic_comparison(query* query, const char* op)
 {
-	LogicGroup* lg = query->logic_stack->data;
-	Logic* logic = lg->condition;
+	logicgroup* lg = query->logic_stack->data;
+	logic* logic = lg->condition;
 	logic_set_comparison(logic, op);
 }
 
-void _assign_logic(Query* query, LogicGroup* lg)
+void _assign_logic(query* query, logicgroup* lg)
 {
 	switch (query->logic_mode) {
 	case LOGIC_JOIN: {
-		Table* table = vec_back(query->sources);
+		table* table = vec_back(query->sources);
 		table->condition = lg;
 		break;
 	}
@@ -313,32 +313,32 @@ void _assign_logic(Query* query, LogicGroup* lg)
 		query->where = lg;
 		break;
 	case LOGIC_UNDEFINED:
-		fprintf(stderr, "Unexpected logic mode assigning group\n");
+		fprintf(stderr, "unexpected logic mode assigning group\n");
 	}
 }
 
-void _add_item(Query* query, enum logicgroup_type type)
+void _add_item(query* query, enum logicgroup_type type)
 {
-	LogicGroup* lg = logicgroup_new(type);
-	LogicGroup* parent = query->logic_stack->data;
+	logicgroup* lg = logicgroup_new(type);
+	logicgroup* parent = query->logic_stack->data;
 	vec_push_back(&parent->items, &lg);
 	stack_push(&query->logic_stack, lg);
 }
 
-void enter_search(Query* query)
+void enter_search(query* query)
 {
 	if (query->logic_stack == NULL) {
 		stack_push(&query->logic_stack, logicgroup_new(LG_ROOT));
-		query->joinable = vec_new_(Logic*);
+		query->joinable = vec_new_(logic*);
 		return;
 	}
 
 	_add_item(query, LG_ROOT);
 }
 
-void exit_search(Query* query)
+void exit_search(query* query)
 {
-	LogicGroup* lg = stack_pop(&query->logic_stack);
+	logicgroup* lg = stack_pop(&query->logic_stack);
 	if (query->logic_stack == NULL) {
 		if (vec_empty(query->joinable)) {
 			vec_free(query->joinable);
@@ -351,26 +351,26 @@ void exit_search(Query* query)
 	}
 }
 
-void enter_search_and(Query* query)
+void enter_search_and(query* query)
 {
 	_add_item(query, LG_AND);
 }
 
-void exit_search_and(Query* query)
+void exit_search_and(query* query)
 {
 	stack_pop(&query->logic_stack);
 }
 
-void enter_search_not(Query* query)
+void enter_search_not(query* query)
 {
 	_add_item(query, LG_NOT);
 }
 
-void exit_search_not(Query* query)
+void exit_search_not(query* query)
 {
-	LogicGroup* top = stack_pop(&query->logic_stack);
+	logicgroup* top = stack_pop(&query->logic_stack);
 
-	/* Pre-requisite test for joinability
+	/* pre-requisite test for joinability
 	 * A complete test for joinablity cannot occur
 	 * until all logic columns have been resolved
 	 * to a source.

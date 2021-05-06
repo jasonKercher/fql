@@ -7,7 +7,7 @@
 #include "util/stringview.h"
 
 
-/* naive utf8 handling. If I cared, I'd use libicu. */
+/* naive utf8 handling. if I cared, I'd use libicu. */
 int _get_byte_count(char c, unsigned limit)
 {
 	if ((c & 0x80) == 0) {
@@ -22,12 +22,12 @@ int _get_byte_count(char c, unsigned limit)
 	} else if ((c & 0xF8) == 0xF0) {
 		n = 4;
 	} else {
-		fputs("Invalid UTF-8 sequence\n", stderr);
+		fputs("invalid UTF-8 sequence\n", stderr);
 		return FQL_FAIL;
 	}
 
 	if (n > limit) {
-		fputs("Invalid UTF-8 sequence\n", stderr);
+		fputs("invalid UTF-8 sequence\n", stderr);
 		return FQL_FAIL;
 	}
 	return n;
@@ -43,11 +43,11 @@ int _get_rev_byte_count(const char* s, unsigned limit)
 	for (; (s[i] & 0xC0) == 0x80 && -i < limit; --i);
 
 	if (-i >= limit) {
-		fputs("Invalid UTF-8 sequence\n", stderr);
+		fputs("invalid UTF-8 sequence\n", stderr);
 		return FQL_FAIL;
 	}
 
-	/* Check Leading byte */
+	/* check leading byte */
 	_Bool valid = false;
 	switch (-i+1) {
 	case 2:
@@ -62,7 +62,7 @@ int _get_rev_byte_count(const char* s, unsigned limit)
 	}
 
 	if (!valid) {
-		fputs("Invalid UTF-8 sequence\n", stderr);
+		fputs("invalid UTF-8 sequence\n", stderr);
 		return FQL_FAIL;
 	}
 
@@ -72,10 +72,10 @@ int _get_rev_byte_count(const char* s, unsigned limit)
 
 /* ret is assumed to be of the correct type */
 
-int fql_left(Function* fn, union field* ret, Vec* rec)
+int fql_left(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
-	StringView s;
+	column** args = fn->args->data;
+	stringview s;
 	column_get_stringview(&s, args[0], rec);
 	long n = 0;
 	if (column_get_int(&n, args[1], rec)) {
@@ -110,10 +110,10 @@ int fql_left(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_right(Function* fn, union field* ret, Vec* rec)
+int fql_right(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
-	StringView s;
+	column** args = fn->args->data;
+	stringview s;
 	column_get_stringview(&s, args[0], rec);
 	long n = 0;
 	if (column_get_int(&n, args[1], rec)) {
@@ -148,10 +148,10 @@ int fql_right(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-/* Opertor functions */
-int fql_op_plus_i(Function* fn, union field* ret, Vec* rec)
+/* opertor functions */
+int fql_op_plus_i(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	long n0 = 0;
 	long n1 = 0;
 	if (column_get_int(&n0, args[0], rec)) {
@@ -161,14 +161,14 @@ int fql_op_plus_i(Function* fn, union field* ret, Vec* rec)
 		return FQL_FAIL;
 	}
 
-	/* Detect overflow */
+	/* detect overflow */
 	if (n0 > 0 && n1 > 0
 	 && (unsigned long) n0 + (unsigned long) n1 > (unsigned long) LONG_MAX) {
-		fputs("Arithmetic overflow detected\n", stderr);
+		fputs("arithmetic overflow detected\n", stderr);
 		return FQL_FAIL;
 	} else if (n0 < 0 && n1 < 0
 	 && (unsigned long) -n0 + (unsigned long) -n1 > (unsigned long) LONG_MAX + 1) {
-		fputs("Arithmetic overflow detected\n", stderr);
+		fputs("arithmetic overflow detected\n", stderr);
 		return FQL_FAIL;
 	}
 
@@ -177,9 +177,9 @@ int fql_op_plus_i(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_plus_f(Function* fn, union field* ret, Vec* rec)
+int fql_op_plus_f(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	double n0 = 0;
 	double n1 = 0;
 	if (column_get_float(&n0, args[0], rec)) {
@@ -194,11 +194,11 @@ int fql_op_plus_f(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_plus_s(Function* fn, union field* ret, Vec* rec)
+int fql_op_plus_s(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
-	StringView s0;
-	StringView s1;
+	column** args = fn->args->data;
+	stringview s0;
+	stringview s1;
 	column_get_stringview(&s0, args[0], rec);
 	column_get_stringview(&s1, args[1], rec);
 
@@ -208,9 +208,9 @@ int fql_op_plus_s(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_minus_i(Function* fn, union field* ret, Vec* rec)
+int fql_op_minus_i(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	long n0 = 0;
 	long n1 = 0;
 	if (column_get_int(&n0, args[0], rec)) {
@@ -220,14 +220,14 @@ int fql_op_minus_i(Function* fn, union field* ret, Vec* rec)
 		return FQL_FAIL;
 	}
 
-	/* Detect overflow */
+	/* detect overflow */
 	if (n0 > 0 && n1 < 0
 	 && (unsigned long) n0 + (unsigned long) -n1 > (unsigned long) LONG_MAX) {
-		fputs("Arithmetic overflow detected\n", stderr);
+		fputs("arithmetic overflow detected\n", stderr);
 		return FQL_FAIL;
 	} else if (n0 < 0 && n1 > 0
 	 && (unsigned long) -n0 + (unsigned long) n1 > (unsigned long) LONG_MAX + 1) {
-		fputs("Arithmetic overflow detected\n", stderr);
+		fputs("arithmetic overflow detected\n", stderr);
 		return FQL_FAIL;
 	}
 
@@ -236,9 +236,9 @@ int fql_op_minus_i(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_minus_f(Function* fn, union field* ret, Vec* rec)
+int fql_op_minus_f(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	double n0 = 0;
 	double n1 = 0;
 	if (column_get_float(&n0, args[0], rec)) {
@@ -253,9 +253,9 @@ int fql_op_minus_f(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_mult_i(Function* fn, union field* ret, Vec* rec)
+int fql_op_mult_i(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	long n0 = 0;
 	long n1 = 0;
 	if (column_get_int(&n0, args[0], rec)) {
@@ -268,7 +268,7 @@ int fql_op_mult_i(Function* fn, union field* ret, Vec* rec)
 	unsigned long u0 = 0;
 	unsigned long u1 = 0;
 	_Bool neg = false;
-	/* Use unsigned so not undefined behavior */
+	/* use unsigned so not undefined behavior */
 	if (n0 < 0) {
 		u0 = n0 * -1;
 		neg = true;
@@ -287,7 +287,7 @@ int fql_op_mult_i(Function* fn, union field* ret, Vec* rec)
 	if (u0 != 0
 	 && (result / u0 != u1
 	     || result > LONG_MAX + neg)) {
-		fputs("Arithmetic overflow detected\n", stderr);
+		fputs("arithmetic overflow detected\n", stderr);
 		return FQL_FAIL;
 	}
 
@@ -296,9 +296,9 @@ int fql_op_mult_i(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_mult_f(Function* fn, union field* ret, Vec* rec)
+int fql_op_mult_f(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	double n0 = 0;
 	double n1 = 0;
 	if (column_get_float(&n0, args[0], rec)) {
@@ -313,9 +313,9 @@ int fql_op_mult_f(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_divi_i(Function* fn, union field* ret, Vec* rec)
+int fql_op_divi_i(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	long n0 = 0;
 	long n1 = 0;
 	if (column_get_int(&n0, args[0], rec)) {
@@ -326,7 +326,7 @@ int fql_op_divi_i(Function* fn, union field* ret, Vec* rec)
 	}
 
 	if (n1 == 0) {
-		fputs("Division by zero\n", stderr);
+		fputs("division by zero\n", stderr);
 		return FQL_FAIL;
 	}
 
@@ -335,9 +335,9 @@ int fql_op_divi_i(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_divi_f(Function* fn, union field* ret, Vec* rec)
+int fql_op_divi_f(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	double n0 = 0;
 	double n1 = 0;
 	if (column_get_float(&n0, args[0], rec)) {
@@ -348,7 +348,7 @@ int fql_op_divi_f(Function* fn, union field* ret, Vec* rec)
 	}
 
 	if (n1 == 0) {
-		fputs("Division by zero\n", stderr);
+		fputs("division by zero\n", stderr);
 		return FQL_FAIL;
 	}
 
@@ -357,9 +357,9 @@ int fql_op_divi_f(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_mod_i(Function* fn, union field* ret, Vec* rec)
+int fql_op_mod_i(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	long n0 = 0;
 	long n1 = 0;
 	if (column_get_int(&n0, args[0], rec)) {
@@ -374,9 +374,9 @@ int fql_op_mod_i(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_mod_f(Function* fn, union field* ret, Vec* rec)
+int fql_op_mod_f(function* fn, union field* ret, vec* rec)
 {
-	//Column** args = fn->args->data;
+	//column** args = fn->args->data;
 	//double n0 = 0;
 	//double n1 = 0;
 	//if (column_get_float(&n0, args[0], rec)) {
@@ -391,9 +391,9 @@ int fql_op_mod_f(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_or(Function* fn, union field* ret, Vec* rec)
+int fql_op_bit_or(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	long n0 = 0;
 	long n1 = 0;
 	if (column_get_int(&n0, args[0], rec)) {
@@ -408,9 +408,9 @@ int fql_op_bit_or(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_and(Function* fn, union field* ret, Vec* rec)
+int fql_op_bit_and(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	long n0 = 0;
 	long n1 = 0;
 	if (column_get_int(&n0, args[0], rec)) {
@@ -425,9 +425,9 @@ int fql_op_bit_and(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_xor(Function* fn, union field* ret, Vec* rec)
+int fql_op_bit_xor(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	long n0 = 0;
 	long n1 = 0;
 	if (column_get_int(&n0, args[0], rec)) {
@@ -442,9 +442,9 @@ int fql_op_bit_xor(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_not(Function* fn, union field* ret, Vec* rec)
+int fql_op_bit_not(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	long n0 = 0;
 	if (column_get_int(&n0, args[0], rec)) {
 		return FQL_FAIL;
@@ -456,16 +456,16 @@ int fql_op_bit_not(Function* fn, union field* ret, Vec* rec)
 }
 
 
-int fql_op_unary_minus_i(Function* fn, union field* ret, Vec* rec)
+int fql_op_unary_minus_i(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	long n0 = 0;
 	if (column_get_int(&n0, args[0], rec)) {
 		return FQL_FAIL;
 	}
 
 	if (n0 == LONG_MIN) {
-		fputs("Arithmetic overflow detected\n", stderr);
+		fputs("arithmetic overflow detected\n", stderr);
 		return FQL_FAIL;
 	}
 
@@ -474,9 +474,9 @@ int fql_op_unary_minus_i(Function* fn, union field* ret, Vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_unary_minus_f(Function* fn, union field* ret, Vec* rec)
+int fql_op_unary_minus_f(function* fn, union field* ret, vec* rec)
 {
-	Column** args = fn->args->data;
+	column** args = fn->args->data;
 	double n0 = 0;
 	if (column_get_float(&n0, args[0], rec)) {
 		return FQL_FAIL;

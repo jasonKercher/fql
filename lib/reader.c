@@ -15,15 +15,15 @@
 
 Reader* reader_new()
 {
-	Reader* new_reader = NULL;
+	reader* new_reader = NULL;
 	malloc_(new_reader, sizeof(*new_reader));
 
 	return reader_construct(new_reader);
 }
 
-Reader* reader_construct(Reader* reader)
+Reader* reader_construct(reader* reader)
 {
-	*reader = (Reader) {
+	*reader = (reader) {
 		 READ_UNDEFINED /* type */
 		,NULL           /* reader_data */
 		,NULL		/* subquery_recs */
@@ -40,7 +40,7 @@ Reader* reader_construct(Reader* reader)
 	return reader;
 }
 
-void reader_free(Reader* reader)
+void reader_free(reader* reader)
 {
 	if (reader == NULL) {
 		return;
@@ -52,7 +52,7 @@ void reader_free(Reader* reader)
 	free_(reader);
 }
 
-void reader_assign(Reader* reader, Table* table)
+void reader_assign(reader* reader, table* table)
 {
 	int ret = 0;
 	switch (reader->type) {

@@ -7,12 +7,12 @@
 
 int str2longbase(long* ret, const char* s, int base)
 {
-	char* endPtr = NULL;
+	char* endptr = NULL;
 	errno = 0;
-	*ret = strtol(s, &endPtr, base);
+	*ret = strtol(s, &endptr, base);
 	if (errno) {
 		perror(s);
-	} else if (errno == 0 && s && *endPtr != 0) {
+	} else if (errno == 0 && s && *endptr != 0) {
 		fprintf(stderr, "%s: could not convert to integer\n", s);
 	} else {
 		return 0;
@@ -36,13 +36,13 @@ int str2long(long* ret, const char* s)
 
 int str2double(double* ret, const char* s)
 {
-	char* endPtr = NULL;
+	char* endptr = NULL;
 	errno = 0;
-	*ret = strtod(s, &endPtr);
+	*ret = strtod(s, &endptr);
 
 	if (errno) {
 		perror(s);
-	} else if (errno == 0 && s && *endPtr != 0) {
+	} else if (errno == 0 && s && *endptr != 0) {
 		fprintf(stderr, "%s: could not convert to float\n", s);
 	} else {
 		return 0;
@@ -109,7 +109,7 @@ char* randstr(char* s, const int len)
 
 /* https://stackoverflow.com/questions/2736753/how-to-remove-extension-from-file-name
  * converted to leave user in control of allocation
- * Assumption: dest space >= filename space
+ * assumption: dest space >= filename space
  */
 void getnoext(char* dest, const char* filename)
 {
@@ -141,8 +141,7 @@ char* getext(char* filename)
 	char* base = basename(filename);
 	const char *dot = strrchr(base, '.');
 	if(dot && dot != base) {
-		char* ext = NULL;
-		malloc_(ext, strlen(dot) + 1);
+		char* ext = malloc_(strlen(dot) + 1);
 		strcpy(ext, dot);
 		return ext;
 	}
@@ -185,10 +184,10 @@ char * strnstr(const char *s, const char *find, size_t slen)
 	return ((char *)s);
 }
 
-Queue* dir_list_files(const char* dir)
+queue* dir_list_files(const char* dir)
 {
-	/* Read file names into queue */
-	Queue* files = NULL;
+	/* read file names into queue */
+	queue* files = NULL;
 	DIR *dr;
 	struct dirent *en;
 

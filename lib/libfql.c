@@ -13,9 +13,7 @@
 
 struct fql_handle* fql_new()
 {
-	struct fql_handle* new_handle;
-	malloc_(new_handle, sizeof(*new_handle));
-
+	struct fql_handle* new_handle = malloc_(sizeof(*new_handle));
 	return fql_construct(new_handle);
 }
 
@@ -23,7 +21,7 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 {
 	*fql = (struct fql_handle) {
 		 NULL                       /* queries */
-		,vec_new_(struct fql_field) /* api_vec */
+		,new_(vec, sizeof(struct fql_field)) /* api_vec */
 		,NULL                       /* query_str */
 		,{
 			 ""     /* in_delim */
@@ -48,11 +46,11 @@ void fql_free(struct fql_handle* fql)
 	free_(fql);
 }
 
-int _api_connect(struct fql_handle* fql, Query* query)
+int _api_connect(struct fql_handle* fql, query* query)
 {
-	Process* true_proc = query->plan->op_true->data;
+	process* true_proc = query->plan->op_true->data;
 	if (true_proc->action__ != fql_select) {
-		fputs("Can only step through SELECT queries\n", stderr);
+		fputs("can only step through SELECT queries\n", stderr);
 		return FQL_FAIL;
 	}
 
@@ -61,13 +59,13 @@ int _api_connect(struct fql_handle* fql, Query* query)
 	/* Since we are using the api, we want to make sure
 	 * we parse all fields.
 	 */
-	Vec* node_vec = query->plan->processes->nodes;
-	Dnode** it = vec_begin(node_vec);
+	vec* node_vec = query->plan->processes->nodes;
+	dnode** it = vec_begin(node_vec);
 	for (; it != vec_end(node_vec); ++it) {
-		Process* proc = (*it)->data;
+		process* proc = (*it)->data;
 		if (proc->action__ == fql_read) {
-			Table* table = proc->proc_data;
-			Reader* reader = table->reader;
+			table* table = proc->proc_data;
+			reader* reader = table->reader;
 			reader->max_col_idx = INT_MAX;
 		}
 	}
@@ -143,10 +141,10 @@ void fql_set_force_cartesian(struct fql_handle* fql, int force_cartesian)
 int fql_exec_plans(struct fql_handle* fql, int plan_count)
 {
 	int i = 0;
-	Queue* node = fql->query_list;
+	queue* node = fql->query_list;
 	for (; node && i < plan_count; node = node->next, ++i) {
-		Query* query = node->data;
-		Plan* plan = query->plan;
+		query* query = node->data;
+		plan* plan = query->plan;
 		if (plan->has_stepped) {
 			fputs("Cannot execute plan that has been"
 			      " stepped through\n", stderr);
@@ -222,7 +220,7 @@ make_plans_fail:
 
 int fql_step(struct fql_handle* fql, struct fql_field** fields)
 {
-	Query* query = fql->query_list->data;
+	query* query = fql->query_list->data;
 	struct fql_plan* plan = query->plan;
 	if (!plan->has_stepped) {
 		if (vec_empty(fql->api_vec)) {
@@ -233,7 +231,7 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 
 	int ret = process_step(plan);
 	if (ret == 0 || ret == FQL_FAIL) {
-		Query* query = queue_dequeue(&fql->query_list);
+		query* query = queue_dequeue(&fql->query_list);
 		query_free(query);
 
 		vec_resize(fql->api_vec, 0);

@@ -5,24 +5,24 @@
 
 Group* group_new()
 {
-	Group* new_group = NULL;
+	group* new_group = NULL;
 	malloc_(new_group, sizeof(*new_group));
 
 	return group_construct(new_group);
 }
 
-Group* group_construct(Group* group)
+Group* group_construct(group* group)
 {
 	memset(group, 0, sizeof(*group));
 	compositemap_construct_(&group->val_map,
 			        unsigned,
 				128,
 				HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
-	vec_construct_(&group->columns, Column*);
-	vec_construct_(&group->aggregates, Aggregate*);
+	vec_construct_(&group->columns, column*);
+	vec_construct_(&group->aggregates, aggregate*);
 	vec_construct_(&group->_indicies, size_t);
 	vec_construct_(&group->_raw, char);
-	vec_construct_(&group->_composite, StringView);
+	vec_construct_(&group->_composite, stringview);
 
 	size_t zero = 0;
 	vec_push_back(&group->_indicies, &zero);
@@ -30,7 +30,7 @@ Group* group_construct(Group* group)
 	return group;
 }
 
-void group_free(Group* group)
+void group_free(group* group)
 {
 	if (group == NULL) {
 		return;
@@ -38,7 +38,7 @@ void group_free(Group* group)
 	group_destroy(group);
 	free_(group);
 }
-void group_destroy(Group* group)
+void group_destroy(group* group)
 {
 	if (group->expr_map != NULL) {
 		compositemap_free(group->expr_map);
@@ -51,7 +51,7 @@ void group_destroy(Group* group)
 	vec_destroy(&group->_composite);
 }
 
-void group_add_column(Group* group, Column* col)
+void group_add_column(group* group, column* col)
 {
 	col->location = group->columns.size;
 	vec_push_back(&group->columns, &col);
@@ -60,9 +60,9 @@ void group_add_column(Group* group, Column* col)
 	}
 }
 
-void group_cat_description(Group* group, Process* proc)
+void group_cat_description(group* group, process* proc)
 {
-	Column** it = vec_begin(&group->columns);
+	column** it = vec_begin(&group->columns);
 	for (; it != vec_end(&group->columns); ++it) {
 		if (it != vec_begin(&group->columns)) {
 			string_strcat(proc->action_msg, ",");
@@ -71,9 +71,9 @@ void group_cat_description(Group* group, Process* proc)
 	}
 }
 
-int _add_agg_result(Group* group, Vec* recs)
+int _add_agg_result(group* group, vec* recs)
 {
-	Aggregate** it = vec_begin(&group->aggregates);
+	aggregate** it = vec_begin(&group->aggregates);
 	for (; it != vec_end(&group->aggregates); ++it) {
 		struct aggresult* result = vec_add_one(&(*it)->results);
 		*result = (struct aggresult) { 0 };
@@ -85,23 +85,23 @@ int _add_agg_result(Group* group, Vec* recs)
 	return FQL_GOOD;
 }
 
-int _update_agg_result(Group* group, Vec* recs, unsigned idx)
+int _update_agg_result(group* group, vec* recs, unsigned idx)
 {
-	Aggregate** it = vec_begin(&group->aggregates);
+	aggregate** it = vec_begin(&group->aggregates);
 	for (; it != vec_end(&group->aggregates); ++it) {
 		struct aggresult* result = vec_at(&(*it)->results, idx);
 		(*it)->call__(*it, group, result, recs);
 	}
 	return FQL_GOOD;
 }
-int group_record(Group* group, Vec* recs)
+int group_record(group* group, vec* recs)
 {
 	size_t raw_size = group->_raw.size;
 	size_t index_count = group->_indicies.size;
 	size_t running_size = raw_size;
 
-	Column** cols = vec_begin(&group->columns);
-	StringView* sv = vec_begin(&group->_composite);
+	column** cols = vec_begin(&group->columns);
+	stringview* sv = vec_begin(&group->_composite);
 	int i = 0;
 	for (; i < group->columns.size; ++i) {
 		if (cols[i]->expr == EXPR_AGGREGATE) {
@@ -127,8 +127,8 @@ int group_record(Group* group, Vec* recs)
 			snprintf(end, len, "%ld", num_i);
 			stringview_nset(sv, end, len);
 
-			/* TODO: Ideal version would just store this in
-			 *       binary. The following lines will do that.
+			/* TODO: ideal version would just store this in
+			 *       binary. the following lines will do that.
 			 */
 			//vec_append(&group->_raw, &num_i, sizeof(long));
 			//sv->data = (char*)vec_end(&group->_raw) - sizeof(long);
@@ -186,9 +186,9 @@ int group_record(Group* group, Vec* recs)
 /* TODO: eliminate switch with a function pointer to
  *       a function that dumps the aggregate results.
  */
-void _read_aggregate(Column* agg_col, String* raw, StringView* sv, size_t idx)
+void _read_aggregate(column* agg_col, string* raw, stringview* sv, size_t idx)
 {
-	Aggregate* agg = agg_col->field.agg;
+	aggregate* agg = agg_col->field.agg;
 	struct aggresult* result = vec_at(&agg->results, idx);
 	switch (agg->data_type) {
 	case FIELD_INT:
@@ -206,7 +206,7 @@ void _read_aggregate(Column* agg_col, String* raw, StringView* sv, size_t idx)
 	}
 }
 
-int group_dump_record(Group* group, Record* rec)
+int group_dump_record(group* group, record* rec)
 {
 	if (group->_dump_idx >= group->val_map.values.size) {
 		return -1;
@@ -216,8 +216,8 @@ int group_dump_record(Group* group, Record* rec)
 	size_t* idx = vec_at(&group->_indicies, comp_count * group->_dump_idx);
 	
 	int i = 0;
-	Column** group_cols = vec_begin(&group->columns);
-	StringView* rec_svs = vec_begin(rec->fields);
+	column** group_cols = vec_begin(&group->columns);
+	stringview* rec_svs = vec_begin(rec->fields);
 	for (; i < group->columns.size; ++i) {
 		if (group_cols[i]->expr == EXPR_AGGREGATE) {
 			_read_aggregate(group_cols[i],

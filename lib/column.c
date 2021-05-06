@@ -8,17 +8,17 @@
 #include "function.h"
 #include "util/util.h"
 
-Column* column_new(enum expr_type expr, void* data, const char* table_name)
+column* column_new(enum expr_type expr, void* data, const char* table_name)
 {
-	Column* new_column = NULL;
+	column* new_column = NULL;
 	malloc_(new_column, sizeof(*new_column));
 
 	return column_construct(new_column, expr, data, table_name);
 }
 
-Column* column_construct(Column* col, enum expr_type expr, void* data, const char* table_name)
+column* column_construct(column* col, enum expr_type expr, void* data, const char* table_name)
 {
-	*col = (Column) {
+	*col = (column) {
 		 expr                   /* expr */
 		,NULL                   /* table */
 		,NULL                   /* data_source */
@@ -60,7 +60,7 @@ Column* column_construct(Column* col, enum expr_type expr, void* data, const cha
 
 void column_free(void* generic_col)
 {
-	Column* col = generic_col;
+	column* col = generic_col;
 
 	switch(col->expr) {
 	case EXPR_FUNCTION:
@@ -80,7 +80,7 @@ void column_free(void* generic_col)
 	free_(col);
 }
 
-void column_cat_description(Column* col, String* msg)
+void column_cat_description(column* col, string* msg)
 {
 	switch (col->expr) {
 	case EXPR_COLUMN_NAME:
@@ -88,11 +88,11 @@ void column_cat_description(Column* col, String* msg)
 		break;
 	case EXPR_FUNCTION:
 	{
-		Function* func = col->field.fn;
+		function* func = col->field.fn;
 		string_strcat(msg, function_get_name(func));
 		string_push_back(msg, '(');
 
-		Column** it = vec_begin(func->args);
+		column** it = vec_begin(func->args);
 		for (; it != vec_end(func->args); ++it) {
 			if (it != vec_begin(func->args)) {
 			        string_push_back(msg, ',');
@@ -144,14 +144,14 @@ void column_cat_description(Column* col, String* msg)
 		string_strcat(msg, "SUBQUERY CONST");
 		break;
 	case EXPR_NONE:
-		string_strcat(msg, "No expression");
+		string_strcat(msg, "no expression");
 		break;
 	}
 }
 
-int column_try_assign_source(Column* col, Table* table, int idx)
+int column_try_assign_source(column* col, table* table, int idx)
 {
-	Column** src_col = hashmap_get(table->schema->col_map, col->name.data);
+	column** src_col = hashmap_get(table->schema->col_map, col->name.data);
 	if (src_col != NULL) {
 		col->data_source = *src_col;
 		col->src_idx = idx;
@@ -170,19 +170,19 @@ int column_try_assign_source(Column* col, Table* table, int idx)
  *       type. The best way to handle this would be to set
  *       the type during parsing.
  */
-int column_get_int(long* ret, Column* col, Vec* recs)
+int column_get_int(long* ret, column* col, vec* recs)
 {
 	switch (col->expr) {
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME:
 	{
-		Record** rec = vec_at(recs, col->src_idx);
+		record** rec = vec_at(recs, col->src_idx);
 		if ((*rec)->fields->size <= col->data_source->location) {
 			string_clear(&col->buf);
 			*ret = 0;
 			return FQL_GOOD;
 		}
-		StringView* sv = vec_at((*rec)->fields, col->data_source->location);
+		stringView* sv = vec_at((*rec)->fields, col->data_source->location);
 		string_copy_from_stringview(&col->buf, sv);
 		if (str2long(ret, col->buf.data)) {
 			return FQL_FAIL;
@@ -191,7 +191,7 @@ int column_get_int(long* ret, Column* col, Vec* recs)
 	}
 	case EXPR_FUNCTION:
 	{
-		Function* func = col->field.fn;
+		function* func = col->field.fn;
 		/* TODO: maybe struct this?? */
 		union field new_field;
 		enum field_type new_field_type = col->field_type;
@@ -220,19 +220,19 @@ int column_get_int(long* ret, Column* col, Vec* recs)
 	return FQL_GOOD;
 }
 
-int column_get_float(double* ret, Column* col, Vec* recs)
+int column_get_float(double* ret, column* col, vec* recs)
 {
 	switch (col->expr) {
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME:
 	{
-		Record** rec = vec_at(recs, col->src_idx);
+		record** rec = vec_at(recs, col->src_idx);
 		if ((*rec)->fields->size <= col->data_source->location) {
 			string_clear(&col->buf);
 			*ret = 0;
 			return FQL_GOOD;
 		}
-		StringView* sv = vec_at((*rec)->fields, col->data_source->location);
+		stringView* sv = vec_at((*rec)->fields, col->data_source->location);
 		string_copy_from_stringview(&col->buf, sv);
 		if (str2double(ret, col->buf.data)) {
 			return FQL_FAIL;
@@ -241,7 +241,7 @@ int column_get_float(double* ret, Column* col, Vec* recs)
 	}
 	case EXPR_FUNCTION:
 	{
-		Function* func = col->field.fn;
+		function* func = col->field.fn;
 		union field new_field;
 		enum field_type new_field_type = col->field_type;
 		if (col->field_type == FIELD_STRING) {
@@ -268,27 +268,27 @@ int column_get_float(double* ret, Column* col, Vec* recs)
 	return FQL_GOOD;
 }
 
-int column_get_stringview(StringView* ret, Column* col, Vec* recs)
+int column_get_stringview(stringView* ret, column* col, vec* recs)
 {
 	switch (col->expr) {
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME:
 	{
-		Record** rec = vec_at(recs, col->src_idx);
+		record** rec = vec_at(recs, col->src_idx);
 		if ((*rec)->fields->size <= col->data_source->location) {
 			string_clear(&col->buf);
 			ret->data = col->buf.data;
 			ret->len = 0;
 			return FQL_GOOD;
 		}
-		StringView* sv = vec_at((*rec)->fields, col->data_source->location);
+		stringView* sv = vec_at((*rec)->fields, col->data_source->location);
 		ret->data = sv->data;
 		ret->len = sv->len;
 		return FQL_GOOD;
 	}
 	case EXPR_FUNCTION:
 	{
-		Function* func = col->field.fn;
+		function* func = col->field.fn;
 		union field new_field;
 		enum field_type new_field_type = col->field_type;
 		if (col->field_type == FIELD_STRING) {
