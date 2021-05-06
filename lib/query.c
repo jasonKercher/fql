@@ -242,9 +242,6 @@ void query_set_distinct(Query* query)
 int query_add_aggregate(Query* query, enum aggregate_function agg_type)
 {
 	Aggregate* agg = aggregate_new(agg_type);
-	if (agg == NULL) {
-		return FQL_FAIL;
-	}
 	vec_push_back(&query->groupby->aggregates, &agg);
 
 	Column* group_col = column_new(EXPR_AGGREGATE, agg, "");

@@ -617,6 +617,10 @@ int _group_validation(struct fql_handle* fql, Query* query)
 		if (schema_assign_columns(agg->args, query->sources)) {
 			return FQL_FAIL;
 		}
+
+		if (aggregate_resolve(agg)) {
+			return FQL_FAIL;
+		}
 	}
 
 	/* Now, we need to match *all* op columns to a group */

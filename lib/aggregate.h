@@ -36,7 +36,19 @@ void aggregate_destroy(struct aggregate*);
 
 const char* aggregate_get_name(struct aggregate*);
 void aggregate_add_column(struct aggregate*, struct column*);
+int aggregate_resolve(struct aggregate*);
 
 int fql_count(struct aggregate*, struct group*, struct aggresult*, struct vec*);
+
+int fql_min_i(struct aggregate*, struct group*, struct aggresult*, struct vec*);
+int fql_min_f(struct aggregate*, struct group*, struct aggresult*, struct vec*);
+int fql_min_s(struct aggregate*, struct group*, struct aggresult*, struct vec*);
+
+int fql_max_i(struct aggregate*, struct group*, struct aggresult*, struct vec*);
+int fql_max_f(struct aggregate*, struct group*, struct aggresult*, struct vec*);
+int fql_max_s(struct aggregate*, struct group*, struct aggresult*, struct vec*);
+
+int fql_sum_i(struct aggregate*, struct group*, struct aggresult*, struct vec*);
+int fql_sum_f(struct aggregate*, struct group*, struct aggresult*, struct vec*);
 
 #endif  /* AGGREGATE_H */

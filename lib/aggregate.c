@@ -24,14 +24,8 @@ Aggregate* aggregate_new(enum aggregate_function agg_type)
 	Aggregate* new_agg = NULL;
 	malloc_(new_agg, sizeof(*new_agg));
 
-	if (aggregate_construct(new_agg, agg_type) == NULL) {
-		free_(new_agg);
-		return NULL;
-	}
-	return new_agg;
+	return aggregate_construct(new_agg, agg_type);
 }
-
-int _resolve(Aggregate* agg);
 
 Aggregate* aggregate_construct(Aggregate* agg, enum aggregate_function agg_type)
 {
@@ -45,9 +39,6 @@ Aggregate* aggregate_construct(Aggregate* agg, enum aggregate_function agg_type)
 
 	vec_construct_(&agg->results, struct aggresult);
 
-	if (_resolve(agg)) {
-		return NULL;
-	}
 	return agg;
 }
 
@@ -79,7 +70,7 @@ void aggregate_add_column(Aggregate* agg, Column* col)
 	vec_push_back(agg->args, &col);
 }
 
-int _resolve(Aggregate* agg)
+int aggregate_resolve(Aggregate* agg)
 {
 	switch (agg->agg_type) {
 	case AGG_COUNT:
