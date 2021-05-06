@@ -4,7 +4,7 @@
 
 #include "query.h"
 #include "column.h"
-#include "select.h"
+#include "fqlselect.h"
 #include "util/util.h"
 
 /** Utility functions **/
@@ -291,7 +291,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 		free_(token);
 		break;
 	case TOK_COLUMN_ALIAS:
-		select_apply_column_alias((struct select*)_query->op, token);
+		fqlselect_apply_column_alias((struct fqlselect*)_query->op, token);
 		free_(token);
 		break;
 	case TOK_TABLE_NAME:
@@ -379,7 +379,11 @@ void ListenerInterface::exitScalar_function_name(TSqlParser::Scalar_function_nam
 void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContext * ctx)
 {
 	_query->mode = MODE_SELECT;
-	_query->op = select_new();
+	int ret = query_init_op(_query);
+	if (ret) {
+		_return_code = ret;
+		_walker->set_walking(false);
+	}
 }
 
 void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx)

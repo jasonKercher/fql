@@ -8,7 +8,7 @@
 #include "function.h"
 #include "aggregate.h"
 #include "query.h"
-#include "select.h"
+#include "fqlselect.h"
 #include "table.h"
 #include "reader.h"
 #include "group.h"
@@ -16,74 +16,66 @@
 #include "util/util.h"
 #include "util/vec.h"
 
-Schema* schema_new()
+schema* schema_construct(schema* self)
 {
-	schema* new_schema = NULL;
-	malloc_(new_schema, sizeof(*new_schema));
-
-	return schema_construct(new_schema);
-}
-
-Schema* schema_construct(schema* schema)
-{
-	*schema = (schema) {
-		 vec_new_(column*)      /* columns */
+	*self = (schema) {
+		 new_t_(vec, column*)   /* columns */
 		,NULL                   /* col_map */
 		,""                     /* name */
 		,""                     /* delimiter */
 	};
 
-	return schema;
+	return self;
 }
 
-void schema_free(void* generic_schema)
+void schema_destroy(void* generic_schema)
 {
-	schema* schema = generic_schema;
+	schema* self = generic_schema;
 
-	column** it = vec_begin(schema->columns);
-	for (; it != vec_end(schema->columns); ++it) {
-		column_free(*it);
+	column** it = vec_begin(self->columns);
+	for (; it != vec_end(self->columns); ++it) {
+		delete_(column, *it);
 	}
 
-	vec_free(schema->columns);
-	if (schema->col_map != NULL) {
-		hashmap_free(schema->col_map);
+	delete_(vec, self->columns);
+	if (self->col_map != NULL) {
+		delete_(hashmap, self->col_map);
 	}
-	free_(schema);
 }
 
-void schema_add_column(schema* schema, column* col)
+void schema_add_column(schema* self, column* col)
 {
-	vec_push_back(schema->columns, &col);
+	vec_push_back(self->columns, &col);
 }
 
-void schema_apply_column_alias(schema* schema, const char* alias)
+void schema_apply_column_alias(schema* self, const char* alias)
 {
-	column** col = vec_back(schema->columns);
+	column** col = vec_back(self->columns);
 	string_strcpy(&(*col)->alias, alias);
 }
 
-void schema_finalize(schema* schema)
+void schema_finalize(schema* self)
 {
 	/* this is a separate step because between adding
 	 * a new column and _here_, we could have applied a
 	 * new alias to the column. we don't care about a
 	 * column name once it has an alias.
 	 */
-	schema->col_map = hashmap_new_(column*,
-	                               schema->columns->size * 2,
-	                               HASHMAP_PROP_NOCASE);
+	self->col_map = new_t_(hashmap,
+	                       column*,
+	                       self->columns->size * 2,
+	                       HASHMAP_PROP_NOCASE);
 
 	int i = 0;
-	column** col = vec_begin(schema->columns);
-	for (; i < schema->columns->size; ++i) {
+	column** col = vec_begin(self->columns);
+	for (; i < self->columns->size; ++i) {
 		col[i]->location = i;
-		hashmap_set(schema->col_map, col[i]->alias.data, &col[i]);
+		hashmap_set(self->col_map, col[i]->alias.data, &col[i]);
 	}
 
-	if (schema->delimiter[0] == '\0') {
-		schema->delimiter[0] = ',';
-		schema->delimiter[1] = '\0';
+	if (self->delimiter[0] == '\0') {
+		self->delimiter[0] = ',';
+		self->delimiter[1] = '\0';
 	}
 }
 
@@ -201,7 +193,7 @@ void schema_assign_header(table* table, record* rec)
 	for (; it != vec_end(rec->fields); ++it) {
 		string col_str;
 		string_construct_from_stringview(&col_str, it);
-		column* new_col = column_new(EXPR_COLUMN_NAME, col_str.data, "");
+		column* new_col = new_(column, EXPR_COLUMN_NAME, col_str.data, "");
 		schema_add_column(table->schema, new_col);
 
 		new_col->location = i++;
@@ -217,23 +209,23 @@ void schema_assign_header(table* table, record* rec)
 int schema_resolve_source(struct fql_handle* fql, table* table)
 {
 	if (!vec_empty(table->schema->columns)) {
-		return FQL_GOOD;  /* schema already set */
+		return FQL_GOOD;  /* self already set */
 	}
 
 	if (table->schema->name[0]) {
-		fputs("not loading schema by name yet\n", stderr);
-		return FQL_FAIL;  /* TODO: load schema by name */
+		fputs("not loading self by name yet\n", stderr);
+		return FQL_FAIL;  /* TODO: load self by name */
 	}
 
 	if (table->source_type == SOURCE_SUBQUERY) {
 		schema_resolve_query(fql, table->subquery);
-		select* select = table->subquery->op;
+		fqlselect* select = table->subquery->op;
 		table->schema = select->schema;
 		table->reader->type = READ_SUBQUERY;
 	} else {
 
 		/* if we've made it this far, we want to try
-		 * and determine schema by reading the top
+		 * and determine self by reading the top
 		 * row of the file and assume a delimited
 		 * list of field names.
 		 */
@@ -241,7 +233,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table)
 			return FQL_FAIL;
 		}
 
-		/* retrieve schema using libcsv */
+		/* retrieve self using libcsv */
 		if (table->join_type == JOIN_FROM) {
 			table->reader->type = READ_LIBCSV;
 		} else {
@@ -250,7 +242,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table)
 	}
 	reader_assign(table->reader, table);
 
-	/* skip here if we *now* know schema */
+	/* skip here if we *now* know self */
 	if (!vec_empty(table->schema->columns)) {
 		return FQL_GOOD;
 	}
@@ -289,7 +281,7 @@ int _evaluate_if_const(column* col)
 		return FQL_FAIL;
 	}
 
-	function_free(func);
+	delete_(function, func);
 	col->expr = EXPR_CONST;
 	col->field = new_field;
 
@@ -332,12 +324,16 @@ int schema_assign_columns_limited(vec* columns, vec* sources, int limit)
 		}
 
 		if (matches > 1) {
-			fprintf(stderr, "%s: ambiguous column\n", (*it)->name.data);
+			fprintf(stderr, 
+			        "%s: ambiguous column\n", 
+				(char*)(*it)->name.data);
 			return FQL_FAIL;
 		}
 
 		if (matches == 0) {
-			fprintf(stderr, "%s: cannot find column\n", (*it)->name.data);
+			fprintf(stderr,
+			        "%s: cannot find column\n", 
+				(char*)(*it)->name.data);
 			return FQL_FAIL;
 		}
 	}
@@ -368,7 +364,7 @@ int _asterisk_resolve(vec* columns, vec* sources)
 			if (string_empty(&(*col)->table_name) ||
 			    istring_eq((*col)->table_name.data, search_table->alias.data)) {
 				if (matches > 0) {
-					column* new_col = column_new(EXPR_ASTERISK, NULL, "");
+					column* new_col = new_(column, EXPR_ASTERISK, NULL, "");
 					new_col->src_idx = j;
 					vec_insert(columns, ++i, &new_col);
 					col = vec_at(columns, col_idx);
@@ -381,7 +377,9 @@ int _asterisk_resolve(vec* columns, vec* sources)
 
 
 		if (matches == 0) {
-			fprintf(stderr, "could not locate table `%s'\n", (*col)->table_name.data);
+			fprintf(stderr,
+			        "could not locate table `%s'\n",
+			        (char*)(*col)->table_name.data);
 			return FQL_FAIL;
 		}
 	}
@@ -437,7 +435,7 @@ void _resolve_join_conditions(table* right_table, int right_idx)
 		if (side0 != side1) {
 			if (!logic_can_be_false(right_table->condition, *it)) {
 				right_table->condition->join_logic = *it;
-				struct hashjoin* hj = hashjoin_new();
+				hashjoin* hj = new_(hashjoin);
 				if (side0 == SIDE_RIGHT) {
 					hj->right_col = (*it)->col[0];
 					hj->left_col = (*it)->col[1];
@@ -594,10 +592,11 @@ int _group_validation(struct fql_handle* fql, query* query)
 		return FQL_FAIL;
 	}
 
-	compositemap* expr_map = compositemap_new_(column*,
-	                                          group_cols->size * 2,
-	                                          HASHMAP_PROP_NOCASE |
-	                                          HASHMAP_PROP_RTRIM);
+	compositemap* expr_map = new_t_(compositemap,
+			                column*,
+	                                group_cols->size * 2,
+	                                HASHMAP_PROP_NOCASE |
+	                                HASHMAP_PROP_RTRIM);
 	query->groupby->expr_map = expr_map;
 	vec key;
 	vec_construct_(&key, stringview);
@@ -703,5 +702,3 @@ int schema_resolve(struct fql_handle* fql)
 
 	return FQL_GOOD;
 }
-
-

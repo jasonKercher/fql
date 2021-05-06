@@ -15,9 +15,8 @@ struct dnode {
 };
 typedef struct dnode dnode;
 
-//struct dnode* dnode_new(void*);
 struct dnode* dnode_construct(struct dnode*, void*);
-void* dnode_free(struct dnode*);
+void dnode_destroy(struct dnode*);
 
 struct dgraph {
 	struct vec* nodes;
@@ -29,10 +28,10 @@ struct dgraph {
 };
 typedef struct dgraph dgraph;
 
-//struct dgraph* dgraph_new();
 struct dgraph* dgraph_construct(struct dgraph*);
 void dgraph_shallow_free(struct dgraph*);
-void dgraph_free(struct dgraph*);
+void dgraph_shallow_destroy(struct dgraph*);
+void dgraph_destroy(struct dgraph*);
 
 struct dnode* dgraph_add_node(struct dgraph*, struct dnode*);
 struct dnode* dgraph_add_data(struct dgraph*, void*);

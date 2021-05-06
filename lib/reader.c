@@ -6,24 +6,13 @@
 #include "query.h"
 #include "process.h"
 #include "table.h"
-#include "select.h"
+#include "fqlselect.h"
 #include "util/stringview.h"
 #include "util/util.h"
 
-
-
-
-Reader* reader_new()
+reader* reader_construct(reader* self)
 {
-	reader* new_reader = NULL;
-	malloc_(new_reader, sizeof(*new_reader));
-
-	return reader_construct(new_reader);
-}
-
-Reader* reader_construct(reader* reader)
-{
-	*reader = (reader) {
+	*self = (reader) {
 		 READ_UNDEFINED /* type */
 		,NULL           /* reader_data */
 		,NULL		/* subquery_recs */
@@ -35,55 +24,54 @@ Reader* reader_construct(reader* reader)
 		,false          /* eof */
 	};
 
-	string_construct(&reader->file_name);
+	string_construct(&self->file_name);
 
-	return reader;
+	return self;
 }
 
-void reader_free(reader* reader)
+void reader_destroy(reader* self)
 {
-	if (reader == NULL) {
-		return;
+	//if (self == NULL) {
+	//	return;
+	//}
+	string_destroy(&self->file_name);
+	if (self->free__) {
+		self->free__(self->reader_data);
 	}
-	string_destroy(&reader->file_name);
-	if (reader->free__) {
-		reader->free__(reader->reader_data);
-	}
-	free_(reader);
 }
 
-void reader_assign(reader* reader, table* table)
+void reader_assign(reader* self, table* table)
 {
 	int ret = 0;
-	switch (reader->type) {
+	switch (self->type) {
 	case READ_LIBCSV:
 	{
 		struct csv_reader* csv = csv_reader_new();
-		reader->reader_data = csv;
-		reader->free__ = &libcsv_reader_free;
-		reader->get_record__ = &libcsv_get_record;
-		reader->reset__ = &libcsv_reset;
-		ret = csv_reader_open(csv, reader->file_name.data);
+		self->reader_data = csv;
+		self->free__ = &libcsv_reader_free;
+		self->get_record__ = &libcsv_get_record;
+		self->reset__ = &libcsv_reset;
+		ret = csv_reader_open(csv, self->file_name.data);
 		break;
 	}
 	case READ_MMAPCSV:
 	{
-		struct mmapcsv* csv = mmapcsv_new(PROCESS_BUFFER_SIZE);
-		reader->reader_data = csv;
-		reader->free__ = &mmapcsv_free;
-		reader->get_record__ = &mmapcsv_get_record;
-		reader->reset__ = &mmapcsv_reset;
-		ret = mmapcsv_open(csv, reader->file_name.data);
+		struct mmapcsv* csv = new_(mmapcsv, PROCESS_BUFFER_SIZE);
+		self->reader_data = csv;
+		self->free__ = &mmapcsv_free;
+		self->get_record__ = &mmapcsv_get_record;
+		self->reset__ = &mmapcsv_reset;
+		ret = mmapcsv_open(csv, self->file_name.data);
 		break;
 	}
 	case READ_SUBQUERY:
-		//reader->free__ = &query_free;
-		reader->get_record__ = &select_subquery_record;
-		reader->reset__ = &select_subquery_reset;
-		reader->reader_data = table->schema;
+		//self->free__ = &query_free;
+		self->get_record__ = &fqlselect_subquery_record;
+		self->reset__ = &fqlselect_subquery_reset;
+		self->reader_data = table->schema;
 		break;
 	default:
-		fprintf(stderr, "%d: unknown read_type\n", reader->type);
+		fprintf(stderr, "%d: unknown read_type\n", self->type);
 	}
 
 	if (ret == CSV_FAIL) {

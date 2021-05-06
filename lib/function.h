@@ -22,14 +22,13 @@ struct function {
 };
 typedef struct function function;
 
-struct function* function_new(enum scalar_function, enum field_type*, int char_as_byte);
-int function_op_resolve(function* func, enum field_type*);
 struct function* function_construct(struct function*, enum scalar_function, enum field_type*, int);
-void function_free(struct function*);
+void function_destroy(struct function*);
 
 const char* function_get_name(struct function*);
 int function_validate(struct function*);
 void function_add_column(struct function* func, void* col);
+int function_op_resolve(function* func, enum field_type*);
 
 /* scalar functions list */
 int fql_left(struct function*, union field* ret, struct vec* rec);

@@ -5,44 +5,35 @@
 #include "util/util.h"
 #include <string.h>
 
-Logic* logic_new()
+logic* logic_construct(logic* self)
 {
-	logic* new_logic = NULL;
-	malloc_(new_logic, sizeof(*new_logic));
-
-	return logic_construct(new_logic);
-}
-
-Logic* logic_construct(logic* logic)
-{
-	*logic = (logic) {
+	*self = (logic) {
 		 {NULL, NULL}    /* col */
 		,NULL            /* proc */
 		,FIELD_UNDEFINED /* data_type */
 		,COMP_NOT_SET    /* comp_type */
 	};
 
-	return logic;
+	return self;
 }
 
-void logic_free(logic* logic)
+void logic_destroy(logic* self)
 {
-	if (logic == NULL) {
+	if (self == NULL) {
 		return;
 	}
-	column_free(logic->col[0]);
-	column_free(logic->col[1]);
-	free_(logic);
+	delete_(column, self->col[0]);
+	delete_(column, self->col[1]);
 }
 
-void logic_assign_process(logic* logic, process* proc)
+void logic_assign_process(logic* self, process* proc)
 {
-	logic->data_type = field_determine_type(logic->col[0]->field_type,
-					        logic->col[1]->field_type);
-	logic->logic__ = logic_matrix[logic->comp_type][logic->data_type];
+	self->data_type = field_determine_type(self->col[0]->field_type,
+					        self->col[1]->field_type);
+	self->logic__ = logic_matrix[self->comp_type][self->data_type];
 
-	column_cat_description(logic->col[0], proc->action_msg);
-	switch (logic->comp_type) {
+	column_cat_description(self->col[0], proc->action_msg);
+	switch (self->comp_type) {
 	case COMP_EQ:
 		string_strcat(proc->action_msg, " = ");
 		break;
@@ -79,51 +70,43 @@ void logic_assign_process(logic* logic, process* proc)
 	default:
 		break;
 	}
-	column_cat_description(logic->col[1], proc->action_msg);
+	column_cat_description(self->col[1], proc->action_msg);
 }
 
-void logic_add_column(logic* logic, struct column* col)
+void logic_add_column(logic* self, struct column* col)
 {
-	if (logic->col[0] == NULL) {
-		logic->col[0] = col;
+	if (self->col[0] == NULL) {
+		self->col[0] = col;
 		return;
 	}
-	logic->col[1] = col;
+	self->col[1] = col;
 }
 
-void logic_set_comparison(logic* logic, const char* op)
+void logic_set_comparison(logic* self, const char* op)
 {
 	if(string_eq(op, "="))
-		logic->comp_type = COMP_EQ;
+		self->comp_type = COMP_EQ;
 	else if(string_eq(op, "<>") || string_eq(op, "!="))
-		logic->comp_type = COMP_NE;
+		self->comp_type = COMP_NE;
 	else if(string_eq(op, ">"))
-		logic->comp_type = COMP_GT;
+		self->comp_type = COMP_GT;
 	else if(string_eq(op, ">="))
-		logic->comp_type = COMP_GE;
+		self->comp_type = COMP_GE;
 	else if(string_eq(op, "<"))
-		logic->comp_type = COMP_LT;
+		self->comp_type = COMP_LT;
 	else if(string_eq(op, "<="))
-		logic->comp_type = COMP_LE;
+		self->comp_type = COMP_LE;
 	else if(istring_eq(op, "LIKE"))
-		logic->comp_type = COMP_LIKE;
+		self->comp_type = COMP_LIKE;
 	else if(istring_eq(op, "NOT_LIKE"))
-		logic->comp_type = COMP_NOT_LIKE;
+		self->comp_type = COMP_NOT_LIKE;
 	else if(istring_eq(op, "NULL"))
-		logic->comp_type = COMP_NULL;
+		self->comp_type = COMP_NULL;
 	else if(istring_eq(op, "NOT_NULL"))
-		logic->comp_type = COMP_NOT_NULL;
+		self->comp_type = COMP_NOT_NULL;
 }
 
-Logicgroup* logicgroup_new(enum logicgroup_type type)
-{
-	logicgroup* new_lg = NULL;
-	malloc_(new_lg, sizeof(*new_lg));
-
-	return logicgroup_construct(new_lg, type);
-}
-
-Logicgroup* logicgroup_construct(logicgroup* lg, enum logicgroup_type type)
+logicgroup* logicgroup_construct(logicgroup* lg, enum logicgroup_type type)
 {
 	*lg = (logicgroup) {
 		 type   /* type */
@@ -138,22 +121,18 @@ Logicgroup* logicgroup_construct(logicgroup* lg, enum logicgroup_type type)
 	return lg;
 }
 
-void logicgroup_free(logicgroup* lg)
+void logicgroup_destroy(logicgroup* lg)
 {
-	if (lg == NULL) {
-		return;
-	}
 	unsigned i = 0;
 	for (; i < lg->items.size; ++i) {
 		logicgroup** lg_item = vec_at(&lg->items, i);
-		logic_free((*lg_item)->condition);
-		logicgroup_free(*lg_item);
+		delete_(logic, (*lg_item)->condition);
+		delete_(logicgroup, *lg_item);
 	}
 	if (lg->joinable) {
-		vec_free(lg->joinable);
+		delete_(vec, lg->joinable);
 	}
 	vec_destroy(&lg->items);
-	free_(lg);
 }
 
 void _get_condition_count(logicgroup* lg, unsigned* count)
@@ -175,8 +154,8 @@ unsigned logicgroup_get_condition_count(logicgroup* lg)
 }
 
 /* essentially the same as logicgroup_eval.
- * every logic is true except the one provided.
- * the point is to determine if that logic MUST be
+ * every self is true except the one provided.
+ * the point is to determine if that self MUST be
  * true for the group to evaluate to true.
  */
 int logic_can_be_false(logicgroup* lg, logic* check_logic)
@@ -202,8 +181,8 @@ int logic_can_be_false(logicgroup* lg, logic* check_logic)
 	return ret;
 }
 
-/* evaluate the logic statement
- * the skip argument is for logic that can
+/* evaluate the self statement
+ * the skip argument is for self that can
  * be assumed true because it was evaluated
  * prior to calling this function.
  */

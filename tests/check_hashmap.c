@@ -1,10 +1,11 @@
 #include "check_common.h"
 #include "util/stringview.h"
 #include "util/hashmap.h"
+#include "util/util.h"
 
 //typedef hashmap hashmap;
 
-Hashmap* m = NULL;
+hashmap* m = NULL;
 
 int one = 1;
 int two = 2;
@@ -56,7 +57,7 @@ void _build_composite(stringview* key, const char* c0, const char* c1, const cha
 
 void compositemap_sets()
 {
-	vec* key = vec_new_(stringview);
+	vec* key = new_t_(vec, stringview);
 	vec_resize(key, 3);
 	stringview* it = vec_begin(key);
 
@@ -89,7 +90,7 @@ void compositemap_sets()
 
 START_TEST(test_hashmap_basic)
 {
-	m = hashmap_new_(int, 20, 0);
+	m = new_t_(hashmap, int, 20, 0);
 	ck_assert_ptr_nonnull(m);
 
 	sets();
@@ -112,13 +113,13 @@ START_TEST(test_hashmap_basic)
 	void* no_match = hashmap_get(m, "no");
 	ck_assert_ptr_null(no_match);
 
-	hashmap_free(m);
+	delete_(hashmap, m);
 }
 END_TEST
 
 START_TEST(test_hashmap_nocase)
 {
-	m = hashmap_new_(int, 20, HASHMAP_PROP_NOCASE);
+	m = new_t_(hashmap, int, 20, HASHMAP_PROP_NOCASE);
 	ck_assert_ptr_nonnull(m);
 
 	sets();
@@ -141,13 +142,13 @@ START_TEST(test_hashmap_nocase)
 	void* no_match = hashmap_get(m, "no");
 	ck_assert_ptr_null(no_match);
 
-	hashmap_free(m);
+	delete_(hashmap, m);
 }
 END_TEST
 
 START_TEST(test_hashmap_rtrim)
 {
-	m = hashmap_new_(int, 20, HASHMAP_PROP_RTRIM);
+	m = new_t_(hashmap, int, 20, HASHMAP_PROP_RTRIM);
 	ck_assert_ptr_nonnull(m);
 
 	sets();
@@ -170,13 +171,13 @@ START_TEST(test_hashmap_rtrim)
 	void* no_match = hashmap_get(m, "no");
 	ck_assert_ptr_null(no_match);
 
-	hashmap_free(m);
+	delete_(hashmap, m);
 }
 END_TEST
 
 START_TEST(test_hashmap_nocase_rtrim)
 {
-	m = hashmap_new_(int, 20, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
+	m = new_t_(hashmap, int, 20, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 	ck_assert_ptr_nonnull(m);
 
 	sets();
@@ -199,13 +200,13 @@ START_TEST(test_hashmap_nocase_rtrim)
 	void* no_match = hashmap_get(m, "no");
 	ck_assert_ptr_null(no_match);
 
-	hashmap_free(m);
+	delete_(hashmap, m);
 }
 END_TEST
 
 START_TEST(test_multimap_basic)
 {
-	m = multimap_new_(int, test, 0);
+	m = new_t_(multimap, int, test, 0);
 	ck_assert_ptr_nonnull(m);
 
 	multimap_sets();
@@ -240,7 +241,7 @@ START_TEST(test_multimap_basic)
 	val = *(int*) vec_at(vec, 0);
 	ck_assert_int_eq(val, test);
 
-	vec = multimap_get(m, "test");
+	vec = multimap_get(m, "Test");
 	ck_assert_int_eq(vec->size, 1);
 	val = *(int*) vec_at(vec, 0);
 	ck_assert_int_eq(val, Test);
@@ -253,19 +254,19 @@ START_TEST(test_multimap_basic)
 	void* no_match = multimap_get(m, "no");
 	ck_assert_ptr_null(no_match);
 
-	multimap_free(m);
+	delete_(multimap, m);
 }
 END_TEST
 
 START_TEST(test_multimap_nocase)
 {
-	m = multimap_new_(int, test, HASHMAP_PROP_NOCASE);
+	m = new_t_(multimap, int, test, HASHMAP_PROP_NOCASE);
 	ck_assert_ptr_nonnull(m);
 
 	multimap_sets();
 
 	int val = 0;
-	Vec* vec = NULL;
+	vec* vec = NULL;
 
 	vec = multimap_get(m, "one");
 	ck_assert_int_eq(vec->size, 2);
@@ -311,19 +312,19 @@ START_TEST(test_multimap_nocase)
 	void* no_match = multimap_get(m, "no");
 	ck_assert_ptr_null(no_match);
 
-	multimap_free(m);
+	delete_(multimap, m);
 }
 END_TEST
 
 START_TEST(test_multimap_rtrim)
 {
-	m = multimap_new_(int, test, HASHMAP_PROP_RTRIM);
+	m = new_t_(multimap, int, test, HASHMAP_PROP_RTRIM);
 	ck_assert_ptr_nonnull(m);
 
 	multimap_sets();
 
 	int val = 0;
-	Vec* vec = NULL;
+	vec* vec = NULL;
 
 	vec = multimap_get(m, "one");
 	ck_assert_int_eq(vec->size, 2);
@@ -369,13 +370,13 @@ START_TEST(test_multimap_rtrim)
 	void* no_match = multimap_get(m, "no");
 	ck_assert_ptr_null(no_match);
 
-	multimap_free(m);
+	delete_(multimap, m);
 }
 END_TEST
 
 START_TEST(test_multimap_nocase_rtrim)
 {
-	m = multimap_new_(int, test, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
+	m = new_t_(multimap, int, test, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 	ck_assert_ptr_nonnull(m);
 
 	multimap_sets();
@@ -435,20 +436,20 @@ START_TEST(test_multimap_nocase_rtrim)
 	void* no_match = multimap_get(m, "no");
 	ck_assert_ptr_null(no_match);
 
-	multimap_free(m);
+	delete_(multimap, m);
 }
 END_TEST
 
 START_TEST(test_compositemap_basic)
 {
-	m = compositemap_new_(int, test, 0);
+	m = new_t_(compositemap, int, test, 0);
 	ck_assert_ptr_nonnull(m);
 
 	int val = 0;
 
 	compositemap_sets();
 
-	vec* key = vec_new_(stringview);
+	vec* key = new_t_(vec, stringview);
 	vec_resize(key, 3);
 	stringview* it = vec_begin(key);
 
@@ -485,23 +486,23 @@ START_TEST(test_compositemap_basic)
 	val = *(int*)compositemap_get(m, key);
 	ck_assert_int_eq(val, varible_size_key);
 
-	vec_free(key);
+	delete_(vec, key);
 
-	compositemap_free(m);
+	delete_(compositemap, m);
 
 }
 END_TEST
 
 START_TEST(test_compositemap_nocase)
 {
-	m = compositemap_new_(int, test, HASHMAP_PROP_NOCASE);
+	m = new_t_(compositemap, int, test, HASHMAP_PROP_NOCASE);
 	ck_assert_ptr_nonnull(m);
 
 	int val = 0;
 
 	compositemap_sets();
 
-	vec* key = vec_new_(stringview);
+	vec* key = new_t_(vec, stringview);
 	vec_resize(key, 3);
 	stringview* it = vec_begin(key);
 
@@ -538,22 +539,22 @@ START_TEST(test_compositemap_nocase)
 	val = *(int*)compositemap_get(m, key);
 	ck_assert_int_eq(val, varible_size_key);
 
-	vec_free(key);
+	delete_(vec, key);
 
-	compositemap_free(m);
+	delete_(compositemap, m);
 }
 END_TEST
 
 START_TEST(test_compositemap_rtrim)
 {
-	m = compositemap_new_(int, test, HASHMAP_PROP_RTRIM);
+	m = new_t_(compositemap, int, test, HASHMAP_PROP_RTRIM);
 	ck_assert_ptr_nonnull(m);
 
 	int val = 0;
 
 	compositemap_sets();
 
-	vec* key = vec_new_(stringview);
+	vec* key = new_t_(vec, stringview);
 	vec_resize(key, 3);
 	stringview* it = vec_begin(key);
 
@@ -590,22 +591,22 @@ START_TEST(test_compositemap_rtrim)
 	val = *(int*)compositemap_get(m, key);
 	ck_assert_int_eq(val, varible_size_key);
 
-	vec_free(key);
+	delete_(vec, key);
 
-	compositemap_free(m);
+	delete_(compositemap, m);
 }
 END_TEST
 
 START_TEST(test_compositemap_nocase_rtrim)
 {
-	m = compositemap_new_(int, test, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
+	m = new_t_(compositemap, int, test, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 	ck_assert_ptr_nonnull(m);
 
 	int val = 0;
 
 	compositemap_sets();
 
-	vec* key = vec_new_(stringview);
+	vec* key = new_t_(vec, stringview);
 	vec_resize(key, 3);
 	stringview* it = vec_begin(key);
 
@@ -642,9 +643,9 @@ START_TEST(test_compositemap_nocase_rtrim)
 	val = *(int*)compositemap_get(m, key);
 	ck_assert_int_eq(val, varible_size_key);
 
-	vec_free(key);
+	delete_(vec, key);
 
-	compositemap_free(m);
+	delete_(compositemap, m);
 }
 END_TEST
 

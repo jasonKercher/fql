@@ -40,13 +40,9 @@ struct hashmap {
 };
 typedef struct hashmap hashmap;
 
-//struct hashmap* hashmap_new(const unsigned elem_size, size_t limit, const unsigned props);
-//#define hashmap_new_(T_, limit_, props_) hashmap_new(sizeof(T_), limit_, props_)
-struct hashmap* hashmap_construct_s(struct hashmap*, const unsigned elem_size, size_t limit, const unsigned props);
-#define hashmap_construct(h_, T_, limit_, props_) hashmap_construct(h_, sizeof(T_), limit_, props_)
-void hashmap_free(struct hashmap*);
+struct hashmap* hashmap_construct(struct hashmap*, const unsigned elem_size, size_t limit, const unsigned props);
+#define hashmap_construct_(h_, T_, limit_, props_) hashmap_construct(h_, sizeof(T_), limit_, props_)
 void hashmap_destroy(struct hashmap*);
-
 void hashmap_nset(struct hashmap*, const char* key, void*, unsigned);
 #define hashmap_set(m_, key_, data_) hashmap_nset(m_, key_, data_, strlen(key_))
 void* hashmap_nget(struct hashmap*, const char* key, unsigned);
@@ -54,11 +50,8 @@ void* hashmap_nget(struct hashmap*, const char* key, unsigned);
 
 typedef struct hashmap multimap;
 
-//multimap* multimap_new(const unsigned elem_size, size_t limit, const unsigned props);
-//#define multimap_new_(T_, limit_, props_) multimap_new(sizeof(T_), limit_, props_)
-multimap* multimap_construct_s(multimap*, const unsigned elem_size, size_t limit, const unsigned props);
-#define multimap_construct(h_, T_, limit_, props_) multimap_construct(h_, sizeof(T_), limit_, props_)
-void multimap_free(multimap*);
+multimap* multimap_construct(multimap*, const unsigned elem_size, size_t limit, const unsigned props);
+#define multimap_construct_(h_, T_, limit_, props_) multimap_construct(h_, sizeof(T_), limit_, props_)
 void multimap_destroy(multimap*);
 void multimap_nset(multimap*, const char* key, void*, unsigned);
 #define multimap_set(m_, key_, data_) multimap_nset(m_, key_, data_, strlen(key_))
@@ -67,11 +60,8 @@ void multimap_nset(multimap*, const char* key, void*, unsigned);
 
 typedef struct hashmap compositemap;
 
-//compositemap* compositemap_new(const unsigned elem_size, size_t limit, const unsigned props);
-//#define compositemap_new_(T_, limit_, props_) compositemap_new(sizeof(T_), limit_, props_)
-compositemap* compositemap_construct_s(compositemap*, const unsigned elem_size, size_t limit, const unsigned props);
-#define compositemap_construct(h_, T_, limit_, props_) compositemap_construct(h_, sizeof(T_), limit_, props_)
-void compositemap_free(compositemap*);
+compositemap* compositemap_construct(compositemap*, const unsigned elem_size, size_t limit, const unsigned props);
+#define compositemap_construct_(h_, T_, limit_, props_) compositemap_construct(h_, sizeof(T_), limit_, props_)
 void compositemap_destroy(compositemap*);
 void compositemap_set(compositemap*, const struct vec* key, void*);
 void* compositemap_get(compositemap*, const struct vec* key);

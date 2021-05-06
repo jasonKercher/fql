@@ -3,15 +3,7 @@
 #include <limits.h>
 #include "util.h"
 
-//vec* vec_new(size_t elem_size)
-//{
-//	vec* new_vec = NULL;
-//	malloc_(new_vec, sizeof(*new_vec));
-//
-//	return vec_construct(new_vec, elem_size);
-//}
-
-vec* vec_construct_s(vec* v, size_t elem_size)
+vec* vec_construct(vec* v, size_t elem_size)
 {
 	*v = (vec) {
 		 NULL           /* data */
@@ -31,12 +23,6 @@ vec* vec_construct_s(vec* v, size_t elem_size)
 void vec_destroy(vec* v)
 {
 	free_(v->data);
-}
-
-void vec_free(vec* v)
-{
-	vec_destroy(v);
-	free_(v);
 }
 
 _Bool vec_empty(const vec* v)

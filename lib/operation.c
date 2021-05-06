@@ -1,16 +1,16 @@
 #include "operation.h"
 
 #include "fql.h"
-#include "select.h"
+#include "fqlselect.h"
 #include "util/util.h"
 
-Vec* op_get_validation_list(void* op)
+vec* op_get_validation_list(void* op)
 {
 	enum op* type = op;
 
 	switch (*type) {
 	case OP_SELECT:
-		return ((select*) op)->schema->columns;
+		return ((fqlselect*) op)->schema->columns;
 	default:
 		return NULL;
 	}
@@ -26,7 +26,7 @@ void op_preop(struct fql_handle* fql)
 	switch (*type) {
 	case OP_SELECT:
 		if (fql->props.print_header) {
-			select_preop(query->op, query);
+			fqlselect_preop(query->op, query);
 		}
 		break;
 	default:
@@ -34,26 +34,22 @@ void op_preop(struct fql_handle* fql)
 	}
 }
 
-_Bool op_has_delim(void* op)
+_Bool op_has_delim(enum op* op)
 {
-	enum op* type = op;
-
-	switch (*type) {
+	switch (*op) {
 	case OP_SELECT:
-		return select_has_delim(op);
+		return fqlselect_has_delim((fqlselect*)op);
 		break;
 	default:
 		return true;
 	}
 }
 
-void op_set_delim(void* op, const char* delim)
+void op_set_delim(enum op* op, const char* delim)
 {
-	enum op* type = op;
-
-	switch (*type) {
+	switch (*op) {
 	case OP_SELECT:
-		select_set_delim(op, delim);
+		fqlselect_set_delim((fqlselect*)op, delim);
 		break;
 	default:
 		;
@@ -66,7 +62,7 @@ void op_finalize(query* query)
 
 	switch (*type) {
 	case OP_SELECT:
-		select_finalize(query->op, query);
+		fqlselect_finalize(query->op, query);
 		break;
 	default:
 		;
@@ -78,20 +74,18 @@ void op_apply_process(query* query, plan* plan)
 
 	switch (*type) {
 	case OP_SELECT:
-		select_apply_process(query, plan);
+		fqlselect_apply_process(query, plan);
 		break;
 	default:
 		;
 	}
 }
 
-void op_free(void* op)
+void op_destroy(enum op* op)
 {
-	enum op* type = op;
-
-	switch (*type) {
+	switch (*op) {
 	case OP_SELECT:
-		select_free(op);
+		fqlselect_destroy((fqlselect*)op);
 		break;
 	default:
 		;

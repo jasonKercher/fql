@@ -1,54 +1,45 @@
-#include "select.h"
+#include "fqlselect.h"
 #include "fql.h"
 #include "reader.h"
 #include "column.h"
 #include "schema.h"
 #include "util/util.h"
 
-Select* select_new()
+fqlselect* fqlselect_construct(fqlselect* self)
 {
-	select* new_select = NULL;
-	malloc_(new_select, sizeof(*new_select));
-
-	return select_construct(new_select);
-}
-
-Select* select_construct(select* select)
-{
-	*select = (select) {
+	*self = (fqlselect) {
 		 OP_SELECT              /* oper_type */
 		,NULL                   /* api */
-		,schema_new()           /* schema */
-		,writer_new()           /* writer */
-		,&select_record         /* select_record__ */
+		,new_(schema)           /* schema */
+		,new_(writer)           /* writer */
+		,&fqlselect_record         /* fqlselect_record__ */
 	};
 
-	return select;
+	return self;
 }
 
-void select_free(select* select)
+void fqlselect_destroy(fqlselect* self)
 {
-	if (select == NULL) {
+	if (self == NULL) {
 		return;
 	}
-	writer_free(select->writer);
-	schema_free(select->schema);
-	free_(select);
+	delete_(writer, self->writer);
+	delete_(schema, self->schema);
 }
 
-_Bool select_has_delim(select* select)
+_Bool fqlselect_has_delim(fqlselect* self)
 {
-	return select->schema->delimiter[0];
+	return self->schema->delimiter[0];
 }
 
-void select_set_delim(select* select, const char* delim)
+void fqlselect_set_delim(fqlselect* self, const char* delim)
 {
-	strncpy_(select->schema->delimiter, delim, DELIM_LEN_MAX);
+	strncpy_(self->schema->delimiter, delim, DELIM_LEN_MAX);
 }
 
-void select_add_column(select* select, column* col)
+void fqlselect_add_column(fqlselect* self, column* col)
 {
-	schema_add_column(select->schema, col);
+	schema_add_column(self->schema, col);
 }
 
 void _resize_raw_rec(vec* raw_rec, unsigned size)
@@ -71,7 +62,7 @@ int _expand_asterisk(vec* col_vec, table* table, unsigned src_idx, unsigned* col
 	column** it = vec_begin(src_col_vec);
 	for (; it != vec_end(src_col_vec); ++it) {
 		//string* col_name = string_from_string(&(*it)->alias);
-		column* new_col = column_new(EXPR_COLUMN_NAME, (*it)->alias.data, "");
+		column* new_col = new_(column, EXPR_COLUMN_NAME, (*it)->alias.data, "");
 		new_col->data_source = *it;
 		new_col->src_idx = src_idx;
 		new_col->field_type = (*it)->field_type;
@@ -84,8 +75,8 @@ int _expand_asterisk(vec* col_vec, table* table, unsigned src_idx, unsigned* col
 
 void _expand_asterisks(query* query, _Bool force_expansion)
 {
-	select* select = query->op;
-	vec* col_vec = select->schema->columns;
+	fqlselect* self = query->op;
+	vec* col_vec = self->schema->columns;
 	unsigned i = 0;
 
 	for (; i < col_vec->size; ++i) {
@@ -99,7 +90,7 @@ void _expand_asterisks(query* query, _Bool force_expansion)
 		if (table->subquery == NULL  /* is not a subquery source */
 		    && !force_expansion
 		    && query->query_id == 0  /* is in main query */
-		    && string_eq(table->schema->delimiter, select->schema->delimiter)) {
+		    && string_eq(table->schema->delimiter, self->schema->delimiter)) {
 			continue;
 		}
 
@@ -107,34 +98,34 @@ void _expand_asterisks(query* query, _Bool force_expansion)
 		_expand_asterisk(col_vec, table, (*col)->src_idx, &i);
 
 		column** asterisk_col = vec_at(col_vec, asterisk_index);
-		column_free(*asterisk_col);
+		delete_(column, *asterisk_col);
 		vec_remove(col_vec, asterisk_index);
 		--i;
 	}
 
-	_resize_raw_rec(select->writer->raw_rec, col_vec->size);
+	_resize_raw_rec(self->writer->raw_rec, col_vec->size);
 }
 
-void select_connect_api(query* query, vec* api)
+void fqlselect_connect_api(query* query, vec* api)
 {
-	select* select = query->op;
-	select->select__ = &select_record_api;
+	fqlselect* self = query->op;
+	self->select__ = &fqlselect_record_api;
 	_expand_asterisks(query, true);
-	vec_resize(api, select->schema->columns->size);
-	select->api = api;
+	vec_resize(api, self->schema->columns->size);
+	self->api = api;
 }
 
-void select_apply_process(query* query, plan* plan)
+void fqlselect_apply_process(query* query, plan* plan)
 {
-	select* select = query->op;
+	fqlselect* self = query->op;
 	process* proc = plan->op_true->data;
 	proc->action__ = &fql_select;
-	proc->proc_data = select;
+	proc->proc_data = self;
 	string_strcpy(proc->action_msg, "SELECT ");
 
-	writer_set_delimiter(select->writer, select->schema->delimiter);
+	writer_set_delimiter(self->writer, self->schema->delimiter);
 
-	vec* col_vec = select->schema->columns;
+	vec* col_vec = self->schema->columns;
 	column** col = vec_begin(col_vec);
 	for (; col != vec_end(col_vec); ++col) {
 		if (col != vec_begin(col_vec)) {
@@ -147,31 +138,31 @@ void select_apply_process(query* query, plan* plan)
 	proc->is_passive = true;
 }
 
-void select_apply_column_alias(select* select, const char* alias)
+void fqlselect_apply_column_alias(fqlselect* self, const char* alias)
 {
-	schema_apply_column_alias(select->schema, alias);
+	schema_apply_column_alias(self->schema, alias);
 }
 
-void select_finalize(select* select, query* query)
+void fqlselect_finalize(fqlselect* self, query* query)
 {
 	_expand_asterisks(query, false);
-	schema_finalize(select->schema);
+	schema_finalize(self->schema);
 }
 
-void select_preop(select* select, query* query)
+void fqlselect_preop(fqlselect* self, query* query)
 {
 	vec header;
 	vec_construct_(&header, column*);
 
 	/* print header */
-	column** it = vec_begin(select->schema->columns);
-	for (; it != vec_end(select->schema->columns); ++it) {
+	column** it = vec_begin(self->schema->columns);
+	for (; it != vec_end(self->schema->columns); ++it) {
 		if ((*it)->expr == EXPR_ASTERISK) {
 			table* aster_src = vec_at(query->sources, (*it)->src_idx);
 			vec* aster_cols = aster_src->schema->columns;
 			column** it2 = vec_begin(aster_cols);
 			for (; it2 != vec_end(aster_cols); ++it2) {
-				column* field_col = column_new(EXPR_CONST, NULL, "");
+				column* field_col = new_(column, EXPR_CONST, NULL, "");
 				string* field_str = string_from_string(&(*it2)->alias);
 				field_col->field.s = field_str;
 				field_col->field_type = FIELD_STRING;
@@ -179,33 +170,33 @@ void select_preop(select* select, query* query)
 			}
 			continue;
 		}
-		column* field_col = column_new(EXPR_CONST, NULL, "");
+		column* field_col = new_(column, EXPR_CONST, NULL, "");
 		string* field_str = string_from_string(&(*it)->alias);
 		field_col->field.s = field_str;
 		field_col->field_type = FIELD_STRING;
 		vec_push_back(&header, &field_col);
 	}
 
-	writer* writer = select->writer;
+	writer* writer = self->writer;
 	writer->write_record__(writer->writer_data, &header, NULL);
 
 	it = vec_begin(&header);
 	for (; it != vec_end(&header); ++it) {
-		column_free(*it);
+		delete_(column, *it);
 	}
 	vec_destroy(&header);
 }
 
-int select_record_api(select* select, struct vec* recs)
+int fqlselect_record_api(fqlselect* self, struct vec* recs)
 {
-	writer* writer = select->writer;
+	writer* writer = self->writer;
 
-	vec* col_vec = select->schema->columns;
+	vec* col_vec = self->schema->columns;
 
 	column** cols = vec_begin(col_vec);
 	int i = 0;
 	for (; i < col_vec->size; ++i) {
-		struct fql_field* field = vec_at(select->api, i);
+		struct fql_field* field = vec_at(self->api, i);
 		switch (cols[i]->field_type) {
 		case FIELD_STRING:
 		{
@@ -242,10 +233,10 @@ int select_record_api(select* select, struct vec* recs)
 	return 1;
 }
 
-int select_record(select* select, vec* recs)
+int fqlselect_record(fqlselect* self, vec* recs)
 {
-	writer* writer = select->writer;
-	vec* col_vec = select->schema->columns;
+	writer* writer = self->writer;
+	vec* col_vec = self->schema->columns;
 
 	return writer->write_record__(writer->writer_data, col_vec, recs);
 }
@@ -253,7 +244,7 @@ int select_record(select* select, vec* recs)
 /* this becomes a big copy operation because
  * I want to recycle the subquery's record.
  */
-int select_subquery_record(reader* reader, record* rec)
+int fqlselect_subquery_record(reader* reader, record* rec)
 {
 	schema* sub_schema = reader->reader_data;
 	vec* sub_col_vec = sub_schema->columns;
@@ -276,7 +267,7 @@ int select_subquery_record(reader* reader, record* rec)
 }
 
 /* TODO */
-int select_subquery_reset(reader* reader)
+int fqlselect_subquery_reset(reader* reader)
 {
 	return FQL_FAIL;
 }

@@ -40,6 +40,7 @@ typedef int(*int_generic_data_fn)(void*);
 		perror("realloc");               \
 		exit(EXIT_FAILURE);              \
 	}                                        \
+	dest_ = new_dest_;                       \
 	new_dest_;                               \
 })
 
@@ -76,13 +77,28 @@ typedef int(*int_generic_data_fn)(void*);
 }
 
 
-#define VA_ARGS(...) , ##__VA_ARGS__
-#define new_(T_, ...) ({                             \
-	T_* alloc_ = malloc_(sizeof(T_));            \
-	T_##_construct(alloc_ VA_ARGS(__VA_ARGS__)); \
-	alloc_;                                      \
+#define VA_ARGS(...) ,##__VA_ARGS__
+#define new_(T_, ...) ({                     \
+	T_* alloc_ = malloc_(sizeof(T_));    \
+	T_##_construct(alloc_                \
+		      VA_ARGS(__VA_ARGS__)); \
+	alloc_;                              \
 })
-
+#define new_t_(T_, data_T_, ...) ({          \
+	T_* alloc_ = malloc_(sizeof(T_));    \
+	T_##_construct(alloc_                \
+		      ,sizeof(data_T_)       \
+	              VA_ARGS(__VA_ARGS__)); \
+	alloc_;                              \
+})
+#define delete_(T_, p_, ...) {                     \
+	if (p_ != NULL) {                          \
+		T_##_destroy(p_                    \
+			     VA_ARGS(__VA_ARGS__));\
+		free_(p_);                         \
+		p_ = NULL;                         \
+	}                                          \
+} 
 
 
 /**

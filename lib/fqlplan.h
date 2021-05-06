@@ -20,9 +20,7 @@ struct fql_plan {
 };
 typedef struct fql_plan plan;
 
-struct fql_plan* plan_new(struct query*);
 struct fql_plan* plan_construct(struct fql_plan*, struct query*);
-void plan_free(void*);
 void plan_destroy(void*);
 
 struct fql_plan* plan_build(struct query*, struct dnode* entry);

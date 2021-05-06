@@ -8,14 +8,6 @@
 #include "function.h"
 #include "util/util.h"
 
-column* column_new(enum expr_type expr, void* data, const char* table_name)
-{
-	column* new_column = NULL;
-	malloc_(new_column, sizeof(*new_column));
-
-	return column_construct(new_column, expr, data, table_name);
-}
-
 column* column_construct(column* col, enum expr_type expr, void* data, const char* table_name)
 {
 	*col = (column) {
@@ -58,16 +50,17 @@ column* column_construct(column* col, enum expr_type expr, void* data, const cha
 	return col;
 }
 
-void column_free(void* generic_col)
+void column_destroy(void* generic_col)
 {
 	column* col = generic_col;
 
 	switch(col->expr) {
 	case EXPR_FUNCTION:
-		function_free(col->field.fn);
+		delete_(function, col->field.fn);
 		break;
 	case EXPR_AGGREGATE:
-		aggregate_free(col->field.agg);
+		/* TODO - this will double delete ?? */
+		delete_(aggregate, col->field.agg);
 		break;
 	default:
 		;
@@ -77,7 +70,6 @@ void column_free(void* generic_col)
 	string_destroy(&col->alias);
 	string_destroy(&col->table_name);
 	string_destroy(&col->buf);
-	free_(col);
 }
 
 void column_cat_description(column* col, string* msg)
@@ -182,7 +174,7 @@ int column_get_int(long* ret, column* col, vec* recs)
 			*ret = 0;
 			return FQL_GOOD;
 		}
-		stringView* sv = vec_at((*rec)->fields, col->data_source->location);
+		stringview* sv = vec_at((*rec)->fields, col->data_source->location);
 		string_copy_from_stringview(&col->buf, sv);
 		if (str2long(ret, col->buf.data)) {
 			return FQL_FAIL;
@@ -232,7 +224,7 @@ int column_get_float(double* ret, column* col, vec* recs)
 			*ret = 0;
 			return FQL_GOOD;
 		}
-		stringView* sv = vec_at((*rec)->fields, col->data_source->location);
+		stringview* sv = vec_at((*rec)->fields, col->data_source->location);
 		string_copy_from_stringview(&col->buf, sv);
 		if (str2double(ret, col->buf.data)) {
 			return FQL_FAIL;
@@ -268,7 +260,7 @@ int column_get_float(double* ret, column* col, vec* recs)
 	return FQL_GOOD;
 }
 
-int column_get_stringview(stringView* ret, column* col, vec* recs)
+int column_get_stringview(stringview* ret, column* col, vec* recs)
 {
 	switch (col->expr) {
 	case EXPR_AGGREGATE:
@@ -281,7 +273,7 @@ int column_get_stringview(stringView* ret, column* col, vec* recs)
 			ret->len = 0;
 			return FQL_GOOD;
 		}
-		stringView* sv = vec_at((*rec)->fields, col->data_source->location);
+		stringview* sv = vec_at((*rec)->fields, col->data_source->location);
 		ret->data = sv->data;
 		ret->len = sv->len;
 		return FQL_GOOD;

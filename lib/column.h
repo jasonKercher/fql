@@ -37,9 +37,8 @@ struct column {
 };
 typedef struct column column;
 
-struct column* column_new(enum expr_type, void*, const char* table_id);
 struct column* column_construct(struct column*, enum expr_type, void*, const char*);
-void column_free(void*);
+void column_destroy(void*);
 
 void column_cat_description(struct column* col, string*);
 int column_try_assign_source(struct column*, struct table*, int);

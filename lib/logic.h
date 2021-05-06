@@ -36,10 +36,8 @@ struct logic {
 };
 typedef struct logic logic;
 
-struct logic* logic_new();
 struct logic* logic_construct(struct logic*);
 void logic_destroy(struct logic*);
-void logic_free(struct logic*);
 
 void logic_assign_process(struct logic*, struct process*);
 void logic_add_column(struct logic*, struct column*);
@@ -62,9 +60,8 @@ struct logicgroup {
 };
 typedef struct logicgroup logicgroup;
 
-struct logicgroup* logicgroup_new(enum logicgroup_type);
 struct logicgroup* logicgroup_construct(struct logicgroup*, enum logicgroup_type);
-void logicgroup_free(struct logicgroup*);
+void logicgroup_destroy(struct logicgroup*);
 
 unsigned logicgroup_get_condition_count(struct logicgroup* lg);
 int logic_can_be_false(struct logicgroup*, struct logic*);

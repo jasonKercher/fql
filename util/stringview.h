@@ -16,10 +16,7 @@ struct stringview {
 };
 typedef struct stringview stringview;
 
-//struct stringview* stringview_new(char*, unsigned);
-//#define stringview_new_(s_) { stringview_new(s_, strlen(s_)); }
-#define stringview_construct(s_) { stringview_new(s_, strlen(s_)); }
-struct stringview* stringview_construct_s(struct stringview*, char*, unsigned);
+struct stringview* stringview_construct(struct stringview*, char*, unsigned);
 struct stringview* stringview_construct_from_string(struct stringview*, string*);
 void stringview_set(struct stringview*, char*);
 void stringview_nset(struct stringview* sv, char* s, unsigned n);

@@ -16,15 +16,7 @@
 
 #define FIFO_SIZE 256
 
-Process* process_new(const char* action, plan* plan)
-{
-	process* new_proc = NULL;
-	malloc_(new_proc, sizeof(*new_proc));
-
-	return process_construct(new_proc, action, plan);
-}
-
-Process* process_construct(process* proc, const char* action, plan* plan)
+process* process_construct(process* proc, const char* action, plan* plan)
 {
 	*proc = (process) {
 		 0                              /* thread */
@@ -52,28 +44,27 @@ Process* process_construct(process* proc, const char* action, plan* plan)
 
 void process_node_free(dnode* proc_node)
 {
-	process_free(proc_node->data, proc_node->is_root);
+	delete_(process, proc_node->data, proc_node->is_root);
 }
 
-void process_free(process* proc, _Bool is_root)
+void process_destroy(process* proc, _Bool is_root)
 {
 	if (is_root && proc->records != NULL) {
 		vec* it = vec_begin(proc->records);
 		for (; it != vec_end(proc->records); ++it) {
 			record** rec = vec_back(it);
-			record_free(*rec);
+			delete_(record, *rec);
 			vec_destroy(it);
 		}
-		vec_free(proc->records);
+		delete_(vec, proc->records);
 	}
 	if (proc->fifo_in[0] != NULL) {
-		fifo_free(proc->fifo_in[0]);
+		delete_(fifo, proc->fifo_in[0]);
 	}
 	if (proc->fifo_in[1] != NULL) {
-		fifo_free(proc->fifo_in[1]);
+		delete_(fifo, proc->fifo_in[1]);
 	}
-	string_free(proc->action_msg);
-	free_(proc);
+	delete_(string, proc->action_msg);
 }
 
 void process_activate(dnode* proc_node, plan* plan)
@@ -88,7 +79,7 @@ void process_activate(dnode* proc_node, plan* plan)
 	}
 
 	if (!proc_node->is_root) {
-		proc->fifo_in[0] = fifo_new_(vec*, FIFO_SIZE);
+		proc->fifo_in[0] = new_t_(fifo, vec*, FIFO_SIZE);
 		return;
 	}
 
@@ -103,13 +94,13 @@ void process_activate(dnode* proc_node, plan* plan)
 
 	vec_push_back(true_root_group, &proc_node);
 	if (proc->root_fifo == 1) {
-		proc->fifo_in[0] = fifo_new_(vec*, FIFO_SIZE);
+		proc->fifo_in[0] = new_t_(fifo, vec*, FIFO_SIZE);
 		if (proc->is_const) {
 			fifo_advance(proc->fifo_in[0]);
 		}
 	}
 
-	proc->fifo_in[proc->root_fifo] = fifo_new_(vec*, FIFO_SIZE * graph_size);
+	proc->fifo_in[proc->root_fifo] = new_t_(fifo, vec*, FIFO_SIZE * graph_size);
 
 	int field_count = 1;
 
@@ -129,7 +120,7 @@ void process_activate(dnode* proc_node, plan* plan)
 		field_count = group->columns.size;
 	}
 
-	proc->records = vec_new_(vec);
+	proc->records = new_t_(vec, vec);
 	vec_resize(proc->records, FIFO_SIZE * graph_size);
 
 	int i = 0;
@@ -142,7 +133,7 @@ void process_activate(dnode* proc_node, plan* plan)
 		vec_resize(new_recs, proc->fifo_width);
 
 		record** new_rec = vec_back(new_recs);
-		*new_rec = record_new(i, field_count, owns_data);
+		*new_rec = new_(record, i, field_count, owns_data);
 
 		vec** recs = vec_at(buf, i);
 		*recs = new_recs;
@@ -160,7 +151,7 @@ void process_activate(dnode* proc_node, plan* plan)
 
 void process_add_second_input(process* proc)
 {
-	proc->fifo_in[1] = fifo_new_(vec*, FIFO_SIZE);
+	proc->fifo_in[1] = new_t_(fifo, vec*, FIFO_SIZE);
 }
 
 void process_disable(process* proc)

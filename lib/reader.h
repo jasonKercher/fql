@@ -38,9 +38,8 @@ struct reader {
 };
 typedef struct reader reader;
 
-struct reader* reader_new();
 struct reader* reader_construct(struct reader*);
-void reader_free(struct reader*);
+void reader_destroy(struct reader*);
 
 void reader_assign(struct reader*, struct table*);
 
@@ -66,9 +65,10 @@ struct mmapcsv {
 	size_t file_size;
 	int fd;
 };
+typedef struct mmapcsv mmapcsv;
 
-struct mmapcsv* mmapcsv_new(size_t);
 struct mmapcsv* mmapcsv_construct(struct mmapcsv*, size_t);
+void mmapcsv_destroy(struct mmapcsv*);
 void mmapcsv_free(void*);
 
 char* mmapcsv_get_delim(struct mmapcsv*);

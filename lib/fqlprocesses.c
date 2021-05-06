@@ -3,7 +3,7 @@
 #include "process.h"
 #include "group.h"
 #include "aggregate.h"
-#include "select.h"
+#include "fqlselect.h"
 #include "record.h"
 #include "column.h"
 #include "util/fifo.h"
@@ -103,7 +103,7 @@ int fql_read_subquery(dgraph* proc_graph, process* proc)
 int fql_select(dgraph* proc_graph, process* proc)
 {
 	vec** recs = fifo_get(proc->fifo_in[0]);
-	select* select = proc->proc_data;
+	fqlselect* select = proc->proc_data;
 	int ret = select->select__(select, *recs);
 
 	_recycle_recs(proc, *recs, proc->fifo_width);
@@ -132,7 +132,7 @@ int fql_logic(dgraph* proc_graph, process* proc)
 	return 1;
 }
 
-void _increase_left_side_ref_count(vec* leftrecs, _bool recyclable)
+void _increase_left_side_ref_count(vec* leftrecs, _Bool recyclable)
 {
 	record** it = vec_begin(leftrecs);
 	for (; it != vec_end(leftrecs); ++it) {

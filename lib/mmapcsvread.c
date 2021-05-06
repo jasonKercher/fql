@@ -5,50 +5,48 @@
 #include <csv.h>
 #include "fql.h"
 
-
-struct mmapcsv* mmapcsv_new(size_t buflen)
+mmapcsv* mmapcsv_construct(mmapcsv* csv_data, size_t buflen)
 {
-	struct mmapcsv* new_data = NULL;
-	malloc_(new_data, sizeof(*new_data));
-
-	return mmapcsv_construct(new_data, buflen);
-}
-
-struct mmapcsv* mmapcsv_construct(struct mmapcsv* csv_data, size_t buflen)
-{
-	*csv_data = (struct mmapcsv) {
-		 csv_reader_new()       /* csv_handle */
-		,{ NULL, 0 }            /* current */
-		,vec_new_(stringview)   /* raw */
-		,NULL                   /* rec_map */
-		,NULL                   /* mmap_base */
-		,0                      /* mp */
-		,0                      /* file_size */
-		,0                      /* fd */
+	*csv_data = (mmapcsv) {
+		 csv_reader_new()        /* csv_handle */
+		,{ NULL, 0 }             /* current */
+		,new_t_(vec, stringview) /* raw */
+		,NULL                    /* rec_map */
+		,NULL                    /* mmap_base */
+		,0                       /* mp */
+		,0                       /* file_size */
+		,0                       /* fd */
 	};
 
 	return csv_data;
 }
 
-void mmapcsv_free(void* reader_data)
+void mmapcsv_destroy(mmapcsv* reader_data)
 {
-	struct mmapcsv* csv = reader_data;
+	mmapcsv* csv = reader_data;
 	csv_reader_free(csv->csv_handle);
 
 	if (munmap(csv->mmap_base, csv->file_size)) {
 		perror("munmap");
 	}
 	close(csv->fd);
-	vec_free(csv->raw);
-	free_(csv);
+	delete_(vec, csv->raw);
 }
 
-char* mmapcsv_get_delim(struct mmapcsv* csv)
+/* Only here because there is no address
+ * function like macro
+ */
+void mmapcsv_free(void* data)
+{
+	delete_(mmapcsv, data);
+}
+
+char* mmapcsv_get_delim(mmapcsv* csv)
 {
 	return csv->csv_handle->delimiter;
 }
 
-int mmapcsv_open(struct mmapcsv* csv, const char* file_name)
+int mmapcsv_open(mmapcsv* csv, const char* file_name)
 {
 	csv->fd = open(file_name, O_RDONLY);
 	if (csv->fd == -1) {
@@ -75,9 +73,9 @@ int mmapcsv_open(struct mmapcsv* csv, const char* file_name)
 	return FQL_GOOD;
 }
 
-int mmapcsv_getline(reader* reader)
+int mmapcsv_getline(reader* self)
 {
-	struct mmapcsv* csv = reader->reader_data;
+	mmapcsv* csv = self->reader_data;
 
 	/* string view will point to the record in the raw data */
 	csv->current.data = csv->mp;
@@ -102,18 +100,18 @@ int mmapcsv_getline(reader* reader)
 		}
 	}
 
-	reader->eof = true;
+	self->eof = true;
 	return EOF;
 }
 
-int mmapcsv_get_record(reader* reader, record* rec)
+int mmapcsv_get_record(reader* self, record* rec)
 {
-	struct mmapcsv* csv = reader->reader_data;
-	if (reader->eof) {
-		mmapcsv_reset(reader);
+	mmapcsv* csv = self->reader_data;
+	if (self->eof) {
+		mmapcsv_reset(self);
 	}
 
-	int ret = mmapcsv_getline(reader);
+	int ret = mmapcsv_getline(self);
 	if (ret) {
 		return ret;
 	}
@@ -122,7 +120,7 @@ int mmapcsv_get_record(reader* reader, record* rec)
 			    rec->libcsv_rec,
 			    csv->current.data,
 			    csv->current.len,
-			    reader->max_col_idx+1);
+			    self->max_col_idx+1);
 	switch (ret) {
 	case CSV_GOOD:
 		break;
@@ -155,19 +153,19 @@ int mmapcsv_get_record(reader* reader, record* rec)
 	return FQL_GOOD;
 }
 
-int mmapcsv_get_record_at(reader* reader, record* rec, char* location)
+int mmapcsv_get_record_at(reader* self, record* rec, char* location)
 {
-	struct mmapcsv* csv = reader->reader_data;
-	reader->eof = false;
+	mmapcsv* csv = self->reader_data;
+	self->eof = false;
 	csv->mp = location;
-	return mmapcsv_get_record(reader, rec);
+	return mmapcsv_get_record(self, rec);
 }
 
-int mmapcsv_reset(reader* reader)
+int mmapcsv_reset(reader* self)
 {
-	struct mmapcsv* csv = reader->reader_data;
-	reader->eof = false;
+	mmapcsv* csv = self->reader_data;
+	self->eof = false;
 	csv->mp = csv->mmap_base;
 	/* skip header */
-	return mmapcsv_getline(reader);
+	return mmapcsv_getline(self);
 }

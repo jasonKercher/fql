@@ -3,8 +3,7 @@
 
 queue* queue_enqueue(queue** head, void* data)
 {
-	queue* newnode = NULL;
-	malloc_(newnode, sizeof(*newnode));
+	queue* newnode = malloc_(sizeof(*newnode));
 	*newnode = (queue) {
 		 data
 		,NULL

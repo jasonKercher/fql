@@ -34,13 +34,8 @@ struct fifo {
 };
 typedef struct fifo fifo;
 
-//struct fifo* fifo_new(size_t elem_size, unsigned buf_size);
-//#define fifo_new_(T_, n_) fifo_new(sizeof(T_), n_)
-
-struct fifo* fifo_construct_s(struct fifo*, size_t elem_size, unsigned buf_size);
-#define fifo_construct(this_, T_, n_) fifo_construct(this_, sizeof(T_), n_)
-
-void fifo_free(struct fifo*);
+struct fifo* fifo_construct(struct fifo*, size_t elem_size, unsigned buf_size);
+#define fifo_construct_(this_, T_, n_) fifo_construct(this_, sizeof(T_), n_)
 void fifo_destroy(struct fifo*);
 
 void fifo_set_open(struct fifo*, int);
@@ -65,4 +60,4 @@ void fifo_wait_for_get(struct fifo*);
 void fifo_wait_for_work(struct fifo*);
 
 
-#endif  /* CIRCLE_H */
+#endif  /* FIFO_H */

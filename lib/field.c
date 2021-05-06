@@ -76,7 +76,7 @@ int field_to_stringview(stringview* ret, union field* field, enum field_type* ty
 	case FIELD_INT:
 	{
 		*type = FIELD_STRING;
-		string* s = string_new();
+		string* s = new_(string);
 		string_sprintf(s, "%ld", field->i);
 		field->s = s;
 		break;
@@ -84,7 +84,7 @@ int field_to_stringview(stringview* ret, union field* field, enum field_type* ty
 	case FIELD_FLOAT:
 	{
 		*type = FIELD_STRING;
-		string* s = string_new();
+		string* s = new_(string);
 		string_sprintf(s, "%lf", field->f);
 		field->s = s;
 		break;

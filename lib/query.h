@@ -104,8 +104,8 @@ struct query {
 	struct vec* validation_list;    /* for no-source tables */
 	struct group* groupby;
 	struct group* distinct;
-	struct queue* having;
-	struct expression* limit;       /* TOP */
+	//struct queue* having;
+	//struct expression* limit;       /* TOP */
 	void* op;                       /* operation structure */
 	int query_id;
 	int query_total;
@@ -117,7 +117,7 @@ struct query {
 	struct vec* joinable;           /* denotes a joinable condition */
 	struct stack* function_stack;   /* used to track function nesting */
 
-	struct expression* expr;
+	//struct expression* expr;
 	enum mode mode;
 	enum logic_mode logic_mode;
 	enum join_type join;
@@ -126,6 +126,7 @@ typedef struct query query;
 
 struct query* query_new(int id);
 struct query* query_construct(struct query*, int id);
+void query_destroy(struct query*);
 void query_free(void*);
 
 int query_add_constant(query*, const char*, int);
@@ -136,6 +137,7 @@ void query_add_subquery_source(struct query*, struct query*, const char*);
 void query_apply_table_alias(struct query*, const char*);
 void query_set_distinct(struct query*);
 int query_add_aggregate(struct query*, enum aggregate_function);
+int query_init_op(struct query*);
 
 int query_enter_function(struct query*, enum scalar_function, int);
 void query_exit_function(struct query*);

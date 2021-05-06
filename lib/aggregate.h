@@ -29,9 +29,7 @@ struct aggregate {
 };
 typedef struct aggregate aggregate;
 
-struct aggregate* aggregate_new(enum aggregate_function);
 struct aggregate* aggregate_construct(struct aggregate*, enum aggregate_function);
-void aggregate_free(struct aggregate*);
 void aggregate_destroy(struct aggregate*);
 
 const char* aggregate_get_name(struct aggregate*);

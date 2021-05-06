@@ -1,22 +1,14 @@
 #include "fifo.h"
 #include "util.h"
 
-fifo* fifo_new(size_t elem_size, unsigned buf_size)
-{
-	fifo* new_fifo = NULL;
-	malloc_(new_fifo, sizeof(*new_fifo));
-
-	return fifo_construct(new_fifo, elem_size, buf_size);
-}
-
-fifo* fifo_construct(fifo* fifo, size_t elem_size, unsigned buf_size)
+fifo* fifo_construct(fifo* self, size_t elem_size, unsigned buf_size)
 {
 	/* fifo requires a buffer of atleast size 2 */
 	if (buf_size <= 1) {
 		buf_size = 2;
 	}
-	*fifo = (fifo) {
-		 vec_new(elem_size)     /* buf */
+	*self = (fifo) {
+		 new_(vec, elem_size)   /* buf */
 		,{ 0 }                  /* head_mutex */
 		,{ 0 }                  /* tail_mutex */
 		,{ 0 }                  /* open_mutex */
@@ -29,53 +21,47 @@ fifo* fifo_construct(fifo* fifo, size_t elem_size, unsigned buf_size)
 		,true                   /* is_open */
 	};
 
-	vec_resize(fifo->buf, buf_size);
+	vec_resize(self->buf, buf_size);
 
 	/* build these no matter what
 	 * this makes all fifos interchangeable.
 	 */
-	pthread_mutex_init(&fifo->head_mutex, NULL);
-	pthread_mutex_init(&fifo->tail_mutex, NULL);
-	pthread_mutex_init(&fifo->open_mutex, NULL);
-	pthread_cond_init(&fifo->cond_add, NULL);
-	pthread_cond_init(&fifo->cond_get, NULL);
-	pthread_cond_init(&fifo->cond_work, NULL);
+	pthread_mutex_init(&self->head_mutex, NULL);
+	pthread_mutex_init(&self->tail_mutex, NULL);
+	pthread_mutex_init(&self->open_mutex, NULL);
+	pthread_cond_init(&self->cond_add, NULL);
+	pthread_cond_init(&self->cond_get, NULL);
+	pthread_cond_init(&self->cond_work, NULL);
 
-	return fifo;
+	return self;
 }
 
-void fifo_free(fifo* fifo)
+void fifo_destroy(fifo* self)
 {
-	fifo_destroy(fifo);
-	free_(fifo);
+	delete_(vec, self->buf);
+	pthread_mutex_destroy(&self->head_mutex);
+	pthread_mutex_destroy(&self->tail_mutex);
+	pthread_mutex_destroy(&self->open_mutex);
+	pthread_cond_destroy(&self->cond_add);
+	pthread_cond_destroy(&self->cond_get);
+	pthread_cond_destroy(&self->cond_work);
 }
 
-void fifo_destroy(fifo* fifo)
+void fifo_set_open(fifo* self, int is_open)
 {
-	vec_free(fifo->buf);
-	pthread_mutex_destroy(&fifo->head_mutex);
-	pthread_mutex_destroy(&fifo->tail_mutex);
-	pthread_mutex_destroy(&fifo->open_mutex);
-	pthread_cond_destroy(&fifo->cond_add);
-	pthread_cond_destroy(&fifo->cond_get);
-	pthread_cond_destroy(&fifo->cond_work);
-}
+	pthread_mutex_lock(&self->tail_mutex);
+	pthread_mutex_lock(&self->head_mutex);
+	pthread_mutex_lock(&self->open_mutex);
 
-void fifo_set_open(fifo* fifo, int is_open)
-{
-	pthread_mutex_lock(&fifo->tail_mutex);
-	pthread_mutex_lock(&fifo->head_mutex);
-	pthread_mutex_lock(&fifo->open_mutex);
+	self->is_open = is_open;
 
-	fifo->is_open = is_open;
+	pthread_cond_broadcast(&self->cond_get);
+	pthread_cond_broadcast(&self->cond_add);
+	pthread_cond_broadcast(&self->cond_work);
 
-	pthread_cond_broadcast(&fifo->cond_get);
-	pthread_cond_broadcast(&fifo->cond_add);
-	pthread_cond_broadcast(&fifo->cond_work);
-
-	pthread_mutex_unlock(&fifo->open_mutex);
-	pthread_mutex_unlock(&fifo->head_mutex);
-	pthread_mutex_unlock(&fifo->tail_mutex);
+	pthread_mutex_unlock(&self->open_mutex);
+	pthread_mutex_unlock(&self->head_mutex);
+	pthread_mutex_unlock(&self->tail_mutex);
 }
 
 /* this struct was never meant to be resizable
@@ -83,22 +69,22 @@ void fifo_set_open(fifo* fifo, int is_open)
  * losing all currently held data... yea...
  * go for it. (definitely not thread-safe
  */
-void fifo_resize(fifo* fifo, unsigned n)
+void fifo_resize(fifo* self, unsigned n)
 {
 	/* fifo requires a buffer of atleast size 2 */
 	if (n <= 1) {
 		n = 2;
 	}
-	vec_resize(fifo->buf, n);
-	fifo->head = 0;
-	fifo->tail = 0;
+	vec_resize(self->buf, n);
+	self->head = 0;
+	self->tail = 0;
 }
 
-_Bool fifo_is_open(fifo* fifo)
+_Bool fifo_is_open(fifo* self)
 {
-	pthread_mutex_lock(&fifo->open_mutex);
-	_Bool ret = fifo->is_open;
-	pthread_mutex_unlock(&fifo->open_mutex);
+	pthread_mutex_lock(&self->open_mutex);
+	_Bool ret = self->is_open;
+	pthread_mutex_unlock(&self->open_mutex);
 	return ret;
 }
 

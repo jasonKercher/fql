@@ -54,19 +54,11 @@ int _not_implemented(function* fn, union field* f, vec* rec)
 	return 0;
 }
 
-Function* function_new(enum scalar_function scalar_type, enum field_type* type, int char_as_byte)
-{
-	function* new_func = NULL;
-	malloc_(new_func, sizeof(*new_func));
-
-	return function_construct(new_func, scalar_type, type, char_as_byte);
-}
-
-Function* function_construct(function* func, enum scalar_function scalar_type, enum field_type* type, int char_as_byte)
+function* function_construct(function* func, enum scalar_function scalar_type, enum field_type* type, int char_as_byte)
 {
 	*func = (function) {
 		 &_not_implemented      /* call__ */
-		,vec_new_(column*)      /* args */
+		,new_t_(vec, column*)   /* args */
 		,scalar_type            /* type */
 		,0                      /* arg_min */
 		,0                      /* arg_max */
@@ -184,15 +176,13 @@ Function* function_construct(function* func, enum scalar_function scalar_type, e
 	return func;
 }
 
-void function_free(function* func)
+void function_destroy(function* func)
 {
 	column** it = vec_begin(func->args);
 	for (; it != vec_end(func->args); ++it) {
-		column_free(*it);
+		delete_(column, *it);
 	}
-	vec_free(func->args);
-	//string_destroy(&func->ret_buf);
-	free_(func);
+	delete_(vec, func->args);
 }
 
 int function_op_resolve(function* func, enum field_type* type)

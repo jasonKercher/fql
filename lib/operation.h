@@ -21,11 +21,11 @@ enum op {
 
 struct vec* op_get_validation_list(void* op);
 void op_preop(struct fql_handle*);
-_Bool op_has_delim(void*);
-void op_set_delim(void*, const char*);
+_Bool op_has_delim(enum op*);
+void op_set_delim(enum op*, const char*);
 void op_apply_process(struct query*, struct fql_plan*);
 void op_finalize(struct query*);
-void op_free(void* op);
+void op_destroy(enum op*);
 
 #ifdef __cplusplus
 }

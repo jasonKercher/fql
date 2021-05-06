@@ -26,13 +26,6 @@ void _increase_size(hashmap* m);
 struct hm_entry* _composite_get_entry(compositemap* m, const vec* key, unsigned* key_len, uint64_t* hash);
 
 
-hashmap* hashmap_new(const unsigned elem_size, size_t limit, const unsigned props)
-{
-	hashmap* new_map = NULL;
-	malloc_(new_map, sizeof(*new_map));
-	return hashmap_construct(new_map, elem_size, limit, props);
-}
-
 hashmap* hashmap_construct(hashmap* m, const unsigned elem_size, size_t limit, const unsigned props)
 {
 	limit = _next_power_of_2(limit);
@@ -68,18 +61,12 @@ hashmap* hashmap_construct(hashmap* m, const unsigned elem_size, size_t limit, c
 	vec_construct(&m->values, elem_size);
 	vec_reserve(&m->values, limit / 2);
 
-	malloc_(m->_entries, sizeof(struct hm_entry) * limit);
+	m->_entries = malloc_(sizeof(struct hm_entry) * limit);
 	memset(m->_entries, -1, sizeof(struct hm_entry) * limit);
 
-	malloc_(m->_keybuf, limit);  /* expect this to grow */
+	m->_keybuf = malloc_(limit);  /* expect this to grow */
 
 	return m;
-}
-
-void hashmap_free(hashmap* m)
-{
-	hashmap_destroy(m);
-	free_(m);
 }
 
 void hashmap_destroy(hashmap* m)
@@ -122,26 +109,13 @@ void* hashmap_nget(hashmap* m, const char* key, unsigned n)
 }
 
 /* elem size is vec elements now */
-multimap* multimap_new(const unsigned elem_size, size_t limit, const unsigned props)
-{
-	multimap* new_map = NULL;
-	malloc_(new_map, sizeof(*new_map));
-	return multimap_construct(new_map, elem_size, limit, props);
-}
-
 multimap* multimap_construct(multimap* m, const unsigned elem_size, size_t limit, const unsigned props)
 {
-	hashmap_construct_(m, vec, limit, props);
+	hashmap_construct(m, sizeof(vec), limit, props);
 	m->elem_size = elem_size;  /* this parameter is the elem_size of
 				    * of the vectors created for each entry
 				    */
 	return m;
-}
-
-void multimap_free(multimap* m)
-{
-	multimap_destroy(m);
-	free_(m);
 }
 
 void multimap_destroy(multimap* m)
@@ -177,18 +151,10 @@ void multimap_nset(multimap* m, const char* key, void* data, unsigned n)
 	}
 }
 
-compositemap* compositemap_new(const unsigned elem_size, size_t limit, const unsigned props)
-{
-	compositemap* new_map = NULL;
-	malloc_(new_map, sizeof(*new_map));
-
-	return compositemap_construct(new_map, elem_size, limit, props);
-}
-
 compositemap* compositemap_construct(compositemap* m, const unsigned elem_size, size_t limit, const unsigned props)
 {
 	hashmap_construct(m, elem_size, limit, props);
-	m->_keys = vec_new_(struct _keyloc);
+	m->_keys = new_t_(vec, struct _keyloc);
 	vec_reserve(m->_keys, m->_limit);
 	return m;
 }
@@ -201,7 +167,7 @@ void compositemap_free(compositemap* m)
 
 void compositemap_destroy(compositemap* m)
 {
-	vec_free(m->_keys);
+	delete_(vec, m->_keys);
 	hashmap_destroy(m);
 }
 
@@ -217,7 +183,7 @@ void compositemap_set(compositemap* m, const struct vec* key, void* data)
 {
 	/* should only execute one time */
 	if (m->_key_temp == NULL) {
-		m->_key_temp = vec_new_(struct _keyloc);
+		m->_key_temp = new_t_(vec, struct _keyloc);
 	}
 	vec_resize(m->_key_temp, key->size);
 
@@ -245,7 +211,7 @@ void* compositemap_get(compositemap* m, const struct vec* key)
 {
 	/* should only execute one time */
 	if (m->_key_temp == NULL) {
-		m->_key_temp = vec_new_(struct _keyloc);
+		m->_key_temp = new_t_(vec, struct _keyloc);
 	}
 	vec_resize(m->_key_temp, key->size);
 
@@ -419,7 +385,7 @@ void _increase_size(hashmap* m)
 	struct hm_entry* src_entries = m->_entries;
 	m->_limit = _next_power_of_2(++m->_limit);
 
-	malloc_(m->_entries, m->_limit * sizeof(struct hm_entry));
+	m->_entries = malloc_(m->_limit * sizeof(struct hm_entry));
 	memset(m->_entries, -1, sizeof(struct hm_entry) * m->_limit);
 
 	size_t i = 0;
@@ -444,9 +410,3 @@ void _increase_size(hashmap* m)
 
 	free(src_entries);
 }
-
-
-
-
-
-

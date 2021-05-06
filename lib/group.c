@@ -3,15 +3,7 @@
 #include "util/util.h"
 #include "util/stringview.h"
 
-Group* group_new()
-{
-	group* new_group = NULL;
-	malloc_(new_group, sizeof(*new_group));
-
-	return group_construct(new_group);
-}
-
-Group* group_construct(group* group)
+group* group_construct(group* group)
 {
 	memset(group, 0, sizeof(*group));
 	compositemap_construct_(&group->val_map,

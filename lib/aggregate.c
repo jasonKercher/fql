@@ -19,38 +19,24 @@ static const char* agg_str[14] = {
 	"VARP",
 };
 
-aggregate* aggregate_new(enum aggregate_function agg_type)
-{
-	aggregate* new_agg = NULL;
-	malloc_(new_agg, sizeof(*new_agg));
-
-	return aggregate_construct(new_agg, agg_type);
-}
-
 aggregate* aggregate_construct(aggregate* agg, enum aggregate_function agg_type)
 {
 	*agg = (aggregate) {
 		 NULL
-		,vec_new_(column*)
+		,new_t_(vec, column*)
 		,{ 0 }
 		,agg_type
 		,FIELD_UNDEFINED
 	};
 
-	vec_construct_(&agg->results, struct aggresult);
+	vec_construct(&agg->results, sizeof(struct aggresult));
 
 	return agg;
 }
 
-void aggregate_free(aggregate* agg)
-{
-	aggregate_destroy(agg);
-	free_(agg);
-}
-
 void aggregate_destroy(aggregate* agg) 
 { 
-	vec_free(agg->args);
+	delete_(vec, agg->args);
 	if (agg->data_type == FIELD_STRING) {
 		struct aggresult* it = vec_begin(&agg->results);
 		for(; it != vec_end(&agg->results); ++it) {

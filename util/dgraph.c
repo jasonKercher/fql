@@ -2,14 +2,6 @@
 
 #include "util.h"
 
-//dnode* dnode_new(void* data)
-//{
-//	dnode* new_node = NULL;
-//	malloc_(new_node, sizeof(*new_node));
-//
-//	return dnode_construct(new_node, data);
-//}
-
 dnode* dnode_construct(dnode* node, void* data)
 {
 	*node = (dnode) {
@@ -22,28 +14,15 @@ dnode* dnode_construct(dnode* node, void* data)
 	return node;
 }
 
-void* dnode_free(dnode* node)
-{
-	void* data = node->data;
-	free_(node);
-	return data;
-}
-
-//dgraph* dgraph_new()
-//{
-//	dgraph* new_dgraph = NULL;
-//	malloc_(new_dgraph, sizeof(*new_dgraph));
-//
-//	return dgraph_construct(new_dgraph);
-//}
+void dnode_destroy(dnode* node) { }
 
 dgraph* dgraph_construct(dgraph* graph)
 {
 	*graph = (dgraph) {
-		 vec_new_(dnode*)       /* nodes */
+		 new_t_(vec, dnode*)    /* nodes */
 		,NULL                   /* newest */
-		,fifo_new_(dnode*, 5)   /* _trav */
-		,vec_new_(dnode*)       /* _roots */
+		,new_t_(fifo, dnode*, 5)/* _trav */
+		,new_t_(vec, dnode*)    /* _roots */
 		,0                      /* _root_idx */
 		,false                  /* _roots_good */
 	};
@@ -53,20 +32,25 @@ dgraph* dgraph_construct(dgraph* graph)
 
 void dgraph_shallow_free(dgraph* graph)
 {
-	vec_free(graph->nodes);
-	vec_free(graph->_roots);
-	fifo_free(graph->_trav);
+	dgraph_shallow_destroy(graph);
 	free_(graph);
 }
 
-void dgraph_free(dgraph* graph)
+void dgraph_shallow_destroy(dgraph* graph)
+{
+	delete_(vec, graph->nodes);
+	delete_(vec, graph->_roots);
+	delete_(fifo, graph->_trav);
+}
+
+void dgraph_destroy(dgraph* graph)
 {
 	unsigned i = 0;
 	dnode** node = vec_begin(graph->nodes);
 	for (; i < graph->nodes->size; ++i) {
-		dnode_free(node[i]);
+		delete_(dnode, node[i]);
 	}
-	dgraph_shallow_free(graph);
+	dgraph_shallow_destroy(graph);
 }
 
 /* making a copy here */
@@ -80,7 +64,7 @@ dnode* dgraph_add_node(dgraph* graph, dnode* node)
 
 dnode* dgraph_add_data(dgraph* graph, void* data)
 {
-	dnode* node = dnode_new(data);
+	dnode* node = new_(dnode, data);
 	return dgraph_add_node(graph, node);
 }
 
@@ -94,7 +78,7 @@ void dgraph_consume(dgraph* dest, dgraph* src)
 void* dgraph_remove(dgraph* graph, dnode** node)
 {
 	void* data = (*node)->data;
-	dnode_free(*node);
+	delete_(dnode, *node);
 	vec_erase(graph->nodes, node);
 	graph->_roots_good = false;
 	return data;

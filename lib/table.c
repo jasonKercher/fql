@@ -7,32 +7,20 @@
 
 #define SUBQUERY_HASH_TABLE_INITIAL_SIZE 512
 
-Table* table_new(char* name,
-		 const char* alias,
-		 size_t idx,
-		 enum source_type source_type,
-		 enum join_type join_type)
-{
-	table* new_table = NULL;
-	malloc_(new_table, sizeof(*new_table));
-
-	return table_construct(new_table, name, alias, idx, join_type);
-}
-
-Table* table_construct(table* table,
+table* table_construct(table* self,
 		       char* name,
 		       const char* alias,
 		       size_t idx,
 		       enum join_type join_type)
 {
-	*table = (table) {
+	*self = (table) {
 		 { 0 }                  /* name */
 		,{ 0 }                  /* alias */
 		,NULL                   /* subquery */
-		,reader_new()           /* reader */
-		,schema_new()           /* schema */
+		,new_(reader)           /* reader */
+		,new_(schema)           /* schema */
 		,NULL                   /* condition */
-		,vec_new_(column*)      /* validation_list */
+		,new_t_(vec, column*)   /* validation_list */
 		,NULL                   /* read_proc */
 		,NULL                   /* join_data */
 		,idx                    /* idx */
@@ -40,31 +28,31 @@ Table* table_construct(table* table,
 		,join_type              /* join_type */
 	};
 
-	string_construct_take(&table->name, name);
+	string_construct_take(&self->name, name);
 
 	if (alias[0] == '\0') {
-		string_construct_from_string(&table->alias, &table->name);
+		string_construct_from_string(&self->alias, &self->name);
 	} else {
-		string_construct_from_char_ptr(&table->alias, alias);
+		string_construct_from_char_ptr(&self->alias, alias);
 	}
 
-	return table;
+	return self;
 }
 
-Table* table_construct_subquery(table* table,
+table* table_construct_subquery(table* self,
 				query* subquery,
 				const char* alias,
 				size_t idx,
 				enum join_type join_type)
 {
-	*table = (table) {
+	*self = (table) {
 		 { 0 }              /* name */
 		,{ 0 }              /* alias */
 		,subquery           /* subquery */
-		,reader_new()       /* reader */
-		,schema_new()       /* schema */
+		,new_(reader)       /* reader */
+		,new_(schema)       /* schema */
 		,NULL               /* condition */
-		,vec_new_(column*)  /* validation_list */
+		,new_t_(vec, column*)  /* validation_list */
 		,NULL               /* read_proc */
 		,NULL               /* join_data */
 		,idx                /* idx */
@@ -72,45 +60,39 @@ Table* table_construct_subquery(table* table,
 		,join_type          /* join_type */
 	};
 
-	string_construct(&table->name);
+	string_construct(&self->name);
 
 	if (alias[0] == '\0') {
-		string_construct(&table->alias);
+		string_construct(&self->alias);
 	} else {
-		string_construct_from_char_ptr(&table->alias, alias);
+		string_construct_from_char_ptr(&self->alias, alias);
 	}
 
-	return table;
+	return self;
 }
 
-void table_free(table* table)
+void table_destroy(table* self)
 {
-	table_destroy(table);
-	free_(table);
-}
-
-void table_destroy(table* table)
-{
-	string_destroy(&table->name);
-	reader_free(table->reader);
-	schema_free(table->schema);
-	logicgroup_free(table->condition);
-	vec_free(table->validation_list);
-	string_destroy(&table->alias);
-	hashjoin_free(table->join_data);
+	string_destroy(&self->name);
+	delete_(reader, self->reader);
+	delete_(schema, self->schema);
+	delete_(logicgroup, self->condition);
+	delete_(vec, self->validation_list);
+	string_destroy(&self->alias);
+	delete_(hashjoin, self->join_data);
 }
 
 
-char* table_get_delim(table* table)
+char* table_get_delim(table* self)
 {
-	reader* reader = table->reader;
+	reader* reader = self->reader;
 	switch (reader->type) {
 	case READ_LIBCSV:
 		return libcsv_get_delim(reader->reader_data);
 	case READ_MMAPCSV:
 		return mmapcsv_get_delim(reader->reader_data);
 	case READ_SUBQUERY:
-		return table_get_delim(vec_begin(table->subquery->sources));
+		return table_get_delim(vec_begin(self->subquery->sources));
 	default:
 		fprintf(stderr, "%d: unknown read_type\n", reader->type);
 		return NULL;
@@ -119,12 +101,9 @@ char* table_get_delim(table* table)
 
 
 
-struct hashjoin* hashjoin_new()
+hashjoin* hashjoin_construct(hashjoin* join)
 {
-	struct hashjoin* new_join;
-	malloc_(new_join, sizeof(*new_join));
-
-	*new_join = (struct hashjoin) {
+	*join = (struct hashjoin) {
 		 { 0 }          /* hash_data */
 		,NULL           /* left_col */
 		,NULL           /* right_col */
@@ -133,31 +112,27 @@ struct hashjoin* hashjoin_new()
 		,0              /* rec_idx */
 	};
 
-	return new_join;
+	return join;
 }
 
 
-void hashjoin_free(struct hashjoin* join)
+void hashjoin_destroy(struct hashjoin* join)
 {
-	if (join == NULL) {
-		return;
-	}
 	multimap_destroy(&join->hash_data);
-	free_(join);
 }
 
 
-size_t _guess_row_count(table* table)
+size_t _guess_row_count(table* self)
 {
 	/* just allow the hash map to grow with it */
-	if (table->subquery != NULL) {
+	if (self->subquery != NULL) {
 		return SUBQUERY_HASH_TABLE_INITIAL_SIZE / 2;
 	}
 
 	size_t guess = 0;
 	size_t total_length = 0;
 
-	reader* reader = table->reader;
+	reader* reader = self->reader;
 
 	unsigned max_col_store = reader->max_col_idx;
 	reader->max_col_idx = 0;
@@ -193,11 +168,11 @@ size_t _guess_row_count(table* table)
 	return (guess < HASH_JOIN_MIN_SIZE) ? HASH_JOIN_MIN_SIZE : guess + 1;
 }
 
-void table_hash_join_init(table* table)
+void table_hash_join_init(table* self)
 {
-	size_t guessed_row_count = _guess_row_count(table);
+	size_t guessed_row_count = _guess_row_count(self);
 
-	struct hashjoin* join = table->join_data;
+	struct hashjoin* join = self->join_data;
 
 	multimap_construct_(
 		 &join->hash_data

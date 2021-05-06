@@ -231,5 +231,3 @@ int fql_logic_not_null(logic* logic, vec* recs)
 	fputs("logical NULL check not yet implemented\n", stderr);
 	return FQL_FAIL;
 }
-
-

@@ -19,9 +19,7 @@ struct record {
 };
 typedef struct record record;
 
-struct record* record_new(unsigned idx, unsigned n, _Bool owns_recs);
 struct record* record_construct(struct record*, unsigned idx, unsigned n, _Bool owns_recs);
-void record_free(struct record*);
 void record_destroy(struct record*);
 
 

@@ -5,7 +5,7 @@
 #include "util/queue.h"
 #include "antlr/antlr.h"
 #include "fqlplan.h"
-#include "select.h"
+#include "fqlselect.h"
 #include "table.h"
 #include "query.h"
 #include "schema.h"
@@ -41,7 +41,7 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 
 void fql_free(struct fql_handle* fql)
 {
-	vec_free(fql->api_vec);
+	delete_(vec, fql->api_vec);
 	free_(fql->query_str);
 	free_(fql);
 }
@@ -54,7 +54,7 @@ int _api_connect(struct fql_handle* fql, query* query)
 		return FQL_FAIL;
 	}
 
-	select_connect_api(fql->query_list->data, fql->api_vec);
+	fqlselect_connect_api(fql->query_list->data, fql->api_vec);
 
 	/* Since we are using the api, we want to make sure
 	 * we parse all fields.
@@ -231,7 +231,7 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 
 	int ret = process_step(plan);
 	if (ret == 0 || ret == FQL_FAIL) {
-		query* query = queue_dequeue(&fql->query_list);
+		struct query* query = queue_dequeue(&fql->query_list);
 		query_free(query);
 
 		vec_resize(fql->api_vec, 0);

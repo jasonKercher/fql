@@ -39,10 +39,9 @@ struct thread_data {
 	struct dgraph* proc_graph;
 };
 
-struct process* process_new(const char* action, struct fql_plan*);
 struct process* process_construct(struct process*, const char*, struct fql_plan*);
+void process_destroy(struct process*, _Bool);
 void process_node_free(struct dnode* proc_node);
-void process_free(struct process*, _Bool);
 
 void process_activate(dnode* proc_node, struct fql_plan*);
 void process_add_second_input(struct process*);

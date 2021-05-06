@@ -50,11 +50,6 @@ struct table {
 };
 typedef struct table table;
 
-struct table* table_new(char* name,
-			const char* alias,
-			size_t idx,
-			enum source_type,
-			enum join_type);
 struct table* table_construct(struct table*,
 			      char* name,
 			      const char* alias,
@@ -65,7 +60,6 @@ struct table* table_construct_subquery(struct table*,
 				       const char* alias,
 				       size_t idx,
 				       enum join_type);
-void table_free(struct table*);
 void table_destroy(struct table*);
 char* table_get_delim(struct table*);
 
@@ -79,9 +73,10 @@ struct hashjoin {
 	enum join_side state;
 	unsigned rec_idx;
 };
+typedef struct hashjoin hashjoin;
 
-struct hashjoin* hashjoin_new();
-void hashjoin_free(struct hashjoin*);
+struct hashjoin* hashjoin_construct(struct hashjoin*);
+void hashjoin_destroy(struct hashjoin*);
 void table_hash_join_init(struct table*);
 
 

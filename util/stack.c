@@ -3,8 +3,7 @@
 
 stack* stack_push(stack** head, void* data)
 {
-	stack* newnode = NULL;
-	malloc_(newnode, sizeof(*newnode));
+	stack* newnode = malloc_(sizeof(*newnode));
 	*newnode = (stack) {
 		 data
 		,NULL

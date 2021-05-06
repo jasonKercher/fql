@@ -4,21 +4,9 @@
 #include "stringview.h"
 #include "util.h"
 
-//string* string_new()
-//{
-//	/* don't call string_construct since
-//	 * vec_new will call vec_construct
-//	 */
-//	string* new_string = vec_new_(char);
-//	char* s = new_string->data;
-//	s[0] = '\0';
-//
-//	return new_string;
-//}
-
 string* string_construct(string* string)
 {
-	string = vec_construct_s(string, 1);
+	string = vec_construct(string, 1);
 	char* s = string->data;
 	s[0] = '\0';
 	return string;
@@ -54,7 +42,7 @@ string* string_construct_from_stringview(string* s, struct stringview* sv)
 
 string* string_from_char_ptr(const char* src)
 {
-	string* new_string = vec_new_(char);
+	string* new_string = new_t_(vec, char);
 	string_strcpy(new_string, src);
 	return new_string;
 }
@@ -68,9 +56,7 @@ string* string_construct_from_char_ptr(string* s, const char* cp)
 
 string* string_take(char* src)
 {
-	string* new_string = NULL;
-	malloc_(new_string, sizeof(*new_string));
-
+	string* new_string = malloc_(sizeof(*new_string));
 	return string_construct_take(new_string, src);
 }
 
