@@ -2,6 +2,7 @@
 #define AGGREGATE_H
 
 #include "query.h"
+#include "column.h"
 #include "field.h"
 #include "util/stringy.h"
 #include "util/vec.h"
@@ -20,8 +21,9 @@ struct aggregate;
 typedef int(*aggregate_fn)(struct aggregate*, struct group*, struct aggresult*, struct vec* rec);
 
 struct aggregate {
-	struct vec results;
 	aggregate_fn call__;
+	struct vec* args;
+	struct vec results;
 	enum aggregate_function agg_type;
 	enum field_type data_type;
 };
@@ -33,6 +35,7 @@ void aggregate_free(struct aggregate*);
 void aggregate_destroy(struct aggregate*);
 
 const char* aggregate_get_name(struct aggregate*);
+void aggregate_add_column(struct aggregate*, struct column*);
 
 int fql_count(struct aggregate*, struct group*, struct aggresult*, struct vec*);
 

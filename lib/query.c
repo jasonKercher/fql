@@ -120,6 +120,12 @@ int _distribute_column(Query* query, Column* col)
 	case MODE_GROUPBY:
 		group_add_column(query->groupby, col);
 		break;
+	case MODE_AGGREGATE:
+	 {
+		Aggregate** back = vec_back(&query->groupby->aggregates);
+		aggregate_add_column(*back, col);
+		break;
+	 }
 	default:
 		return FQL_FAIL;
 	}

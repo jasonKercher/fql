@@ -6,8 +6,6 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
-
 #include "fqlplan.h"
 #include "table.h"
 //#include "function.h"
@@ -83,6 +81,7 @@ enum scalar_function {
 enum mode {
 	MODE_UNDEFINED,
 	MODE_SELECT,
+	MODE_AGGREGATE,
 	MODE_UPDATE,
 	MODE_SOURCES,
 	MODE_SEARCH,

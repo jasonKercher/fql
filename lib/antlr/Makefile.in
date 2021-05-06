@@ -103,8 +103,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libantlr_la_DEPENDENCIES = gen/libgen.la
-am_libantlr_la_OBJECTS = upperstream.lo errorlistener.lo \
-	listenerinterface.lo antlr.lo
+am_libantlr_la_OBJECTS = antlr.lo upperstream.lo errorlistener.lo \
+	listenerinterface.lo treewalker.lo
 libantlr_la_OBJECTS = $(am_libantlr_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -127,7 +127,8 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/antlr.Plo \
 	./$(DEPDIR)/errorlistener.Plo \
-	./$(DEPDIR)/listenerinterface.Plo ./$(DEPDIR)/upperstream.Plo
+	./$(DEPDIR)/listenerinterface.Plo ./$(DEPDIR)/treewalker.Plo \
+	./$(DEPDIR)/upperstream.Plo
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -365,7 +366,12 @@ top_srcdir = @top_srcdir@
 SUBDIRS = gen
 AM_CPPFLAGS = -std=c++17 -Wno-attributes -I$(ANTLR4_CPATH)/antlr4-runtime -I../ -I../include
 noinst_LTLIBRARIES = libantlr.la
-libantlr_la_SOURCES = upperstream.h upperstream.cpp errorlistener.h errorlistener.cpp listenerinterface.h listenerinterface.cpp antlr.h antlr.cpp
+libantlr_la_SOURCES = antlr.h antlr.cpp \
+					  upperstream.h upperstream.cpp \
+					  errorlistener.h errorlistener.cpp \
+					  listenerinterface.h listenerinterface.cpp \
+					  treewalker.h treewalker.cpp
+
 libantlr_la_LIBADD = gen/libgen.la
 all: all-recursive
 
@@ -424,6 +430,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/antlr.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/errorlistener.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/listenerinterface.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/treewalker.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/upperstream.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -660,6 +667,7 @@ distclean: distclean-recursive
 		-rm -f ./$(DEPDIR)/antlr.Plo
 	-rm -f ./$(DEPDIR)/errorlistener.Plo
 	-rm -f ./$(DEPDIR)/listenerinterface.Plo
+	-rm -f ./$(DEPDIR)/treewalker.Plo
 	-rm -f ./$(DEPDIR)/upperstream.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -709,6 +717,7 @@ maintainer-clean: maintainer-clean-recursive
 		-rm -f ./$(DEPDIR)/antlr.Plo
 	-rm -f ./$(DEPDIR)/errorlistener.Plo
 	-rm -f ./$(DEPDIR)/listenerinterface.Plo
+	-rm -f ./$(DEPDIR)/treewalker.Plo
 	-rm -f ./$(DEPDIR)/upperstream.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

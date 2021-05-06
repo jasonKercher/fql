@@ -1,7 +1,8 @@
 #include "antlr.h"
 #include "upperstream.h"
-#include "listenerinterface.h"
 #include "errorlistener.h"
+#include "treewalker.h"
+#include "listenerinterface.h"
 
 int analyze_query(struct fql_handle* fql)
 {
@@ -33,9 +34,13 @@ int analyze_query(struct fql_handle* fql)
 
 	std::vector<std::string> rule_names = parser.getRuleNames();
 
-	ListenerInterface analyzer(fql, rule_names);
+	TreeWalker walker;
 
-	antlr4::tree::ParseTreeWalker::DEFAULT.walk(&analyzer, tree);
+	ListenerInterface analyzer(fql, &walker, rule_names);
+
+	walker.set_walking(true);
+	walker.walk(&analyzer, tree);
+	walker.set_walking(false);
 
 	return analyzer.get_return_code();
 

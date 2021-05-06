@@ -28,11 +28,14 @@ void _find_replace(std::string& s, const std::string& match, const std::string r
 	}
 }
 
-ListenerInterface::ListenerInterface(struct fql_handle* fql, const std::vector<std::string>& rules)
+ListenerInterface::ListenerInterface(struct fql_handle* fql,
+		                     TreeWalker* walker,
+		                     const std::vector<std::string>& rules)
 {
 	_table_name[0] = '\0';
 	_table_alias[0] = '\0';
 	_rule_names = rules;
+	_walker = walker;
 	_fql = fql;
 
 	_next_list = TOK_UNDEFINED;
@@ -81,6 +84,7 @@ void ListenerInterface::exitExpression_elem(TSqlParser::Expression_elemContext *
 
 void ListenerInterface::enterSelect_list_elem(TSqlParser::Select_list_elemContext * ctx)
 {
+	_query->mode = MODE_SELECT;
 	_current_list = TOK_COLUMN_NAME;
 }
 void ListenerInterface::exitSelect_list_elem(TSqlParser::Select_list_elemContext * ctx)
@@ -238,6 +242,7 @@ void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx)
 		_find_replace(new_str, "''", "'");
 	}
 	if (query_add_constant(_query, new_str.c_str(), new_str.length())) {
+		_walker->set_walking(false);
 		_return_code = FQL_FAIL;
 	}
 }
@@ -365,6 +370,7 @@ void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_na
 	int ret = query_enter_function(_query, fn, _fql->props.char_as_byte);
 
 	if (ret) {
+		_walker->set_walking(false);
 		_return_code = ret;
 	}
 }
@@ -527,7 +533,9 @@ void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_w
 
 	if (ret) {
 		_return_code = ret;
+		_walker->set_walking(false);
 	}
+	_query->mode = MODE_AGGREGATE;
 }
 void ListenerInterface::exitAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx) { }
 
@@ -556,6 +564,7 @@ void ListenerInterface::enterEveryRule(antlr4::ParserRuleContext * ctx)
 		} else {
 			std::cerr << "\nTerminated: Use -O to Override at your own risk.\n";
 			_return_code = FQL_FAIL;
+		_walker->set_walking(false);
 		}
 	}
 }

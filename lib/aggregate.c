@@ -36,8 +36,9 @@ int _resolve(Aggregate* agg);
 Aggregate* aggregate_construct(Aggregate* agg, enum aggregate_function agg_type)
 {
 	*agg = (Aggregate) {
-		 { 0 }
-		,NULL
+		 NULL
+		,vec_new_(Column*)
+		,{ 0 }
 		,agg_type
 		,FIELD_UNDEFINED
 	};
@@ -56,11 +57,26 @@ void aggregate_free(Aggregate* agg)
 	free_(agg);
 }
 
-void aggregate_destroy(Aggregate* agg) { }
+void aggregate_destroy(Aggregate* agg) 
+{ 
+	vec_free(agg->args);
+	if (agg->data_type == FIELD_STRING) {
+		struct aggresult* it = vec_begin(&agg->results);
+		for(; it != vec_end(&agg->results); ++it) {
+			string_destroy(&it->data.s);
+		}
+	}
+	vec_destroy(&agg->results);
+}
 
 const char* aggregate_get_name(Aggregate* agg)
 {
 	return agg_str[agg->agg_type];
+}
+
+void aggregate_add_column(Aggregate* agg, Column* col)
+{
+	vec_push_back(agg->args, &col);
 }
 
 int _resolve(Aggregate* agg)

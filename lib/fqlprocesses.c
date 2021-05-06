@@ -319,7 +319,22 @@ int fql_groupby(Dgraph* proc_graph, Process* proc)
 		}
 	}
 
-	_recycle_recs(proc, *recs, (*recs)->size);
+	/* This entire if block needs to exist in case
+	 * you _really_ need to know the results of:
+	 * select count(*)  -- blasphemy
+	 */
+	if (*recs != NULL) {
+		_recycle_recs(proc, *recs, (*recs)->size);
+	} else {
+		Vec** recs = fifo_get(proc->fifo_in[1]);
+		Record** rec = vec_at(*recs, 0);
+		int ret = group_dump_record(group, *rec);
+		if (ret == FQL_FAIL) {
+			return FQL_FAIL;
+		}
+		fifo_add(proc->fifo_out[0], recs);
+		process_disable(proc);
+	}
 	return 1;
 }
 

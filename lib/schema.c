@@ -6,6 +6,7 @@
 #include "fql.h"
 #include "column.h"
 #include "function.h"
+#include "aggregate.h"
 #include "query.h"
 #include "select.h"
 #include "table.h"
@@ -603,15 +604,19 @@ int _group_validation(struct fql_handle* fql, Query* query)
 
 	Column** it = vec_begin(group_cols);
 	for (; it != vec_end(group_cols); ++it) {
-		if ((*it)->expr == EXPR_AGGREGATE) {
+		if ((*it)->expr != EXPR_AGGREGATE) {
+			vec_clear(&key);
+			if (_map_expression(&key, *it)) {
+				vec_destroy(&key);
+				return FQL_FAIL;
+			}
+			compositemap_set(expr_map, &key, it);
 			continue;
 		}
-		vec_clear(&key);
-		if (_map_expression(&key, *it)) {
-			vec_destroy(&key);
+		Aggregate* agg = (*it)->field.agg;
+		if (schema_assign_columns(agg->args, query->sources)) {
 			return FQL_FAIL;
 		}
-		compositemap_set(expr_map, &key, it);
 	}
 
 	/* Now, we need to match *all* op columns to a group */

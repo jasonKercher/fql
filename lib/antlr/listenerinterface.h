@@ -2,6 +2,7 @@
 #define LISTENERINTERFACE_H
 
 #include "gen/TSqlParserBaseListener.h"
+#include "treewalker.h"
 
 #include "fqlhandle.h"
 #include "query.h"
@@ -19,6 +20,9 @@ private:
 
 	std::vector<std::string> _error_tokens;
 	std::vector<std::string> _rule_names;
+
+	TreeWalker* _walker = NULL;
+
 	struct fql_handle* _fql = NULL;
 	struct stack* _query_stack = NULL;
         struct query* _subquery = NULL;
@@ -41,7 +45,7 @@ private:
 
 	void _no_impl(const std::string&, int);
 public:
-	ListenerInterface(struct fql_handle*, const std::vector<std::string>&);
+	ListenerInterface(struct fql_handle*, TreeWalker*, const std::vector<std::string>&);
 	void enterEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
 	void exitEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
 	int get_return_code();
