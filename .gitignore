@@ -6,9 +6,10 @@ check_constants
 check_logic
 check_read
 check_join
+check_subquery
+check_group
 check_difficult
 check_failure
-check_subquery
 
 run.sql
 

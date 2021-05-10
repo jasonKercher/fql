@@ -89,12 +89,12 @@ build_triplet = @build@
 host_triplet = @host@
 TESTS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
 	check_read$(EXEEXT) check_logic$(EXEEXT) check_join$(EXEEXT) \
-	check_subquery$(EXEEXT) check_difficult$(EXEEXT) \
-	check_failure$(EXEEXT)
+	check_subquery$(EXEEXT) check_group$(EXEEXT) \
+	check_difficult$(EXEEXT) check_failure$(EXEEXT)
 check_PROGRAMS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
 	check_read$(EXEEXT) check_logic$(EXEEXT) check_join$(EXEEXT) \
-	check_subquery$(EXEEXT) check_difficult$(EXEEXT) \
-	check_failure$(EXEEXT)
+	check_subquery$(EXEEXT) check_group$(EXEEXT) \
+	check_difficult$(EXEEXT) check_failure$(EXEEXT)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -134,6 +134,13 @@ check_failure_OBJECTS = $(am_check_failure_OBJECTS)
 check_failure_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_failure_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_failure_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+am_check_group_OBJECTS = check_group-check_common.$(OBJEXT) \
+	check_group-check_group.$(OBJEXT)
+check_group_OBJECTS = $(am_check_group_OBJECTS)
+check_group_DEPENDENCIES = $(top_builddir)/lib/libfql.la
+check_group_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_group_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_check_hashmap_OBJECTS = check_hashmap-check_hashmap.$(OBJEXT)
 check_hashmap_OBJECTS = $(am_check_hashmap_OBJECTS)
@@ -191,6 +198,8 @@ am__depfiles_remade = ./$(DEPDIR)/check_constants-check_common.Po \
 	./$(DEPDIR)/check_difficult-check_difficult.Po \
 	./$(DEPDIR)/check_failure-check_common.Po \
 	./$(DEPDIR)/check_failure-check_failure.Po \
+	./$(DEPDIR)/check_group-check_common.Po \
+	./$(DEPDIR)/check_group-check_group.Po \
 	./$(DEPDIR)/check_hashmap-check_hashmap.Po \
 	./$(DEPDIR)/check_join-check_common.Po \
 	./$(DEPDIR)/check_join-check_join.Po \
@@ -220,13 +229,15 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(check_constants_SOURCES) $(check_difficult_SOURCES) \
-	$(check_failure_SOURCES) $(check_hashmap_SOURCES) \
-	$(check_join_SOURCES) $(check_logic_SOURCES) \
-	$(check_read_SOURCES) $(check_subquery_SOURCES)
+	$(check_failure_SOURCES) $(check_group_SOURCES) \
+	$(check_hashmap_SOURCES) $(check_join_SOURCES) \
+	$(check_logic_SOURCES) $(check_read_SOURCES) \
+	$(check_subquery_SOURCES)
 DIST_SOURCES = $(check_constants_SOURCES) $(check_difficult_SOURCES) \
-	$(check_failure_SOURCES) $(check_hashmap_SOURCES) \
-	$(check_join_SOURCES) $(check_logic_SOURCES) \
-	$(check_read_SOURCES) $(check_subquery_SOURCES)
+	$(check_failure_SOURCES) $(check_group_SOURCES) \
+	$(check_hashmap_SOURCES) $(check_join_SOURCES) \
+	$(check_logic_SOURCES) $(check_read_SOURCES) \
+	$(check_subquery_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -619,6 +630,12 @@ check_subquery_SOURCES = $(top_builddir)/lib/include/fql.h \
 
 check_subquery_CFLAGS = @CHECK_CFLAGS@
 check_subquery_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+check_group_SOURCES = $(top_builddir)/lib/include/fql.h \
+			check_common.h check_common.c \
+			check_group.c
+
+check_group_CFLAGS = @CHECK_CFLAGS@
+check_group_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 check_difficult_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_common.h check_common.c \
 			check_difficult.c
@@ -686,6 +703,10 @@ check_failure$(EXEEXT): $(check_failure_OBJECTS) $(check_failure_DEPENDENCIES) $
 	@rm -f check_failure$(EXEEXT)
 	$(AM_V_CCLD)$(check_failure_LINK) $(check_failure_OBJECTS) $(check_failure_LDADD) $(LIBS)
 
+check_group$(EXEEXT): $(check_group_OBJECTS) $(check_group_DEPENDENCIES) $(EXTRA_check_group_DEPENDENCIES) 
+	@rm -f check_group$(EXEEXT)
+	$(AM_V_CCLD)$(check_group_LINK) $(check_group_OBJECTS) $(check_group_LDADD) $(LIBS)
+
 check_hashmap$(EXEEXT): $(check_hashmap_OBJECTS) $(check_hashmap_DEPENDENCIES) $(EXTRA_check_hashmap_DEPENDENCIES) 
 	@rm -f check_hashmap$(EXEEXT)
 	$(AM_V_CCLD)$(check_hashmap_LINK) $(check_hashmap_OBJECTS) $(check_hashmap_LDADD) $(LIBS)
@@ -718,6 +739,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_difficult-check_difficult.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_failure-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_failure-check_failure.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_group-check_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_group-check_group.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_hashmap-check_hashmap.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_join-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_join-check_join.Po@am__quote@ # am--include-marker
@@ -838,6 +861,34 @@ check_failure-check_failure.obj: check_failure.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_failure.c' object='check_failure-check_failure.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_failure_CFLAGS) $(CFLAGS) -c -o check_failure-check_failure.obj `if test -f 'check_failure.c'; then $(CYGPATH_W) 'check_failure.c'; else $(CYGPATH_W) '$(srcdir)/check_failure.c'; fi`
+
+check_group-check_common.o: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_group_CFLAGS) $(CFLAGS) -MT check_group-check_common.o -MD -MP -MF $(DEPDIR)/check_group-check_common.Tpo -c -o check_group-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_group-check_common.Tpo $(DEPDIR)/check_group-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_group-check_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_group_CFLAGS) $(CFLAGS) -c -o check_group-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+
+check_group-check_common.obj: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_group_CFLAGS) $(CFLAGS) -MT check_group-check_common.obj -MD -MP -MF $(DEPDIR)/check_group-check_common.Tpo -c -o check_group-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_group-check_common.Tpo $(DEPDIR)/check_group-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_group-check_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_group_CFLAGS) $(CFLAGS) -c -o check_group-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+
+check_group-check_group.o: check_group.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_group_CFLAGS) $(CFLAGS) -MT check_group-check_group.o -MD -MP -MF $(DEPDIR)/check_group-check_group.Tpo -c -o check_group-check_group.o `test -f 'check_group.c' || echo '$(srcdir)/'`check_group.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_group-check_group.Tpo $(DEPDIR)/check_group-check_group.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_group.c' object='check_group-check_group.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_group_CFLAGS) $(CFLAGS) -c -o check_group-check_group.o `test -f 'check_group.c' || echo '$(srcdir)/'`check_group.c
+
+check_group-check_group.obj: check_group.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_group_CFLAGS) $(CFLAGS) -MT check_group-check_group.obj -MD -MP -MF $(DEPDIR)/check_group-check_group.Tpo -c -o check_group-check_group.obj `if test -f 'check_group.c'; then $(CYGPATH_W) 'check_group.c'; else $(CYGPATH_W) '$(srcdir)/check_group.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_group-check_group.Tpo $(DEPDIR)/check_group-check_group.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_group.c' object='check_group-check_group.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_group_CFLAGS) $(CFLAGS) -c -o check_group-check_group.obj `if test -f 'check_group.c'; then $(CYGPATH_W) 'check_group.c'; else $(CYGPATH_W) '$(srcdir)/check_group.c'; fi`
 
 check_hashmap-check_hashmap.o: check_hashmap.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_hashmap_CFLAGS) $(CFLAGS) -MT check_hashmap-check_hashmap.o -MD -MP -MF $(DEPDIR)/check_hashmap-check_hashmap.Tpo -c -o check_hashmap-check_hashmap.o `test -f 'check_hashmap.c' || echo '$(srcdir)/'`check_hashmap.c
@@ -1206,6 +1257,13 @@ check_subquery.log: check_subquery$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+check_group.log: check_group$(EXEEXT)
+	@p='check_group$(EXEEXT)'; \
+	b='check_group'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 check_difficult.log: check_difficult$(EXEEXT)
 	@p='check_difficult$(EXEEXT)'; \
 	b='check_difficult'; \
@@ -1319,6 +1377,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/check_difficult-check_difficult.Po
 	-rm -f ./$(DEPDIR)/check_failure-check_common.Po
 	-rm -f ./$(DEPDIR)/check_failure-check_failure.Po
+	-rm -f ./$(DEPDIR)/check_group-check_common.Po
+	-rm -f ./$(DEPDIR)/check_group-check_group.Po
 	-rm -f ./$(DEPDIR)/check_hashmap-check_hashmap.Po
 	-rm -f ./$(DEPDIR)/check_join-check_common.Po
 	-rm -f ./$(DEPDIR)/check_join-check_join.Po
@@ -1379,6 +1439,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/check_difficult-check_difficult.Po
 	-rm -f ./$(DEPDIR)/check_failure-check_common.Po
 	-rm -f ./$(DEPDIR)/check_failure-check_failure.Po
+	-rm -f ./$(DEPDIR)/check_group-check_common.Po
+	-rm -f ./$(DEPDIR)/check_group-check_group.Po
 	-rm -f ./$(DEPDIR)/check_hashmap-check_hashmap.Po
 	-rm -f ./$(DEPDIR)/check_join-check_common.Po
 	-rm -f ./$(DEPDIR)/check_join-check_join.Po

@@ -323,7 +323,7 @@ int fql_groupby(dgraph* proc_graph, process* proc)
 	 * you _really_ need to know the results of:
 	 * select count(*)  -- blasphemy
 	 */
-	if (*recs != NULL) {
+	if (!proc->is_const) {
 		_recycle_recs(proc, *recs, (*recs)->size);
 	} else {
 		vec** recs = fifo_get(proc->fifo_in[1]);
