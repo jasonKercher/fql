@@ -86,6 +86,7 @@ enum mode {
 	MODE_SOURCES,
 	MODE_SEARCH,
 	MODE_GROUPBY,
+	MODE_ORDERBY,
 };
 
 enum logic_mode {
@@ -104,6 +105,7 @@ struct query {
 	struct vec* validation_list;    /* for no-source tables */
 	struct group* groupby;
 	struct group* distinct;
+	struct order* orderby;
 	//struct queue* having;
 	//struct expression* limit;       /* TOP */
 	void* op;                       /* operation structure */

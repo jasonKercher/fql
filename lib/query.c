@@ -28,6 +28,7 @@ query* query_construct(query* self, int id)
 		,NULL                   /* distinct */
 		//,NULL                   /* having */
 		//,NULL                   /* limit */
+		,NULL                   /* orderby */
 		,NULL                   /* operation */
 		,id                     /* query_id */
 		,0                      /* query_total */
@@ -126,6 +127,7 @@ int _distribute_column(query* self, column* col)
 		aggregate_add_column(*back, col);
 		break;
 	 }
+	case MODE_ORDERBY:
 	default:
 		return FQL_FAIL;
 	}
@@ -137,8 +139,7 @@ void query_add_column(query* self, char* col_name, const char* table_id)
 	column* col = new_(column, EXPR_COLUMN_NAME, col_name, table_id);
 	if (_distribute_column(self, col)) {
 		fprintf(stderr, "unhandled COLUMN_NAME: %s\n", col_name);
-		free_(col_name);
-		return;
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -147,6 +148,7 @@ void query_add_asterisk(query* self, const char* table_id)
 	column* col = new_(column, EXPR_ASTERISK, NULL, table_id);
 	if (_distribute_column(self, col)) {
 		fprintf(stderr, "unhandled asterisk\n");
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -174,7 +176,7 @@ int query_add_constant(query* self, const char* s, int len)
 	col->field_type = type;
 	if (_distribute_column(self, col)) {
 		fprintf(stderr, "unhandled constant expression: %d\n", self->mode);
-		return FQL_FAIL;
+		exit(EXIT_FAILURE);
 	}
 
 	return FQL_GOOD;
@@ -259,7 +261,7 @@ void _add_function(query* self, function* func, enum field_type type)
 		fprintf(stderr,
 			"unhandled function: %s\n",
 			function_get_name(func));
-		return;
+		exit(EXIT_FAILURE);
 	}
 	stack_push(&self->function_stack, col);
 }

@@ -549,6 +549,15 @@ void ListenerInterface::exitAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOW
 void ListenerInterface::enterAll_distinct_expression(TSqlParser::All_distinct_expressionContext * ctx) { }
 void ListenerInterface::exitAll_distinct_expression(TSqlParser::All_distinct_expressionContext * ctx) { }
 
+void ListenerInterface::enterOrder_by_clause(TSqlParser::Order_by_clauseContext * ctx) 
+{
+	_query->mode = MODE_ORDERBY;
+}
+void ListenerInterface::exitOrder_by_clause(TSqlParser::Order_by_clauseContext * ctx) { }
+
+void ListenerInterface::enterOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx) { }
+void ListenerInterface::exitOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx) { }
+
 
 /* Every Rule Operations */
 
@@ -1689,17 +1698,11 @@ void ListenerInterface::exitTop_percent(TSqlParser::Top_percentContext * ctx) { 
 void ListenerInterface::enterTop_count(TSqlParser::Top_countContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitTop_count(TSqlParser::Top_countContext * ctx) { }
 
-void ListenerInterface::enterOrder_by_clause(TSqlParser::Order_by_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitOrder_by_clause(TSqlParser::Order_by_clauseContext * ctx) { }
-
 void ListenerInterface::enterFor_clause(TSqlParser::For_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitFor_clause(TSqlParser::For_clauseContext * ctx) { }
 
 void ListenerInterface::enterXml_common_directives(TSqlParser::Xml_common_directivesContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitXml_common_directives(TSqlParser::Xml_common_directivesContext * ctx) { }
-
-void ListenerInterface::enterOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx) { }
 
 void ListenerInterface::enterOption_clause(TSqlParser::Option_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitOption_clause(TSqlParser::Option_clauseContext * ctx) { }
