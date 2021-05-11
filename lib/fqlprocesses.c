@@ -116,10 +116,7 @@ int fql_logic(dgraph* proc_graph, process* proc)
 	vec** recs = fifo_get(proc->fifo_in[0]);
 	logicgroup* lg = proc->proc_data;
 
-	int ret = logicgroup_eval(lg, *recs, lg->join_logic);
-	if (ret == FQL_FAIL) {
-		return FQL_FAIL;
-	}
+	int ret = try_ (logicgroup_eval(lg, *recs, lg->join_logic));
 
 	if (ret) {
 		fifo_add(proc->fifo_out[1], recs);  /* true */
@@ -313,10 +310,7 @@ int fql_groupby(dgraph* proc_graph, process* proc)
 	vec** recs = fifo_get(proc->fifo_in[0]);
 
 	if (!vec_empty(&group->columns)) {
-		int ret = group_record(group, *recs);
-		if (ret == FQL_FAIL) {
-			return FQL_FAIL;
-		}
+		int ret = try_ (group_record(group, *recs));
 	}
 
 	/* this entire if block needs to exist in case
@@ -328,10 +322,7 @@ int fql_groupby(dgraph* proc_graph, process* proc)
 	} else {
 		vec** recs = fifo_get(proc->fifo_in[1]);
 		record** rec = vec_at(*recs, 0);
-		int ret = group_dump_record(group, *rec);
-		if (ret == FQL_FAIL) {
-			return FQL_FAIL;
-		}
+		int ret = try_ (group_dump_record(group, *rec));
 		fifo_add(proc->fifo_out[0], recs);
 		process_disable(proc);
 	}

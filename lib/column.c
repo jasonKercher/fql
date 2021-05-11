@@ -176,9 +176,7 @@ int column_get_int(long* ret, column* col, vec* recs)
 		}
 		stringview* sv = vec_at((*rec)->fields, col->data_source->location);
 		string_copy_from_stringview(&col->buf, sv);
-		if (str2long(ret, col->buf.data)) {
-			return FQL_FAIL;
-		}
+		fail_if_(str2long(ret, col->buf.data));
 		return FQL_GOOD;
 	}
 	case EXPR_FUNCTION:
@@ -191,18 +189,12 @@ int column_get_int(long* ret, column* col, vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		if (func->call__(func, &new_field, recs)) {
-			return FQL_FAIL;
-		}
-		if (field_to_int(ret, &new_field, &new_field_type)) {
-			return FQL_FAIL;
-		}
+		try_ (func->call__(func, &new_field, recs));
+		try_ (field_to_int(ret, &new_field, &new_field_type));
 		break;
 	}
 	case EXPR_CONST:
-		if (field_to_int(ret, &col->field, &col->field_type)) {
-			return FQL_FAIL;
-		}
+		try_ (field_to_int(ret, &col->field, &col->field_type));
 		break;
 	default:
 		fprintf(stderr, "col_get_int: Unexpected expression\n");
@@ -226,9 +218,7 @@ int column_get_float(double* ret, column* col, vec* recs)
 		}
 		stringview* sv = vec_at((*rec)->fields, col->data_source->location);
 		string_copy_from_stringview(&col->buf, sv);
-		if (str2double(ret, col->buf.data)) {
-			return FQL_FAIL;
-		}
+		fail_if_ (str2double(ret, col->buf.data));
 		return FQL_GOOD;
 	}
 	case EXPR_FUNCTION:
@@ -240,18 +230,12 @@ int column_get_float(double* ret, column* col, vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		if (func->call__(func, &new_field, recs)) {
-			return FQL_FAIL;
-		}
-		if (field_to_float(ret, &new_field, &new_field_type)) {
-			return FQL_FAIL;
-		}
+		try_ (func->call__(func, &new_field, recs));
+		try_ (field_to_float(ret, &new_field, &new_field_type));
 		break;
 	}
 	case EXPR_CONST:
-		if (field_to_float(ret, &col->field, &col->field_type)) {
-			return FQL_FAIL;
-		}
+		try_ (field_to_float(ret, &col->field, &col->field_type));
 		break;
 	default:
 		return FQL_FAIL;
@@ -287,18 +271,12 @@ int column_get_stringview(stringview* ret, column* col, vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		if (func->call__(func, &new_field, recs)) {
-			return FQL_FAIL;
-		}
-		if (field_to_stringview(ret, &new_field, &new_field_type)) {
-			return FQL_FAIL;
-		}
+		try_ (func->call__(func, &new_field, recs));
+		try_ (field_to_stringview(ret, &new_field, &new_field_type));
 		break;
 	}
 	case EXPR_CONST:
-		if (field_to_stringview(ret, &col->field, &col->field_type)) {
-			return FQL_FAIL;
-		}
+		try_ (field_to_stringview(ret, &col->field, &col->field_type));
 		break;
 	default:
 		return FQL_FAIL;

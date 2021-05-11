@@ -153,15 +153,10 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 
 		op_preop(fql);
 
-		int ret = 0;
 		if (fql->props.threading) {
-			ret = process_exec_plan_thread(plan);
+			try_ (process_exec_plan_thread(plan));
 		} else {
-			ret = process_exec_plan(plan);
-		}
-
-		if (ret == FQL_FAIL) {
-			return FQL_FAIL;
+			try_ (process_exec_plan(plan));
 		}
 	}
 	return FQL_GOOD;
@@ -174,10 +169,7 @@ int fql_exec_all_plans(struct fql_handle* fql)
 
 int fql_exec(struct fql_handle* fql, const char* query_str)
 {
-	int plan_count = fql_make_plans(fql, query_str);
-	if (plan_count == FQL_FAIL) {
-		return FQL_FAIL;
-	}
+	int plan_count = try_ (fql_make_plans(fql, query_str));
 	int ret = 0;
 	if (!fql->props.dry_run) {
 		ret = fql_exec_plans(fql, plan_count);

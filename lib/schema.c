@@ -213,7 +213,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table)
 	}
 
 	if (table->schema->name[0]) {
-		fputs("not loading self by name yet\n", stderr);
+		fputs("not loading schema by name yet\n", stderr);
 		return FQL_FAIL;  /* TODO: load self by name */
 	}
 
@@ -229,9 +229,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table)
 		 * row of the file and assume a delimited
 		 * list of field names.
 		 */
-		if (schema_resolve_file(table)) {
-			return FQL_FAIL;
-		}
+		try_ (schema_resolve_file(table));
 
 		/* retrieve self using libcsv */
 		if (table->join_type == JOIN_FROM) {
@@ -277,9 +275,7 @@ int _evaluate_if_const(column* col)
 		new_field.s = &col->buf;
 		string_clear(new_field.s);
 	}
-	if (func->call__(func, &new_field, NULL)) {
-		return FQL_FAIL;
-	}
+	try_ (func->call__(func, &new_field, NULL));
 
 	delete_(function, func);
 	col->expr = EXPR_CONST;
@@ -294,18 +290,10 @@ int schema_assign_columns_limited(vec* columns, vec* sources, int limit)
 	for (; it != vec_end(columns); ++it) {
 		if ((*it)->expr == EXPR_FUNCTION) {
 			function* func = (*it)->field.fn;
-			if (schema_assign_columns_limited(func->args, sources, limit)) {
-				return FQL_FAIL;
-			}
-			if(function_op_resolve(func, &(*it)->field_type)) {
-				return FQL_FAIL;
-			}
-			if (function_validate(func)) {
-				return FQL_FAIL;
-			}
-			if (_evaluate_if_const(*it)) {
-				return FQL_FAIL;
-			}
+			try_ (schema_assign_columns_limited(func->args, sources, limit));
+			try_ (function_op_resolve(func, &(*it)->field_type));
+			try_ (function_validate(func));
+			try_ (_evaluate_if_const(*it));
 			continue;
 		}
 		if ((*it)->expr != EXPR_COLUMN_NAME) {
@@ -528,9 +516,7 @@ int _map_expression(vec* key, column* col)
 
 	column** it = vec_begin(col->field.fn->args);
 	for (; it != vec_end(col->field.fn->args); ++it) {
-		if (_map_expression(key, *it)) {
-			return FQL_FAIL;
-		}
+		try_ (_map_expression(key, *it));
 	}
 
 	return FQL_GOOD;
@@ -546,10 +532,10 @@ int _op_find_group(compositemap* expr_map, column* col, vec* key)
 		col->src_idx = 0;
 		return FQL_GOOD;
 	}
+
 	vec_clear(key);
-	if (_map_expression(key, col)) {
-		return FQL_FAIL;
-	}
+	try_ (_map_expression(key, col));
+
 	column** result = compositemap_get(expr_map, key);
 	if (result != NULL) {
 		col->src_idx = 0;
@@ -577,9 +563,7 @@ int _op_find_group(compositemap* expr_map, column* col, vec* key)
 
 	column** it = vec_begin(col->field.fn->args);
 	for (; it != vec_end(col->field.fn->args); ++it) {
-		if (_op_find_group(expr_map, *it, key)) {
-			return FQL_FAIL;
-		}
+		try_ (_op_find_group(expr_map, *it, key));
 	}
 	return FQL_GOOD;
 }
@@ -588,9 +572,7 @@ int _group_validation(struct fql_handle* fql, query* query)
 {
 	/* verify group columns and build composite key for each */
 	vec* group_cols = &query->groupby->columns;
-	if (schema_assign_columns(group_cols, query->sources)) {
-		return FQL_FAIL;
-	}
+	try_ (schema_assign_columns(group_cols, query->sources));
 
 	compositemap* expr_map = new_t_(compositemap,
 			                column*,
@@ -613,13 +595,8 @@ int _group_validation(struct fql_handle* fql, query* query)
 			continue;
 		}
 		aggregate* agg = (*it)->field.agg;
-		if (schema_assign_columns(agg->args, query->sources)) {
-			return FQL_FAIL;
-		}
-
-		if (aggregate_resolve(agg)) {
-			return FQL_FAIL;
-		}
+		try_ (schema_assign_columns(agg->args, query->sources));
+		try_ (aggregate_resolve(agg));
 	}
 
 	/* now, we need to match *all* op columns to a group */
@@ -644,9 +621,7 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 	int i = 0;
 	for (; i < sources->size; ++i) {
 		table* table = vec_at(query->sources, i);
-		if (schema_resolve_source(fql, table)) {
-			return FQL_FAIL;
-		}
+		try_ (schema_resolve_source(fql, table));
 
 		if (i == 0 && !op_has_delim(query->op)) {
 			op_set_delim(query->op, table->schema->delimiter);
@@ -662,18 +637,12 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 		}
 	}
 
-	if (schema_assign_columns(query->validation_list, query->sources)) {
-		return FQL_FAIL;
-	}
+	try_ (schema_assign_columns(query->validation_list, query->sources));
 
 	/* skip validating groups if no group columns */
 	vec* op_cols = op_get_validation_list(query->op);
-	if (_asterisk_resolve(op_cols, sources)) {
-		return FQL_FAIL;
-	}
-	if (schema_assign_columns(op_cols, sources)) {
-		return FQL_FAIL;
-	}
+	try_ (_asterisk_resolve(op_cols, sources));
+	try_ (schema_assign_columns(op_cols, sources));
 	if ((!vec_empty(&query->groupby->columns)
 	  || !vec_empty(&query->groupby->aggregates))
 	 && _group_validation(fql, query)) {
@@ -695,9 +664,7 @@ int schema_resolve(struct fql_handle* fql)
 			op_set_delim(query->op, fql->props.out_delim);
 		}
 
-		if (schema_resolve_query(fql, query)) {
-			return FQL_FAIL;
-		}
+		try_ (schema_resolve_query(fql, query));
 	}
 
 	return FQL_GOOD;

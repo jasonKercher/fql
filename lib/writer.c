@@ -30,9 +30,7 @@ int libcsv_write_record(void* writer_data, vec* col_vec, vec* recs)
 			handle->quotes = quote_store;
 		}
 		else {
-			if (column_get_stringview(&sv, cols[i], recs)) {
-				return FQL_FAIL;
-			}
+			try_ (column_get_stringview(&sv, cols[i], recs));
 			csv_nwrite_field(handle, sv.data, sv.len);
 		}
 	}

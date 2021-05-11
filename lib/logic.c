@@ -205,9 +205,7 @@ int logicgroup_eval(logicgroup* lg, vec* recs, logic* skip)
 		if (ret == 1 && (*it)->type == LG_AND) {
 			return 1;
 		}
-		if (ret == FQL_FAIL) {
-			return FQL_FAIL;
-		}
+		fail_if_ (ret == FQL_FAIL);
 	}
 	return ret;
 }

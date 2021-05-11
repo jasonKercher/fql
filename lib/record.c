@@ -29,12 +29,6 @@ record* record_construct(record* rec, unsigned idx, unsigned n, _Bool owns_recs)
 	return rec;
 }
 
-void record_free(record* rec)
-{
-	record_destroy(rec);
-	free_(rec);
-}
-
 void record_destroy(record* rec)
 {
 	delete_(vec, rec->fields);

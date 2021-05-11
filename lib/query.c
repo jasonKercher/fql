@@ -164,14 +164,10 @@ int query_add_constant(query* self, const char* s, int len)
 	} else {
 		if (strhaschar(s, '.')) {
 			type = FIELD_FLOAT;
-			if (str2double(&col->field.f, s)) {
-				return FQL_FAIL;
-			}
+			fail_if_ (str2double(&col->field.f, s));
 		} else {
 			type = FIELD_INT;
-			if (str2long(&col->field.i, s)) {
-				return FQL_FAIL;
-			}
+			fail_if_ (str2long(&col->field.i, s));
 		}
 	}
 
@@ -249,9 +245,7 @@ int query_add_aggregate(query* self, enum aggregate_function agg_type)
 
 	column* op_col = new_(column, EXPR_AGGREGATE, agg, "");
 	op_col->data_source = group_col;
-	if (_distribute_column(self, op_col)) {
-		return FQL_FAIL;
-	}
+	try_ (_distribute_column(self, op_col));
 
 	return FQL_GOOD;
 }
@@ -289,9 +283,7 @@ int query_enter_function(query* self, enum scalar_function scalar_type, int char
 {
 	enum field_type type = FIELD_UNDEFINED;
 	function* func = new_(function, scalar_type, &type, char_as_byte);
-	if (func->call__ == NULL) {
-		return FQL_FAIL;
-	}
+	fail_if_ (func->call__ == NULL);
 	_add_function(self, func, type);
 
 	return FQL_GOOD;

@@ -4,8 +4,8 @@
 #include <ctype.h>
 #include "fql.h"
 #include "column.h"
-
 #include "util/stringview.h"
+#include "util/util.h"
 
 
 /* naive utf8 handling. if I cared, I'd use libicu. */
@@ -78,9 +78,7 @@ int fql_len(function* fn, union field* ret, vec* recs)
 	column** arg = vec_begin(fn->args);
 	stringview sv;
 
-	if (column_get_stringview(&sv, *arg, recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_stringview(&sv, *arg, recs));
 
 	int i = 0;
 	int bytes = 1;
@@ -89,10 +87,7 @@ int fql_len(function* fn, union field* ret, vec* recs)
 	for (; i < sv.len; i += bytes) {
 		bytes = 1;
 		if (!fn->char_as_byte) {
-			bytes = _get_byte_count(sv.data[i], sv.len - i);
-			if (bytes == FQL_FAIL) {
-				return FQL_FAIL;
-			}
+			bytes = try_ (_get_byte_count(sv.data[i], sv.len - i));
 		}
 		++len;
 		if (!isspace(sv.data[i])) {
@@ -122,9 +117,7 @@ int fql_datalength(function* fn, union field* ret, vec* recs)
 	}
 
 	stringview sv;
-	if (column_get_stringview(&sv, *arg, recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_stringview(&sv, *arg, recs));
 
 	ret->i = sv.len;
 
@@ -136,13 +129,9 @@ int fql_left(function* fn, union field* ret, vec* recs)
 {
 	column** args = vec_begin(fn->args);
 	stringview sv;
-	if (column_get_stringview(&sv, args[0], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_stringview(&sv, args[0], recs));
 	long n = 0;
-	if (column_get_int(&n, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_int(&n, args[1], recs));
 
 	if (n > sv.len) {
 		string_strncpy(ret->s, sv.data, sv.len);
@@ -158,10 +147,7 @@ int fql_left(function* fn, union field* ret, vec* recs)
 	int bytes = 0;
 	unsigned byte_count = 0;
 	for (; i < n && i < sv.len; i += bytes) {
-		bytes = _get_byte_count(sv.data[i], sv.len - i);
-		if (bytes == FQL_FAIL) {
-			return FQL_FAIL;
-		}
+		bytes = try_ (_get_byte_count(sv.data[i], sv.len - i));
 		byte_count += bytes;
 	}
 
@@ -177,9 +163,7 @@ int fql_right(function* fn, union field* ret, vec* recs)
 	stringview sv;
 	column_get_stringview(&sv, args[0], recs);
 	long n = 0;
-	if (column_get_int(&n, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_int(&n, args[1], recs));
 
 	if (n > sv.len) {
 		string_strncpy(ret->s, sv.data, n);
@@ -196,10 +180,7 @@ int fql_right(function* fn, union field* ret, vec* recs)
 	unsigned char_count = 0;
 	unsigned byte_count = 0;
 	for (; i >= 0 && char_count < n; ++char_count) {
-		int bytes = _get_rev_byte_count(&sv.data[i], i+1);
-		if (bytes == FQL_FAIL) {
-			return FQL_FAIL;
-		}
+		int bytes = try_ (_get_rev_byte_count(&sv.data[i], i+1));
 		byte_count += bytes;
 		i -= bytes;
 	}
@@ -215,12 +196,8 @@ int fql_op_plus_i(function* fn, union field* ret, vec* recs)
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
-	if (column_get_int(&n1, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_int(&n0, args[0], recs));
+	try_ (column_get_int(&n1, args[1], recs));
 
 	/* detect overflow */
 	if (n0 > 0 && n1 > 0
@@ -243,12 +220,8 @@ int fql_op_plus_f(function* fn, union field* ret, vec* recs)
 	column** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	if (column_get_float(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
-	if (column_get_float(&n1, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_float(&n0, args[0], recs));
+	try_ (column_get_float(&n1, args[1], recs));
 
 	ret->f = n0 + n1;
 
@@ -274,12 +247,8 @@ int fql_op_minus_i(function* fn, union field* ret, vec* recs)
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
-	if (column_get_int(&n1, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_int(&n0, args[0], recs));
+	try_ (column_get_int(&n1, args[1], recs));
 
 	/* detect overflow */
 	if (n0 > 0 && n1 < 0
@@ -302,12 +271,8 @@ int fql_op_minus_f(function* fn, union field* ret, vec* recs)
 	column** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	if (column_get_float(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
-	if (column_get_float(&n1, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_float(&n0, args[0], recs));
+	try_ (column_get_float(&n1, args[1], recs));
 
 	ret->f = n0 - n1;
 
@@ -319,12 +284,8 @@ int fql_op_mult_i(function* fn, union field* ret, vec* recs)
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
-	if (column_get_int(&n1, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_int(&n0, args[0], recs));
+	try_ (column_get_int(&n1, args[1], recs));
 
 	unsigned long u0 = 0;
 	unsigned long u1 = 0;
@@ -362,12 +323,8 @@ int fql_op_mult_f(function* fn, union field* ret, vec* recs)
 	column** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	if (column_get_float(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
-	if (column_get_float(&n1, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_float(&n0, args[0], recs));
+	try_ (column_get_float(&n1, args[1], recs));
 
 	ret->f = n0 * n1;
 
@@ -379,12 +336,8 @@ int fql_op_divi_i(function* fn, union field* ret, vec* recs)
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
-	if (column_get_int(&n1, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_int(&n0, args[0], recs));
+	try_ (column_get_int(&n1, args[1], recs));
 
 	if (n1 == 0) {
 		fputs("division by zero\n", stderr);
@@ -401,12 +354,8 @@ int fql_op_divi_f(function* fn, union field* ret, vec* recs)
 	column** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	if (column_get_float(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
-	if (column_get_float(&n1, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_float(&n0, args[0], recs));
+	try_ (column_get_float(&n1, args[1], recs));
 
 	if (n1 == 0) {
 		fputs("division by zero\n", stderr);
@@ -423,12 +372,8 @@ int fql_op_mod_i(function* fn, union field* ret, vec* recs)
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
-	if (column_get_int(&n1, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_int(&n0, args[0], recs));
+	try_ (column_get_int(&n1, args[1], recs));
 
 	ret->i = n0 % n1;
 
@@ -440,12 +385,8 @@ int fql_op_mod_f(function* fn, union field* ret, vec* recs)
 	//column** args = vec_begin(fn->args);
 	//double n0 = 0;
 	//double n1 = 0;
-	//if (column_get_float(&n0, args[0], recs)) {
-	//        return FQL_FAIL;
-	//}
-	//if (column_get_float(&n1, args[1], recs)) {
-	//        return FQL_FAIL;
-	//}
+	//try_ (column_get_float(&n0, args[0], recs));
+	//try_ (column_get_float(&n1, args[1], recs));
 
 	//ret->f = n0 % n1;
 
@@ -457,12 +398,8 @@ int fql_op_bit_or(function* fn, union field* ret, vec* recs)
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
-	if (column_get_int(&n1, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_int(&n0, args[0], recs));
+	try_ (column_get_int(&n1, args[1], recs));
 
 	ret->i = n0 | n1;
 
@@ -474,12 +411,8 @@ int fql_op_bit_and(function* fn, union field* ret, vec* recs)
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
-	if (column_get_int(&n1, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_int(&n0, args[0], recs));
+	try_ (column_get_int(&n1, args[1], recs));
 
 	ret->i = n0 & n1;
 
@@ -491,12 +424,8 @@ int fql_op_bit_xor(function* fn, union field* ret, vec* recs)
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
-	if (column_get_int(&n1, args[1], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_int(&n0, args[0], recs));
+	try_ (column_get_int(&n1, args[1], recs));
 
 	ret->i = n0 ^ n1;
 
@@ -507,9 +436,7 @@ int fql_op_bit_not(function* fn, union field* ret, vec* recs)
 {
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
-	if (column_get_int(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_int(&n0, args[0], recs));
 
 	ret->i = ~n0;
 
@@ -521,9 +448,7 @@ int fql_op_unary_minus_i(function* fn, union field* ret, vec* recs)
 {
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
-	if (column_get_int(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_int(&n0, args[0], recs));
 
 	if (n0 == LONG_MIN) {
 		fputs("arithmetic overflow detected\n", stderr);
@@ -539,9 +464,7 @@ int fql_op_unary_minus_f(function* fn, union field* ret, vec* recs)
 {
 	column** args = vec_begin(fn->args);
 	double n0 = 0;
-	if (column_get_float(&n0, args[0], recs)) {
-		return FQL_FAIL;
-	}
+	try_ (column_get_float(&n0, args[0], recs));
 
 	ret->f = -n0;
 

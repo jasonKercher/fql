@@ -210,10 +210,7 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		 || (proc->fifo_out[1] && !fifo_is_receivable(proc->fifo_out[1]))) {
 			continue;
 		}
-		int ret = proc->action__(proc_graph, proc);
-		if (ret == FQL_FAIL) {
-			return FQL_FAIL;
-		}
+		int ret = try_ (proc->action__(proc_graph, proc));
 
 		if (proc_node == plan->op_true) {
 			++plan->rows_affected;
@@ -330,9 +327,7 @@ int process_exec_plan_thread(plan* plan)
 		tdata->proc_node = *proc_node;
 		tdata->proc_graph = proc_graph;
 		process* proc = (*proc_node)->data;
-		if (pthread_create(&proc->thread, &attr, _thread_exec, tdata)) {
-			return FQL_FAIL;
-		}
+		fail_if_ (pthread_create(&proc->thread, &attr, _thread_exec, tdata));
 	}
 
 	pthread_attr_destroy(&attr);
@@ -341,9 +336,7 @@ int process_exec_plan_thread(plan* plan)
 	for (i = 0; i < tdata_vec.size; ++i) {
 		struct thread_data* tdata = vec_at(&tdata_vec, i);
 		process* proc = tdata->proc_node->data;
-		if (pthread_join(proc->thread, &status)) {
-			return FQL_FAIL;
-		}
+		fail_if_ (pthread_join(proc->thread, &status));
 	}
 
 	pthread_exit(NULL);

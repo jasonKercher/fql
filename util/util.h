@@ -45,20 +45,6 @@ typedef int(*int_generic_data_fn)(void*);
 })
 
 /**
- * wrapper macro for non-posix function strdup
- * strdup allocates memory for us. if dest is already
- * allocated memory, free it first.
- */
-#define strdup_(src_)  ({                                               \
-	char* dest_ = strdup(src_);                                     \
-	if (!dest_) {                                                   \
-		fprintf(stderr, "strdup failed on string %s.\n", src_); \
-		exit(EXIT_FAILURE);                                     \
-	}                                                               \
-	dest_;                                                          \
-})
-
-/**
  * strncpy but guaranteed to end with '\0'
  */
 #define strncpy_(dest_, src_, n_) { \
@@ -76,29 +62,63 @@ typedef int(*int_generic_data_fn)(void*);
 	}                          \
 }
 
+/* Allow blank __VA_ARGS__ */
+#define optarg_(...) ,##__VA_ARGS__
 
-#define VA_ARGS(...) ,##__VA_ARGS__
+/* allocate space and pass args to ${T_}_construct */
 #define new_(T_, ...) ({                     \
 	T_* alloc_ = malloc_(sizeof(T_));    \
 	T_##_construct(alloc_                \
-		      VA_ARGS(__VA_ARGS__)); \
+		      optarg_(__VA_ARGS__)); \
 	alloc_;                              \
 })
+
+/* same as new_ except second arg is a type that
+ * we take the sizeof. For example:
+ *
+ *     vec* v = new_t_(vec, int);
+ *
+ * is the same as
+ *
+ *     vec* v = new_(vec, sizeof(int));
+ */
 #define new_t_(T_, data_T_, ...) ({          \
 	T_* alloc_ = malloc_(sizeof(T_));    \
 	T_##_construct(alloc_                \
 		      ,sizeof(data_T_)       \
-	              VA_ARGS(__VA_ARGS__)); \
+	              optarg_(__VA_ARGS__)); \
 	alloc_;                              \
 })
+
+/* Will call ${T_}_destroy and free allocation */
 #define delete_(T_, p_, ...) {                     \
 	if (p_ != NULL) {                          \
 		T_##_destroy(p_                    \
-			     VA_ARGS(__VA_ARGS__));\
+			     optarg_(__VA_ARGS__));\
 		free_(p_);                         \
 		p_ = NULL;                         \
 	}                                          \
-} 
+}
+
+/* If the condition returns FQL_FAIL, then we
+ * want to pass that up. A program relying on
+ * user input has to check everything...
+ */
+#define try_(condition_) ({      \
+	int ret_ = (condition_); \
+	if (ret_ == FQL_FAIL) {  \
+		return FQL_FAIL; \
+	}                        \
+	ret_;                    \
+})
+
+#define fail_if_(condition_) ({  \
+	int ret_ = (condition_); \
+	if (ret_) {              \
+		return FQL_FAIL; \
+	}                        \
+	ret_;                    \
+})
 
 
 /**
@@ -106,7 +126,6 @@ typedef int(*int_generic_data_fn)(void*);
  * function that also handles all errors internally.
  */
 int str2long(long*, const char* s);
-
 int str2double(double*, const char* s);
 
 /**

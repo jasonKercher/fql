@@ -22,18 +22,10 @@ group* group_construct(group* group)
 	return group;
 }
 
-void group_free(group* group)
-{
-	if (group == NULL) {
-		return;
-	}
-	group_destroy(group);
-	free_(group);
-}
 void group_destroy(group* group)
 {
 	if (group->expr_map != NULL) {
-		compositemap_free(group->expr_map);
+		delete_ (compositemap, group->expr_map);
 	}
 	compositemap_destroy(&group->val_map);
 	vec_destroy(&group->columns);
@@ -101,17 +93,13 @@ int group_record(group* group, vec* recs)
 		}
 		switch (cols[i]->field_type) {
 		case FIELD_STRING:
-			if (column_get_stringview(sv, cols[i], recs)) {
-				return FQL_FAIL;
-			}
+			try_ (column_get_stringview(sv, cols[i], recs));
 			vec_append(&group->_raw, sv->data, sv->len);
 			break;
 		case FIELD_INT:
 		 {
 			long num_i = 0;
-			if (column_get_int(&num_i, cols[i], recs)) {
-				return FQL_FAIL;
-			}
+			try_ (column_get_int(&num_i, cols[i], recs));
 			size_t old_size = group->_raw.size;
 			unsigned len = snprintf(NULL, 0, "%ld", num_i);
 			vec_resize(&group->_raw, old_size + len);
@@ -130,9 +118,7 @@ int group_record(group* group, vec* recs)
 		case FIELD_FLOAT:
 		 {
 			double num_f = 0;
-			if (column_get_float(&num_f, cols[i], recs)) {
-				return FQL_FAIL;
-			}
+			try_ (column_get_float(&num_f, cols[i], recs));
 			size_t old_size = group->_raw.size;
 			unsigned len = snprintf(NULL, 0, "%f", num_f);
 			vec_resize(&group->_raw, old_size + len);
@@ -161,8 +147,8 @@ int group_record(group* group, vec* recs)
 	unsigned* idx_ptr = compositemap_get(&group->val_map, &group->_composite);
 	int ret = 0;
 	if (idx_ptr == NULL) {
-		compositemap_set(&group->val_map, 
-				 &group->_composite, 
+		compositemap_set(&group->val_map,
+				 &group->_composite,
 				 &group_count);
 		_add_agg_result(group, recs);
 		ret = 1;
@@ -206,7 +192,7 @@ int group_dump_record(group* group, record* rec)
 
 	unsigned comp_count = group->_composite.size;
 	size_t* idx = vec_at(&group->_indicies, comp_count * group->_dump_idx);
-	
+
 	int i = 0;
 	column** group_cols = vec_begin(&group->columns);
 	stringview* rec_svs = vec_begin(rec->fields);

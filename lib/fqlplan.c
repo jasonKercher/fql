@@ -62,15 +62,6 @@ plan* plan_construct(plan* self, query* query)
 	return self;
 }
 
-void plan_free(void* generic_plan)
-{
-        if (generic_plan == NULL) {
-                return;
-        }
-	plan_destroy(generic_plan);
-	free_(generic_plan);
-}
-
 void plan_destroy(void* generic_plan)
 {
 	plan* self = generic_plan;
@@ -204,9 +195,7 @@ int _from(plan* self, query* query)
 		from_node = dgraph_add_data(self->processes, from_proc);
 		from_node->is_root = true;
 		plan* subquery_plan = plan_build(table_iter->subquery, from_node);
-		if (subquery_plan == NULL) {
-			return FQL_FAIL;
-		}
+		fail_if_ (subquery_plan == NULL);
 		from_proc->subquery_plan_id = subquery_plan->plan_id;
 		dgraph_consume(self->processes, subquery_plan->processes);
 	}
@@ -256,9 +245,7 @@ int _from(plan* self, query* query)
 			//	read_node = dgraph_add_data(self->processes, read_proc);
 			//	read_node->is_root = true;
 			//	Plan* subquery_plan = plan_build(table_iter->subquery, read_node);
-			//	if (subquery_plan == NULL) {
-			//		return FQL_FAIL;
-			//	}
+			//	fail_if_ (subquery_plan == NULL);
 			//	read_proc->subquery_plan_id = subquery_plan->plan_id;
 			//	dgraph_consume(self->processes, subquery_plan->processes);
 			//}
@@ -488,7 +475,7 @@ plan* plan_build(query* query, dnode* entry)
 
 	/* query */
 	if (_from(self, query)) {
-		plan_free(self);
+		delete_ (plan, self);
 		return NULL;
 	}
 	_where(self, query);
@@ -530,9 +517,7 @@ int build_plans(queue* query_list)
 
 	for (; node; node = node->next) {
 		query* query = node->data;
-		if (plan_build(query, NULL) == NULL) {
-			return FQL_FAIL;
-		}
+		fail_if_ (plan_build(query, NULL) == NULL);
 	}
 
 	return FQL_GOOD;
