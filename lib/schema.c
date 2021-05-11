@@ -530,6 +530,7 @@ int _op_find_group(compositemap* expr_map, column* col, vec* key)
 
 	if (col->expr == EXPR_AGGREGATE) {
 		col->src_idx = 0;
+		col->field_type = col->data_source->field_type;
 		return FQL_GOOD;
 	}
 
@@ -597,6 +598,7 @@ int _group_validation(struct fql_handle* fql, query* query)
 		aggregate* agg = (*it)->field.agg;
 		try_ (schema_assign_columns(agg->args, query->sources));
 		try_ (aggregate_resolve(agg));
+		(*it)->field_type = agg->data_type;
 	}
 
 	/* now, we need to match *all* op columns to a group */
