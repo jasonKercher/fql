@@ -31,6 +31,8 @@ void function_add_column(struct function* func, void* col);
 int function_op_resolve(function* func, enum field_type*);
 
 /* scalar functions list */
+int fql_len(struct function*, union field* ret, struct vec* rec);
+int fql_datalength(struct function*, union field* ret, struct vec* rec);
 int fql_left(struct function*, union field* ret, struct vec* rec);
 int fql_right(struct function*, union field* ret, struct vec* rec);
 

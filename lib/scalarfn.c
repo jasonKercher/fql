@@ -1,6 +1,7 @@
 #include "function.h"
 #include <stdio.h>
 #include <limits.h>
+#include <ctype.h>
 #include "fql.h"
 #include "column.h"
 
@@ -70,94 +71,154 @@ int _get_rev_byte_count(const char* s, unsigned limit)
 }
 
 
-/* ret is assumed to be of the correct type */
+/** ret is assumed to be of the correct type **/
 
-int fql_left(function* fn, union field* ret, vec* rec)
+int fql_len(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
-	stringview s;
-	column_get_stringview(&s, args[0], rec);
-	long n = 0;
-	if (column_get_int(&n, args[1], rec)) {
+	column** arg = vec_begin(fn->args);
+	stringview sv;
+
+	if (column_get_stringview(&sv, *arg, recs)) {
 		return FQL_FAIL;
 	}
 
-	if (n > s.len) {
-		string_strncpy(ret->s, s.data, s.len);
+	int i = 0;
+	int bytes = 1;
+	int len = 0;
+	int len_nospace = 0;
+	for (; i < sv.len; i += bytes) {
+		bytes = 1;
+		if (!fn->char_as_byte) {
+			bytes = _get_byte_count(sv.data[i], sv.len - i);
+			if (bytes == FQL_FAIL) {
+				return FQL_FAIL;
+			}
+		}
+		++len;
+		if (!isspace(sv.data[i])) {
+			len_nospace = len;
+		}
+	}
+
+	ret->i = len_nospace;
+
+	return FQL_GOOD;
+}
+
+int fql_datalength(function* fn, union field* ret, vec* recs)
+{
+	column** arg = vec_begin(fn->args);
+	switch ((*arg)->field_type) {
+	case FIELD_INT:
+		ret->i = sizeof(long);
+		return FQL_GOOD;
+	case FIELD_FLOAT:
+		ret->i = sizeof(double);
+		return FQL_GOOD;
+	case FIELD_STRING:
+		break;
+	default:
+		return FQL_FAIL;
+	}
+
+	stringview sv;
+	if (column_get_stringview(&sv, *arg, recs)) {
+		return FQL_FAIL;
+	}
+
+	ret->i = sv.len;
+
+	return FQL_GOOD;
+}
+
+
+int fql_left(function* fn, union field* ret, vec* recs)
+{
+	column** args = vec_begin(fn->args);
+	stringview sv;
+	if (column_get_stringview(&sv, args[0], recs)) {
+		return FQL_FAIL;
+	}
+	long n = 0;
+	if (column_get_int(&n, args[1], recs)) {
+		return FQL_FAIL;
+	}
+
+	if (n > sv.len) {
+		string_strncpy(ret->s, sv.data, sv.len);
 		return FQL_GOOD;
 	}
 
 	if (fn->char_as_byte) {
-		string_strncpy(ret->s, s.data, n);
+		string_strncpy(ret->s, sv.data, n);
 		return FQL_GOOD;
 	}
 
 	int i = 0;
-	unsigned offset = 0;
-	unsigned bytes = 0;
-	for (; i < n && i+offset < s.len; ++i) {
-		int b = _get_byte_count(s.data[i+offset], s.len - i);
-		if (b == FQL_FAIL) {
+	int bytes = 0;
+	unsigned byte_count = 0;
+	for (; i < n && i < sv.len; i += bytes) {
+		bytes = _get_byte_count(sv.data[i], sv.len - i);
+		if (bytes == FQL_FAIL) {
 			return FQL_FAIL;
 		}
-		bytes += b;
-		offset += b - 1;
+		byte_count += bytes;
 	}
 
-	string_strncpy(ret->s, s.data, bytes);
+	string_strncpy(ret->s, sv.data, byte_count);
 
 
 	return FQL_GOOD;
 }
 
-int fql_right(function* fn, union field* ret, vec* rec)
+int fql_right(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
-	stringview s;
-	column_get_stringview(&s, args[0], rec);
+	column** args = vec_begin(fn->args);
+	stringview sv;
+	column_get_stringview(&sv, args[0], recs);
 	long n = 0;
-	if (column_get_int(&n, args[1], rec)) {
+	if (column_get_int(&n, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
-	if (n > s.len) {
-		string_strncpy(ret->s, s.data, n);
+	if (n > sv.len) {
+		string_strncpy(ret->s, sv.data, n);
 		return FQL_GOOD;
 	}
 
 	if (fn->char_as_byte) {
-		int i = s.len - n;
-		string_strncpy(ret->s, &s.data[i], n);
+		int i = sv.len - n;
+		string_strncpy(ret->s, &sv.data[i], n);
 		return FQL_GOOD;
 	}
 
-	int i = s.len - 1;
+	int i = sv.len - 1;
 	unsigned char_count = 0;
-	unsigned bytes = 0;
+	unsigned byte_count = 0;
 	for (; i >= 0 && char_count < n; ++char_count) {
-		int b = _get_rev_byte_count(&s.data[i], i+1);
-		if (b == FQL_FAIL) {
+		int bytes = _get_rev_byte_count(&sv.data[i], i+1);
+		if (bytes == FQL_FAIL) {
 			return FQL_FAIL;
 		}
-		bytes += b;
-		i -= b;
+		byte_count += bytes;
+		i -= bytes;
 	}
 
-	string_strncpy(ret->s, &s.data[i+1], bytes);
+	string_strncpy(ret->s, &sv.data[i+1], byte_count);
 
 	return FQL_GOOD;
 }
 
 /* opertor functions */
-int fql_op_plus_i(function* fn, union field* ret, vec* rec)
+int fql_op_plus_i(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], rec)) {
+	if (column_get_int(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
-	if (column_get_int(&n1, args[1], rec)) {
+	if (column_get_int(&n1, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -177,15 +238,15 @@ int fql_op_plus_i(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_plus_f(function* fn, union field* ret, vec* rec)
+int fql_op_plus_f(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	if (column_get_float(&n0, args[0], rec)) {
+	if (column_get_float(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
-	if (column_get_float(&n1, args[1], rec)) {
+	if (column_get_float(&n1, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -194,13 +255,13 @@ int fql_op_plus_f(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_plus_s(function* fn, union field* ret, vec* rec)
+int fql_op_plus_s(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	stringview s0;
 	stringview s1;
-	column_get_stringview(&s0, args[0], rec);
-	column_get_stringview(&s1, args[1], rec);
+	column_get_stringview(&s0, args[0], recs);
+	column_get_stringview(&s1, args[1], recs);
 
 	string_copy_from_stringview(ret->s, &s0);
 	string_append_stringview(ret->s, &s1);
@@ -208,15 +269,15 @@ int fql_op_plus_s(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_minus_i(function* fn, union field* ret, vec* rec)
+int fql_op_minus_i(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], rec)) {
+	if (column_get_int(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
-	if (column_get_int(&n1, args[1], rec)) {
+	if (column_get_int(&n1, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -236,15 +297,15 @@ int fql_op_minus_i(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_minus_f(function* fn, union field* ret, vec* rec)
+int fql_op_minus_f(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	if (column_get_float(&n0, args[0], rec)) {
+	if (column_get_float(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
-	if (column_get_float(&n1, args[1], rec)) {
+	if (column_get_float(&n1, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -253,15 +314,15 @@ int fql_op_minus_f(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_mult_i(function* fn, union field* ret, vec* rec)
+int fql_op_mult_i(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], rec)) {
+	if (column_get_int(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
-	if (column_get_int(&n1, args[1], rec)) {
+	if (column_get_int(&n1, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -296,15 +357,15 @@ int fql_op_mult_i(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_mult_f(function* fn, union field* ret, vec* rec)
+int fql_op_mult_f(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	if (column_get_float(&n0, args[0], rec)) {
+	if (column_get_float(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
-	if (column_get_float(&n1, args[1], rec)) {
+	if (column_get_float(&n1, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -313,15 +374,15 @@ int fql_op_mult_f(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_divi_i(function* fn, union field* ret, vec* rec)
+int fql_op_divi_i(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], rec)) {
+	if (column_get_int(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
-	if (column_get_int(&n1, args[1], rec)) {
+	if (column_get_int(&n1, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -335,15 +396,15 @@ int fql_op_divi_i(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_divi_f(function* fn, union field* ret, vec* rec)
+int fql_op_divi_f(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	if (column_get_float(&n0, args[0], rec)) {
+	if (column_get_float(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
-	if (column_get_float(&n1, args[1], rec)) {
+	if (column_get_float(&n1, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -357,15 +418,15 @@ int fql_op_divi_f(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_mod_i(function* fn, union field* ret, vec* rec)
+int fql_op_mod_i(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], rec)) {
+	if (column_get_int(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
-	if (column_get_int(&n1, args[1], rec)) {
+	if (column_get_int(&n1, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -374,15 +435,15 @@ int fql_op_mod_i(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_mod_f(function* fn, union field* ret, vec* rec)
+int fql_op_mod_f(function* fn, union field* ret, vec* recs)
 {
-	//column** args = fn->args->data;
+	//column** args = vec_begin(fn->args);
 	//double n0 = 0;
 	//double n1 = 0;
-	//if (column_get_float(&n0, args[0], rec)) {
+	//if (column_get_float(&n0, args[0], recs)) {
 	//        return FQL_FAIL;
 	//}
-	//if (column_get_float(&n1, args[1], rec)) {
+	//if (column_get_float(&n1, args[1], recs)) {
 	//        return FQL_FAIL;
 	//}
 
@@ -391,15 +452,15 @@ int fql_op_mod_f(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_or(function* fn, union field* ret, vec* rec)
+int fql_op_bit_or(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], rec)) {
+	if (column_get_int(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
-	if (column_get_int(&n1, args[1], rec)) {
+	if (column_get_int(&n1, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -408,15 +469,15 @@ int fql_op_bit_or(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_and(function* fn, union field* ret, vec* rec)
+int fql_op_bit_and(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], rec)) {
+	if (column_get_int(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
-	if (column_get_int(&n1, args[1], rec)) {
+	if (column_get_int(&n1, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -425,15 +486,15 @@ int fql_op_bit_and(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_xor(function* fn, union field* ret, vec* rec)
+int fql_op_bit_xor(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	if (column_get_int(&n0, args[0], rec)) {
+	if (column_get_int(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
-	if (column_get_int(&n1, args[1], rec)) {
+	if (column_get_int(&n1, args[1], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -442,11 +503,11 @@ int fql_op_bit_xor(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_not(function* fn, union field* ret, vec* rec)
+int fql_op_bit_not(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	long n0 = 0;
-	if (column_get_int(&n0, args[0], rec)) {
+	if (column_get_int(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -456,11 +517,11 @@ int fql_op_bit_not(function* fn, union field* ret, vec* rec)
 }
 
 
-int fql_op_unary_minus_i(function* fn, union field* ret, vec* rec)
+int fql_op_unary_minus_i(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	long n0 = 0;
-	if (column_get_int(&n0, args[0], rec)) {
+	if (column_get_int(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
 
@@ -474,11 +535,11 @@ int fql_op_unary_minus_i(function* fn, union field* ret, vec* rec)
 	return FQL_GOOD;
 }
 
-int fql_op_unary_minus_f(function* fn, union field* ret, vec* rec)
+int fql_op_unary_minus_f(function* fn, union field* ret, vec* recs)
 {
-	column** args = fn->args->data;
+	column** args = vec_begin(fn->args);
 	double n0 = 0;
-	if (column_get_float(&n0, args[0], rec)) {
+	if (column_get_float(&n0, args[0], recs)) {
 		return FQL_FAIL;
 	}
 

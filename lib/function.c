@@ -95,12 +95,18 @@ function* function_construct(function* func, enum scalar_function scalar_type, e
 	case SCALAR_ASCII: return func;
 	case SCALAR_CEILING: return func;
 	case SCALAR_CHAR: return func;
-	case SCALAR_DATALENGTH: return func;
+	case SCALAR_DATALENGTH:
+		func->call__ = &fql_datalength;
+		*type = FIELD_INT;
+		return func;
 	case SCALAR_DAY: return func;
 	case SCALAR_FLOOR: return func;
 	case SCALAR_ISDATE: return func;
 	case SCALAR_ISNUMERIC: return func;
-	case SCALAR_LEN: return func;
+	case SCALAR_LEN:
+		func->call__ = &fql_len;
+		*type = FIELD_INT;
+		return func;
 	case SCALAR_LOWER: return func;
 	case SCALAR_LTRIM: return func;
 	case SCALAR_MONTH: return func;
