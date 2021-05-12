@@ -104,7 +104,7 @@ int group_record(group* self, vec* recs)
 			unsigned len = snprintf(NULL, 0, "%ld", num_i);
 			vec_resize(&self->_raw, old_size + len);
 			char* end = vec_at(&self->_raw, old_size);
-			snprintf(end, len, "%ld", num_i);
+			snprintf(end, len+1, "%ld", num_i);
 			stringview_nset(sv, end, len);
 			break;
 		 }
@@ -116,7 +116,7 @@ int group_record(group* self, vec* recs)
 			unsigned len = snprintf(NULL, 0, "%f", num_f);
 			vec_resize(&self->_raw, old_size + len);
 			char* end = vec_at(&self->_raw, old_size);
-			snprintf(end, len, "%f", num_f);
+			snprintf(end, len+1, "%f", num_f);
 			stringview_nset(sv, end, len);
 		 }
 		default:

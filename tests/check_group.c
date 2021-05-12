@@ -171,25 +171,25 @@ START_TEST(test_group_complex_groups)
 
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 1);
-	ck_assert_int_eq(fields[0].type, FQL_INT); 
+	ck_assert_int_eq(fields[0].type, FQL_INT);
 
-	ck_assert_int_eq(fields[0].data.i, 779);
+	ck_assert_int_eq(fields[0].data.i, 7793);
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 1907);
+	ck_assert_int_eq(fields[0].data.i, 19077);
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 8314);
+	ck_assert_int_eq(fields[0].data.i, 83148);
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 1995);
+	ck_assert_int_eq(fields[0].data.i, 19952);
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 9593);
+	ck_assert_int_eq(fields[0].data.i, 95936);
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 3804);
+	ck_assert_int_eq(fields[0].data.i, 38040);
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 18593);
+	ck_assert_int_eq(fields[0].data.i, 185939);
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 4549);
+	ck_assert_int_eq(fields[0].data.i, 45492);
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 14302);
+	ck_assert_int_eq(fields[0].data.i, 143029);
 
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 0);

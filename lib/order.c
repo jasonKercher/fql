@@ -94,36 +94,36 @@ int order_add_record(order* self, vec* recs)
 
 int _compare(const void* a, const void* b, void* data)
 {
-	order* self = data;
+	order* orderby = data;
 	const struct indexpair* p0 = a;
 	const struct indexpair* p1 = b;
 
 	int ret = 0;
-	column** it = vec_begin(&self->columns);
-	for (; ret == 0 && it != vec_end(&self->columns); ++it) {
+	column** it = vec_begin(&orderby->columns);
+	for (; ret == 0 && it != vec_end(&orderby->columns); ++it) {
 		switch ((*it)->field_type) {
 		case FIELD_INT:
 		 {
-			long* num0 = vec_at(&self->_raw, p0->idx);
-			long* num1 = vec_at(&self->_raw, p1->idx);
+			long* num0 = vec_at(&orderby->_raw, p0->idx);
+			long* num1 = vec_at(&orderby->_raw, p1->idx);
 			ret = num_compare_(*num0, *num1);
 			break;
 		 }
 		case FIELD_FLOAT:
 		 {
-			double* num0 = vec_at(&self->_raw, p0->idx);
-			double* num1 = vec_at(&self->_raw, p1->idx);
+			double* num0 = vec_at(&orderby->_raw, p0->idx);
+			double* num1 = vec_at(&orderby->_raw, p1->idx);
 			ret = num_compare_(*num0, *num1);
 			break;
 		 }
 		case FIELD_STRING:
 		 {
 			stringview sv0 = {
-				 vec_at(&self->_raw, p0->idx)
+				 vec_at(&orderby->_raw, p0->idx)
 				,p0->len
 			};
 			stringview sv1 = {
-				 vec_at(&self->_raw, p1->idx)
+				 vec_at(&orderby->_raw, p1->idx)
 				,p1->len
 			};
 			ret = stringview_compare_nocase_rtrim(&sv0, &sv1);
