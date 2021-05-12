@@ -120,6 +120,8 @@ typedef int(*int_generic_data_fn)(void*);
 	ret_;                    \
 })
 
+#define num_compare_(a, b) (((a) > (b)) - ((a) < (b)))
+
 
 /**
  * this function is a wrapper for the standard strtol

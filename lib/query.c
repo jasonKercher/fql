@@ -137,6 +137,8 @@ int _distribute_column(query* self, column* col)
 void query_add_column(query* self, char* col_name, const char* table_id)
 {
 	column* col = new_(column, EXPR_COLUMN_NAME, col_name, table_id);
+
+	/* TODO: remove when this is impossible */
 	if (_distribute_column(self, col)) {
 		fprintf(stderr, "unhandled COLUMN_NAME: %s\n", col_name);
 		exit(EXIT_FAILURE);
@@ -146,6 +148,8 @@ void query_add_column(query* self, char* col_name, const char* table_id)
 void query_add_asterisk(query* self, const char* table_id)
 {
 	column* col = new_(column, EXPR_ASTERISK, NULL, table_id);
+
+	/* TODO: remove when this is impossible */
 	if (_distribute_column(self, col)) {
 		fprintf(stderr, "unhandled asterisk\n");
 		exit(EXIT_FAILURE);
@@ -154,6 +158,10 @@ void query_add_asterisk(query* self, const char* table_id)
 
 int query_add_constant(query* self, const char* s, int len)
 {
+	if (self->mode == MODE_ORDERBY) {
+		fputs("Constants not currently allowed in ORDER BY\n", stderr);
+		return FQL_FAIL;
+	}
 	column* col = new_(column, EXPR_CONST, NULL, "");
 
 	enum field_type type = FIELD_UNDEFINED;
@@ -273,7 +281,7 @@ int query_init_op(query* self)
 		self->op = new_(fqlselect);
 		break;
 	default:
-		fprintf(stderr, 
+		fprintf(stderr,
 		        "unexpected operation mode `%d'\n",
 			self->mode);
 		return FQL_FAIL;

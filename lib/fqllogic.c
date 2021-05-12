@@ -33,42 +33,6 @@
 }
 
 
-/* Essentially strcasecmp but relying on length instead of '\0'
- *
- * This version does not consider trailing white space.
- * This is a true statement in tsql:
- *
- * 'hello' = 'Hello   '
- */
-int _fql_stringview_compare(stringview* sv0, stringview* sv1)
-{
-	stringview* short_sv = sv0;
-	stringview* long_sv = sv1;
-	if (sv0->len > sv1->len) {
-		short_sv = sv1;
-		long_sv = sv0;
-	}
-
-	const unsigned char *s0 = (unsigned char*) sv0->data;
-	const unsigned char *s1 = (unsigned char*) sv1->data;
-
-	int ret = 0;
-
-	/* I'm going to neglect '\0'. What could go wrong? */
-	int i = 0;
-	for (; ret == 0 && i < short_sv->len; ++i) {
-		ret = tolower (s0[i]) - tolower (s1[i]);
-	}
-
-	/* All remaining bytes must be white space to stay truthy */
-	const unsigned char *long_str = (unsigned char*) long_sv->data;
-
-	for (; ret == 0 && i < long_sv->len; ++i) {
-		ret = (isspace(long_str[i])) ? 0 : sv0->len - sv1->len;
-	}
-	return ret;
-}
-
 
 int fql_logic_eq_i(logic* logic, vec* recs)
 {
@@ -90,7 +54,7 @@ int fql_logic_eq_s(logic* logic, vec* recs)
 {
 	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
-	return (_fql_stringview_compare(&sv0, &sv1) == 0);
+	return (stringview_compare_nocase_rtrim(&sv0, &sv1) == 0);
 }
 
 int fql_logic_ne_i(logic* logic, vec* recs)
@@ -113,7 +77,7 @@ int fql_logic_ne_s(logic* logic, vec* recs)
 {
 	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
-	return (_fql_stringview_compare(&sv0, &sv1) != 0);
+	return (stringview_compare_nocase_rtrim(&sv0, &sv1) != 0);
 }
 
 int fql_logic_gt_i(logic* logic, vec* recs)
@@ -136,7 +100,7 @@ int fql_logic_gt_s(logic* logic, vec* recs)
 {
 	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
-	return (_fql_stringview_compare(&sv0, &sv1) > 0);
+	return (stringview_compare_nocase_rtrim(&sv0, &sv1) > 0);
 }
 
 int fql_logic_ge_i(logic* logic, vec* recs)
@@ -159,7 +123,7 @@ int fql_logic_ge_s(logic* logic, vec* recs)
 {
 	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
-	return (_fql_stringview_compare(&sv0, &sv1) >= 0);
+	return (stringview_compare_nocase_rtrim(&sv0, &sv1) >= 0);
 }
 
 int fql_logic_lt_i(logic* logic, vec* recs)
@@ -182,7 +146,7 @@ int fql_logic_lt_s(logic* logic, vec* recs)
 {
 	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
-	return (_fql_stringview_compare(&sv0, &sv1) < 0);
+	return (stringview_compare_nocase_rtrim(&sv0, &sv1) < 0);
 }
 
 int fql_logic_le_i(logic* logic, vec* recs)
@@ -205,7 +169,7 @@ int fql_logic_le_s(logic* logic, vec* recs)
 {
 	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
-	return (_fql_stringview_compare(&sv0, &sv1) <= 0);
+	return (stringview_compare_nocase_rtrim(&sv0, &sv1) <= 0);
 }
 
 int fql_logic_like(logic* logic, vec* recs)

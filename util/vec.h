@@ -18,6 +18,10 @@
  * your day all up.
  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -28,6 +32,8 @@ struct vec {
 	size_t _elem_size;      /* size of a single element */
 };
 typedef struct vec vec;
+
+typedef int(*qsort_r_cmp_fn)(const void*, const void*, void*);
 
 struct vec* vec_construct(struct vec*, size_t);
 #define vec_construct_(v_, T_) vec_construct(v_, sizeof(T_))
@@ -54,5 +60,7 @@ void vec_push_back(struct vec*, const void*);
 void vec_extend(struct vec* dest, const struct vec* src);
 void vec_erase(struct vec*, void*);
 void vec_remove(struct vec*, size_t);
+
+void vec_sort_r(struct vec*, qsort_r_cmp_fn, void* context);
 
 #endif  /* VEC_H */
