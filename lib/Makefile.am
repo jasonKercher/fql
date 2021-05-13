@@ -21,5 +21,5 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					function.h function.c scalarfn.c \
 					record.h record.c \
 					field.h field.c
-libfql_la_LDFLAGS = -lcsv -lantlr4-runtime -pthread -version-info 0:0:0
+libfql_la_LDFLAGS = -l:libcsv.so.0 -lantlr4-runtime -pthread -version-info 0:0:0
 libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la

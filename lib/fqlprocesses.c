@@ -106,7 +106,7 @@ int fql_select(dgraph* proc_graph, process* proc)
 	fqlselect* select = proc->proc_data;
 	int ret = select->select__(select, *recs);
 
-	_recycle_recs(proc, *recs, proc->fifo_width);
+	_recycle_recs(proc, *recs, proc->in_src_count);
 
 	return ret;
 }
@@ -123,7 +123,7 @@ int fql_logic(dgraph* proc_graph, process* proc)
 	} else if (proc->fifo_out[0] != NULL) {
 		fifo_add(proc->fifo_out[0], recs);  /* false */
 	} else {
-		_recycle_recs(proc, *recs, proc->fifo_width);
+		_recycle_recs(proc, *recs, proc->in_src_count);
 	}
 
 	return 1;
@@ -243,7 +243,7 @@ int fql_hash_join(dgraph* proc_graph, process* proc)
 	if (hj->state == SIDE_RIGHT) {
 		vec** rightrecs = fifo_get(proc->fifo_in[1]);
 		_hash_join_right_side(proc, table, *rightrecs);
-		_recycle_specific(proc, *rightrecs, proc->fifo_width-1);
+		_recycle_specific(proc, *rightrecs, proc->in_src_count-1);
 		return 1;
 	}
 
@@ -258,7 +258,7 @@ int fql_hash_join(dgraph* proc_graph, process* proc)
 	vec* rightrecs = _hash_join_left_side(proc, table, *leftrecs);
 	if (rightrecs == NULL) {
 		fifo_consume(proc->fifo_in[0]);
-		_recycle_recs(proc, *leftrecs, proc->fifo_width-1);
+		_recycle_recs(proc, *leftrecs, proc->in_src_count-1);
 		return 1;
 	}
 

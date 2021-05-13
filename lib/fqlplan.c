@@ -286,11 +286,20 @@ void _where(plan* self, query* query)
 	_logicgroup_process(self, query->where, false);
 }
 
+/* NOTE: If there is a grouping, the grouping becomes new
+ *       one and only source. hence source_count = 1...
+ */
 void _group(plan* self, query* query)
 {
 	if (!vec_empty(&query->groupby->columns)
 	 || !vec_empty(&query->groupby->aggregates)) {
 		process* group_proc = new_(process, "GROUP BY ", self);
+		self->source_count = 1;
+		group_proc->out_src_count = 1;
+		process* true_proc = self->op_true->data;
+		true_proc->in_src_count = 1;
+		true_proc->out_src_count = 1;
+
 		group_proc->action__ = &fql_groupby;
 		group_proc->proc_data = query->groupby;
 		group_proc->wait_for_in0_end = true;
@@ -304,6 +313,12 @@ void _group(plan* self, query* query)
 
 	if (query->distinct) {
 		process* group_proc = new_(process, "DISTINCT ", self);
+		self->source_count = 1;
+		group_proc->out_src_count = 1;
+		process* true_proc = self->op_true->data;
+		true_proc->in_src_count = 1;
+		true_proc->out_src_count = 1;
+
 		group_proc->action__ = &fql_distinct;
 		group_proc->proc_data = query->distinct;
 		group_cat_description(query->distinct, group_proc);

@@ -27,10 +27,11 @@ process* process_construct(process* proc, const char* action, plan* plan)
 		,NULL                           /* proc_data */
 		,string_from_char_ptr(action)   /* action_msg */
 		,NULL                           /* root_group */
-		,plan->source_count             /* fifo_width */
 		,plan->plan_id                  /* plan_id */
 		,0                              /* subquery_plan_id */
 		,0                              /* root_fifo */
+		,plan->source_count             /* in_src_count */
+		,plan->source_count             /* out_src_count */
 		,false                          /* is_secondary */
 		,false                          /* is_passive */
 		,true                           /* is_enabled */
@@ -130,7 +131,7 @@ void process_activate(dnode* proc_node, plan* plan)
 	for (; i < proc->records->size; ++i) {
 		vec* new_recs = vec_at(proc->records, i);
 		vec_construct_(new_recs, record*);
-		vec_resize(new_recs, proc->fifo_width);
+		vec_resize(new_recs, proc->out_src_count);
 
 		record** new_rec = vec_back(new_recs);
 		*new_rec = new_(record, i, field_count, owns_data);
@@ -192,7 +193,7 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 			continue;
 		}
 		if (proc->wait_for_in0
-		 && !proc->fifo_in[0]->is_open 
+		 && !proc->fifo_in[0]->is_open
 		 && fifo_is_empty(proc->fifo_in[0])) {
 			if (proc->wait_for_in0_end) {
 				proc->wait_for_in0 = false;

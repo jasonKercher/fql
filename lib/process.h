@@ -21,10 +21,11 @@ struct process {
 	void* proc_data;        /* process specific data */
 	string* action_msg;     /* message that prints with plan */
 	vec* root_group;        /* group of recyclable roots for this process */
-	int fifo_width;         /* number of sources at this step */
-	int plan_id;            /* plan ID for root grouping */
-	int subquery_plan_id;   /* plan ID for subquery */
-	int root_fifo;          /* signify which fifo_inx is the root */
+	short plan_id;          /* plan ID for root grouping */
+	short subquery_plan_id; /* plan ID for subquery */
+	short root_fifo;        /* signify which fifo_inx is the root */
+	short in_src_count;     /* number of input sources at this step */
+	short out_src_count;    /* number of output sources at this step */
 	_Bool is_secondary;     /* fifo_out should link to a fifo_in1 */
 	_Bool is_passive;       /* denotes process that does nothing */
 	_Bool is_enabled;       /* enabled means it still has data to process */
