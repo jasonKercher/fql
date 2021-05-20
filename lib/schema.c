@@ -225,18 +225,12 @@ int schema_resolve_source(struct fql_handle* fql, table* table)
 	} else {
 
 		/* if we've made it this far, we want to try
-		 * and determine self by reading the top
+		 * and determine schema by reading the top
 		 * row of the file and assume a delimited
 		 * list of field names.
 		 */
 		try_ (schema_resolve_file(table));
-
-		/* retrieve self using libcsv */
-		if (table->join_type == JOIN_FROM) {
-			table->reader->type = READ_LIBCSV;
-		} else {
-			table->reader->type = READ_MMAPCSV;
-		}
+		table->reader->type = READ_LIBCSV;
 	}
 	reader_assign(table->reader, table);
 
@@ -249,7 +243,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table)
 	record_construct(&rec, 0, 0, false);
 	table->reader->max_col_idx = INT_MAX;
 	table->reader->get_record__(table->reader, &rec);
-	char* delim = table_get_delim(table);
+	const char* delim = table_get_delim(table);
 	strncpy_(table->schema->delimiter, delim, DELIM_LEN_MAX);
 	table->reader->max_col_idx = 0;
 

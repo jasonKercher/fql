@@ -220,8 +220,7 @@ vec* _hash_join_left_side(process* proc, table* table, vec* leftrecs)
 	record** rec = vec_back(*rightrecs);
 	reader* reader = table->reader;
 
-	/* TODO: this should be a function pointer */
-	mmapcsv_get_record_at(reader, *rec, *rightrec_ptr);
+	reader->get_record_at__(reader, *rec, *rightrec_ptr);
 
 	return *rightrecs;
 }

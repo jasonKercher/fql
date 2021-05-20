@@ -15,8 +15,9 @@ reader* reader_construct(reader* self)
 	*self = (reader) {
 		 READ_UNDEFINED /* type */
 		,NULL           /* reader_data */
-		,NULL		/* subquery_recs */
+		,NULL           /* subquery_recs */
 		,NULL           /* get_record__ */
+		,NULL           /* get_record_at__ */
 		,NULL           /* free__ */
 		,NULL           /* reset__ */
 		,{ 0 }          /* file_name */
@@ -50,23 +51,15 @@ void reader_assign(reader* self, table* table)
 		self->reader_data = csv;
 		self->free__ = &libcsv_reader_free;
 		self->get_record__ = &libcsv_get_record;
+		self->get_record_at__ = &libcsv_get_record_at;
 		self->reset__ = &libcsv_reset;
-		ret = csv_reader_open(csv, self->file_name.data);
-		break;
-	}
-	case READ_MMAPCSV:
-	{
-		struct mmapcsv* csv = new_(mmapcsv, PROCESS_BUFFER_SIZE);
-		self->reader_data = csv;
-		self->free__ = &mmapcsv_free;
-		self->get_record__ = &mmapcsv_get_record;
-		self->reset__ = &mmapcsv_reset;
-		ret = mmapcsv_open(csv, self->file_name.data);
+		ret = csv_reader_open_mmap(csv, self->file_name.data);
 		break;
 	}
 	case READ_SUBQUERY:
 		//self->free__ = &query_free;
 		self->get_record__ = &fqlselect_subquery_record;
+		self->get_record_at__ = NULL; /* TODO */
 		self->reset__ = &fqlselect_subquery_reset;
 		self->reader_data = table->schema;
 		break;

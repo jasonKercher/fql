@@ -83,14 +83,12 @@ void table_destroy(table* self)
 }
 
 
-char* table_get_delim(table* self)
+const char* table_get_delim(table* self)
 {
 	reader* reader = self->reader;
 	switch (reader->type) {
 	case READ_LIBCSV:
-		return libcsv_get_delim(reader->reader_data);
-	case READ_MMAPCSV:
-		return mmapcsv_get_delim(reader->reader_data);
+		return csv_reader_get_delim(reader->reader_data);
 	case READ_SUBQUERY:
 		return table_get_delim(vec_begin(self->subquery->sources));
 	default:
@@ -145,7 +143,10 @@ size_t _guess_row_count(table* self)
 		if (reader->get_record__(reader, &rec) != FQL_GOOD) {
 			break;
 		}
-		total_length += rec.rec_raw.len;
+		/* ignore header */
+		if (i) {
+			total_length += rec.rec_raw.len;
+		}
 	}
 
 	if (i == 0) {
@@ -156,14 +157,16 @@ size_t _guess_row_count(table* self)
 
 	reader->max_col_idx = max_col_store;
 
-	double avg_len = total_length / (double) i;
+	double avg_len = total_length / (double) i-1;
 	if (avg_len < 1)
 		avg_len = 1;
 
-	struct mmapcsv* csv = reader->reader_data;
+	/* TODO: schema assumed here */
+	struct csv_reader* csv = reader->reader_data;
+	size_t file_size = csv_reader_get_file_size(csv);
 	reader->reset__(reader);
 
-	guess = csv->file_size / avg_len;
+	guess = file_size / avg_len;
 
 	return (guess < HASH_JOIN_MIN_SIZE) ? HASH_JOIN_MIN_SIZE : guess + 1;
 }

@@ -136,8 +136,8 @@ libfql_la_DEPENDENCIES = antlr/libantlr.la ../util/libutil.la
 am_libfql_la_OBJECTS = libfql.lo fqlplan.lo process.lo fqlprocesses.lo \
 	query.lo table.lo schema.lo column.lo group.lo aggregate.lo \
 	aggregatefn.lo order.lo operation.lo reader.lo libcsvread.lo \
-	mmapcsvread.lo writer.lo logic.lo fqllogic.lo fqlselect.lo \
-	function.lo scalarfn.lo record.lo field.lo
+	writer.lo logic.lo fqllogic.lo fqlselect.lo function.lo \
+	scalarfn.lo record.lo field.lo
 libfql_la_OBJECTS = $(am_libfql_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -168,12 +168,11 @@ am__depfiles_remade = ./$(DEPDIR)/aggregate.Plo \
 	./$(DEPDIR)/fqlselect.Plo ./$(DEPDIR)/function.Plo \
 	./$(DEPDIR)/group.Plo ./$(DEPDIR)/libcsvread.Plo \
 	./$(DEPDIR)/libfql.Plo ./$(DEPDIR)/logic.Plo \
-	./$(DEPDIR)/mmapcsvread.Plo ./$(DEPDIR)/operation.Plo \
-	./$(DEPDIR)/order.Plo ./$(DEPDIR)/process.Plo \
-	./$(DEPDIR)/query.Plo ./$(DEPDIR)/reader.Plo \
-	./$(DEPDIR)/record.Plo ./$(DEPDIR)/scalarfn.Plo \
-	./$(DEPDIR)/schema.Plo ./$(DEPDIR)/table.Plo \
-	./$(DEPDIR)/writer.Plo
+	./$(DEPDIR)/operation.Plo ./$(DEPDIR)/order.Plo \
+	./$(DEPDIR)/process.Plo ./$(DEPDIR)/query.Plo \
+	./$(DEPDIR)/reader.Plo ./$(DEPDIR)/record.Plo \
+	./$(DEPDIR)/scalarfn.Plo ./$(DEPDIR)/schema.Plo \
+	./$(DEPDIR)/table.Plo ./$(DEPDIR)/writer.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -406,7 +405,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					aggregate.h aggregate.c aggregatefn.c \
 					order.h order.c \
 					operation.h operation.c \
-					reader.h reader.c libcsvread.c mmapcsvread.c \
+					reader.h reader.c libcsvread.c \
 					writer.h writer.c \
 					logic.h logic.c fqllogic.c \
 					fqlselect.h fqlselect.c \
@@ -414,7 +413,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					record.h record.c \
 					field.h field.c
 
-libfql_la_LDFLAGS = -l:libcsv.so.0 -lantlr4-runtime -pthread -version-info 0:0:0
+libfql_la_LDFLAGS = -l:libcsv.so.1 -lantlr4-runtime -pthread -version-info 1:0:0
 libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la
 all: all-recursive
 
@@ -507,7 +506,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcsvread.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/logic.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mmapcsvread.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/operation.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/order.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/process.Plo@am__quote@ # am--include-marker
@@ -787,7 +785,6 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/libcsvread.Plo
 	-rm -f ./$(DEPDIR)/libfql.Plo
 	-rm -f ./$(DEPDIR)/logic.Plo
-	-rm -f ./$(DEPDIR)/mmapcsvread.Plo
 	-rm -f ./$(DEPDIR)/operation.Plo
 	-rm -f ./$(DEPDIR)/order.Plo
 	-rm -f ./$(DEPDIR)/process.Plo
@@ -856,7 +853,6 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/libcsvread.Plo
 	-rm -f ./$(DEPDIR)/libfql.Plo
 	-rm -f ./$(DEPDIR)/logic.Plo
-	-rm -f ./$(DEPDIR)/mmapcsvread.Plo
 	-rm -f ./$(DEPDIR)/operation.Plo
 	-rm -f ./$(DEPDIR)/order.Plo
 	-rm -f ./$(DEPDIR)/process.Plo

@@ -15,13 +15,13 @@ extern "C" {
 struct table;
 struct reader;
 
-typedef int (*read_fn)(struct reader*, struct record* rec);
+typedef int (*read_fn)(struct reader*, struct record*);
+typedef int (*read_at_fn)(struct reader*, struct record*, const char*);
 typedef int (*reset_fn)(struct reader*);
 
 enum read_type {
 	READ_UNDEFINED,
 	READ_LIBCSV,
-	READ_MMAPCSV,
 	READ_SUBQUERY,
 };
 
@@ -30,6 +30,7 @@ struct reader {
 	void* reader_data;
 	struct vec* subquery_recs;
 	read_fn get_record__;
+	read_at_fn get_record_at__;
 	generic_data_fn free__;
 	reset_fn reset__;
 	string file_name;
@@ -50,32 +51,30 @@ void reader_assign(struct reader*, struct table*);
  */
 
 void libcsv_reader_free(void*);
-
-char* libcsv_get_delim(struct csv_reader*);
-int libcsv_get_record(struct reader*, struct record* rec);
+int libcsv_get_record(struct reader*, struct record*);
+int libcsv_get_record_at(struct reader*, struct record*, const char*);
 int libcsv_reset(struct reader*);
 
-struct mmapcsv {
-	struct csv_reader* csv_handle;
-	struct stringview current;
-	struct vec* raw;
-	struct hashmap* rec_map;
-	char* mmap_base;
-	char* mp;
-	size_t file_size;
-	int fd;
-};
-typedef struct mmapcsv mmapcsv;
-
-struct mmapcsv* mmapcsv_construct(struct mmapcsv*, size_t);
-void mmapcsv_destroy(struct mmapcsv*);
-void mmapcsv_free(void*);
-
-char* mmapcsv_get_delim(struct mmapcsv*);
-int mmapcsv_open(struct mmapcsv*, const char* file_name);
-int mmapcsv_get_record(struct reader*, struct record* rec);
-int mmapcsv_get_record_at(struct reader*, struct record* rec, char* rec_loc);
-int mmapcsv_reset(struct reader*);
+//struct mmap_reader {
+//	struct csv_reader* csv_handle;
+//	struct stringview current;
+//	struct vec* raw;
+//	char* mmap_base;
+//	char* mp;
+//	size_t file_size;
+//	int fd;
+//};
+//typedef struct mmap_reader mmap_reader;
+//
+//struct mmap_reader* mmap_reader_construct(struct mmap_reader*, size_t);
+//void mmap_reader_destroy(struct mmap_reader*);
+//void mmap_reader_free(void*);
+//
+//char* mmap_reader_get_delim(struct mmap_reader*);
+//int mmap_reader_open(struct mmap_reader*, const char* file_name);
+//int mmap_reader_get_record(struct reader*, struct record* rec);
+//int mmap_reader_get_record_at(struct reader*, struct record* rec, char* rec_loc);
+//int mmap_reader_reset(struct reader*);
 
 
 
