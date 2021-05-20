@@ -14,7 +14,7 @@ stringview* stringview_construct_from_string(stringview* sv, string* s)
 	return sv;
 }
 
-void stringview_set(stringview* sv, char* s)
+void stringview_set(stringview* sv, const char* s)
 {
 	*sv = (stringview) {
 		 s
@@ -22,7 +22,7 @@ void stringview_set(stringview* sv, char* s)
 	};
 }
 
-void stringview_nset(stringview* sv, char* s, unsigned n)
+void stringview_nset(stringview* sv, const char* s, unsigned n)
 {
 	*sv = (stringview) {
 		 s

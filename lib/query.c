@@ -240,9 +240,20 @@ void query_apply_table_alias(query* self, const char* alias)
 	string_strcpy(&table->alias, alias);
 }
 
+void query_apply_column_alias(query* self, const char* alias)
+{
+	fqlselect_apply_column_alias(self->op, alias);
+}
+
 void query_set_distinct(query* self)
 {
 	self->distinct = new_(group);
+}
+
+int query_set_into_table(query* self, const char* table_name)
+{
+	/* TODO */
+	return 0;
 }
 
 int query_add_aggregate(query* self, enum aggregate_function agg_type)

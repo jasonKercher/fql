@@ -4,7 +4,6 @@
 
 #include "query.h"
 #include "column.h"
-#include "fqlselect.h"
 #include "util/util.h"
 
 /** Utility functions **/
@@ -38,8 +37,8 @@ ListenerInterface::ListenerInterface(struct fql_handle* fql,
 	_walker = walker;
 	_fql = fql;
 
-	_next_list = TOK_UNDEFINED;
-	_current_list = TOK_UNDEFINED;
+	_next_tok_type = TOK_UNDEFINED;
+	_tok_type = TOK_UNDEFINED;
 }
 
 int ListenerInterface::get_return_code()
@@ -49,13 +48,12 @@ int ListenerInterface::get_return_code()
 
 void ListenerInterface::enterSelect_list(TSqlParser::Select_listContext * ctx)
 {
-	_current_list = TOK_COLUMN_NAME;
-	_next_list = TOK_TABLE_NAME;
+	_tok_type = TOK_COLUMN_NAME;
+	_next_tok_type = TOK_TABLE_NAME;
 }
 void ListenerInterface::exitSelect_list(TSqlParser::Select_listContext * ctx)
 {
-	//query_select_finalize(_query);
-	_query->mode = MODE_UNDEFINED;
+	_query->mode = MODE_INTO;
 }
 
 void ListenerInterface::enterGroup_by_item(TSqlParser::Group_by_itemContext * ctx)
@@ -85,7 +83,7 @@ void ListenerInterface::exitExpression_elem(TSqlParser::Expression_elemContext *
 void ListenerInterface::enterSelect_list_elem(TSqlParser::Select_list_elemContext * ctx)
 {
 	_query->mode = MODE_SELECT;
-	_current_list = TOK_COLUMN_NAME;
+	_tok_type = TOK_COLUMN_NAME;
 }
 void ListenerInterface::exitSelect_list_elem(TSqlParser::Select_list_elemContext * ctx)
 {
@@ -152,7 +150,7 @@ void ListenerInterface::exitJoin_part(TSqlParser::Join_partContext * ctx)
 
 void ListenerInterface::enterTable_name_with_hint(TSqlParser::Table_name_with_hintContext * ctx)
 {
-	_next_list = TOK_TABLE_SOURCE;
+	_next_tok_type = TOK_TABLE_SOURCE;
 }
 void ListenerInterface::exitTable_name_with_hint(TSqlParser::Table_name_with_hintContext * ctx) { }
 
@@ -164,7 +162,7 @@ void ListenerInterface::exitAs_column_alias(TSqlParser::As_column_aliasContext *
 
 void ListenerInterface::enterColumn_alias(TSqlParser::Column_aliasContext * ctx)
 {
-	_current_list = TOK_COLUMN_ALIAS;
+	_tok_type = TOK_COLUMN_ALIAS;
 }
 
 void ListenerInterface::exitColumn_alias(TSqlParser::Column_aliasContext * ctx) { }
@@ -174,7 +172,7 @@ void ListenerInterface::exitAs_table_alias(TSqlParser::As_table_aliasContext * c
 
 void ListenerInterface::enterTable_alias(TSqlParser::Table_aliasContext * ctx)
 {
-	_current_list = TOK_TABLE_ALIAS;
+	_tok_type = TOK_TABLE_ALIAS;
 }
 void ListenerInterface::exitTable_alias(TSqlParser::Table_aliasContext * ctx) { }
 
@@ -183,12 +181,16 @@ void ListenerInterface::exitExpression_list(TSqlParser::Expression_listContext *
 
 void ListenerInterface::enterTable_name(TSqlParser::Table_nameContext * ctx)
 {
-	_current_list = _next_list;
+	if (_query->mode == MODE_INTO) {
+		_tok_type = TOK_INTO_TABLE;
+		return;
+	}
+	_tok_type = _next_tok_type;
 }
 void ListenerInterface::exitTable_name(TSqlParser::Table_nameContext * ctx)
 {
-	if (_current_list == TOK_TABLE_NAME) {
-		_current_list = TOK_COLUMN_NAME;
+	if (_tok_type == TOK_TABLE_NAME) {
+		_tok_type = TOK_COLUMN_NAME;
 	}
 }
 
@@ -203,8 +205,8 @@ void ListenerInterface::exitFunc_proc_name_server_database_schema(TSqlParser::Fu
 
 void ListenerInterface::enterFull_column_name(TSqlParser::Full_column_nameContext * ctx)
 {
-	_current_list = TOK_COLUMN_NAME;
-	_next_list = TOK_TABLE_NAME;
+	_tok_type = TOK_COLUMN_NAME;
+	_next_tok_type = TOK_TABLE_NAME;
 }
 void ListenerInterface::exitFull_column_name(TSqlParser::Full_column_nameContext * ctx) { }
 
@@ -283,7 +285,9 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 
 	char* token = strdup(new_str.c_str());
 
-	switch (_current_list) {
+	int ret = 0;
+
+	switch (_tok_type) {
 	case TOK_COLUMN_NAME:
 		query_add_column(_query, token, _table_name);
 		/* consume table designation */
@@ -291,8 +295,15 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 		free_(token);
 		break;
 	case TOK_COLUMN_ALIAS:
-		fqlselect_apply_column_alias((struct fqlselect*)_query->op, token);
+		query_apply_column_alias(_query, token);
 		free_(token);
+		break;
+	case TOK_INTO_TABLE:
+		ret = query_set_into_table(_query, token);
+		if (ret) {
+			_walker->set_walking(false);
+			_return_code = FQL_FAIL;
+		}
 		break;
 	case TOK_TABLE_NAME:
 		strncpy_(_table_name, token, TABLE_NAME_MAX);
@@ -306,7 +317,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 		free_(token);
 		break;
 	default:
-		std::cerr << "Undefined list: " << _current_list << '\n';
+		std::cerr << "Undefined list: " << _tok_type << '\n';
 		free_(token);
 	}
 }
@@ -549,7 +560,7 @@ void ListenerInterface::exitAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOW
 void ListenerInterface::enterAll_distinct_expression(TSqlParser::All_distinct_expressionContext * ctx) { }
 void ListenerInterface::exitAll_distinct_expression(TSqlParser::All_distinct_expressionContext * ctx) { }
 
-void ListenerInterface::enterOrder_by_clause(TSqlParser::Order_by_clauseContext * ctx) 
+void ListenerInterface::enterOrder_by_clause(TSqlParser::Order_by_clauseContext * ctx)
 {
 	_query->mode = MODE_ORDERBY;
 }

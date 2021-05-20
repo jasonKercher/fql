@@ -4,12 +4,13 @@
 #include "stringview.h"
 #include "util.h"
 
-string* string_construct(string* string)
+#define _null_terminate_(s_) *((char*)vec_end(s_)) = '\0'
+
+string* string_construct(string* s)
 {
-	string = vec_construct(string, 1);
-	char* s = string->data;
-	s[0] = '\0';
-	return string;
+	s = vec_construct(s, 1);
+	_null_terminate_(s);
+	return s;
 }
 
 string* string_from_string(string* src)
@@ -62,7 +63,7 @@ string* string_take(char* src)
 
 string* string_construct_take(string* s, char* src)
 {
-	int len = strlen(src);
+	size_t len = strlen(src);
 
 	/* I'm making an assumption about _alloc here.
 	 * I don't know how much space is allocated,
@@ -85,11 +86,11 @@ void string_copy_from_stringview(string* s, struct stringview* sv)
 
 void string_append_stringview(string* dest, struct stringview* sv)
 {
-	int index = dest->size;
+	size_t index = dest->size;
 	vec_resize(dest, dest->size + sv->len);
 	void* end = vec_at(dest, index);
 	memcpy(end, sv->data, sv->len);
-	((char*) dest->data)[dest->size] = '\0';
+	_null_terminate_(dest);
 }
 
 void string_push_back(string* s, char c)
@@ -99,58 +100,83 @@ void string_push_back(string* s, char c)
 	back[1] = '\0';
 }
 
-void string_strcat(string* dest, const char* src)
-{
-	int len = strlen(src);
-	int index = dest->size;
-	vec_resize(dest, dest->size + len);
-	void* end = vec_at(dest, index);
-	memcpy(end, src, len + 1);
-}
-
-void string_strncat(string* dest, const char* src, size_t n)
-{
-	int index = dest->size;
-	vec_resize(dest, dest->size + n);
-	char* end = vec_at(dest, index);
-	memcpy(end, src, n);
-	end[n] = '\0';
-}
-
-void string_strcpy(string* dest, const char* src)
+size_t string_strcat(string* dest, const char* src)
 {
 	size_t len = strlen(src);
-	vec_resize(dest, len);
-	memcpy(dest->data, src, len + 1);
+	size_t endidx = dest->size;
+	vec_resize(dest, dest->size + len);
+	void* end = vec_at(dest, endidx);
+	memcpy(end, src, len + 1);
+	return len;
 }
 
-void string_strncpy(string* dest, const char* src, size_t len)
+size_t string_strncat(string* dest, const char* src, size_t n)
 {
-	vec_resize(dest, len);
+	size_t len = strnlen(src, n);
+
+	size_t old_size = dest->size;
+	string_resize(dest, dest->size + len);
+	char* end = vec_at(dest, old_size);
+	memcpy(end, src, len);
+	_null_terminate_(dest);
+
+	return dest->size - old_size;
+}
+
+size_t string_strcpy(string* dest, const char* src)
+{
+	size_t len = strlen(src);
+	string_resize(dest, len);
+	memcpy(dest->data, src, len + 1);
+	return len;
+}
+
+size_t string_strncpy(string* dest, const char* src, size_t limit)
+{
+	string_resize(dest, limit);
 	size_t i = 0;
-	for (; src[i] != '\0' && i < len; ++i) {
+	for (; src[i] != '\0' && i < limit; ++i) {
 		((char*)dest->data)[i] = src[i];
 	}
-	vec_resize(dest, i);
-	((char*) dest->data)[i] = '\0';
+	string_resize(dest, i);
+	_null_terminate_(dest);
+	return i-1;
 }
 
-void string_sprintf(string* s, const char* fmt, ...)
+size_t string_sprintf(string* s, const char* fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
 	va_list args2;
 	va_copy(args2, args);
-	int len = vsnprintf(NULL, 0, fmt, args);
+	size_t len = vsnprintf(NULL, 0, fmt, args);
 	va_end(args);
 	vec_resize(s, len);
 	vsnprintf(s->data, len+1, fmt, args2);
 	va_end(args2);
+	return len;
+}
+
+const char* string_c_str(string* s)
+{
+	return (const char*) s->data;
+}
+
+void string_clear(string* s)
+{
+	vec_clear(s);
+	_null_terminate_(s);
 }
 
 void string_copy(string* dest, string* src)
 {
 	vec_resize(dest, src->size);
 	memcpy(dest->data, src->data, src->size);
-	((char*) dest->data)[dest->size] = '\0';
+	_null_terminate_(dest);
+}
+
+void string_resize(string* s, size_t n)
+{
+	vec_resize(s, n);
+	_null_terminate_(s);
 }

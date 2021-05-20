@@ -1,10 +1,6 @@
 #ifndef SELECT_H
 #define SELECT_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "query.h"
 #include "operation.h"
 #include "writer.h"
@@ -40,10 +36,5 @@ int fqlselect_record(struct fqlselect*, struct vec* rec);
 int fqlselect_record_api(struct fqlselect*, struct vec* rec);
 int fqlselect_subquery_record(struct reader*, struct record*);
 int fqlselect_subquery_reset(struct reader*);
-
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif  /* SELECT_H */

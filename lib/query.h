@@ -81,6 +81,7 @@ enum scalar_function {
 enum mode {
 	MODE_UNDEFINED,
 	MODE_SELECT,
+	MODE_INTO,
 	MODE_AGGREGATE,
 	MODE_UPDATE,
 	MODE_SOURCES,
@@ -137,6 +138,8 @@ void query_add_asterisk(struct query*, const char* table);
 void query_add_source(struct query*, struct stack**, const char*);
 void query_add_subquery_source(struct query*, struct query*, const char*);
 void query_apply_table_alias(struct query*, const char*);
+void query_apply_column_alias(struct query*, const char*);
+int query_set_into_table(struct query*, const char*);
 void query_set_distinct(struct query*);
 int query_add_aggregate(struct query*, enum aggregate_function);
 int query_init_op(struct query*);
