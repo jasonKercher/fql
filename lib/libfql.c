@@ -1,15 +1,16 @@
 #include "fql.h"
+#include "query.h"
+#include "fqlplan.h"
+#include "table.h"
+#include "schema.h"
+#include "reader.h"
+#include "process.h"
+#include "fqlselect.h"
+#include "antlr/antlr.h"
 #include "util/util.h"
 #include "util/vec.h"
 #include "util/stack.h"
 #include "util/queue.h"
-#include "antlr/antlr.h"
-#include "fqlplan.h"
-#include "fqlselect.h"
-#include "table.h"
-#include "query.h"
-#include "schema.h"
-#include "reader.h"
 
 struct fql_handle* fql_new()
 {
@@ -20,9 +21,9 @@ struct fql_handle* fql_new()
 struct fql_handle* fql_construct(struct fql_handle* fql)
 {
 	*fql = (struct fql_handle) {
-		 NULL                       /* queries */
-		,new_(vec, sizeof(struct fql_field)) /* api_vec */
-		,NULL                       /* query_str */
+		 NULL                          /* queries */
+		,new_t_(vec, struct fql_field) /* api_vec */
+		,NULL                          /* query_str */
 		,{
 			 ""     /* in_delim */
 			,""     /* out_delim */
@@ -141,9 +142,10 @@ void fql_set_force_cartesian(struct fql_handle* fql, int force_cartesian)
 int fql_exec_plans(struct fql_handle* fql, int plan_count)
 {
 	int i = 0;
+	int ret = 0;
 	queue* node = fql->query_list;
-	for (; node && i < plan_count; node = node->next, ++i) {
-		query* query = node->data;
+	query* query = node->data;
+	for (; node && i < plan_count; ++i) {
 		plan* plan = query->plan;
 		if (plan->has_stepped) {
 			fputs("Cannot execute plan that has been"
@@ -154,12 +156,26 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 		op_preop(fql);
 
 		if (fql->props.threading) {
-			try_ (process_exec_plan_thread(plan));
+			ret = process_exec_plan_thread(plan);
 		} else {
-			try_ (process_exec_plan(plan));
+			ret = process_exec_plan(plan);
 		}
+
+		if (ret == FQL_GOOD) {
+			ret = query_finish(query);
+		}
+
+		query_free(query);
+		query = queue_dequeue(&node);
+		if (ret == FQL_FAIL) {
+			break;
+		}
+
 	}
-	return FQL_GOOD;
+	if (ret != FQL_GOOD) {
+		queue_free_func(&fql->query_list, query_free);
+	}
+	return ret;
 }
 
 int fql_exec_all_plans(struct fql_handle* fql)
@@ -174,8 +190,6 @@ int fql_exec(struct fql_handle* fql, const char* query_str)
 	if (!fql->props.dry_run) {
 		ret = fql_exec_plans(fql, plan_count);
 	}
-
-	queue_free_func(&fql->query_list, &query_free);
 
 	return ret;
 }
@@ -222,14 +236,17 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 	}
 
 	int ret = process_step(plan);
-	if (ret == 0 || ret == FQL_FAIL) {
-		struct query* query = queue_dequeue(&fql->query_list);
-		query_free(query);
-
-		vec_resize(fql->api_vec, 0);
+	if (ret != 0 && ret != FQL_FAIL) {
+		*fields = vec_begin(fql->api_vec);
+		return ret;
 	}
+	struct query* q = queue_dequeue(&fql->query_list);
+	if (ret == 0) {
+		ret = query_finish(q);
+	}
+	query_free(q);
 
-	*fields = vec_begin(fql->api_vec);
+	vec_resize(fql->api_vec, 0);
 
 	return ret;
 }

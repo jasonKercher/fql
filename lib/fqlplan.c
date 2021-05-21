@@ -4,12 +4,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "query.h"
 #include "column.h"
 #include "group.h"
 #include "logic.h"
-#include "process.h"
-#include "query.h"
 #include "reader.h"
+#include "process.h"
+#include "operation.h"
 #include "util/util.h"
 
 #define PLAN_COLUMN_SEP " | "

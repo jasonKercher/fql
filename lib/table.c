@@ -1,8 +1,9 @@
 #include "table.h"
-#include "antlr/antlr.h"
 #include "query.h"
 #include "column.h"
 #include "reader.h"
+#include "logic.h"
+#include "antlr/antlr.h"
 #include "util/util.h"
 
 #define SUBQUERY_HASH_TABLE_INITIAL_SIZE 512

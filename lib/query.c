@@ -1,6 +1,7 @@
 #include "query.h"
 
 #include <stdbool.h>
+#include <unistd.h>
 
 #include "fql.h"
 #include "fqlselect.h"
@@ -26,10 +27,9 @@ query* query_construct(query* self, int id)
 		,new_t_(vec, column*)   /* validation_list */
 		,new_(group)            /* groupby */
 		,NULL                   /* distinct */
-		//,NULL                   /* having */
-		//,NULL                   /* limit */
 		,NULL                   /* orderby */
 		,NULL                   /* operation */
+		,NULL                   /* into_name */
 		,id                     /* query_id */
 		,0                      /* query_total */
 
@@ -68,6 +68,11 @@ void query_destroy(query* self)
 void query_free(void* data)
 {
 	delete_(query, data);
+}
+
+int query_finish(query* self)
+{
+	return op_finish(self->op);
 }
 
 void _add_validation_column(query* self, column* col)
@@ -252,8 +257,15 @@ void query_set_distinct(query* self)
 
 int query_set_into_table(query* self, const char* table_name)
 {
-	/* TODO */
-	return 0;
+	if (access(table_name, F_OK) == 0 ) {
+		fprintf(stderr,
+			"Cannot SELECT INTO: file `%s' already exists\n",
+			table_name);
+		return FQL_FAIL;
+	}
+	self->into_name = string_from_char_ptr(table_name);
+	fqlselect_writer_open(self->op, table_name);
+	return FQL_GOOD;
 }
 
 int query_add_aggregate(query* self, enum aggregate_function agg_type)

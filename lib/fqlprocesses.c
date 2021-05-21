@@ -2,6 +2,7 @@
 #include "reader.h"
 #include "process.h"
 #include "group.h"
+#include "logic.h"
 #include "aggregate.h"
 #include "fqlselect.h"
 #include "record.h"

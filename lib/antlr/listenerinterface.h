@@ -5,6 +5,7 @@
 #include "treewalker.h"
 
 #include "fqlhandle.h"
+#include "fqlimits.h"
 #include "query.h"
 #include "util/queue.h"
 #include "util/stack.h"

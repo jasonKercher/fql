@@ -3,6 +3,7 @@
 #include "reader.h"
 #include "column.h"
 #include "schema.h"
+#include "process.h"
 #include "util/util.h"
 
 fqlselect* fqlselect_construct(fqlselect* self)
@@ -143,10 +144,27 @@ void fqlselect_apply_column_alias(fqlselect* self, const char* alias)
 	schema_apply_column_alias(self->schema, alias);
 }
 
-void fqlselect_finalize(fqlselect* self, query* query)
+int fqlselect_writer_open(fqlselect* self, const char* file_name)
+{
+	/* TODO: csv_writer_open is assumed */
+	int ret = csv_writer_open(self->writer->writer_data, file_name);
+	if (ret == CSV_FAIL) {
+		return FQL_FAIL;
+	}
+	return FQL_GOOD;
+}
+
+int fqlselect_finish(fqlselect* self)
+{
+	int ret = csv_writer_close(self->writer->writer_data);
+	fail_if_ (ret == CSV_FAIL);
+	return FQL_GOOD;
+}
+
+void fqlselect_preflight(fqlselect* self, query* query)
 {
 	_expand_asterisks(query, false);
-	schema_finalize(self->schema);
+	schema_preflight(self->schema);
 }
 
 void fqlselect_preop(fqlselect* self, query* query)

@@ -12,6 +12,7 @@
 #include "table.h"
 #include "reader.h"
 #include "group.h"
+#include "logic.h"
 #include "operation.h"
 #include "util/util.h"
 #include "util/vec.h"
@@ -54,7 +55,7 @@ void schema_apply_column_alias(schema* self, const char* alias)
 	string_strcpy(&(*col)->alias, alias);
 }
 
-void schema_finalize(schema* self)
+void schema_preflight(schema* self)
 {
 	/* this is a separate step because between adding
 	 * a new column and _here_, we could have applied a
@@ -203,7 +204,7 @@ void schema_assign_header(table* table, record* rec)
 		string_destroy(&col_str);
 	}
 
-	schema_finalize(table->schema);
+	schema_preflight(table->schema);
 }
 
 int schema_resolve_source(struct fql_handle* fql, table* table)
@@ -645,7 +646,7 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 		return FQL_FAIL;
 	}
 
-	op_finalize(query);
+	op_preflight(query);
 
 	return FQL_GOOD;
 }

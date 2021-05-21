@@ -39,7 +39,6 @@ _Bool op_has_delim(enum op* op)
 	switch (*op) {
 	case OP_SELECT:
 		return fqlselect_has_delim((fqlselect*)op);
-		break;
 	default:
 		return true;
 	}
@@ -56,18 +55,29 @@ void op_set_delim(enum op* op, const char* delim)
 	}
 }
 
-void op_finalize(query* query)
+int op_finish(enum op* op)
+{
+	switch(*op) {
+	case OP_SELECT:
+		return fqlselect_finish((fqlselect*)op);
+	default:
+		return FQL_FAIL;
+	}
+}
+
+void op_preflight(query* query)
 {
 	enum op* type = query->op;
 
 	switch (*type) {
 	case OP_SELECT:
-		fqlselect_finalize(query->op, query);
+		fqlselect_preflight(query->op, query);
 		break;
 	default:
 		;
 	}
 }
+
 void op_apply_process(query* query, plan* plan)
 {
 	enum op* type = query->op;

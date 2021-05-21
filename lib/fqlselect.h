@@ -29,7 +29,9 @@ void fqlselect_add_column(struct fqlselect*, struct column*);
 void fqlselect_connect_api(struct query*, struct vec*);
 void fqlselect_apply_process(struct query*, struct fql_plan*);
 void fqlselect_apply_column_alias(struct fqlselect*, const char* alias);
-void fqlselect_finalize(struct fqlselect*, struct query*);
+int fqlselect_writer_open(struct fqlselect*, const char* file_name);
+void fqlselect_preflight(struct fqlselect*, struct query*);
+int fqlselect_finish(struct fqlselect*);
 
 void fqlselect_preop(struct fqlselect*, struct query*);
 int fqlselect_record(struct fqlselect*, struct vec* rec);

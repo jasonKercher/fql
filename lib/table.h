@@ -7,31 +7,14 @@ extern "C" {
 
 #include "util/stack.h"
 #include "util/hashmap.h"
-//#include "util/pmap.h"
 #include "util/stringy.h"
+#include "query.h"
 #include "schema.h"
-//#include "reader.h"
 #include "fqlimits.h"
 
-//struct table {
-//        struct reader* reader;
-//        struct schema* schema;
-//        string name;
-//};
-
-/** source **/
 enum source_type {
 	SOURCE_TABLE,
 	SOURCE_SUBQUERY,
-};
-
-enum join_type {
-	JOIN_FROM,
-	JOIN_INNER,
-	JOIN_LEFT,
-	JOIN_RIGHT,
-	JOIN_FULL,
-	JOIN_CROSS,
 };
 
 struct table {

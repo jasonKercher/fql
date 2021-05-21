@@ -6,13 +6,13 @@
 extern "C" {
 #endif
 
-#include "fqlplan.h"
-#include "table.h"
-//#include "function.h"
-#include "operation.h"
-#include "logic.h"
-#include "util/queue.h"
-#include "util/vec.h"
+/* Try to get avoid includes since is our
+ * interface to c++
+ */
+struct vec;
+struct logicgroup;
+struct group;
+typedef struct vec string;
 
 enum aggregate_function {
 	AGG_UNDEFINED,
@@ -96,7 +96,14 @@ enum logic_mode {
 	LOGIC_JOIN,
 };
 
-struct group;
+enum join_type {
+	JOIN_FROM,
+	JOIN_INNER,
+	JOIN_LEFT,
+	JOIN_RIGHT,
+	JOIN_FULL,
+	JOIN_CROSS,
+};
 
 /** query **/
 struct query {
@@ -107,8 +114,7 @@ struct query {
 	struct group* groupby;
 	struct group* distinct;
 	struct order* orderby;
-	//struct queue* having;
-	//struct expression* limit;       /* TOP */
+	string* into_name;
 	void* op;                       /* operation structure */
 	int query_id;
 	int query_total;
@@ -132,7 +138,8 @@ struct query* query_construct(struct query*, int id);
 void query_destroy(struct query*);
 void query_free(void*);
 
-int query_add_constant(query*, const char*, int);
+int query_finish(struct query*);
+int query_add_constant(struct query*, const char*, int);
 void query_add_column(struct query*, char*, const char* table);
 void query_add_asterisk(struct query*, const char* table);
 void query_add_source(struct query*, struct stack**, const char*);
