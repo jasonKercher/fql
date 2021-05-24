@@ -50,6 +50,7 @@ void vec_resize(struct vec*, size_t);
 void vec_resize_and_zero(struct vec*, size_t);
 void vec_clear(struct vec*);
 void vec_shrink_to_fit(struct vec*);
+void vec_pop_back(struct vec*);
 
 void* vec_add_one(struct vec*);
 void vec_set(struct vec*, size_t, const void*);

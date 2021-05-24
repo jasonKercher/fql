@@ -21,9 +21,9 @@ order* order_construct(order* self)
 void order_destroy(order* self)
 {
 	vec_destroy(&self->columns);
-	//vec_destroy(&self->_indicies);
+	vec_destroy(&self->_index_pairs);
 	vec_destroy(&self->_raw);
-	delete_ (vec, self->_views);
+	//delete_ (vec, self->_views);
 }
 
 int order_add_column(order* self, column* col)

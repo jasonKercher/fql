@@ -110,6 +110,14 @@ void vec_shrink_to_fit(vec* self)
 	self->_alloc = self->size + 1;
 }
 
+void vec_pop_back(vec* self)
+{
+	if (self->size == 0) { 
+		return;
+	}
+	--self->size;
+}
+
 void* vec_add_one(vec* self)
 {
 	if (self->_alloc <= ++self->size) {

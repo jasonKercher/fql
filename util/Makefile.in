@@ -104,7 +104,7 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libutil_la_LIBADD =
 am_libutil_la_OBJECTS = util.lo stack.lo queue.lo hashmap.lo vec.lo \
-	stringy.lo fifo.lo stringview.lo dgraph.lo
+	flex.lo stringy.lo fifo.lo stringview.lo dgraph.lo
 libutil_la_OBJECTS = $(am_libutil_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -126,10 +126,10 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/dgraph.Plo ./$(DEPDIR)/fifo.Plo \
-	./$(DEPDIR)/hashmap.Plo ./$(DEPDIR)/queue.Plo \
-	./$(DEPDIR)/stack.Plo ./$(DEPDIR)/stringview.Plo \
-	./$(DEPDIR)/stringy.Plo ./$(DEPDIR)/util.Plo \
-	./$(DEPDIR)/vec.Plo
+	./$(DEPDIR)/flex.Plo ./$(DEPDIR)/hashmap.Plo \
+	./$(DEPDIR)/queue.Plo ./$(DEPDIR)/stack.Plo \
+	./$(DEPDIR)/stringview.Plo ./$(DEPDIR)/stringy.Plo \
+	./$(DEPDIR)/util.Plo ./$(DEPDIR)/vec.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -191,6 +191,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHECK_CFLAGS = @CHECK_CFLAGS@
 CHECK_LIBS = @CHECK_LIBS@
+CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -295,7 +296,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -310,6 +310,7 @@ libutil_la_SOURCES = util.h util.c \
 		queue.h queue.c \
 		hashmap.h hashmap.c \
 		vec.h vec.c \
+		flex.h flex.c \
 		stringy.h stringy.c \
 		fifo.h fifo.c \
 		stringview.h stringview.c \
@@ -371,6 +372,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dgraph.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fifo.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flex.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hashmap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/queue.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stack.Plo@am__quote@ # am--include-marker
@@ -539,6 +541,7 @@ clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/dgraph.Plo
 	-rm -f ./$(DEPDIR)/fifo.Plo
+	-rm -f ./$(DEPDIR)/flex.Plo
 	-rm -f ./$(DEPDIR)/hashmap.Plo
 	-rm -f ./$(DEPDIR)/queue.Plo
 	-rm -f ./$(DEPDIR)/stack.Plo
@@ -593,6 +596,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/dgraph.Plo
 	-rm -f ./$(DEPDIR)/fifo.Plo
+	-rm -f ./$(DEPDIR)/flex.Plo
 	-rm -f ./$(DEPDIR)/hashmap.Plo
 	-rm -f ./$(DEPDIR)/queue.Plo
 	-rm -f ./$(DEPDIR)/stack.Plo
