@@ -7,15 +7,7 @@
  */
 
 #include "vec.h"
-
-/* This struct is only for returning data
- * along with its length
- */
-struct flexpair {
-	void* data;
-	unsigned len;
-};
-typedef struct flexpair flexpair;
+#include "stringview.h"
 
 struct flex {
 	struct vec _raw;
@@ -27,8 +19,9 @@ struct flex* flex_construct(struct flex*);
 void flex_destroy(struct flex*);
 
 _Bool flex_empty(const struct flex*);
+size_t flex_size(const struct flex*);
 void* flex_at(const struct flex*, size_t);
-struct flexpair flex_pair_at(const struct flex*, size_t);
+struct stringview flex_pair_at(const struct flex*, size_t);
 void flex_reserve(struct flex*, size_t);
 void flex_resize(struct flex*, size_t);
 void flex_clear(struct flex*);
@@ -42,6 +35,9 @@ void flex_insert(struct flex*, size_t, void*, unsigned);
 void flex_push_back(struct flex*, void*, unsigned);
 #define flex_push_back_(F_, data_, T_) \
 	flex_push_back(F_, data_, sizeof(T_))
+
+void flex_push_back_str_int(struct flex*, long);
+void flex_push_back_str_float(struct flex*, double);
 
 void flex_remove(struct flex*, size_t);
 

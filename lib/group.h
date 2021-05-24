@@ -6,6 +6,7 @@
 #include "column.h"
 #include "process.h"
 #include "util/vec.h"
+#include "util/flex.h"
 #include "util/hashmap.h"
 
 struct group {
@@ -13,8 +14,9 @@ struct group {
 	compositemap val_map;
 	struct vec columns;
 	struct vec aggregates;
-	struct vec _indicies;
-	struct vec _raw;
+	struct flex group_data;
+	//struct vec _indicies;
+	//struct vec _raw;
 	struct vec _composite;  /* temporary */
 	size_t _dump_idx;
 };

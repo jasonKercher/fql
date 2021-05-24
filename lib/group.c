@@ -12,12 +12,8 @@ group* group_construct(group* self)
 				HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 	vec_construct_(&self->columns, column*);
 	vec_construct_(&self->aggregates, aggregate*);
-	vec_construct_(&self->_indicies, size_t);
-	vec_construct_(&self->_raw, char);
 	vec_construct_(&self->_composite, stringview);
-
-	size_t zero = 0;
-	vec_push_back(&self->_indicies, &zero);
+	flex_construct(&self->group_data);
 
 	return self;
 }
@@ -30,9 +26,8 @@ void group_destroy(group* self)
 	compositemap_destroy(&self->val_map);
 	vec_destroy(&self->columns);
 	vec_destroy(&self->aggregates);
-	vec_destroy(&self->_indicies);
-	vec_destroy(&self->_raw);
 	vec_destroy(&self->_composite);
+	flex_destroy(&self->group_data);
 }
 
 void group_add_column(group* self, column* col)
@@ -80,9 +75,7 @@ int _update_agg_result(group* self, vec* recs, unsigned idx)
 }
 int group_record(group* self, vec* recs)
 {
-	size_t raw_size = self->_raw.size;
-	size_t index_count = self->_indicies.size;
-	size_t running_size = raw_size;
+	size_t org_size = flex_size(&self->group_data);
 
 	column** cols = vec_begin(&self->columns);
 	stringview* sv = vec_begin(&self->_composite);
@@ -94,43 +87,28 @@ int group_record(group* self, vec* recs)
 		switch (cols[i]->field_type) {
 		case FIELD_STRING:
 			try_ (column_get_stringview(sv, cols[i], recs));
-			vec_append(&self->_raw, sv->data, sv->len);
+			flex_push_back(&self->group_data, (void*) sv->data, sv->len);
 			break;
 		case FIELD_INT:
 		 {
 			long num_i = 0;
 			try_ (column_get_int(&num_i, cols[i], recs));
-			size_t old_size = self->_raw.size;
-			unsigned len = snprintf(NULL, 0, "%ld", num_i);
-			vec_resize(&self->_raw, old_size + len);
-			char* end = vec_at(&self->_raw, old_size);
-			snprintf(end, len+1, "%ld", num_i);
-			stringview_nset(sv, end, len);
+			flex_push_back_str_int(&self->group_data, num_i);
 			break;
 		 }
 		case FIELD_FLOAT:
 		 {
 			double num_f = 0;
 			try_ (column_get_float(&num_f, cols[i], recs));
-			size_t old_size = self->_raw.size;
-			unsigned len = snprintf(NULL, 0, "%f", num_f);
-			vec_resize(&self->_raw, old_size + len);
-			char* end = vec_at(&self->_raw, old_size);
-			snprintf(end, len+1, "%f", num_f);
-			stringview_nset(sv, end, len);
+			flex_push_back_str_float(&self->group_data, num_f);
 		 }
 		default:
 			;
 		}
+	}
 
-		/* NOTE: running size is incremented first, because it should
-		 *       mark the beginning of the next element. _indicies.size
-		 *       should always be number of elements + 1.
-		 */
-		running_size += sv->len;
-		++sv;
-
-		vec_push_back(&self->_indicies, &running_size);
+	for (i = 0; i < self->columns.size; ++i) {
+		sv[i] = flex_pair_at(&self->group_data, org_size);
 	}
 
 	unsigned group_count = self->val_map.values.size;
@@ -143,8 +121,7 @@ int group_record(group* self, vec* recs)
 		_add_agg_result(self, recs);
 		ret = 1;
 	} else {
-		vec_resize(&self->_raw, raw_size);
-		vec_resize(&self->_indicies, index_count);
+		flex_resize(&self->group_data, org_size);
 		_update_agg_result(self, recs, *idx_ptr);
 	}
 
@@ -180,12 +157,13 @@ int group_dump_record(group* self, record* rec)
 		return -1;
 	}
 
-	unsigned comp_count = self->_composite.size;
-	size_t* idx = vec_at(&self->_indicies, comp_count * self->_dump_idx);
+	size_t idx = self->_composite.size * self->_dump_idx;
 
-	int i = 0;
 	column** group_cols = vec_begin(&self->columns);
 	stringview* rec_svs = vec_begin(rec->fields);
+
+	int i = 0;
+
 	for (; i < self->columns.size; ++i) {
 		if (group_cols[i]->expr == EXPR_AGGREGATE) {
 			_read_aggregate(group_cols[i],
@@ -194,10 +172,7 @@ int group_dump_record(group* self, record* rec)
 					self->_dump_idx);
 			continue;
 		}
-		stringview_nset(&rec_svs[i],
-				vec_at(&self->_raw, *idx),
-				*(idx+1) - *idx);
-		++idx;
+		rec_svs[i] = flex_pair_at(&self->group_data, idx++);
 	}
 
 	++self->_dump_idx;
