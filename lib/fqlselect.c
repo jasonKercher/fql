@@ -13,7 +13,8 @@ fqlselect* fqlselect_construct(fqlselect* self)
 		,NULL                   /* api */
 		,new_(schema)           /* schema */
 		,new_(writer)           /* writer */
-		,&fqlselect_record         /* fqlselect_record__ */
+		,&fqlselect_record      /* fqlselect_record__ */
+		,0                      /* offset */
 	};
 
 	return self;
@@ -196,7 +197,9 @@ void fqlselect_preop(fqlselect* self, query* query)
 	}
 
 	writer* writer = self->writer;
-	writer->write_record__(writer->writer_data, &header, NULL);
+	self->offset = writer->write_record__(writer->writer_data,
+					      &header,
+					      NULL);
 
 	it = vec_begin(&header);
 	for (; it != vec_end(&header); ++it) {
@@ -250,7 +253,23 @@ int fqlselect_record(fqlselect* self, vec* recs)
 	writer* writer = self->writer;
 	vec* col_vec = self->schema->columns;
 
-	return writer->write_record__(writer->writer_data, col_vec, recs);
+	int ret = writer->write_record__(writer->writer_data,
+			                 col_vec, 
+			                 recs);
+
+	if (ret == FQL_FAIL || recs == NULL) {
+		return ret;
+	}
+
+	self->offset += ret;
+	/* pass offset information along
+	 * in the top record 
+	 */
+	record** rec = vec_begin(recs);
+	(*rec)->offset = self->offset;
+	(*rec)->select_len = ret;
+
+	return ret;
 }
 
 /* this becomes a big copy operation because

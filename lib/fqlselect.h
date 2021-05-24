@@ -17,6 +17,7 @@ struct fqlselect {
 	struct schema* schema;
 	struct writer* writer;
 	select_fn select__;
+	size_t offset;
 };
 typedef struct fqlselect fqlselect;
 

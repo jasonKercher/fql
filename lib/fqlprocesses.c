@@ -5,6 +5,7 @@
 #include "logic.h"
 #include "aggregate.h"
 #include "fqlselect.h"
+#include "order.h"
 #include "record.h"
 #include "column.h"
 #include "util/fifo.h"
@@ -99,35 +100,6 @@ int fql_read_subquery(dgraph* proc_graph, process* proc)
 	fifo_add(proc->fifo_out[0], recs);
 
 	return ret;
-}
-
-int fql_select(dgraph* proc_graph, process* proc)
-{
-	vec** recs = fifo_get(proc->fifo_in[0]);
-	fqlselect* select = proc->proc_data;
-	int ret = select->select__(select, *recs);
-
-	_recycle_recs(proc, *recs, proc->in_src_count);
-
-	return ret;
-}
-
-int fql_logic(dgraph* proc_graph, process* proc)
-{
-	vec** recs = fifo_get(proc->fifo_in[0]);
-	logicgroup* lg = proc->proc_data;
-
-	int ret = try_ (logicgroup_eval(lg, *recs, lg->join_logic));
-
-	if (ret) {
-		fifo_add(proc->fifo_out[1], recs);  /* true */
-	} else if (proc->fifo_out[0] != NULL) {
-		fifo_add(proc->fifo_out[0], recs);  /* false */
-	} else {
-		_recycle_recs(proc, *recs, proc->in_src_count);
-	}
-
-	return 1;
 }
 
 void _increase_left_side_ref_count(vec* leftrecs, _Bool recyclable)
@@ -273,17 +245,21 @@ int fql_hash_join(dgraph* proc_graph, process* proc)
 	return 1;
 }
 
-int fql_distinct(dgraph* proc_graph, process* proc)
+int fql_logic(dgraph* proc_graph, process* proc)
 {
 	vec** recs = fifo_get(proc->fifo_in[0]);
+	logicgroup* lg = proc->proc_data;
 
-	group* group = proc->proc_data;
-	int ret = group_record(group, *recs);
-	if (ret == 1) {
-		fifo_add(proc->fifo_out[0], recs);
+	int ret = try_ (logicgroup_eval(lg, *recs, lg->join_logic));
+
+	if (ret) {
+		fifo_add(proc->fifo_out[1], recs);  /* true */
+	} else if (proc->fifo_out[0] != NULL) {
+		fifo_add(proc->fifo_out[0], recs);  /* false */
 	} else {
-		_recycle_recs(proc, *recs, (*recs)->size);
+		_recycle_recs(proc, *recs, proc->in_src_count);
 	}
+
 	return 1;
 }
 
@@ -326,6 +302,51 @@ int fql_groupby(dgraph* proc_graph, process* proc)
 		fifo_add(proc->fifo_out[0], recs);
 		process_disable(proc);
 	}
+	return 1;
+}
+
+int fql_distinct(dgraph* proc_graph, process* proc)
+{
+	vec** recs = fifo_get(proc->fifo_in[0]);
+
+	group* group = proc->proc_data;
+	int ret = group_record(group, *recs);
+	if (ret == 1) {
+		fifo_add(proc->fifo_out[0], recs);
+	} else {
+		_recycle_recs(proc, *recs, (*recs)->size);
+	}
+	return 1;
+}
+
+int fql_select(dgraph* proc_graph, process* proc)
+{
+	vec** recs = fifo_get(proc->fifo_in[0]);
+	fqlselect* select = proc->proc_data;
+	int ret = select->select__(select, *recs);
+
+	if (proc->fifo_out[0] == NULL) {
+		_recycle_recs(proc, *recs, proc->in_src_count);
+		return ret;
+	}
+
+	fifo_add(proc->fifo_out[0], recs);
+	return ret;
+}
+
+int fql_orderby(dgraph* proc_graph, process* proc)
+{
+	order* order = proc->proc_data;
+	if (!proc->fifo_in[0]->is_open
+	 && fifo_is_empty(proc->fifo_in[0])) {
+		order_sort(order);
+		return 0;
+	}
+
+	vec** recs = fifo_get(proc->fifo_in[0]);
+	int ret = order_add_record(order, *recs);
+	
+	_recycle_recs(proc, *recs, (*recs)->size);
 	return 1;
 }
 

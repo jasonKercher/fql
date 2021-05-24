@@ -9,8 +9,9 @@ record* record_construct(record* rec, unsigned idx, unsigned n, _Bool owns_recs)
 		 new_t_(vec, stringview) /* fields */
 		,NULL                    /* _field_data */
 		,csv_record_new()        /* libcsv_rec */
-		,new_(string)            /* rec_cpy */
 		,{ 0 }                   /* rec_raw */
+		,0                       /* offset */
+		,0                       /* select_len */
 		,idx                     /* idx */
 		,0                       /* ref_count */
 		,true                    /* is_recyclable */
@@ -32,6 +33,5 @@ record* record_construct(record* rec, unsigned idx, unsigned n, _Bool owns_recs)
 void record_destroy(record* rec)
 {
 	delete_(vec, rec->fields);
-	delete_(string, rec->rec_cpy);
 	csv_record_free(rec->libcsv_rec);
 }

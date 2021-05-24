@@ -11,8 +11,9 @@ struct record {
 	struct vec* fields;
 	struct vec* _field_data;
 	struct csv_record* libcsv_rec;
-	string* rec_cpy;
 	stringview rec_raw;
+	size_t offset;
+	unsigned select_len;
 	unsigned idx;
 	_Atomic int ref_count;
 	_Atomic _Bool is_recyclable;
