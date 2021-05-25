@@ -7,6 +7,7 @@
 #include "fqlselect.h"
 #include "logic.h"
 #include "group.h"
+#include "order.h"
 #include "aggregate.h"
 #include "field.h"
 #include "function.h"
@@ -28,8 +29,8 @@ query* query_construct(query* self, int id)
 		,new_(group)            /* groupby */
 		,NULL                   /* distinct */
 		,NULL                   /* orderby */
-		,NULL                   /* operation */
-		,NULL                   /* into_name */
+		//,NULL                   /* into_name */
+		,NULL                   /* op */
 		,id                     /* query_id */
 		,0                      /* query_total */
 
@@ -37,7 +38,6 @@ query* query_construct(query* self, int id)
 		,NULL                   /* joinable */
 		,NULL                   /* function_stack */
 
-		//,NULL                   /* expr */
 		,MODE_UNDEFINED         /* mode */
 		,LOGIC_UNDEFINED        /* logic_mode */
 		,JOIN_FROM              /* join */
@@ -59,20 +59,13 @@ void query_destroy(query* self)
 	delete_(vec, self->validation_list);
 	delete_(group, self->groupby);
 	delete_(group, self->distinct);
-	//queue_free_data(&self->having);
-	//free_(self->limit);
-	//free_(self->expr);
+	delete_(order, self->orderby);
 }
 
 /* only here for address */
 void query_free(void* data)
 {
 	delete_(query, data);
-}
-
-int query_finish(query* self)
-{
-	return op_finish(self->op);
 }
 
 void _add_validation_column(query* self, column* col)
@@ -133,6 +126,8 @@ int _distribute_column(query* self, column* col)
 		break;
 	 }
 	case MODE_ORDERBY:
+		order_add_column(self->orderby, col);
+		break;
 	default:
 		return FQL_FAIL;
 	}
@@ -163,10 +158,6 @@ void query_add_asterisk(query* self, const char* table_id)
 
 int query_add_constant(query* self, const char* s, int len)
 {
-	if (self->mode == MODE_ORDERBY) {
-		fputs("Constants not currently allowed in ORDER BY\n", stderr);
-		return FQL_FAIL;
-	}
 	column* col = new_(column, EXPR_CONST, NULL, "");
 
 	enum field_type type = FIELD_UNDEFINED;
@@ -263,9 +254,7 @@ int query_set_into_table(query* self, const char* table_name)
 			table_name);
 		return FQL_FAIL;
 	}
-	self->into_name = string_from_char_ptr(table_name);
-	fqlselect_writer_open(self->op, table_name);
-	return FQL_GOOD;
+	return fqlselect_writer_open(self->op, table_name);
 }
 
 int query_add_aggregate(query* self, enum aggregate_function agg_type)
@@ -310,6 +299,19 @@ int query_init_op(query* self)
 		return FQL_FAIL;
 	}
 	return FQL_GOOD;
+}
+
+int query_init_orderby(query* self)
+{
+	/* orderby allows us to assume SELECT */
+	char* out_name = fqlselect_take_filename(self->op);
+	const char* in_name = fqlselect_get_tempname(self->op);
+	self->orderby = new_(order, in_name, out_name);
+	/* take_filename takes ownership, must free */
+	if (out_name) {
+		free_(out_name);
+	}
+	return (self->orderby->out_file) ? FQL_GOOD : FQL_FAIL;
 }
 
 int query_enter_function(query* self, enum scalar_function scalar_type, int char_as_byte)

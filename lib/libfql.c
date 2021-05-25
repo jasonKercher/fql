@@ -161,10 +161,6 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 			ret = process_exec_plan(plan);
 		}
 
-		if (ret == FQL_GOOD) {
-			ret = query_finish(query);
-		}
-
 		query_free(query);
 		query = queue_dequeue(&node);
 		if (ret == FQL_FAIL) {
@@ -241,13 +237,8 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 		return ret;
 	}
 	struct query* q = queue_dequeue(&fql->query_list);
-	if (ret == 0) {
-		ret = query_finish(q);
-	}
 	query_free(q);
-
 	vec_resize(fql->api_vec, 0);
-
 	return ret;
 }
 

@@ -563,6 +563,7 @@ void ListenerInterface::exitAll_distinct_expression(TSqlParser::All_distinct_exp
 void ListenerInterface::enterOrder_by_clause(TSqlParser::Order_by_clauseContext * ctx)
 {
 	_query->mode = MODE_ORDERBY;
+	query_init_orderby(_query);
 }
 void ListenerInterface::exitOrder_by_clause(TSqlParser::Order_by_clauseContext * ctx) { }
 

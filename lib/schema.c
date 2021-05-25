@@ -12,6 +12,7 @@
 #include "table.h"
 #include "reader.h"
 #include "group.h"
+#include "order.h"
 #include "logic.h"
 #include "operation.h"
 #include "util/util.h"
@@ -431,9 +432,6 @@ void _resolve_join_conditions(table* right_table, int right_idx)
 			}
 		}
 	}
-
-	/* no more need for this vector */
-	//vec_free(right_table->condition->joinable);
 }
 
 enum _expr_type {
@@ -564,7 +562,7 @@ int _op_find_group(compositemap* expr_map, column* col, vec* key)
 	return FQL_GOOD;
 }
 
-int _group_validation(struct fql_handle* fql, query* query)
+int _map_groups(struct fql_handle* fql, query* query)
 {
 	/* verify group columns and build composite key for each */
 	vec* group_cols = &query->groupby->columns;
@@ -596,10 +594,17 @@ int _group_validation(struct fql_handle* fql, query* query)
 		(*it)->field_type = agg->data_type;
 	}
 
-	/* now, we need to match *all* op columns to a group */
-	vec* op_cols = op_get_validation_list(query->op);
-	it = vec_begin(op_cols);
-	for (; it != vec_end(op_cols); ++it) {
+	vec_destroy(&key);
+	return FQL_GOOD;
+}
+
+int _group_validation(struct fql_handle* fql, query* query, vec* cols)
+{
+	compositemap* expr_map = query->groupby->expr_map; 
+	vec key;
+	vec_construct_(&key, stringview);
+	column** it = vec_begin(cols);
+	for (; it != vec_end(cols); ++it) {
 		if (_op_find_group(expr_map, *it, &key)) {
 			vec_destroy(&key);
 			return FQL_FAIL;
@@ -607,7 +612,6 @@ int _group_validation(struct fql_handle* fql, query* query)
 	}
 
 	vec_destroy(&key);
-
 	return FQL_GOOD;
 }
 
@@ -640,10 +644,24 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 	vec* op_cols = op_get_validation_list(query->op);
 	try_ (_asterisk_resolve(op_cols, sources));
 	try_ (schema_assign_columns(op_cols, sources));
-	if ((!vec_empty(&query->groupby->columns)
-	  || !vec_empty(&query->groupby->aggregates))
-	 && _group_validation(fql, query)) {
-		return FQL_FAIL;
+
+	vec* order_cols = NULL;
+	if (query->orderby) {
+		order_cols = &query->orderby->columns;
+		int ret = schema_assign_columns(order_cols, query->sources);
+		/* TODO: map select aliases as well */
+		if (ret == FQL_FAIL) {
+			return FQL_FAIL;
+		}
+	}
+	
+	if (!vec_empty(&query->groupby->columns)
+	 || !vec_empty(&query->groupby->aggregates)) {
+		try_ (_map_groups(fql, query));
+		try_ (_group_validation(fql, query, op_cols));
+		if (order_cols) {
+			try_ (_group_validation(fql, query, order_cols));
+		}
 	}
 
 	op_preflight(query);

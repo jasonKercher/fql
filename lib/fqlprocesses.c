@@ -85,16 +85,16 @@ int fql_read_subquery(dgraph* proc_graph, process* proc)
 	case FQL_GOOD:
 		break;
 	case FQL_FAIL:
+	default:
 		return FQL_FAIL;
-	default: /* eof */
-		process_disable(proc);
-		return 0;
 	}
 
 	fifo_consume(proc->fifo_in[1]);
 
 	if (!proc->is_const) {
 		_recycle_recs(proc, *sub_recs, (*sub_recs)->size);
+	} else {
+		process_disable(proc);
 	}
 
 	fifo_add(proc->fifo_out[0], recs);
@@ -321,6 +321,11 @@ int fql_distinct(dgraph* proc_graph, process* proc)
 
 int fql_select(dgraph* proc_graph, process* proc)
 {
+	if (!proc->wait_for_in0) {
+		fqlselect_close(proc->proc_data);
+		process_disable(proc);
+		return 0;
+	}
 	vec** recs = fifo_get(proc->fifo_in[0]);
 	fqlselect* select = proc->proc_data;
 	int ret = select->select__(select, *recs);
@@ -345,7 +350,7 @@ int fql_orderby(dgraph* proc_graph, process* proc)
 
 	vec** recs = fifo_get(proc->fifo_in[0]);
 	int ret = order_add_record(order, *recs);
-	
+
 	_recycle_recs(proc, *recs, (*recs)->size);
 	return 1;
 }

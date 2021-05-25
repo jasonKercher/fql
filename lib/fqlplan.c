@@ -5,10 +5,11 @@
 #include <string.h>
 
 #include "query.h"
-#include "column.h"
 #include "group.h"
+#include "order.h"
 #include "logic.h"
 #include "reader.h"
+#include "column.h"
 #include "process.h"
 #include "operation.h"
 #include "util/util.h"
@@ -334,6 +335,7 @@ void _having(plan* self, query* query) { }
 void _operation(plan* self, query* query, dnode* entry)
 {
 	self->current->out[0] = self->op_true;
+	self->current = self->op_true;
 	if (entry == NULL) {
 		op_apply_process(query, self);
 		return;
@@ -353,6 +355,21 @@ void _operation(plan* self, query* query, dnode* entry)
 	true_proc->is_passive = true;
 	process* false_proc = self->op_false->data;
 	false_proc->is_passive = true;
+}
+
+void _order(plan* self, query* query)
+{
+	if (query->orderby == NULL) {
+		return;
+	}
+	process* order_proc = new_(process, "ORDER BY ", self);
+	order_proc->action__ = &fql_orderby;
+	order_proc->proc_data = query->orderby;
+	order_proc->wait_for_in0_end = true;
+	order_cat_description(query->orderby, order_proc);
+	dnode* order_node = dgraph_add_data(self->processes, order_proc);
+	self->current->out[0] = order_node;
+	self->current = order_node;
 }
 
 void _limit(plan* self, query* query) { }
@@ -412,9 +429,6 @@ void _clear_passive(plan* self)
  * threading because "is not full" is not a valid
  * test for whether we are allowed to send data
  * into the pipe IF there is more than one input.
- *
- * Also, update the pipeline size. If we just waited
- * for each pipe to be half full, we could dead lock.
  */
 void _update_pipes(dgraph* proc_graph)
 {
@@ -498,6 +512,7 @@ plan* plan_build(query* query, dnode* entry)
 	_group(self, query);
 	_having(self, query);
 	_operation(self, query, entry);
+	_order(self, query);
 	_limit(self, query);
 
 	/* Uncomment this to view the plan *with* passive nodes */

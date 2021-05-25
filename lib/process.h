@@ -60,6 +60,7 @@ int fql_cartesian_join(struct dgraph*, struct process*);
 int fql_hash_join(struct dgraph*, struct process*);
 int fql_distinct(struct dgraph*, struct process*);
 int fql_groupby(struct dgraph*, struct process*);
+int fql_orderby(struct dgraph*, struct process*);
 int fql_no_op(struct dgraph*, struct process*);
 
 #endif /* PROCESS_H */

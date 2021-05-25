@@ -114,7 +114,6 @@ struct query {
 	struct group* groupby;
 	struct group* distinct;
 	struct order* orderby;
-	string* into_name;
 	void* op;                       /* operation structure */
 	int query_id;
 	int query_total;
@@ -138,7 +137,6 @@ struct query* query_construct(struct query*, int id);
 void query_destroy(struct query*);
 void query_free(void*);
 
-int query_finish(struct query*);
 int query_add_constant(struct query*, const char*, int);
 void query_add_column(struct query*, char*, const char* table);
 void query_add_asterisk(struct query*, const char* table);
@@ -150,6 +148,7 @@ int query_set_into_table(struct query*, const char*);
 void query_set_distinct(struct query*);
 int query_add_aggregate(struct query*, enum aggregate_function);
 int query_init_op(struct query*);
+int query_init_orderby(struct query*);
 
 int query_enter_function(struct query*, enum scalar_function, int);
 void query_exit_function(struct query*);

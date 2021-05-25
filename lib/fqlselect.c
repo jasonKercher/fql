@@ -1,7 +1,9 @@
 #include "fqlselect.h"
+#include "csv.h"
 #include "fql.h"
 #include "reader.h"
 #include "column.h"
+#include "order.h"
 #include "schema.h"
 #include "process.h"
 #include "util/util.h"
@@ -122,6 +124,7 @@ void fqlselect_apply_process(query* query, plan* plan)
 	fqlselect* self = query->op;
 	process* proc = plan->op_true->data;
 	proc->action__ = &fql_select;
+	proc->wait_for_in0_end = true;
 	proc->proc_data = self;
 	string_strcpy(proc->action_msg, "SELECT ");
 
@@ -155,7 +158,25 @@ int fqlselect_writer_open(fqlselect* self, const char* file_name)
 	return FQL_GOOD;
 }
 
-int fqlselect_finish(fqlselect* self)
+char* fqlselect_take_filename(fqlselect* self)
+{
+	return csv_writer_detach_filename(self->writer->writer_data);
+}
+
+const char* fqlselect_get_tempname(fqlselect* self)
+{
+	/* TODO: libcsv assumed... */
+	csv_writer* csv = self->writer->writer_data;
+	if (!csv_writer_isopen(csv)) {
+		if (csv_writer_mktmp(csv) == CSV_FAIL) {
+			return NULL;
+		}
+	}
+
+	return csv_writer_get_filename(csv);
+}
+
+int fqlselect_close(fqlselect* self)
 {
 	int ret = csv_writer_close(self->writer->writer_data);
 	fail_if_ (ret == CSV_FAIL);
@@ -197,9 +218,17 @@ void fqlselect_preop(fqlselect* self, query* query)
 	}
 
 	writer* writer = self->writer;
-	self->offset = writer->write_record__(writer->writer_data,
-					      &header,
-					      NULL);
+	if (query->orderby != NULL) {
+		writer->write_record__(writer->writer_data,
+		                       &header,
+		                       NULL,
+		                       query->orderby->out_file);
+	} else {
+		writer->write_record__(writer->writer_data,
+		                       &header,
+		                       NULL,
+		                       NULL);
+	}
 
 	it = vec_begin(&header);
 	for (; it != vec_end(&header); ++it) {
@@ -254,25 +283,27 @@ int fqlselect_record(fqlselect* self, vec* recs)
 	vec* col_vec = self->schema->columns;
 
 	int ret = writer->write_record__(writer->writer_data,
-			                 col_vec, 
-			                 recs);
+			                 col_vec,
+			                 recs,
+			                 NULL);
 
 	if (ret == FQL_FAIL || recs == NULL) {
 		return ret;
 	}
 
-	self->offset += ret;
 	/* pass offset information along
-	 * in the top record 
+	 * in the top record
 	 */
 	record** rec = vec_begin(recs);
 	(*rec)->offset = self->offset;
 	(*rec)->select_len = ret;
 
+	self->offset += ret;
+
 	return ret;
 }
 
-/* this becomes a big copy operation because
+/* This becomes a big copy operation because
  * I want to recycle the subquery's record.
  */
 int fqlselect_subquery_record(reader* reader, record* rec)

@@ -4,7 +4,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "record.h"
+#include "column.h"
 #include "field.h"
+#include "fqlselect.h"
 #include "process.h"
 #include "util/util.h"
 
@@ -14,20 +16,27 @@ struct _entry {
 	unsigned len;
 };
 
-order* order_construct(order* self, const char* filename)
+order* order_construct(order* self, const char* in_name, char* out_name)
 {
 	*self = (order) {
-		 { 0 }  /* columns */
-		,{ 0 }  /* entries */
-		,{ 0 }  /* order_data */
-		,{ 0 }  /* filename */
-		,stdout /* dump_file */
+		 { 0 }         /* columns */
+		,{ 0 }         /* entries */
+		,{ 0 }         /* order_data */
+		,in_name       /* in_filename */
+		,stdout        /* out_file */
 	};
 
 	vec_construct_(&self->columns, column*);
 	vec_construct_(&self->entries, struct _entry);
 	flex_construct(&self->order_data);
-	string_construct_from_char_ptr(&self->filename, filename) ;
+
+	if (out_name != NULL) {
+		self->out_file = fopen(out_name, "w");
+		if (self->out_file == NULL) {
+			perror(out_name);
+		}
+	}
+
 	return self;
 }
 
@@ -36,16 +45,16 @@ void order_destroy(order* self)
 	vec_destroy(&self->columns);
 	vec_destroy(&self->entries);
 	flex_destroy(&self->order_data);
-	string_destroy(&self->filename);
-	if (self->dump_file 
-	 && self->dump_file != stdout) {
-		fclose(self->dump_file);
+	if (self->out_file != NULL
+	 && self->out_file != stdout
+	 && self->out_file != stderr) {
+		fclose(self->out_file);
 	}
 }
 
 int order_add_column(order* self, column* col)
 {
-	vec_push_back(&self->columns, col);
+	vec_push_back(&self->columns, &col);
 	return FQL_GOOD;
 }
 
@@ -68,6 +77,7 @@ int order_add_record(order* self, vec* recs)
 		,(*top)->offset               /* offset */
 		,(*top)->select_len           /* len */
 	};
+
 	column** cols = vec_begin(&self->columns);
 
 	int i = 0;
@@ -101,9 +111,9 @@ int order_add_record(order* self, vec* recs)
 			fputs("Undefined field type\n", stderr);
 			return FQL_FAIL;
 		}
-		
-		vec_push_back(&self->entries, &entry);
 	}
+
+	vec_push_back(&self->entries, &entry);
 
 	return FQL_GOOD;
 }
@@ -114,21 +124,24 @@ int _compare(const void* a, const void* b, void* data)
 	const struct _entry* p0 = a;
 	const struct _entry* p1 = b;
 
+	size_t idx0 = p0->idx;
+	size_t idx1 = p1->idx;
+
 	int ret = 0;
 	column** it = vec_begin(&orderby->columns);
 	for (; ret == 0 && it != vec_end(&orderby->columns); ++it) {
 		switch ((*it)->field_type) {
 		case FIELD_INT:
 		 {
-			long* num0 = flex_at(&orderby->order_data, p0->idx);
-			long* num1 = flex_at(&orderby->order_data, p1->idx);
+			long* num0 = flex_at(&orderby->order_data, idx0);
+			long* num1 = flex_at(&orderby->order_data, idx1);
 			ret = num_compare_(*num0, *num1);
 			break;
 		 }
 		case FIELD_FLOAT:
 		 {
-			double* num0 = flex_at(&orderby->order_data, p0->idx);
-			double* num1 = flex_at(&orderby->order_data, p1->idx);
+			double* num0 = flex_at(&orderby->order_data, idx0);
+			double* num1 = flex_at(&orderby->order_data, idx1);
 			ret = num_compare_(*num0, *num1);
 			break;
 		 }
@@ -136,35 +149,41 @@ int _compare(const void* a, const void* b, void* data)
 		 {
 			stringview sv0 = flex_pair_at(
 					&orderby->order_data,
-					p0->idx
+					idx0
 				);
 			stringview sv1 = flex_pair_at(
 					&orderby->order_data,
-					p1->idx
+					idx1
 				);
 			ret = stringview_compare_nocase_rtrim(&sv0, &sv1);
 		 }
 		default:
 			;
 		}
+		++idx0;
+		++idx1;
 	}
 	return ret;
 }
 
 int _dump(order* self)
 {
-	int fd = open(string_c_str(&self->filename), O_RDONLY);
+	int fd = open(self->in_filename, O_RDONLY);
 	if (fd == -1) {
-		perror(string_c_str(&self->filename));
+		perror(self->in_filename);
 		return FQL_FAIL;
 	}
-	
+
 	struct stat sb;
 	if (fstat(fd, &sb) == -1) {
-		perror(string_c_str(&self->filename));
+		perror(self->in_filename);
 		return FQL_FAIL;
 	}
-	
+
+	if (sb.st_size == 0) {
+		return FQL_GOOD;
+	}
+
 	char* select_mmap = mmap(NULL,
 	                         sb.st_size,
 	                         PROT_READ,
@@ -172,14 +191,14 @@ int _dump(order* self)
 	                         fd,
 	                         0);
 	if (select_mmap == MAP_FAILED) {
-		perror(string_c_str(&self->filename));
+		perror(self->in_filename);
 		return FQL_FAIL;
 	}
 	madvise(select_mmap, sb.st_size, MADV_RANDOM);
-	
+
 	struct _entry* it = vec_begin(&self->entries);
 	for (; it != vec_end(&self->entries); ++it) {
-		fprintf(self->dump_file, 
+		fprintf(self->out_file,
 			"%.*s",
 			it->len,
 			&select_mmap[it->offset]);

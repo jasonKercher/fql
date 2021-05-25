@@ -209,11 +209,12 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		if (proc->wait_for_in0 && fifo_is_empty(proc->fifo_in[0])
 		 || (proc->fifo_out[0] && !fifo_is_receivable(proc->fifo_out[0]))
 		 || (proc->fifo_out[1] && !fifo_is_receivable(proc->fifo_out[1]))) {
+			++run_count;
 			continue;
 		}
 		int ret = try_ (proc->action__(proc_graph, proc));
 
-		if (proc_node == plan->op_true) {
+		if (proc_node == plan->op_true && proc->wait_for_in0) {
 			++plan->rows_affected;
 		}
 		run_count += ret;

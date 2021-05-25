@@ -55,15 +55,15 @@ void op_set_delim(enum op* op, const char* delim)
 	}
 }
 
-int op_finish(enum op* op)
-{
-	switch(*op) {
-	case OP_SELECT:
-		return fqlselect_finish((fqlselect*)op);
-	default:
-		return FQL_FAIL;
-	}
-}
+//int op_finish(enum op* op)
+//{
+//	switch(*op) {
+//	case OP_SELECT:
+//		return fqlselect_finish((fqlselect*)op);
+//	default:
+//		return FQL_FAIL;
+//	}
+//}
 
 void op_preflight(query* query)
 {

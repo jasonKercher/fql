@@ -55,29 +55,6 @@ int libcsv_get_record(struct reader*, struct record*);
 int libcsv_get_record_at(struct reader*, struct record*, const char*);
 int libcsv_reset(struct reader*);
 
-//struct mmap_reader {
-//	struct csv_reader* csv_handle;
-//	struct stringview current;
-//	struct vec* raw;
-//	char* mmap_base;
-//	char* mp;
-//	size_t file_size;
-//	int fd;
-//};
-//typedef struct mmap_reader mmap_reader;
-//
-//struct mmap_reader* mmap_reader_construct(struct mmap_reader*, size_t);
-//void mmap_reader_destroy(struct mmap_reader*);
-//void mmap_reader_free(void*);
-//
-//char* mmap_reader_get_delim(struct mmap_reader*);
-//int mmap_reader_open(struct mmap_reader*, const char* file_name);
-//int mmap_reader_get_record(struct reader*, struct record* rec);
-//int mmap_reader_get_record_at(struct reader*, struct record* rec, char* rec_loc);
-//int mmap_reader_reset(struct reader*);
-
-
-
 #ifdef __cplusplus
 }
 #endif

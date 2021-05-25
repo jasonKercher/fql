@@ -8,9 +8,9 @@
 typedef struct csv_writer csv_writer;
 typedef struct csv_record csv_record;
 
-int libcsv_write_record(void* writer_data, struct vec*, struct vec*);
+int libcsv_write_record(void* writer_data, struct vec*, struct vec*, FILE*);
 
-typedef int (*write_fn)(void*, struct vec*, struct vec*);
+typedef int (*write_fn)(void*, struct vec*, struct vec*, FILE*);
 
 enum write_type {
 	WRITE_UNDEFINED,

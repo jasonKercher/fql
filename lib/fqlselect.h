@@ -32,7 +32,9 @@ void fqlselect_apply_process(struct query*, struct fql_plan*);
 void fqlselect_apply_column_alias(struct fqlselect*, const char* alias);
 int fqlselect_writer_open(struct fqlselect*, const char* file_name);
 void fqlselect_preflight(struct fqlselect*, struct query*);
-int fqlselect_finish(struct fqlselect*);
+int fqlselect_close(struct fqlselect*);
+char* fqlselect_take_filename(struct fqlselect*);
+const char* fqlselect_get_tempname(struct fqlselect* self);
 
 void fqlselect_preop(struct fqlselect*, struct query*);
 int fqlselect_record(struct fqlselect*, struct vec* rec);

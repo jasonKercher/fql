@@ -2,20 +2,23 @@
 #define ORDER_H
 
 #include <stdio.h>
-#include "column.h"
 #include "util/vec.h"
 #include "util/flex.h"
+
+struct query;
+struct column;
+struct process;
 
 struct order {
 	struct vec columns;
 	struct vec entries;
 	struct flex order_data;
-	string filename;
-	FILE* dump_file;
+	const char* in_filename;
+	FILE* out_file;
 };
 typedef struct order order;
 
-struct order* order_construct(struct order*, const char*);
+struct order* order_construct(struct order*, const char* in, char* out);
 void order_destroy(struct order*);
 
 int order_add_column(struct order*, struct column*);

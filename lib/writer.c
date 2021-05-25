@@ -10,20 +10,29 @@ void libcsv_writer_free(void* writer_data)
 	csv_writer_free(writer_data);
 }
 
-int libcsv_write_record(void* writer_data, vec* col_vec, vec* recs)
+int libcsv_write_record(void* writer_data, vec* col_vec, vec* recs, FILE* outstream)
 {
 	csv_writer* handle = writer_data;
 
-	const char* delim = csv_writer_get_delim(handle);
-	const char* line_terminator = csv_writer_get_terminator(handle);
-	FILE* outstream = csv_writer_get_file(handle);
+	FILE* store_stream = NULL;
+	if (outstream == NULL) {
+		outstream = csv_writer_get_file(handle);
+	} else {
+		store_stream = csv_writer_get_file(handle);
+		csv_writer_set_file(handle, outstream);
+	}
+
+	const struct csv_field delim = csv_writer_get_delim_field(handle);
+	const struct csv_field terminator = csv_writer_get_terminator_field(handle);
+	int len = 0;
 
 	column** cols = vec_begin(col_vec);
 	int i = 0;
 	for (; i < col_vec->size; ++i) {
 		stringview sv;
 		if (i > 0) {
-			fputs(delim, outstream);
+			fputs(delim.data, outstream);
+			len += delim.len;
 		}
 
 		if (cols[i]->expr == EXPR_ASTERISK) {
@@ -34,7 +43,7 @@ int libcsv_write_record(void* writer_data, vec* col_vec, vec* recs)
 				 (*rec)->rec_raw.data
 				,(*rec)->rec_raw.len
 			};
-			csv_write_field(handle, &field);
+			len += csv_write_field(handle, &field);
 			handle->quotes = quote_store;
 		}
 		else {
@@ -43,13 +52,18 @@ int libcsv_write_record(void* writer_data, vec* col_vec, vec* recs)
 				 sv.data
 				,sv.len
 			};
-			csv_write_field(handle, &field);
+			len += csv_write_field(handle, &field);
 		}
 	}
 
-	fputs(line_terminator, outstream);
+	fputs(terminator.data, outstream);
+	len += terminator.len;
 
-	return FQL_GOOD;
+	if (store_stream) {
+		csv_writer_set_file(handle, store_stream);
+	}
+
+	return len;
 }
 
 writer* writer_construct(writer* self)
