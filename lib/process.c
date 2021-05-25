@@ -27,6 +27,7 @@ process* process_construct(process* proc, const char* action, plan* plan)
 		,NULL                           /* proc_data */
 		,string_from_char_ptr(action)   /* action_msg */
 		,NULL                           /* root_group */
+		,UINT_MAX                       /* max_recs_iter */
 		,plan->plan_id                  /* plan_id */
 		,0                              /* subquery_plan_id */
 		,0                              /* root_fifo */
@@ -207,8 +208,8 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		 * as well as a place for it to go.
 		 */
 		if (proc->wait_for_in0 && fifo_is_empty(proc->fifo_in[0])
-		 || (proc->fifo_out[0] && !fifo_is_receivable(proc->fifo_out[0]))
-		 || (proc->fifo_out[1] && !fifo_is_receivable(proc->fifo_out[1]))) {
+		 || (proc->fifo_out[0] && !fifo_receivable(proc->fifo_out[0]))
+		 || (proc->fifo_out[1] && !fifo_receivable(proc->fifo_out[1]))) {
 			++run_count;
 			continue;
 		}
@@ -286,12 +287,12 @@ void* _thread_exec(void* data)
 			}
 		}
 		if (proc->fifo_out[0]) {
-			while (!fifo_is_receivable(proc->fifo_out[0])) {
+			while (!fifo_receivable(proc->fifo_out[0])) {
 				fifo_wait_for_get(proc->fifo_out[0]);
 			}
 		}
 		if (proc->fifo_out[1]) {
-			while (!fifo_is_receivable(proc->fifo_out[1])) {
+			while (!fifo_receivable(proc->fifo_out[1])) {
 				fifo_wait_for_get(proc->fifo_out[1]);
 			}
 		}

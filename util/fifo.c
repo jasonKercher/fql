@@ -1,6 +1,7 @@
 #include "fifo.h"
 #include "util.h"
 
+
 fifo* fifo_construct(fifo* self, size_t elem_size, unsigned buf_size)
 {
 	/* fifo requires a buffer of atleast size 2 */
@@ -17,15 +18,13 @@ fifo* fifo_construct(fifo* self, size_t elem_size, unsigned buf_size)
 		,{ 0 }                  /* cond_work */
 		,0                      /* head */
 		,0                      /* tail */
+		,0                      /* _iter_head */
 		,0                      /* input_count */
 		,true                   /* is_open */
 	};
 
 	vec_resize(self->buf, buf_size);
 
-	/* build these no matter what
-	 * this makes all fifos interchangeable.
-	 */
 	pthread_mutex_init(&self->head_mutex, NULL);
 	pthread_mutex_init(&self->tail_mutex, NULL);
 	pthread_mutex_init(&self->open_mutex, NULL);
@@ -90,14 +89,15 @@ _Bool fifo_is_open(fifo* self)
 
 unsigned fifo_available(fifo* f)
 {
-	size_t available = f->head - f->tail;
-	if (f->head < f->tail) {
+	f->_iter_head = f->head;
+	size_t available = f->_iter_head - f->tail;
+	if (f->_iter_head < f->tail) {
 		available += f->buf->size;
 	}
 	return available;
 }
 
-_Bool fifo_is_empty(fifo* f)
+_Bool fifo_is_empty(const fifo* f)
 {
 	return (f->head == f->tail);
 }
@@ -107,19 +107,18 @@ _Bool fifo_has_work(fifo* f)
 	return (fifo_available(f) >= (3 * f->buf->size) / 4);
 }
 
-_Bool fifo_is_full(fifo* f)
+_Bool fifo_is_full(const fifo* f)
 {
 	return ((f->head + 1) % f->buf->size == f->tail);
 }
 
-/* add input_count to current number of current
- * available elements to avoid clobber
- */
-_Bool fifo_is_receivable(fifo* f)
+unsigned fifo_receivable(fifo* f)
 {
-	return (fifo_available(f) + f->input_count + 1 < f->buf->size);
+	unsigned avail = fifo_available(f);
+	return f->buf->size - 1 
+		- avail 
+		- f->input_count;
 }
-
 
 void fifo_set_full(fifo* f)
 {
@@ -134,7 +133,7 @@ void* fifo_get(fifo* f)
 	return data;
 }
 
-void* fifo_peek(fifo* f)
+void* fifo_peek(const fifo* f)
 {
 	return vec_at(f->buf, f->tail);
 }
@@ -177,6 +176,35 @@ int fifo_advance(fifo* f)
 	return 0;
 }
 
+
+void* fifo_begin(fifo* f)
+{
+	f->_iter_head = f->head;
+	return vec_at(f->buf, f->tail);
+}
+
+void* fifo_iter(fifo* f)
+{
+	void* data = fifo_peek(f);
+	/* consume without mutexes */
+	++f->tail;
+	f->tail %= f->buf->size;
+	return data;
+}
+
+void* fifo_end(const fifo* f)
+{
+	return vec_at(f->buf, f->_iter_head);
+}
+
+void fifo_update(fifo* f)
+{
+	pthread_mutex_lock(&f->tail_mutex);
+	pthread_cond_signal(&f->cond_get);
+	pthread_mutex_unlock(&f->tail_mutex);
+}
+
+
 void fifo_wait_for_add(fifo* f)
 {
 	pthread_mutex_lock(&f->head_mutex);
@@ -189,7 +217,7 @@ void fifo_wait_for_add(fifo* f)
 void fifo_wait_for_get(fifo* f)
 {
 	pthread_mutex_lock(&f->tail_mutex);
-	while (!fifo_is_receivable(f)) {
+	while (!fifo_receivable(f)) {
 		pthread_cond_wait(&f->cond_get, &f->tail_mutex);
 	}
 	pthread_mutex_unlock(&f->tail_mutex);

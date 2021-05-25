@@ -229,6 +229,15 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 			_api_connect(fql, query);
 		}
 		plan->has_stepped = true;
+
+		/* Since we are now stepping, we only want
+		 * to iterate over one record at a time.
+		 */
+		dnode** it = vec_begin(plan->processes->nodes);
+		for (; it != vec_end(plan->processes->nodes); ++it) {
+			process* proc = (*it)->data;
+			proc->max_recs_iter = 1;
+		}
 	}
 
 	int ret = process_step(plan);

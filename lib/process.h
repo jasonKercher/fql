@@ -21,6 +21,7 @@ struct process {
 	void* proc_data;        /* process specific data */
 	string* action_msg;     /* message that prints with plan */
 	vec* root_group;        /* group of recyclable roots for this process */
+	unsigned max_recs_iter; /* Max recs allowed to be processed per iteration */
 	short plan_id;          /* plan ID for root grouping */
 	short subquery_plan_id; /* plan ID for subquery */
 	short root_fifo;        /* signify which fifo_inx is the root */
@@ -31,7 +32,7 @@ struct process {
 	_Bool is_enabled;       /* enabled means it still has data to process */
 	_Bool is_const;         /* should only run 1 time */
 	_Bool wait_for_in0;     /* allow process to start before in0 populated */
-	_Bool wait_for_in0_end; /* do not kill process if in0 proc terminated */
+	_Bool wait_for_in0_end; /* allow _ONE MORE_ iteration after process complete */
 };
 typedef struct process process;
 
@@ -48,7 +49,7 @@ void process_activate(dnode* proc_node, struct fql_plan*);
 void process_add_second_input(struct process*);
 int process_step(plan* plan);
 int process_exec_plan(struct fql_plan*);
-int process_exec_plan_thread(struct fql_plan* plan);
+int process_exec_plan_thread(struct fql_plan*);
 void process_enable(struct process*);
 void process_disable(struct process*);
 

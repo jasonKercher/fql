@@ -29,6 +29,7 @@ struct fifo {
 	pthread_cond_t cond_work;
 	ATOMIC_ unsigned head;
 	ATOMIC_ unsigned tail;
+	ATOMIC_ unsigned _iter_head;
 	unsigned input_count;
 	_Bool is_open;
 };
@@ -41,18 +42,28 @@ void fifo_destroy(struct fifo*);
 void fifo_set_open(struct fifo*, int);
 void fifo_resize(struct fifo*, unsigned);
 unsigned fifo_available(struct fifo*);
-_Bool fifo_is_empty(struct fifo*);
+_Bool fifo_is_empty(const struct fifo*);
 //_Bool fifo_has_work(struct fifo*);
-_Bool fifo_is_full(struct fifo*);
+_Bool fifo_is_full(const struct fifo*);
 _Bool fifo_is_open(struct fifo*);
-_Bool fifo_is_receivable(struct fifo*);
+unsigned fifo_receivable(struct fifo*);
 void fifo_set_full(struct fifo*);
 void* fifo_get(struct fifo*);
-void* fifo_peek(struct fifo*);
+void* fifo_peek(const struct fifo*);
 void fifo_consume(struct fifo*);
 int fifo_add(struct fifo*, void*);
 int fifo_advance(struct fifo*);
 
+/* fast iterators
+ * these iterators do not touch mutexes
+ * and do not send signals. Up to user
+ * to call update() after done iterating.
+ */
+void* fifo_begin(struct fifo*);
+void* fifo_iter(struct fifo*);
+void* fifo_end(const struct fifo*);
+void fifo_update(struct fifo*);
+//#define fifo_iter(f_) fifo_get(f_)
 
 /* thread conditions */
 void fifo_wait_for_add(struct fifo*);
