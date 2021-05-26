@@ -89,9 +89,8 @@ _Bool fifo_is_open(fifo* self)
 
 unsigned fifo_available(fifo* f)
 {
-	f->_iter_head = f->head;
-	size_t available = f->_iter_head - f->tail;
-	if (f->_iter_head < f->tail) {
+	size_t available = f->head - f->tail;
+	if (f->head < f->tail) {
 		available += f->buf->size;
 	}
 	return available;
@@ -115,8 +114,8 @@ _Bool fifo_is_full(const fifo* f)
 unsigned fifo_receivable(fifo* f)
 {
 	unsigned avail = fifo_available(f);
-	return f->buf->size - 1 
-		- avail 
+	return f->buf->size
+		- avail
 		- f->input_count;
 }
 
@@ -180,16 +179,15 @@ int fifo_advance(fifo* f)
 void* fifo_begin(fifo* f)
 {
 	f->_iter_head = f->head;
-	return vec_at(f->buf, f->tail);
+	return fifo_peek(f);
 }
 
 void* fifo_iter(fifo* f)
 {
-	void* data = fifo_peek(f);
 	/* consume without mutexes */
 	++f->tail;
 	f->tail %= f->buf->size;
-	return data;
+	return fifo_peek(f);
 }
 
 void* fifo_end(const fifo* f)
