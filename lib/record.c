@@ -14,7 +14,6 @@ record* record_construct(record* rec, unsigned idx, unsigned n, _Bool owns_recs)
 		,0                       /* select_len */
 		,idx                     /* idx */
 		,0                       /* ref_count */
-		,true                    /* is_recyclable */
 	};
 
 	vec_resize(rec->fields, n);

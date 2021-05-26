@@ -140,8 +140,7 @@ void* fifo_peek(const fifo* f)
 void fifo_consume(fifo* f)
 {
 	pthread_mutex_lock(&f->tail_mutex);
-	++f->tail;
-	f->tail %= f->buf->size;
+	f->tail = (f->tail+1) % f->buf->size;
 	pthread_cond_signal(&f->cond_get);
 	pthread_mutex_unlock(&f->tail_mutex);
 }
@@ -150,8 +149,7 @@ int fifo_add(fifo* f, void* data)
 {
 	pthread_mutex_lock(&f->head_mutex);
 	vec_set(f->buf, f->head, data);
-	++f->head;
-	f->head %= f->buf->size;
+	f->head = (f->head + 1) % f->buf->size;
 	pthread_cond_signal(&f->cond_add);
 	if (fifo_has_work(f)) {
 		pthread_cond_signal(&f->cond_work);
@@ -164,8 +162,7 @@ int fifo_add(fifo* f, void* data)
 int fifo_advance(fifo* f)
 {
 	pthread_mutex_lock(&f->head_mutex);
-	++f->head;
-	f->head %= f->buf->size;
+	f->head = (f->head + 1) % f->buf->size;
 	pthread_cond_signal(&f->cond_add);
 	if (fifo_has_work(f)) {
 		pthread_cond_signal(&f->cond_work);
@@ -178,15 +175,15 @@ int fifo_advance(fifo* f)
 
 void* fifo_begin(fifo* f)
 {
-	f->_iter_head = f->head;
+	f->_iter_head = f->head % f->buf->size;
 	return fifo_peek(f);
 }
 
 void* fifo_iter(fifo* f)
 {
 	/* consume without mutexes */
-	++f->tail;
-	f->tail %= f->buf->size;
+	f->tail = (f->tail+1) % f->buf->size;
+	//f->_iter_head = f->head % f->buf->size;
 	return fifo_peek(f);
 }
 

@@ -16,7 +16,6 @@ struct record {
 	unsigned select_len;
 	unsigned idx;
 	_Atomic int ref_count;
-	_Atomic _Bool is_recyclable;
 };
 typedef struct record record;
 

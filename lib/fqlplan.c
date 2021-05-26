@@ -24,6 +24,7 @@
  */
 
 void _print_plan(plan*);
+void _activate_procs(plan* self);
 
 plan* plan_construct(plan* self, query* query)
 {
@@ -451,16 +452,6 @@ void _update_pipes(dgraph* proc_graph)
 	dgraph_traverse_reset(proc_graph);
 }
 
-void _activate_procs(plan* self)
-{
-	vec* node_vec = self->processes->nodes;
-	dnode** nodes = vec_begin(node_vec);
-
-	for (; nodes != vec_end(node_vec); ++nodes) {
-	        process_activate(*nodes, self);
-	}
-}
-
 /* Run through processes and link up fifos. Input fifos are owned
  * by the process. Output fifos are just links to other processes'
  * fifos. This would read better if I called them pipes...
@@ -636,3 +627,34 @@ void print_plans(queue* query_list)
 		_print_plan(query->plan);
 	}
 }
+
+void _activate_procs(plan* self)
+{
+	vec* node_vec = self->processes->nodes;
+	dnode** nodes = vec_begin(node_vec);
+
+	/* Unroll the first few so they
+	 * can be tracked easier
+	 */
+	process_activate(*nodes, self);
+	if(++nodes == vec_end(node_vec))
+		return;
+	process_activate(*nodes, self);
+	if(++nodes == vec_end(node_vec))
+		return;
+	process_activate(*nodes, self);
+	if(++nodes == vec_end(node_vec))
+		return;
+	process_activate(*nodes, self);
+	if(++nodes == vec_end(node_vec))
+		return;
+	process_activate(*nodes, self);
+	if(++nodes == vec_end(node_vec))
+		return;
+	process_activate(*nodes, self);
+
+	for (; nodes != vec_end(node_vec); ++nodes) {
+	        process_activate(*nodes, self);
+	}
+}
+

@@ -20,7 +20,7 @@ void _recycle_specific(process* proc, vec* recs, int index)
 	}
 
 	record** rec = vec_at(recs, index);
-	if (--(*rec)->ref_count > 0 || !(*rec)->is_recyclable) {
+	if (--(*rec)->ref_count > 0) {
 		return;
 	}
 
@@ -52,10 +52,8 @@ int fql_read(dgraph* proc_graph, process* proc)
 	fifo* in = proc->fifo_in[0];
 	fifo* out = proc->fifo_out[0];
 
-	unsigned iters = 0;
 	vec** it = fifo_begin(in);
 	for (;
-		iters++ < proc->max_recs_iter &&
 		it != fifo_end(in) &&
 		fifo_receivable(out);
 			it = fifo_iter(in))
@@ -64,6 +62,7 @@ int fql_read(dgraph* proc_graph, process* proc)
 
 		switch (reader->get_record__(reader, *rec)) {
 		case FQL_GOOD:
+			(*rec)->ref_count = 0;
 			break;
 		case FQL_FAIL:
 			return FQL_FAIL;
@@ -89,11 +88,9 @@ int fql_read_subquery(dgraph* proc_graph, process* proc)
 	fifo* out = proc->fifo_out[0];
 
 	int ret = 0;
-	unsigned iters = 0;
 	vec** it_sub = fifo_begin(in_sub);
 	vec** it_fresh = fifo_begin(in_fresh);
 	for (;
-		iters++ < proc->max_recs_iter &&
 		it_sub != fifo_end(in_sub) &&
 		it_fresh != fifo_end(in_fresh) &&
 		fifo_receivable(out);
@@ -125,12 +122,11 @@ int fql_read_subquery(dgraph* proc_graph, process* proc)
 	return ret;
 }
 
-void _increase_left_side_ref_count(vec* leftrecs, _Bool recyclable)
+void _adj_left_side_ref_count(vec* leftrecs, int adj)
 {
 	record** it = vec_begin(leftrecs);
 	for (; it != vec_end(leftrecs); ++it) {
-		++(*it)->ref_count;
-		(*it)->is_recyclable = recyclable;
+		(*it)->ref_count += adj;
 	}
 }
 
@@ -143,14 +139,9 @@ int fql_cartesian_join(dgraph* proc_graph, process* proc)
 	fifo* in_right = proc->fifo_in[1];
 	fifo* out = proc->fifo_out[0];
 
-	unsigned iters = 0;
 	vec** it_left = fifo_begin(in_left);
 	vec** it_right = fifo_begin(in_right);
-	for (;
-		iters++ < proc->max_recs_iter &&
-		it_right != fifo_end(in_right);
-			it_right = fifo_iter(in_right))
-	{
+	for (; it_right != fifo_end(in_right); it_right = fifo_iter(in_right)) {
 		record** rec_right = vec_back(*it_right);
 		int ret = reader->get_record__(reader, *rec_right);
 
@@ -163,15 +154,12 @@ int fql_cartesian_join(dgraph* proc_graph, process* proc)
 		 {
 			reader->reset__(reader);
 			record** it = vec_begin(*it_left);
-			for (; it != vec_end(*it_left); ++it) {
-				(*it)->is_recyclable = true;
-			}
 			fifo_iter(in_left);
 			return 1;
 		 }
 		}
 
-		_increase_left_side_ref_count(*it_left, false);
+		_adj_left_side_ref_count(*it_left, 1);
 
 		unsigned i = 0;
 		for (; i < (*it_left)->size; ++i) {
@@ -225,10 +213,8 @@ vec* _hash_join_left_side(process* proc, table* table, vec* leftrecs)
 	char** rightrec_ptr = vec_at(hj->recs, hj->rec_idx++);
 	if (hj->rec_idx >= hj->recs->size) {
 		hj->recs = NULL;
-		_increase_left_side_ref_count(leftrecs, true);
-	} else {
-		_increase_left_side_ref_count(leftrecs, false);
 	}
+	_adj_left_side_ref_count(leftrecs, 1);
 
 	vec** rightrecs = fifo_get(proc->fifo_in[1]);
 	record** rec = vec_back(*rightrecs);
@@ -264,19 +250,14 @@ int fql_hash_join(dgraph* proc_graph, process* proc)
 
 	/* the right side read process killed itself
 	 * when it hit EOF. run it manually as no-op
-	 * here just to push any available records.
+	 * here just to push records.
 	 */
 	process* right_side_read_proc = table->read_proc;
-	unsigned iters = 0;
 
 	vec** it = fifo_begin(in_left);
-	while (iters++ < proc->max_recs_iter &&
-	       it != fifo_end(in_left) &&
-	       fifo_receivable(out))
-	{
+	while (it != fifo_end(in_left) && fifo_receivable(out))	{
 		fql_no_op(proc_graph, right_side_read_proc);
 
-		//vec** leftrecs = fifo_peek(in_left);
 		vec* rightrecs = _hash_join_left_side(proc, table, *it);
 		if (rightrecs == NULL) {
 			_recycle_recs(proc, *it, proc->in_src_count-1);
@@ -310,10 +291,8 @@ int fql_logic(dgraph* proc_graph, process* proc)
 	fifo* out_false = proc->fifo_out[0];
 	fifo* out_true = proc->fifo_out[1];
 
-	unsigned iters = 0;
 	vec** it = fifo_begin(in);
 	for (;
-		iters++ < proc->max_recs_iter &&
 		it != fifo_end(in) &&
 		fifo_receivable(out_true) &&
 		(!out_false || fifo_receivable(out_false));
@@ -338,10 +317,8 @@ int _group_dump(process* proc, fifo* in_fresh, fifo* out)
 {
 	group* group = proc->proc_data;
 
-	unsigned iters = 0;
 	vec** it = fifo_begin(in_fresh);
 	for (;
-		iters++ < proc->max_recs_iter &&
 		it != fifo_end(in_fresh) &&
 		fifo_receivable(out);
 			it = fifo_iter(in_fresh))
@@ -377,13 +354,8 @@ int fql_groupby(dgraph* proc_graph, process* proc)
 
 	group* group = proc->proc_data;
 
-	unsigned iters = 0;
 	vec** it = fifo_begin(in_data);
-	for (;
-		iters++ < proc->max_recs_iter &&
-		it != fifo_end(in_data);
-			it = fifo_iter(in_data))
-	{
+	for (; it != fifo_end(in_data); it = fifo_iter(in_data)) {
 		/* TODO: something with returns? */
 		if (!vec_empty(&group->columns)) {
 			int ret = try_ (group_record(group, *it));
@@ -414,14 +386,8 @@ int fql_distinct(dgraph* proc_graph, process* proc)
 	fifo* in = proc->fifo_in[0];
 	fifo* out = proc->fifo_out[0];
 
-	unsigned iters = 0;
 	vec** it = fifo_begin(in);
-	for (;
-		iters++ < proc->max_recs_iter &&
-		it != fifo_end(in) &&
-		fifo_receivable(out);
-			it = fifo_iter(in))
-	{
+	for (; it != fifo_end(in) && fifo_receivable(out); it = fifo_iter(in)) {
 		switch(group_record(group, *it)) {
 		case FQL_FAIL:
 			return FQL_FAIL;
@@ -496,7 +462,6 @@ int fql_orderby(dgraph* proc_graph, process* proc)
 
 int fql_no_op(dgraph* proc_graph, process* proc)
 {
-	//fprintf(stderr, "no-op: %s\n", (char*) proc->action_msg->data);
 	vec** recs = fifo_get(proc->fifo_in[0]);
 	fifo_add(proc->fifo_out[0], recs);
 	return 0;
