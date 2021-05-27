@@ -442,8 +442,10 @@ int fql_orderby(dgraph* proc_graph, process* proc)
 	order* order = proc->proc_data;
 	fifo* in = proc->fifo_in[0];
 	if (!in->is_open && fifo_is_empty(in)) {
-		order_sort(order);
-		return 0;
+		if (!order->sorted) {
+			order_sort(order);
+		}
+		return order->select__(order);
 	}
 
 	unsigned iters = 0;
@@ -457,7 +459,7 @@ int fql_orderby(dgraph* proc_graph, process* proc)
 		_recycle_recs(proc, *it, (*it)->size);
 	}
 	fifo_update(in);
-	return 1;
+	return 0;
 }
 
 int fql_no_op(dgraph* proc_graph, process* proc)

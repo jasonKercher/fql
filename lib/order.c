@@ -16,14 +16,24 @@ struct _entry {
 	unsigned len;
 };
 
+int _order_select_api(order* self);
+int _order_select(order* self);
+
 order* order_construct(order* self, const char* in_name, char* out_name)
 {
 	*self = (order) {
 		 { 0 }         /* columns */
 		,{ 0 }         /* entries */
 		,{ 0 }         /* order_data */
+		,_order_select /* select__ */
+		,NULL          /* api */
 		,in_name       /* in_filename */
 		,stdout        /* out_file */
+		,NULL          /* entry_iter */
+		,NULL          /* mmap */
+		,0             /* file_size */
+		,0             /* fd */
+		,false         /* sorted */
 	};
 
 	vec_construct_(&self->columns, column*);
@@ -45,11 +55,22 @@ void order_destroy(order* self)
 	vec_destroy(&self->columns);
 	vec_destroy(&self->entries);
 	flex_destroy(&self->order_data);
+	if (self->mmap != NULL) {
+		munmap(self->mmap, self->file_size);
+		close(self->fd);
+	}
 	if (self->out_file != NULL
 	 && self->out_file != stdout
 	 && self->out_file != stderr) {
 		fclose(self->out_file);
 	}
+}
+
+void order_connect_api(query* query, vec* api_vec)
+{
+	order* self = query->orderby;
+	self->select__ = &_order_select_api;
+	self->api = api_vec;
 }
 
 int order_add_column(order* self, column* col)
@@ -166,16 +187,72 @@ int _compare(const void* a, const void* b, void* data)
 	return ret;
 }
 
-int _dump(order* self)
+int _order_select_api(order* self)
 {
-	int fd = open(self->in_filename, O_RDONLY);
-	if (fd == -1) {
+	if (self->entry_iter == vec_end(&self->entries)) {
+		return 0;
+	}
+	size_t offset = self->entry_iter->offset;
+	struct fql_field* it = vec_begin(self->api);
+		for (; it != vec_end(self->api); ++it) {
+		switch(it->type) {
+		case FQL_INT:
+			it->data.i = *(long*)(&self->mmap[offset]);
+			offset += sizeof(long);
+			break;
+		case FQL_FLOAT:
+			it->data.f = *(double*)(&self->mmap[offset]);
+			offset += sizeof(double);
+			break;
+		case FQL_STRING:
+		 {
+			unsigned len = *(unsigned*)(&self->mmap[offset]);
+			offset += sizeof(unsigned);
+			stringview sv = {
+				 &self->mmap[offset]
+				,len
+			};
+			offset += len;
+			string_copy_from_stringview(it->_in, &sv);
+			it->data.s = string_c_str(it->_in);
+			break;
+		 }
+		default:
+			fputs("Unexpected type in order_select_api\n", stderr);
+			return FQL_FAIL;
+		}
+	}
+
+	++self->entry_iter;
+	return 1;
+}
+
+int _order_select(order* self)
+{
+	struct _entry* it = vec_begin(&self->entries);
+	for (; it != vec_end(&self->entries); ++it) {
+		fprintf(self->out_file,
+			"%.*s",
+			it->len,
+			&self->mmap[it->offset]);
+	}
+
+	return 0;
+}
+
+int order_sort(order* self)
+{
+	vec_sort_r(&self->entries, &_compare, self);
+	self->sorted = true;
+
+	self->fd = open(self->in_filename, O_RDONLY);
+	if (self->fd == -1) {
 		perror(self->in_filename);
 		return FQL_FAIL;
 	}
 
 	struct stat sb;
-	if (fstat(fd, &sb) == -1) {
+	if (fstat(self->fd, &sb) == -1) {
 		perror(self->in_filename);
 		return FQL_FAIL;
 	}
@@ -184,32 +261,22 @@ int _dump(order* self)
 		return FQL_GOOD;
 	}
 
-	char* select_mmap = mmap(NULL,
-	                         sb.st_size,
-	                         PROT_READ,
-	                         MAP_PRIVATE,
-	                         fd,
-	                         0);
-	if (select_mmap == MAP_FAILED) {
+	self->file_size = sb.st_size;
+
+	self->mmap = mmap(NULL,
+	                  sb.st_size,
+	                  PROT_READ,
+	                  MAP_PRIVATE,
+	                  self->fd,
+	                  0);
+
+	if (self->mmap == MAP_FAILED) {
 		perror(self->in_filename);
 		return FQL_FAIL;
 	}
-	madvise(select_mmap, sb.st_size, MADV_RANDOM);
+	madvise(self->mmap, sb.st_size, MADV_RANDOM);
 
-	struct _entry* it = vec_begin(&self->entries);
-	for (; it != vec_end(&self->entries); ++it) {
-		fprintf(self->out_file,
-			"%.*s",
-			it->len,
-			&select_mmap[it->offset]);
-	}
+	self->entry_iter = vec_begin(&self->entries);
 
-	munmap(select_mmap, sb.st_size);
 	return FQL_GOOD;
-}
-
-int order_sort(order* self)
-{
-	vec_sort_r(&self->entries, &_compare, self);
-	return _dump(self);
 }

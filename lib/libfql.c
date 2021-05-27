@@ -1,16 +1,17 @@
 #include "fql.h"
 #include "query.h"
-#include "fqlplan.h"
 #include "table.h"
+#include "order.h"
 #include "schema.h"
 #include "reader.h"
 #include "process.h"
+#include "fqlplan.h"
 #include "fqlselect.h"
-#include "antlr/antlr.h"
 #include "util/util.h"
 #include "util/vec.h"
 #include "util/stack.h"
 #include "util/queue.h"
+#include "antlr/antlr.h"
 
 struct fql_handle* fql_new()
 {
@@ -50,12 +51,16 @@ void fql_free(struct fql_handle* fql)
 int _api_connect(struct fql_handle* fql, query* query)
 {
 	process* true_proc = query->plan->op_true->data;
-	if (true_proc->action__ != fql_select) {
+	if (true_proc->action__ != fql_select
+	 && true_proc->action__ != fql_orderby) {
 		fputs("can only step through SELECT queries\n", stderr);
 		return FQL_FAIL;
 	}
 
-	fqlselect_connect_api(fql->query_list->data, fql->api_vec);
+	try_ (fqlselect_connect_api(query, fql->api_vec));
+	if (query->orderby != NULL) {
+		order_connect_api(query, fql->api_vec);
+	}
 
 	/* Since we are using the api, we want to make sure
 	 * we parse all fields.
@@ -77,7 +82,7 @@ int _api_connect(struct fql_handle* fql, query* query)
 int fql_field_count(struct fql_handle* fql)
 {
 	if (fql->query_list && vec_empty(fql->api_vec)) {
-		_api_connect(fql, fql->query_list->data);
+		try_ (_api_connect(fql, fql->query_list->data));
 	}
 	return fql->api_vec->size;
 }
@@ -220,6 +225,16 @@ make_plans_fail:
 	return FQL_FAIL;
 }
 
+void _free_api_strings(vec* api) 
+{
+	struct fql_field* it = vec_begin(api);
+	for (; it != vec_end(api); ++it) {
+		if (it->type == FQL_STRING) {
+			delete_(string, it->_in);
+		}
+	}
+}
+
 int fql_step(struct fql_handle* fql, struct fql_field** fields)
 {
 	query* query = fql->query_list->data;
@@ -247,7 +262,8 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 	}
 	struct query* q = queue_dequeue(&fql->query_list);
 	query_free(q);
-	vec_resize(fql->api_vec, 0);
+	_free_api_strings(fql->api_vec);
+	vec_clear(fql->api_vec);
 	return ret;
 }
 

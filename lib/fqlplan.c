@@ -371,6 +371,7 @@ void _order(plan* self, query* query)
 	dnode* order_node = dgraph_add_data(self->processes, order_proc);
 	self->current->out[0] = order_node;
 	self->current = order_node;
+	self->op_true = order_node;
 }
 
 void _limit(plan* self, query* query) { }

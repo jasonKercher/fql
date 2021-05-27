@@ -1,12 +1,16 @@
 #include "fqlselect.h"
 #include "csv.h"
 #include "fql.h"
+#include "order.h"
 #include "reader.h"
 #include "column.h"
-#include "order.h"
 #include "schema.h"
 #include "process.h"
 #include "util/util.h"
+
+int _select_record(fqlselect*, struct vec* rec);
+int _select_record_api(fqlselect*, struct vec* rec);
+int _select_record_order_api(fqlselect*, struct vec* rec);
 
 fqlselect* fqlselect_construct(fqlselect* self)
 {
@@ -15,7 +19,7 @@ fqlselect* fqlselect_construct(fqlselect* self)
 		,NULL                   /* api */
 		,new_(schema)           /* schema */
 		,new_(writer)           /* writer */
-		,&fqlselect_record      /* fqlselect_record__ */
+		,&_select_record        /* select_record__ */
 		,0                      /* offset */
 	};
 
@@ -110,13 +114,42 @@ void _expand_asterisks(query* query, _Bool force_expansion)
 	_resize_raw_rec(self->writer->raw_rec, col_vec->size);
 }
 
-void fqlselect_connect_api(query* query, vec* api)
+int fqlselect_connect_api(query* query, vec* api)
 {
 	fqlselect* self = query->op;
-	self->select__ = &fqlselect_record_api;
+	if (query->orderby == NULL) {
+		self->select__ = &_select_record_api;
+	} else {
+		self->select__ = &_select_record_order_api;
+	}
 	_expand_asterisks(query, true);
-	vec_resize(api, self->schema->columns->size);
+
+	vec* cols = self->schema->columns;
+	vec_resize(api, cols->size);
+
+	column** it = vec_begin(cols);
+	unsigned i = 0;
+	for (; i < cols->size; ++i) {
+		struct fql_field* field = vec_at(api, i);
+		switch(it[i]->field_type) {
+		case FIELD_INT:
+			field->type = FQL_INT;
+			break;
+		case FIELD_FLOAT:
+			field->type = FQL_FLOAT;
+			break;
+		case FIELD_STRING:
+			field->type = FQL_STRING;
+			field->_in = new_(string);
+			break;
+		default:
+			fputs("Unexpected API type\n", stderr);
+			return FQL_FAIL;
+		}
+	}
+
 	self->api = api;
+	return FQL_GOOD;
 }
 
 void fqlselect_apply_process(query* query, plan* plan)
@@ -150,7 +183,7 @@ void fqlselect_apply_column_alias(fqlselect* self, const char* alias)
 
 int fqlselect_writer_open(fqlselect* self, const char* file_name)
 {
-	/* TODO: csv_writer_open is assumed */
+	/* TODO: move to writer.c */
 	int ret = csv_writer_open(self->writer->writer_data, file_name);
 	if (ret == CSV_FAIL) {
 		return FQL_FAIL;
@@ -158,14 +191,21 @@ int fqlselect_writer_open(fqlselect* self, const char* file_name)
 	return FQL_GOOD;
 }
 
+FILE* fqlselect_get_file(fqlselect* self)
+{
+	/* TODO: move to writer.c */
+	return csv_writer_get_file(self->writer->writer_data);
+}
+
 char* fqlselect_take_filename(fqlselect* self)
 {
+	/* TODO: move to writer.c */
 	return csv_writer_detach_filename(self->writer->writer_data);
 }
 
 const char* fqlselect_get_tempname(fqlselect* self)
 {
-	/* TODO: libcsv assumed... */
+	/* TODO: move to writer.c */
 	csv_writer* csv = self->writer->writer_data;
 	if (!csv_writer_isopen(csv)) {
 		if (csv_writer_mktmp(csv) == CSV_FAIL) {
@@ -178,6 +218,7 @@ const char* fqlselect_get_tempname(fqlselect* self)
 
 int fqlselect_close(fqlselect* self)
 {
+	/* TODO: move to writer.c */
 	int ret = csv_writer_close(self->writer->writer_data);
 	fail_if_ (ret == CSV_FAIL);
 	return FQL_GOOD;
@@ -237,47 +278,7 @@ void fqlselect_preop(fqlselect* self, query* query)
 	vec_destroy(&header);
 }
 
-int fqlselect_record_api(fqlselect* self, struct vec* recs)
-{
-	writer* writer = self->writer;
-
-	vec* col_vec = self->schema->columns;
-
-	column** cols = vec_begin(col_vec);
-	int i = 0;
-	for (; i < col_vec->size; ++i) {
-		struct fql_field* field = vec_at(self->api, i);
-		switch (cols[i]->field_type) {
-		case FIELD_STRING:
-		{
-			stringview sv;
-			try_ (column_get_stringview(&sv, cols[i], recs));
-			/* even though the we are not using the
-			 * writer directly, we use the data it
-			 * owns for our string fields.
-			 */
-			string* s = vec_at(writer->raw_rec, i);
-			string_copy_from_stringview(s, &sv);
-			field->type = FQL_STRING;
-			field->data.s = s->data;
-			break;
-		}
-		case FIELD_INT:
-			field->type = FQL_INT;
-			try_ (column_get_int(&field->data.i, cols[i], recs));
-			break;
-		case FIELD_FLOAT:
-			field->type = FQL_FLOAT;
-			try_ (column_get_float(&field->data.f, cols[i], recs));
-		default:
-			;
-		}
-	}
-
-	return 1;
-}
-
-int fqlselect_record(fqlselect* self, vec* recs)
+int _select_record(fqlselect* self, vec* recs)
 {
 	writer* writer = self->writer;
 	vec* col_vec = self->schema->columns;
@@ -302,6 +303,87 @@ int fqlselect_record(fqlselect* self, vec* recs)
 
 	return ret;
 }
+
+int _select_record_api(fqlselect* self, struct vec* recs)
+{
+	vec* col_vec = self->schema->columns;
+
+	column** cols = vec_begin(col_vec);
+	int i = 0;
+	for (; i < col_vec->size; ++i) {
+		struct fql_field* field = vec_at(self->api, i);
+		switch (cols[i]->field_type) {
+		case FIELD_INT:
+			try_ (column_get_int(&field->data.i, cols[i], recs));
+			break;
+		case FIELD_FLOAT:
+			try_ (column_get_float(&field->data.f, cols[i], recs));
+			break;
+		case FIELD_STRING:
+		{
+			stringview sv;
+			try_ (column_get_stringview(&sv, cols[i], recs));
+			string* s = field->_in;
+			string_copy_from_stringview(s, &sv);
+			field->data.s = s->data;
+			break;
+		}
+		default:
+			;
+		}
+	}
+
+	return 1;
+}
+
+int _select_record_order_api(fqlselect* self, struct vec* recs)
+{
+	FILE* order_input = fqlselect_get_file(self);
+
+	vec* col_vec = self->schema->columns;
+	column** cols = vec_begin(col_vec);
+	int i = 0;
+	unsigned len = 0;
+	for (; i < col_vec->size; ++i) {
+		struct fql_field* field = vec_at(self->api, i);
+		switch (cols[i]->field_type) {
+		case FIELD_INT:
+		 {
+			long num = 0;
+			try_ (column_get_int(&num, cols[i], recs));
+			fwrite(&num, sizeof(num), 1, order_input);
+			len += sizeof(num);
+			break;
+		 }
+		case FIELD_FLOAT:
+		 {
+			double num = 0;
+			try_ (column_get_float(&num, cols[i], recs));
+			fwrite(&num, sizeof(num), 1, order_input);
+			len += sizeof(num);
+			break;
+		 }
+		case FIELD_STRING:
+		 {
+			stringview sv;
+			try_ (column_get_stringview(&sv, cols[i], recs));
+			fwrite(&sv.len, sizeof(sv.len), 1, order_input);
+			fwrite(sv.data, 1, sv.len, order_input);
+			len += sizeof(sv.len) + sv.len;
+			break;
+		 }
+		default:
+			;
+		}
+	}
+	record** rec = vec_begin(recs);
+	(*rec)->offset = self->offset;
+	self->offset += len;
+
+	return 1;
+}
+
+/* TODO... reader.c? lol */
 
 /* This becomes a big copy operation because
  * I want to recycle the subquery's record.

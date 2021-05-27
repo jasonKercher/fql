@@ -215,8 +215,11 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		}
 		int ret = try_ (proc->action__(proc_graph, proc));
 
-		if (proc_node == plan->op_true && proc->wait_for_in0) {
-			++plan->rows_affected;
+		if (proc_node == plan->op_true && (
+			        proc->action__ == fql_orderby
+			     || proc->wait_for_in0))
+		{
+			plan->rows_affected += ret;
 		}
 		run_count += ret;
 	}
@@ -255,11 +258,16 @@ int process_exec_plan(plan* plan)
 void* _thread_exec(void* data)
 {
 	struct thread_data* tdata = data;
-	process* proc = tdata->proc_node->data;
+	dnode* node = tdata->proc_node;
+	process* proc = node->data;
+	fifo* in0 = proc->fifo_in[0];
+	fifo* in1 = proc->fifo_in[1];
+	fifo* out0 = proc->fifo_out[0];
+	fifo* out1 = proc->fifo_out[1];
 
 	while (proc->is_enabled) {
-		if (proc->wait_for_in0 && fifo_is_empty(proc->fifo_in[0])) {
-			if (!proc->fifo_in[0]->is_open) {
+		if (proc->wait_for_in0 && fifo_is_empty(in0)) {
+			if (!in0->is_open) {
 				if (proc->wait_for_in0_end) {
 					proc->wait_for_in0 = false;
 					continue;
@@ -268,32 +276,32 @@ void* _thread_exec(void* data)
 					break;
 				}
 			}
-			if (tdata->proc_node->is_root) {
-				fifo_wait_for_add(proc->fifo_in[0]);
+			if (node->is_root) {
+				fifo_wait_for_add(in0);
 			} else {
-				fifo_wait_for_work(proc->fifo_in[0]);
+				fifo_wait_for_work(in0);
 			}
-			if (fifo_is_empty(proc->fifo_in[0])) {
+			if (fifo_is_empty(in0)) {
 				process_disable(proc);
 				break;
 			}
 		}
-		if (proc->fifo_in[1]) {
-			if (fifo_is_open(proc->fifo_in[1]) &&
-			    fifo_is_open(proc->fifo_in[0]) &&
-			    fifo_is_empty(proc->fifo_in[1])) {
-				//fifo_wait_for_work(proc->fifo_in[1]);
-				fifo_wait_for_add(proc->fifo_in[1]);
+		if (in1) {
+			if (fifo_is_open(in1) &&
+			    fifo_is_open(in0) &&
+			    fifo_is_empty(in1)) {
+				//fifo_wait_for_work(in1);
+				fifo_wait_for_add(in1);
 			}
 		}
-		if (proc->fifo_out[0]) {
-			while (!fifo_receivable(proc->fifo_out[0])) {
-				fifo_wait_for_get(proc->fifo_out[0]);
+		if (out0) {
+			while (!fifo_receivable(out0)) {
+				fifo_wait_for_get(out0);
 			}
 		}
-		if (proc->fifo_out[1]) {
-			while (!fifo_receivable(proc->fifo_out[1])) {
-				fifo_wait_for_get(proc->fifo_out[1]);
+		if (out1) {
+			while (!fifo_receivable(out1)) {
+				fifo_wait_for_get(out1);
 			}
 		}
 		int ret = proc->action__(tdata->proc_graph, proc);

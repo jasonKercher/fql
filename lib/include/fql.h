@@ -16,9 +16,10 @@ enum fql_type {
 };
 
 struct fql_field {
+	void* _in;
         enum fql_type type;
         union {
-                char* s;
+                const char* s;
                 long i;
                 double f;
         } data;
