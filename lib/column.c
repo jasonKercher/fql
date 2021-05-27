@@ -11,18 +11,19 @@
 column* column_construct(column* col, enum expr_type expr, void* data, const char* table_name)
 {
 	*col = (column) {
-		 expr                   /* expr */
-		,NULL                   /* table */
-		,NULL                   /* data_source */
-		,{ 0 }                  /* name */
-		,{ 0 }                  /* alias */
-		,{ 0 }                  /* table_name */
-		,{ 0 }                  /* buf */
-		,FIELD_UNDEFINED        /* field_type */
-		,NULL                   /* field */
-		,0                      /* location */
-		,0                      /* width */
-		,0                      /* src_idx */
+		 expr            /* expr */
+		,NULL            /* table */
+		,NULL            /* data_source */
+		,{ 0 }           /* name */
+		,{ 0 }           /* alias */
+		,{ 0 }           /* table_name */
+		,{ 0 }           /* buf */
+		,FIELD_UNDEFINED /* field_type */
+		,NULL            /* field */
+		,0               /* location */
+		,0               /* width */
+		,0               /* src_idx */
+		,false           /* descending */
 	};
 
 	string_construct(&col->buf);

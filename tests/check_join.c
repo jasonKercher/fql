@@ -131,7 +131,7 @@ START_TEST(test_join_functions)
 	 * 70	a6
 	 * ae	e8
 	 */
-	fql_set_force_cartesian(fql, 1);
+	fql_set_force_cartesian(fql, 0);
 	plan_count = fql_make_plans(fql, "select t1.bar, t2.bar from t1 join t2 on right(t1.foo, 2) = right(t2.foo, 2)");
 	ck_assert_int_eq(plan_count, 1);
 
@@ -163,7 +163,7 @@ START_TEST(test_join_multiple)
 	int field_count = 0;
 	int rows = 0;
 
-	fql_set_force_cartesian(fql, 1);
+	fql_set_force_cartesian(fql, 0);
 	plan_count = fql_make_plans(fql, "select t1.bar, t2.bar, x.bar"
 			                 " from t1"
 					 " join t2"

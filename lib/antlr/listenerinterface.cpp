@@ -567,9 +567,15 @@ void ListenerInterface::enterOrder_by_clause(TSqlParser::Order_by_clauseContext 
 }
 void ListenerInterface::exitOrder_by_clause(TSqlParser::Order_by_clauseContext * ctx) { }
 
-void ListenerInterface::enterOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx) { }
-void ListenerInterface::exitOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx) { }
-
+void ListenerInterface::enterOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx)
+{
+}
+void ListenerInterface::exitOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx) 
+{
+	if (ctx->DESC()) {
+		query_set_order_desc(_query);
+	}
+}
 
 /* Every Rule Operations */
 

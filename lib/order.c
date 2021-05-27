@@ -181,6 +181,9 @@ int _compare(const void* a, const void* b, void* data)
 		default:
 			;
 		}
+
+		if ((*it)->descending) ret *= -1;
+
 		++idx0;
 		++idx1;
 	}

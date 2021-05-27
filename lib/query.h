@@ -149,6 +149,7 @@ void query_set_distinct(struct query*);
 int query_add_aggregate(struct query*, enum aggregate_function);
 int query_init_op(struct query*);
 int query_init_orderby(struct query*);
+void query_set_order_desc(struct query*);
 
 int query_enter_function(struct query*, enum scalar_function, int);
 void query_exit_function(struct query*);

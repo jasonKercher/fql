@@ -34,6 +34,7 @@ struct column {
 	unsigned location;
 	unsigned width;
 	int src_idx;
+	_Bool descending;
 };
 typedef struct column column;
 

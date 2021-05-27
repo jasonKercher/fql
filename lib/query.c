@@ -314,6 +314,12 @@ int query_init_orderby(query* self)
 	return (self->orderby->out_file) ? FQL_GOOD : FQL_FAIL;
 }
 
+void query_set_order_desc(query* self) 
+{
+	column** col = vec_back(&self->orderby->columns);
+	(*col)->descending = true;
+}
+
 int query_enter_function(query* self, enum scalar_function scalar_type, int char_as_byte)
 {
 	enum field_type type = FIELD_UNDEFINED;
