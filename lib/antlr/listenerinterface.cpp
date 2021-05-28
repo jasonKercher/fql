@@ -2,8 +2,9 @@
 
 #include <cstring>
 
+#include "fql.h"
 #include "query.h"
-#include "column.h"
+//#include "column.h"
 #include "util/util.h"
 
 /** Utility functions **/
@@ -570,7 +571,7 @@ void ListenerInterface::exitOrder_by_clause(TSqlParser::Order_by_clauseContext *
 void ListenerInterface::enterOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx)
 {
 }
-void ListenerInterface::exitOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx) 
+void ListenerInterface::exitOrder_by_expression(TSqlParser::Order_by_expressionContext * ctx)
 {
 	if (ctx->DESC()) {
 		query_set_order_desc(_query);

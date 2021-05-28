@@ -11,7 +11,7 @@
 #include "util/stack.h"
 
 class ListenerInterface : public TSqlParserBaseListener {
-private:
+      private:
 	enum tok_type {
 		TOK_UNDEFINED,
 		TOK_INTO_TABLE,
@@ -48,7 +48,8 @@ private:
 	bool _on_asterisk = false;
 
 	void _no_impl(const std::string&, int);
-public:
+
+      public:
 	ListenerInterface(struct fql_handle*, TreeWalker*, const std::vector<std::string>&);
 	void enterEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
 	void exitEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;

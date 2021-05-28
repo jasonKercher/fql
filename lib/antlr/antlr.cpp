@@ -24,10 +24,10 @@ int analyze_query(struct fql_handle* fql)
 	ParserErrorListener myParserErrorListener(&parser);
 	parser.addErrorListener(&myParserErrorListener);
 
-	antlr4::tree::ParseTree *tree = parser.tsql_file();
+	antlr4::tree::ParseTree* tree = parser.tsql_file();
 
-	if(myLexerErrorListener.getError() ||
-	   myParserErrorListener.getError()) {
+	if (myLexerErrorListener.getError()
+	    || myParserErrorListener.getError()) {
 		std::cerr << "Lexer/Listener error\n";
 		return 1;
 	}
@@ -43,5 +43,4 @@ int analyze_query(struct fql_handle* fql)
 	walker.set_walking(false);
 
 	return analyzer.get_return_code();
-
 }
