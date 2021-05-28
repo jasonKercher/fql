@@ -1,7 +1,6 @@
 #ifndef OPERATION_H
 #define OPERATION_H
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -33,5 +32,3 @@ void op_destroy(enum op*);
 #endif
 
 #endif /* OPERATION_H */
-
-

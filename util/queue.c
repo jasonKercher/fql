@@ -5,9 +5,9 @@ queue* queue_enqueue(queue** head, void* data)
 {
 	queue* newnode = malloc_(sizeof(*newnode));
 	*newnode = (queue) {
-		 data
-		,NULL
-		,NULL
+	        data, /* data */
+	        NULL, /* prev */
+	        NULL  /* next */
 	};
 
 	queue* back = queue_back(*head);

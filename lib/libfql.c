@@ -22,21 +22,21 @@ struct fql_handle* fql_new()
 struct fql_handle* fql_construct(struct fql_handle* fql)
 {
 	*fql = (struct fql_handle) {
-		 NULL                          /* queries */
-		,new_t_(vec, struct fql_field) /* api_vec */
-		,NULL                          /* query_str */
-		,{
-			 ""     /* in_delim */
-			,""     /* out_delim */
-			,false  /* force_cartesian */
-			,false  /* dry_run */
-			,false  /* override_warnings */
-			,true   /* print_header */
-			,false  /* print_plan */
-			,false  /* threading */
-			,false  /* verbose */
-			,false  /* char_as_byte */
-		}  /* props */
+	        NULL,                          /* queries */
+	        new_t_(vec, struct fql_field), /* api_vec */
+	        NULL,                          /* query_str */
+	        {
+	                "",    /* in_delim */
+	                "",    /* out_delim */
+	                false, /* force_cartesian */
+	                false, /* dry_run */
+	                false, /* override_warnings */
+	                true,  /* print_header */
+	                false, /* print_plan */
+	                false, /* threading */
+	                false, /* verbose */
+	                false  /* char_as_byte */
+	        }              /* props */
 	};
 	return fql;
 }
@@ -52,12 +52,12 @@ int _api_connect(struct fql_handle* fql, query* query)
 {
 	process* true_proc = query->plan->op_true->data;
 	if (true_proc->action__ != fql_select
-	 && true_proc->action__ != fql_orderby) {
+	    && true_proc->action__ != fql_orderby) {
 		fputs("can only step through SELECT queries\n", stderr);
 		return FQL_FAIL;
 	}
 
-	try_ (fqlselect_connect_api(query, fql->api_vec));
+	try_(fqlselect_connect_api(query, fql->api_vec));
 	if (query->orderby != NULL) {
 		order_connect_api(query, fql->api_vec);
 	}
@@ -82,11 +82,10 @@ int _api_connect(struct fql_handle* fql, query* query)
 int fql_field_count(struct fql_handle* fql)
 {
 	if (fql->query_list && vec_empty(fql->api_vec)) {
-		try_ (_api_connect(fql, fql->query_list->data));
+		try_(_api_connect(fql, fql->query_list->data));
 	}
 	return fql->api_vec->size;
 }
-
 
 /**
  * Property mutators
@@ -154,7 +153,8 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 		plan* plan = query->plan;
 		if (plan->has_stepped) {
 			fputs("Cannot execute plan that has been"
-			      " stepped through\n", stderr);
+			      " stepped through\n",
+			      stderr);
 			return FQL_FAIL;
 		}
 
@@ -171,7 +171,6 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 		if (ret == FQL_FAIL) {
 			break;
 		}
-
 	}
 	if (ret != FQL_GOOD) {
 		queue_free_func(&fql->query_list, query_free);
@@ -186,7 +185,7 @@ int fql_exec_all_plans(struct fql_handle* fql)
 
 int fql_exec(struct fql_handle* fql, const char* query_str)
 {
-	int plan_count = try_ (fql_make_plans(fql, query_str));
+	int plan_count = try_(fql_make_plans(fql, query_str));
 	int ret = 0;
 	if (!fql->props.dry_run) {
 		ret = fql_exec_plans(fql, plan_count);
@@ -225,7 +224,7 @@ make_plans_fail:
 	return FQL_FAIL;
 }
 
-void _free_api_strings(vec* api) 
+void _free_api_strings(vec* api)
 {
 	struct fql_field* it = vec_begin(api);
 	for (; it != vec_end(api); ++it) {
@@ -266,4 +265,3 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 	vec_clear(fql->api_vec);
 	return ret;
 }
-

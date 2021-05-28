@@ -18,7 +18,10 @@ struct aggresult {
 
 struct group;
 struct aggregate;
-typedef int(*aggregate_fn)(struct aggregate*, struct group*, struct aggresult*, struct vec* rec);
+typedef int (*aggregate_fn)(struct aggregate*,
+                            struct group*,
+                            struct aggresult*,
+                            struct vec* rec);
 
 struct aggregate {
 	aggregate_fn call__;
@@ -29,7 +32,8 @@ struct aggregate {
 };
 typedef struct aggregate aggregate;
 
-struct aggregate* aggregate_construct(struct aggregate*, enum aggregate_function);
+struct aggregate* aggregate_construct(struct aggregate*,
+                                      enum aggregate_function);
 void aggregate_destroy(struct aggregate*);
 
 const char* aggregate_get_name(struct aggregate*);
@@ -49,4 +53,4 @@ int fql_max_s(struct aggregate*, struct group*, struct aggresult*, struct vec*);
 int fql_sum_i(struct aggregate*, struct group*, struct aggresult*, struct vec*);
 int fql_sum_f(struct aggregate*, struct group*, struct aggresult*, struct vec*);
 
-#endif  /* AGGREGATE_H */
+#endif /* AGGREGATE_H */

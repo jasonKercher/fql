@@ -9,24 +9,24 @@
 #define SUBQUERY_HASH_TABLE_INITIAL_SIZE 512
 
 table* table_construct(table* self,
-		       char* name,
-		       const char* alias,
-		       size_t idx,
-		       enum join_type join_type)
+                       char* name,
+                       const char* alias,
+                       size_t idx,
+                       enum join_type join_type)
 {
 	*self = (table) {
-		 { 0 }                  /* name */
-		,{ 0 }                  /* alias */
-		,NULL                   /* subquery */
-		,new_(reader)           /* reader */
-		,new_(schema)           /* schema */
-		,NULL                   /* condition */
-		,new_t_(vec, column*)   /* validation_list */
-		,NULL                   /* read_proc */
-		,NULL                   /* join_data */
-		,idx                    /* idx */
-		,SOURCE_TABLE           /* source_type */
-		,join_type              /* join_type */
+	        {0},                  /* name */
+	        {0},                  /* alias */
+	        NULL,                 /* subquery */
+	        new_(reader),         /* reader */
+	        new_(schema),         /* schema */
+	        NULL,                 /* condition */
+	        new_t_(vec, column*), /* validation_list */
+	        NULL,                 /* read_proc */
+	        NULL,                 /* join_data */
+	        idx,                  /* idx */
+	        SOURCE_TABLE,         /* source_type */
+	        join_type             /* join_type */
 	};
 
 	string_construct_take(&self->name, name);
@@ -41,24 +41,24 @@ table* table_construct(table* self,
 }
 
 table* table_construct_subquery(table* self,
-				query* subquery,
-				const char* alias,
-				size_t idx,
-				enum join_type join_type)
+                                query* subquery,
+                                const char* alias,
+                                size_t idx,
+                                enum join_type join_type)
 {
 	*self = (table) {
-		 { 0 }              /* name */
-		,{ 0 }              /* alias */
-		,subquery           /* subquery */
-		,new_(reader)       /* reader */
-		,new_(schema)       /* schema */
-		,NULL               /* condition */
-		,new_t_(vec, column*)  /* validation_list */
-		,NULL               /* read_proc */
-		,NULL               /* join_data */
-		,idx                /* idx */
-		,SOURCE_SUBQUERY    /* source_type */
-		,join_type          /* join_type */
+	        {0},                  /* name */
+	        {0},                  /* alias */
+	        subquery,             /* subquery */
+	        new_(reader),         /* reader */
+	        new_(schema),         /* schema */
+	        NULL,                 /* condition */
+	        new_t_(vec, column*), /* validation_list */
+	        NULL,                 /* read_proc */
+	        NULL,                 /* join_data */
+	        idx,                  /* idx */
+	        SOURCE_SUBQUERY,      /* source_type */
+	        join_type             /* join_type */
 	};
 
 	string_construct(&self->name);
@@ -83,7 +83,6 @@ void table_destroy(table* self)
 	delete_(hashjoin, self->join_data);
 }
 
-
 const char* table_get_delim(table* self)
 {
 	reader* reader = self->reader;
@@ -98,28 +97,24 @@ const char* table_get_delim(table* self)
 	}
 }
 
-
-
 hashjoin* hashjoin_construct(hashjoin* join)
 {
 	*join = (struct hashjoin) {
-		 { 0 }          /* hash_data */
-		,NULL           /* left_col */
-		,NULL           /* right_col */
-		,NULL           /* recs */
-		,SIDE_RIGHT     /* state */
-		,0              /* rec_idx */
+	        {0},        /* hash_data */
+	        NULL,       /* left_col */
+	        NULL,       /* right_col */
+	        NULL,       /* recs */
+	        SIDE_RIGHT, /* state */
+	        0           /* rec_idx */
 	};
 
 	return join;
 }
 
-
 void hashjoin_destroy(struct hashjoin* join)
 {
 	multimap_destroy(&join->hash_data);
 }
-
 
 size_t _guess_row_count(table* self)
 {
@@ -158,7 +153,7 @@ size_t _guess_row_count(table* self)
 
 	reader->max_col_idx = max_col_store;
 
-	double avg_len = total_length / (double) i-1;
+	double avg_len = total_length / (double)i - 1;
 	if (avg_len < 1)
 		avg_len = 1;
 
@@ -178,10 +173,9 @@ void table_hash_join_init(table* self)
 
 	struct hashjoin* join = self->join_data;
 
-	multimap_construct_(
-		 &join->hash_data
-		,char* /* T_ */
-		,guessed_row_count * 2
-		,HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM
-	);
+	multimap_construct_(&join->hash_data,
+	                    char* /* T_ */
+	                    ,
+	                    guessed_row_count * 2,
+	                    HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 }

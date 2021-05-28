@@ -16,7 +16,8 @@ int libcsv_get_record(reader* self, record* rec)
 		return csv_reader_reset(csv);
 	}
 
-	int ret = csv_get_record_to(csv, rec->libcsv_rec, self->max_col_idx+1);
+	int ret =
+	        csv_get_record_to(csv, rec->libcsv_rec, self->max_col_idx + 1);
 	switch (ret) {
 	case CSV_GOOD:
 		break;
@@ -56,7 +57,7 @@ int libcsv_get_record(reader* self, record* rec)
 
 int libcsv_get_record_at(reader* self, record* rec, const char* location)
 {
-	try_ (csv_reader_goto(self->reader_data, location));
+	try_(csv_reader_goto(self->reader_data, location));
 	self->eof = false;
 	return libcsv_get_record(self, rec);
 }

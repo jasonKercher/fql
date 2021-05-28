@@ -6,46 +6,14 @@
 #include "util/util.h"
 
 static const char* scalar_str[] = {
-	"PLUS",
-	"MINUS",
-	"MULTIPY",
-	"DIVIDE",
-	"MODULE",
-	"BIT_OR",
-	"BIT_AND",
-	"BIT_XOR",
-	"UNARY_BIT_NOT",
-	"UNARY_MINUS",
-	"ABS",
-	"ASCII",
-	"CEILING",
-	"CHAR",
-	"CHARINDEX",
-	"CHECKSUM",
-	"DATALENGTH",
-	"DAY",
-	"FLOOR",
-	"ISDATE",
-	"ISNUMERIC",
-	"LEFT",
-	"LEN",
-	"LOWER",
-	"LTRIM",
-	"MONTH",
-	"NCHAR",
-	"PATINDEX",
-	"RAND",
-	"REPLACE",
-	"RIGHT",
-	"ROUND",
-	"RTRIM",
-	"SIGN",
-	"SPACE",
-	"STR",
-	"SUBSTRING",
-	"UPPER",
-	"USER_NAME",
-	"YEAR",
+        "PLUS",      "MINUS",      "MULTIPY",  "DIVIDE",        "MODULE",
+        "BIT_OR",    "BIT_AND",    "BIT_XOR",  "UNARY_BIT_NOT", "UNARY_MINUS",
+        "ABS",       "ASCII",      "CEILING",  "CHAR",          "CHARINDEX",
+        "CHECKSUM",  "DATALENGTH", "DAY",      "FLOOR",         "ISDATE",
+        "ISNUMERIC", "LEFT",       "LEN",      "LOWER",         "LTRIM",
+        "MONTH",     "NCHAR",      "PATINDEX", "RAND",          "REPLACE",
+        "RIGHT",     "ROUND",      "RTRIM",    "SIGN",          "SPACE",
+        "STR",       "SUBSTRING",  "UPPER",    "USER_NAME",     "YEAR",
 };
 
 int _not_implemented(function* fn, union field* f, vec* rec)
@@ -54,15 +22,23 @@ int _not_implemented(function* fn, union field* f, vec* rec)
 	return 0;
 }
 
-function* function_construct(function* func, enum scalar_function scalar_type, enum field_type* type, int char_as_byte)
+function* function_construct(function* func,
+                             enum scalar_function scalar_type,
+                             enum field_type* type,
+                             int char_as_byte)
 {
 	*func = (function) {
-		 &_not_implemented      /* call__ */
-		,new_t_(vec, column*)   /* args */
-		,scalar_type            /* type */
-		,0                      /* arg_min */
-		,0                      /* arg_max */
-		,char_as_byte           /* char_as_byte */
+	        &_not_implemented /* call__ */
+	        ,
+	        new_t_(vec, column*) /* args */
+	        ,
+	        scalar_type /* type */
+	        ,
+	        0 /* arg_min */
+	        ,
+	        0 /* arg_max */
+	        ,
+	        char_as_byte /* char_as_byte */
 	};
 
 	/* if this is an operator, we don't have enough info */
@@ -82,52 +58,69 @@ function* function_construct(function* func, enum scalar_function scalar_type, e
 	func->arg_min = 0;
 	func->arg_max = 1;
 	switch (scalar_type) {
-	case SCALAR_RAND: return func;
-	case SCALAR_USER_NAME: return func;
-	default:
-		;
+	case SCALAR_RAND:
+		return func;
+	case SCALAR_USER_NAME:
+		return func;
+	default:;
 	}
 
 	func->arg_min = 1;
 	func->arg_max = 1;
 	switch (scalar_type) {
-	case SCALAR_ABS: return func;
-	case SCALAR_ASCII: return func;
-	case SCALAR_CEILING: return func;
-	case SCALAR_CHAR: return func;
+	case SCALAR_ABS:
+		return func;
+	case SCALAR_ASCII:
+		return func;
+	case SCALAR_CEILING:
+		return func;
+	case SCALAR_CHAR:
+		return func;
 	case SCALAR_DATALENGTH:
 		func->call__ = &fql_datalength;
 		*type = FIELD_INT;
 		return func;
-	case SCALAR_DAY: return func;
-	case SCALAR_FLOOR: return func;
-	case SCALAR_ISDATE: return func;
-	case SCALAR_ISNUMERIC: return func;
+	case SCALAR_DAY:
+		return func;
+	case SCALAR_FLOOR:
+		return func;
+	case SCALAR_ISDATE:
+		return func;
+	case SCALAR_ISNUMERIC:
+		return func;
 	case SCALAR_LEN:
 		func->call__ = &fql_len;
 		*type = FIELD_INT;
 		return func;
-	case SCALAR_LOWER: return func;
-	case SCALAR_LTRIM: return func;
-	case SCALAR_MONTH: return func;
-	case SCALAR_NCHAR: return func;
-	case SCALAR_RTRIM: return func;
+	case SCALAR_LOWER:
+		return func;
+	case SCALAR_LTRIM:
+		return func;
+	case SCALAR_MONTH:
+		return func;
+	case SCALAR_NCHAR:
+		return func;
+	case SCALAR_RTRIM:
+		return func;
 	//case SCALAR_SESSIONPROPERTY: return func;
-	case SCALAR_SPACE: return func;
+	case SCALAR_SPACE:
+		return func;
 	//case SCALAR_TRY_CAST: return func;
-	case SCALAR_UPPER: return func;
-	case SCALAR_SIGN: return func;
-	case SCALAR_YEAR: return func;
-	default:
-		;
+	case SCALAR_UPPER:
+		return func;
+	case SCALAR_SIGN:
+		return func;
+	case SCALAR_YEAR:
+		return func;
+	default:;
 	}
 
 	func->arg_min = 1;
 	func->arg_max = 3;
 	switch (scalar_type) {
-	case SCALAR_STR: return func;
-	default:
-		;
+	case SCALAR_STR:
+		return func;
+	default:;
 	}
 
 	func->arg_min = 2;
@@ -141,33 +134,37 @@ function* function_construct(function* func, enum scalar_function scalar_type, e
 		*type = FIELD_STRING;
 		return func;
 	//case SCALAR_NULLIF: return func;
-	case SCALAR_PATINDEX: return func;
+	case SCALAR_PATINDEX:
+		return func;
 	case SCALAR_RIGHT:
 		func->call__ = &fql_right;
 		*type = FIELD_STRING;
 		return func;
-	default:
-		;
+	default:;
 	}
 
 	func->arg_min = 2;
 	func->arg_max = 3;
 	switch (scalar_type) {
 	//case SCALAR_CONVERT: return func;
-	case SCALAR_ROUND: return func;
+	case SCALAR_ROUND:
+		return func;
 	//case SCALAR_TRY_CONVERT: return func;
-	default: ;
+	default:;
 	}
 
 	func->arg_min = 3;
 	func->arg_max = 3;
 	switch (scalar_type) {
-	case SCALAR_CHARINDEX: return func;
+	case SCALAR_CHARINDEX:
+		return func;
 	//case SCALAR_DATEADD: return func;
 	//case SCALAR_DATEDIFF: return func;
-	case SCALAR_REPLACE: return func;
-	case SCALAR_SUBSTRING: return func;
-	default: ;
+	case SCALAR_REPLACE:
+		return func;
+	case SCALAR_SUBSTRING:
+		return func;
+	default:;
 	}
 
 	//func->arg_min = 4;
@@ -218,13 +215,14 @@ int function_op_resolve(function* func, enum field_type* type)
 		func->arg_min = 1;
 		func->arg_max = 1;
 		break;
-	default:
-		;
+	default:;
 	}
 
 	func->call__ = scalar_ops[func->type][*type];
 	if (func->call__ == NULL) {
-		fprintf(stderr, "invalid type for %s operation\n", scalar_str[func->type]);
+		fprintf(stderr,
+		        "invalid type for %s operation\n",
+		        scalar_str[func->type]);
 		return FQL_FAIL;
 	}
 
@@ -244,12 +242,18 @@ int function_validate(function* func)
 	}
 	if (func->arg_min == func->arg_max) {
 		fprintf(stderr,
-			"function `%s' expected %d argument(s)... found %d\n",
-			scalar_str[func->type], func->arg_min, argc);
+		        "function `%s' expected %d argument(s)... found %d\n",
+		        scalar_str[func->type],
+		        func->arg_min,
+		        argc);
 	} else {
 		fprintf(stderr,
-			"function `%s' expected between %d and %d arguments... found %d\n",
-			scalar_str[func->type], func->arg_min, func->arg_max, argc);
+		        "function `%s' expected between %d and %d arguments... "
+		        "found %d\n",
+		        scalar_str[func->type],
+		        func->arg_min,
+		        func->arg_max,
+		        argc);
 	}
 	return FQL_FAIL;
 }

@@ -14,7 +14,6 @@ enum field_type field_determine_type(enum field_type t0, enum field_type t1)
 	return FIELD_FLOAT;
 }
 
-
 int field_to_int(long* ret, union field* field, enum field_type* type)
 {
 	switch (*type) {
@@ -22,7 +21,7 @@ int field_to_int(long* ret, union field* field, enum field_type* type)
 		break;
 	case FIELD_FLOAT:
 		*type = FIELD_INT;
-		field->i = (long) field->f;
+		field->i = (long)field->f;
 		break;
 	case FIELD_STRING:
 		*type = FIELD_INT;
@@ -48,7 +47,7 @@ int field_to_float(double* ret, union field* field, enum field_type* type)
 		break;
 	case FIELD_INT:
 		*type = FIELD_FLOAT;
-		field->f = (double) field->i;
+		field->f = (double)field->i;
 		break;
 	case FIELD_STRING:
 		*type = FIELD_FLOAT;
@@ -68,21 +67,21 @@ int field_to_float(double* ret, union field* field, enum field_type* type)
 	return FQL_GOOD;
 }
 
-int field_to_stringview(stringview* ret, union field* field, enum field_type* type)
+int field_to_stringview(stringview* ret,
+                        union field* field,
+                        enum field_type* type)
 {
 	switch (*type) {
 	case FIELD_STRING:
 		break;
-	case FIELD_INT:
-	{
+	case FIELD_INT: {
 		*type = FIELD_STRING;
 		string* s = new_(string);
 		string_sprintf(s, "%ld", field->i);
 		field->s = s;
 		break;
 	}
-	case FIELD_FLOAT:
-	{
+	case FIELD_FLOAT: {
 		*type = FIELD_STRING;
 		string* s = new_(string);
 		string_sprintf(s, "%lf", field->f);

@@ -10,19 +10,20 @@
 #include "util/dgraph.h"
 
 struct process;
-typedef int (process_fn)(struct dgraph*, struct process*);
+typedef int(process_fn)(struct dgraph*, struct process*);
 
 struct process {
-	pthread_t thread;       /* pthread handle */
-	struct vec* records;    /* this is the owned record data for roots */
-	process_fn* action__;   /* function pointer for process */
-	fifo* fifo_in[2];       /* ring buffer of records */
-	fifo* fifo_out[2];      /* default next process fifo */
-	void* proc_data;        /* process specific data */
-	string* action_msg;     /* message that prints with plan */
-	vec* root_group;        /* group of recyclable roots for this process */
-	unsigned max_recs_iter; /* Max recs allowed to be processed per iteration */
-	short plan_id;          /* plan ID for root grouping */
+	pthread_t thread;     /* pthread handle */
+	struct vec* records;  /* this is the owned record data for roots */
+	process_fn* action__; /* function pointer for process */
+	fifo* fifo_in[2];     /* ring buffer of records */
+	fifo* fifo_out[2];    /* default next process fifo */
+	void* proc_data;      /* process specific data */
+	string* action_msg;   /* message that prints with plan */
+	vec* root_group;      /* group of recyclable roots for this process */
+	unsigned
+	        max_recs_iter; /* Max recs allowed to be processed per iteration */
+	short plan_id;         /* plan ID for root grouping */
 	short subquery_plan_id; /* plan ID for subquery */
 	short root_fifo;        /* signify which fifo_inx is the root */
 	short in_src_count;     /* number of input sources at this step */
@@ -31,7 +32,7 @@ struct process {
 	_Bool is_passive;       /* denotes process that does nothing */
 	_Bool is_enabled;       /* enabled means it still has data to process */
 	_Bool is_const;         /* should only run 1 time */
-	_Bool wait_for_in0;     /* allow process to start before in0 populated */
+	_Bool wait_for_in0; /* allow process to start before in0 populated */
 	_Bool wait_for_in0_end; /* allow _ONE MORE_ iteration after process complete */
 };
 typedef struct process process;
@@ -41,7 +42,8 @@ struct thread_data {
 	struct dgraph* proc_graph;
 };
 
-struct process* process_construct(struct process*, const char*, struct fql_plan*);
+struct process*
+process_construct(struct process*, const char*, struct fql_plan*);
 void process_destroy(struct process*, _Bool);
 void process_node_free(struct dnode* proc_node);
 

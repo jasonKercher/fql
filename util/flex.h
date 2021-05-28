@@ -29,17 +29,15 @@ void flex_shink_to_fit(struct flex*);
 void flex_pop_back(struct flex*);
 
 void flex_insert(struct flex*, size_t, void*, unsigned);
-#define flex_insert_(F_, idx_, data_, T_) \
+#define flex_insert_(F_, idx_, data_, T_)                                      \
 	flex_insert(F_, idx_, data_, sizeof(T_))
 
 void flex_push_back(struct flex*, void*, unsigned);
-#define flex_push_back_(F_, data_, T_) \
-	flex_push_back(F_, data_, sizeof(T_))
+#define flex_push_back_(F_, data_, T_) flex_push_back(F_, data_, sizeof(T_))
 
 void flex_push_back_str_int(struct flex*, long);
 void flex_push_back_str_float(struct flex*, double);
 
 void flex_remove(struct flex*, size_t);
 
-
-#endif  /* FLEX_H */
+#endif /* FLEX_H */

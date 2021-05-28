@@ -21,10 +21,10 @@
 schema* schema_construct(schema* self)
 {
 	*self = (schema) {
-		 new_t_(vec, column*)   /* columns */
-		,NULL                   /* col_map */
-		,""                     /* name */
-		,""                     /* delimiter */
+	        new_t_(vec, column*), /* columns */
+	        NULL,                 /* col_map */
+	        "",                   /* name */
+	        ""                    /* delimiter */
 	};
 
 	return self;
@@ -109,7 +109,9 @@ int schema_resolve_file(table* table)
 		if (string_eq(node->data, base)) {
 			++matches;
 			string_sprintf(&table->reader->file_name,
-				       "%s/%s", dir, node->data);
+			               "%s/%s",
+			               dir,
+			               node->data);
 		}
 	}
 
@@ -122,14 +124,16 @@ int schema_resolve_file(table* table)
 		if (istring_eq(node->data, base)) {
 			++matches;
 			string_sprintf(&table->reader->file_name,
-				       "%s/%s", dir, node->data);
+			               "%s/%s",
+			               dir,
+			               node->data);
 		}
 	}
 
 	if (matches > 1) {
 		fprintf(stderr,
-			"%s: ambiguous file name\n",
-			(char*)table->name.data);
+		        "%s: ambiguous file name\n",
+		        (char*)table->name.data);
 		return FQL_FAIL;
 	} else if (matches) {
 		goto success_return;
@@ -142,14 +146,16 @@ int schema_resolve_file(table* table)
 		if (string_eq(file_noext.data, base)) {
 			++matches;
 			string_sprintf(&table->reader->file_name,
-				       "%s/%s", dir, node->data);
+			               "%s/%s",
+			               dir,
+			               node->data);
 		}
 	}
 
 	if (matches > 1) {
 		fprintf(stderr,
-			"%s: ambiguous file name\n",
-			(char*)table->name.data);
+		        "%s: ambiguous file name\n",
+		        (char*)table->name.data);
 		return FQL_FAIL;
 	} else if (matches) {
 		goto success_return;
@@ -162,22 +168,24 @@ int schema_resolve_file(table* table)
 		if (istring_eq(file_noext.data, base)) {
 			++matches;
 			string_sprintf(&table->reader->file_name,
-				       "%s/%s", dir, node->data);
+			               "%s/%s",
+			               dir,
+			               node->data);
 		}
 	}
 
 	if (matches > 1) {
 		fprintf(stderr,
-			"%s: ambiguous file name\n",
-			(char*)table->name.data);
+		        "%s: ambiguous file name\n",
+		        (char*)table->name.data);
 		return FQL_FAIL;
 	} else if (matches) {
 		goto success_return;
 	}
 
 	fprintf(stderr,
-		"%s: unable to find matching file\n",
-		(char*)table->name.data);
+	        "%s: unable to find matching file\n",
+	        (char*)table->name.data);
 	return FQL_FAIL;
 
 success_return:
@@ -195,7 +203,8 @@ void schema_assign_header(table* table, record* rec)
 	for (; it != vec_end(rec->fields); ++it) {
 		string col_str;
 		string_construct_from_stringview(&col_str, it);
-		column* new_col = new_(column, EXPR_COLUMN_NAME, col_str.data, "");
+		column* new_col =
+		        new_(column, EXPR_COLUMN_NAME, col_str.data, "");
 		schema_add_column(table->schema, new_col);
 
 		new_col->location = i++;
@@ -211,12 +220,12 @@ void schema_assign_header(table* table, record* rec)
 int schema_resolve_source(struct fql_handle* fql, table* table)
 {
 	if (!vec_empty(table->schema->columns)) {
-		return FQL_GOOD;  /* self already set */
+		return FQL_GOOD; /* self already set */
 	}
 
 	if (table->schema->name[0]) {
 		fputs("not loading schema by name yet\n", stderr);
-		return FQL_FAIL;  /* TODO: load self by name */
+		return FQL_FAIL; /* TODO: load self by name */
 	}
 
 	if (table->source_type == SOURCE_SUBQUERY) {
@@ -231,7 +240,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table)
 		 * row of the file and assume a delimited
 		 * list of field names.
 		 */
-		try_ (schema_resolve_file(table));
+		try_(schema_resolve_file(table));
 		table->reader->type = READ_LIBCSV;
 	}
 	reader_assign(table->reader, table);
@@ -271,7 +280,7 @@ int _evaluate_if_const(column* col)
 		new_field.s = &col->buf;
 		string_clear(new_field.s);
 	}
-	try_ (func->call__(func, &new_field, NULL));
+	try_(func->call__(func, &new_field, NULL));
 
 	delete_(function, func);
 	col->expr = EXPR_CONST;
@@ -286,10 +295,12 @@ int schema_assign_columns_limited(vec* columns, vec* sources, int limit)
 	for (; it != vec_end(columns); ++it) {
 		if ((*it)->expr == EXPR_FUNCTION) {
 			function* func = (*it)->field.fn;
-			try_ (schema_assign_columns_limited(func->args, sources, limit));
-			try_ (function_op_resolve(func, &(*it)->field_type));
-			try_ (function_validate(func));
-			try_ (_evaluate_if_const(*it));
+			try_(schema_assign_columns_limited(func->args,
+			                                   sources,
+			                                   limit));
+			try_(function_op_resolve(func, &(*it)->field_type));
+			try_(function_validate(func));
+			try_(_evaluate_if_const(*it));
 			continue;
 		}
 		if ((*it)->expr != EXPR_COLUMN_NAME) {
@@ -301,23 +312,27 @@ int schema_assign_columns_limited(vec* columns, vec* sources, int limit)
 
 		for (; j <= limit; ++j) {
 			table* search_table = vec_at(sources, j);
-			if (string_empty(&(*it)->table_name) ||
-			    istring_eq((*it)->table_name.data, search_table->alias.data)) {
-				matches += column_try_assign_source(*it, search_table, j);
+			if (string_empty(&(*it)->table_name)
+			    || istring_eq((*it)->table_name.data,
+			                  search_table->alias.data)) {
+				matches +=
+				        column_try_assign_source(*it,
+				                                 search_table,
+				                                 j);
 			}
 		}
 
 		if (matches > 1) {
-			fprintf(stderr, 
-			        "%s: ambiguous column\n", 
-				(char*)(*it)->name.data);
+			fprintf(stderr,
+			        "%s: ambiguous column\n",
+			        (char*)(*it)->name.data);
 			return FQL_FAIL;
 		}
 
 		if (matches == 0) {
 			fprintf(stderr,
-			        "%s: cannot find column\n", 
-				(char*)(*it)->name.data);
+			        "%s: cannot find column\n",
+			        (char*)(*it)->name.data);
 			return FQL_FAIL;
 		}
 	}
@@ -328,8 +343,8 @@ int schema_assign_columns_limited(vec* columns, vec* sources, int limit)
 int schema_assign_columns(vec* columns, vec* sources)
 {
 	return schema_assign_columns_limited(columns,
-					     sources,
-					     sources->size - 1);
+	                                     sources,
+	                                     sources->size - 1);
 }
 
 int _asterisk_resolve(vec* columns, vec* sources)
@@ -345,10 +360,14 @@ int _asterisk_resolve(vec* columns, vec* sources)
 		int j = 0;
 		for (; j < sources->size; ++j) {
 			table* search_table = vec_at(sources, j);
-			if (string_empty(&(*col)->table_name) ||
-			    istring_eq((*col)->table_name.data, search_table->alias.data)) {
+			if (string_empty(&(*col)->table_name)
+			    || istring_eq((*col)->table_name.data,
+			                  search_table->alias.data)) {
 				if (matches > 0) {
-					column* new_col = new_(column, EXPR_ASTERISK, NULL, "");
+					column* new_col = new_(column,
+					                       EXPR_ASTERISK,
+					                       NULL,
+					                       "");
 					new_col->src_idx = j;
 					vec_insert(columns, ++i, &new_col);
 					col = vec_at(columns, col_idx);
@@ -358,7 +377,6 @@ int _asterisk_resolve(vec* columns, vec* sources)
 				++matches;
 			}
 		}
-
 
 		if (matches == 0) {
 			fprintf(stderr,
@@ -376,8 +394,7 @@ enum join_side _get_join_side(column* col, int right_idx)
 	switch (col->expr) {
 	case EXPR_COLUMN_NAME:
 		return (col->src_idx < right_idx) ? SIDE_LEFT : SIDE_RIGHT;
-	case EXPR_FUNCTION:
-	{
+	case EXPR_FUNCTION: {
 		function* func = col->field.fn;
 		column** it = vec_begin(func->args);
 		enum join_side side0 = SIDE_UNDEF;
@@ -395,15 +412,13 @@ enum join_side _get_join_side(column* col, int right_idx)
 	}
 	default:
 		return SIDE_UNDEF;
-
 	}
 }
 
-
 void _resolve_join_conditions(table* right_table, int right_idx)
 {
-	if (right_table->condition == NULL ||
-	    right_table->condition->joinable == NULL) {
+	if (right_table->condition == NULL
+	    || right_table->condition->joinable == NULL) {
 		return;
 	}
 
@@ -446,59 +461,56 @@ enum _expr_type {
 int _map_expression(vec* key, column* col)
 {
 	/* I mean... heh? */
-	static const enum _expr_type _undef    = MAP_UNDEFINED;
-	static const enum _expr_type _c_int    = MAP_CONST_INT;
-	static const enum _expr_type _c_float  = MAP_CONST_FLOAT;
+	static const enum _expr_type _undef = MAP_UNDEFINED;
+	static const enum _expr_type _c_int = MAP_CONST_INT;
+	static const enum _expr_type _c_float = MAP_CONST_FLOAT;
 	static const enum _expr_type _c_string = MAP_CONST_STRING;
-	static const enum _expr_type _col      = MAP_COLUMN;
-	static const enum _expr_type _func     = MAP_FUNCTION;
+	static const enum _expr_type _col = MAP_COLUMN;
+	static const enum _expr_type _func = MAP_FUNCTION;
 
 	const enum _expr_type* map_type = &_undef;
 	stringview type_sv;
 	stringview val_sv;
-	switch(col->expr) {
+	switch (col->expr) {
 	case EXPR_CONST:
-		switch(col->field_type) {
+		switch (col->field_type) {
 		case FIELD_INT:
 			map_type = &_c_int;
 			stringview_nset(&val_sv,
-					(char*)&col->field.f,
-					sizeof(double));
+			                (char*)&col->field.f,
+			                sizeof(double));
 			break;
 		case FIELD_FLOAT:
 			map_type = &_c_float;
 			stringview_nset(&val_sv,
-					(char*)&col->field.f,
-					sizeof(double));
+			                (char*)&col->field.f,
+			                sizeof(double));
 			break;
 		case FIELD_STRING:
 			map_type = &_c_string;
 			stringview_set_string(&val_sv, col->field.s);
-		default:
-			;
+		default:;
 		}
 
 		break;
 	case EXPR_COLUMN_NAME:
 		map_type = &_col;
 		stringview_nset(&val_sv,
-				(char*)&col->data_source,
-				sizeof(column*));
+		                (char*)&col->data_source,
+		                sizeof(column*));
 		break;
 	case EXPR_FUNCTION:
 		map_type = &_func;
 		stringview_nset(&val_sv,
-				(char*)&col->field.fn->type,
-				sizeof(enum scalar_function));
+		                (char*)&col->field.fn->type,
+		                sizeof(enum scalar_function));
 		break;
 	default:
 		fputs("unexpected expression\n", stderr);
 		return FQL_FAIL;
 	}
 
-	stringview_nset(&type_sv,
-			(char*) map_type,
-			sizeof(enum _expr_type));
+	stringview_nset(&type_sv, (char*)map_type, sizeof(enum _expr_type));
 
 	vec_push_back(key, &type_sv);
 	vec_push_back(key, &val_sv);
@@ -509,7 +521,7 @@ int _map_expression(vec* key, column* col)
 
 	column** it = vec_begin(col->field.fn->args);
 	for (; it != vec_end(col->field.fn->args); ++it) {
-		try_ (_map_expression(key, *it));
+		try_(_map_expression(key, *it));
 	}
 
 	return FQL_GOOD;
@@ -528,7 +540,7 @@ int _op_find_group(compositemap* expr_map, column* col, vec* key)
 	}
 
 	vec_clear(key);
-	try_ (_map_expression(key, col));
+	try_(_map_expression(key, col));
 
 	column** result = compositemap_get(expr_map, key);
 	if (result != NULL) {
@@ -545,19 +557,19 @@ int _op_find_group(compositemap* expr_map, column* col, vec* key)
 	/* TODO: this logic */
 	if (col->expr == EXPR_COLUMN_NAME) {
 		fprintf(stderr,
-			"column `%s' does not match a grouping\n",
-			(char*)col->alias.data);
+		        "column `%s' does not match a grouping\n",
+		        (char*)col->alias.data);
 		return FQL_FAIL;
 	} else if (col->expr != EXPR_FUNCTION) {
 		fprintf(stderr,
-			"column `%s' unexpected expression\n",
-			(char*)col->alias.data);
+		        "column `%s' unexpected expression\n",
+		        (char*)col->alias.data);
 		return FQL_FAIL;
 	}
 
 	column** it = vec_begin(col->field.fn->args);
 	for (; it != vec_end(col->field.fn->args); ++it) {
-		try_ (_op_find_group(expr_map, *it, key));
+		try_(_op_find_group(expr_map, *it, key));
 	}
 	return FQL_GOOD;
 }
@@ -566,13 +578,13 @@ int _map_groups(struct fql_handle* fql, query* query)
 {
 	/* verify group columns and build composite key for each */
 	vec* group_cols = &query->groupby->columns;
-	try_ (schema_assign_columns(group_cols, query->sources));
+	try_(schema_assign_columns(group_cols, query->sources));
 
-	compositemap* expr_map = new_t_(compositemap,
-			                column*,
-	                                group_cols->size * 2,
-	                                HASHMAP_PROP_NOCASE |
-	                                HASHMAP_PROP_RTRIM);
+	compositemap* expr_map =
+	        new_t_(compositemap,
+	               column*,
+	               group_cols->size * 2,
+	               HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 	query->groupby->expr_map = expr_map;
 	vec key;
 	vec_construct_(&key, stringview);
@@ -589,8 +601,8 @@ int _map_groups(struct fql_handle* fql, query* query)
 			continue;
 		}
 		aggregate* agg = (*it)->field.agg;
-		try_ (schema_assign_columns(agg->args, query->sources));
-		try_ (aggregate_resolve(agg));
+		try_(schema_assign_columns(agg->args, query->sources));
+		try_(aggregate_resolve(agg));
 		(*it)->field_type = agg->data_type;
 	}
 
@@ -600,7 +612,7 @@ int _map_groups(struct fql_handle* fql, query* query)
 
 int _group_validation(struct fql_handle* fql, query* query, vec* cols)
 {
-	compositemap* expr_map = query->groupby->expr_map; 
+	compositemap* expr_map = query->groupby->expr_map;
 	vec key;
 	vec_construct_(&key, stringview);
 	column** it = vec_begin(cols);
@@ -622,14 +634,15 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 	int i = 0;
 	for (; i < sources->size; ++i) {
 		table* table = vec_at(query->sources, i);
-		try_ (schema_resolve_source(fql, table));
+		try_(schema_resolve_source(fql, table));
 
 		if (i == 0 && !op_has_delim(query->op)) {
 			op_set_delim(query->op, table->schema->delimiter);
 		}
 
 		if (schema_assign_columns_limited(table->validation_list,
-					          sources, i)) {
+		                                  sources,
+		                                  i)) {
 			return FQL_FAIL;
 		}
 
@@ -638,12 +651,12 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 		}
 	}
 
-	try_ (schema_assign_columns(query->validation_list, query->sources));
+	try_(schema_assign_columns(query->validation_list, query->sources));
 
 	/* skip validating groups if no group columns */
 	vec* op_cols = op_get_validation_list(query->op);
-	try_ (_asterisk_resolve(op_cols, sources));
-	try_ (schema_assign_columns(op_cols, sources));
+	try_(_asterisk_resolve(op_cols, sources));
+	try_(schema_assign_columns(op_cols, sources));
 
 	vec* order_cols = NULL;
 	if (query->orderby) {
@@ -654,13 +667,13 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 			return FQL_FAIL;
 		}
 	}
-	
+
 	if (!vec_empty(&query->groupby->columns)
-	 || !vec_empty(&query->groupby->aggregates)) {
-		try_ (_map_groups(fql, query));
-		try_ (_group_validation(fql, query, op_cols));
+	    || !vec_empty(&query->groupby->aggregates)) {
+		try_(_map_groups(fql, query));
+		try_(_group_validation(fql, query, op_cols));
 		if (order_cols) {
-			try_ (_group_validation(fql, query, order_cols));
+			try_(_group_validation(fql, query, order_cols));
 		}
 	}
 
@@ -679,7 +692,7 @@ int schema_resolve(struct fql_handle* fql)
 			op_set_delim(query->op, fql->props.out_delim);
 		}
 
-		try_ (schema_resolve_query(fql, query));
+		try_(schema_resolve_query(fql, query));
 	}
 
 	return FQL_GOOD;

@@ -22,18 +22,18 @@ int _order_select(order* self);
 order* order_construct(order* self, const char* in_name, char* out_name)
 {
 	*self = (order) {
-		 { 0 }         /* columns */
-		,{ 0 }         /* entries */
-		,{ 0 }         /* order_data */
-		,_order_select /* select__ */
-		,NULL          /* api */
-		,in_name       /* in_filename */
-		,stdout        /* out_file */
-		,NULL          /* entry_iter */
-		,NULL          /* mmap */
-		,0             /* file_size */
-		,0             /* fd */
-		,false         /* sorted */
+	        {0},           /* columns */
+	        {0},           /* entries */
+	        {0},           /* order_data */
+	        _order_select, /* select__ */
+	        NULL,          /* api */
+	        in_name,       /* in_filename */
+	        stdout,        /* out_file */
+	        NULL,          /* entry_iter */
+	        NULL,          /* mmap */
+	        0,             /* file_size */
+	        0,             /* fd */
+	        false          /* sorted */
 	};
 
 	vec_construct_(&self->columns, column*);
@@ -59,9 +59,8 @@ void order_destroy(order* self)
 		munmap(self->mmap, self->file_size);
 		close(self->fd);
 	}
-	if (self->out_file != NULL
-	 && self->out_file != stdout
-	 && self->out_file != stderr) {
+	if (self->out_file != NULL && self->out_file != stdout
+	    && self->out_file != stderr) {
 		fclose(self->out_file);
 	}
 }
@@ -94,9 +93,11 @@ int order_add_record(order* self, vec* recs)
 {
 	record** top = vec_begin(recs);
 	struct _entry entry = {
-		 flex_size(&self->order_data) /* idx */
-		,(*top)->offset               /* offset */
-		,(*top)->select_len           /* len */
+	        flex_size(&self->order_data) /* idx */
+	        ,
+	        (*top)->offset /* offset */
+	        ,
+	        (*top)->select_len /* len */
 	};
 
 	column** cols = vec_begin(&self->columns);
@@ -104,30 +105,27 @@ int order_add_record(order* self, vec* recs)
 	int i = 0;
 	for (; i < self->columns.size; ++i) {
 		switch (cols[i]->field_type) {
-		case FIELD_INT:
-		 {
+		case FIELD_INT: {
 			/* NOTE: storing numbers in binary */
 			long num_i = 0;
-			try_ (column_get_int(&num_i, cols[i], recs));
+			try_(column_get_int(&num_i, cols[i], recs));
 			flex_push_back_(&self->order_data, &num_i, long);
 			break;
-		 }
-		case FIELD_FLOAT:
-		 {
+		}
+		case FIELD_FLOAT: {
 			double num_f = 0;
-			try_ (column_get_float(&num_f, cols[i], recs));
+			try_(column_get_float(&num_f, cols[i], recs));
 			flex_push_back_(&self->order_data, &num_f, double);
 			break;
-		 }
-		case FIELD_STRING:
-		 {
+		}
+		case FIELD_STRING: {
 			stringview sv;
-			try_ (column_get_stringview(&sv, cols[i], recs));
+			try_(column_get_stringview(&sv, cols[i], recs));
 			flex_push_back(&self->order_data,
-				       (void*)sv.data,
-				       sv.len);
+			               (void*)sv.data,
+			               sv.len);
 			break;
-		 }
+		}
 		default:
 			fputs("Undefined field type\n", stderr);
 			return FQL_FAIL;
@@ -152,37 +150,30 @@ int _compare(const void* a, const void* b, void* data)
 	column** it = vec_begin(&orderby->columns);
 	for (; ret == 0 && it != vec_end(&orderby->columns); ++it) {
 		switch ((*it)->field_type) {
-		case FIELD_INT:
-		 {
+		case FIELD_INT: {
 			long* num0 = flex_at(&orderby->order_data, idx0);
 			long* num1 = flex_at(&orderby->order_data, idx1);
 			ret = num_compare_(*num0, *num1);
 			break;
-		 }
-		case FIELD_FLOAT:
-		 {
+		}
+		case FIELD_FLOAT: {
 			double* num0 = flex_at(&orderby->order_data, idx0);
 			double* num1 = flex_at(&orderby->order_data, idx1);
 			ret = num_compare_(*num0, *num1);
 			break;
-		 }
-		case FIELD_STRING:
-		 {
-			stringview sv0 = flex_pair_at(
-					&orderby->order_data,
-					idx0
-				);
-			stringview sv1 = flex_pair_at(
-					&orderby->order_data,
-					idx1
-				);
+		}
+		case FIELD_STRING: {
+			stringview sv0 =
+			        flex_pair_at(&orderby->order_data, idx0);
+			stringview sv1 =
+			        flex_pair_at(&orderby->order_data, idx1);
 			ret = stringview_compare_nocase_rtrim(&sv0, &sv1);
-		 }
-		default:
-			;
+		}
+		default:;
 		}
 
-		if ((*it)->descending) ret *= -1;
+		if ((*it)->descending)
+			ret *= -1;
 
 		++idx0;
 		++idx1;
@@ -197,8 +188,8 @@ int _order_select_api(order* self)
 	}
 	size_t offset = self->entry_iter->offset;
 	struct fql_field* it = vec_begin(self->api);
-		for (; it != vec_end(self->api); ++it) {
-		switch(it->type) {
+	for (; it != vec_end(self->api); ++it) {
+		switch (it->type) {
 		case FQL_INT:
 			it->data.i = *(long*)(&self->mmap[offset]);
 			offset += sizeof(long);
@@ -207,19 +198,15 @@ int _order_select_api(order* self)
 			it->data.f = *(double*)(&self->mmap[offset]);
 			offset += sizeof(double);
 			break;
-		case FQL_STRING:
-		 {
+		case FQL_STRING: {
 			unsigned len = *(unsigned*)(&self->mmap[offset]);
 			offset += sizeof(unsigned);
-			stringview sv = {
-				 &self->mmap[offset]
-				,len
-			};
+			stringview sv = {&self->mmap[offset], len};
 			offset += len;
 			string_copy_from_stringview(it->_in, &sv);
 			it->data.s = string_c_str(it->_in);
 			break;
-		 }
+		}
 		default:
 			fputs("Unexpected type in order_select_api\n", stderr);
 			return FQL_FAIL;
@@ -235,9 +222,9 @@ int _order_select(order* self)
 	struct _entry* it = vec_begin(&self->entries);
 	for (; it != vec_end(&self->entries); ++it) {
 		fprintf(self->out_file,
-			"%.*s",
-			it->len,
-			&self->mmap[it->offset]);
+		        "%.*s",
+		        it->len,
+		        &self->mmap[it->offset]);
 	}
 
 	return 0;
@@ -266,12 +253,8 @@ int order_sort(order* self)
 
 	self->file_size = sb.st_size;
 
-	self->mmap = mmap(NULL,
-	                  sb.st_size,
-	                  PROT_READ,
-	                  MAP_PRIVATE,
-	                  self->fd,
-	                  0);
+	self->mmap =
+	        mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, self->fd, 0);
 
 	if (self->mmap == MAP_FAILED) {
 		perror(self->in_filename);

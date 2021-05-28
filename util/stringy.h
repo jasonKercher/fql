@@ -30,9 +30,9 @@ string* string_take(char*);
 string* string_construct_take(string*, char*);
 
 /* equal to vec */
-#define string_destroy(s_) vec_destroy(s_)
-#define string_get(s_) vec_begin(s_)
-#define string_empty(s_) vec_empty(s_)
+#define string_destroy(s_)         vec_destroy(s_)
+#define string_get(s_)             vec_begin(s_)
+#define string_empty(s_)           vec_empty(s_)
 #define string_append(src_, dest_) vec_extend(src_, dest_)
 
 /* stringview interface */
@@ -53,4 +53,4 @@ void string_clear(string*);
 void string_resize(string*, size_t);
 void string_copy(string* dest, string* src);
 
-#endif  /* STRINGY_H */
+#endif /* STRINGY_H */

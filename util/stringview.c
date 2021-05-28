@@ -16,26 +16,17 @@ stringview* stringview_construct_from_string(stringview* sv, string* s)
 
 void stringview_set(stringview* sv, const char* s)
 {
-	*sv = (stringview) {
-		 s
-		,strlen(s)
-	};
+	*sv = (stringview) {s, strlen(s)};
 }
 
 void stringview_nset(stringview* sv, const char* s, unsigned n)
 {
-	*sv = (stringview) {
-		 s
-		,n
-	};
+	*sv = (stringview) {s, n};
 }
 
 void stringview_set_string(stringview* sv, string* s)
 {
-	*sv = (stringview) {
-		 s->data
-		,s->size
-	};
+	*sv = (stringview) {s->data, s->size};
 }
 
 int stringview_compare_nocase(const stringview* sv0, const stringview* sv1)

@@ -9,18 +9,18 @@ fifo* fifo_construct(fifo* self, size_t elem_size, unsigned buf_size)
 		buf_size = 2;
 	}
 	*self = (fifo) {
-		 new_(vec, elem_size)   /* buf */
-		,{ 0 }                  /* head_mutex */
-		,{ 0 }                  /* tail_mutex */
-		,{ 0 }                  /* open_mutex */
-		,{ 0 }                  /* cond_add */
-		,{ 0 }                  /* cond_get */
-		,{ 0 }                  /* cond_work */
-		,0                      /* head */
-		,0                      /* tail */
-		,0                      /* _iter_head */
-		,0                      /* input_count */
-		,true                   /* is_open */
+	        new_(vec, elem_size), /* buf */
+	        {0},                  /* head_mutex */
+	        {0},                  /* tail_mutex */
+	        {0},                  /* open_mutex */
+	        {0},                  /* cond_add */
+	        {0},                  /* cond_get */
+	        {0},                  /* cond_work */
+	        0,                    /* head */
+	        0,                    /* tail */
+	        0,                    /* _iter_head */
+	        0,                    /* input_count */
+	        true                  /* is_open */
 	};
 
 	vec_resize(self->buf, buf_size);

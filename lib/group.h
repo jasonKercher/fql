@@ -17,7 +17,7 @@ struct group {
 	struct flex group_data;
 	//struct vec _indicies;
 	//struct vec _raw;
-	struct vec _composite;  /* temporary */
+	struct vec _composite; /* temporary */
 	size_t _dump_idx;
 };
 typedef struct group group;
@@ -31,4 +31,4 @@ void group_cat_description(struct group*, struct process*);
 int group_record(struct group*, struct vec* rec);
 int group_dump_record(struct group* group, struct record* rec);
 
-#endif  /* GROUP_H */
+#endif /* GROUP_H */

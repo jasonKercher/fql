@@ -29,14 +29,14 @@ void _activate_procs(plan* self);
 plan* plan_construct(plan* self, query* query)
 {
 	*self = (plan) {
-		 new_(dgraph)      /* processes */
-		,NULL              /* op_true */
-		,NULL              /* op_false */
-		,NULL              /* current */
-		,NULL              /* recycle_groups */
-		,0                 /* rows_affected */
-		,0                 /* source_count */
-		,false             /* has_stepped */
+	        new_(dgraph), /* processes */
+	        NULL,         /* op_true */
+	        NULL,         /* op_false */
+	        NULL,         /* current */
+	        NULL,         /* recycle_groups */
+	        0,            /* rows_affected */
+	        0,            /* source_count */
+	        false         /* has_stepped */
 	};
 
 	self->plan_id = query->query_id;
@@ -184,9 +184,9 @@ int _from(plan* self, query* query)
 	++self->source_count;
 	if (table_iter->source_type == SOURCE_TABLE) {
 		string_sprintf(&action_msg,
-			       "%s: %s",
-			       table_iter->reader->file_name.data,
-			       "stream read");
+		               "%s: %s",
+		               table_iter->reader->file_name.data,
+		               "stream read");
 
 		from_proc = new_(process, action_msg.data, self);
 		from_proc->action__ = &fql_read;
@@ -197,8 +197,9 @@ int _from(plan* self, query* query)
 		from_proc->root_fifo = 1;
 		from_node = dgraph_add_data(self->processes, from_proc);
 		from_node->is_root = true;
-		plan* subquery_plan = plan_build(table_iter->subquery, from_node);
-		fail_if_ (subquery_plan == NULL);
+		plan* subquery_plan =
+		        plan_build(table_iter->subquery, from_node);
+		fail_if_(subquery_plan == NULL);
 		from_proc->subquery_plan_id = subquery_plan->plan_id;
 		dgraph_consume(self->processes, subquery_plan->processes);
 	}
@@ -211,19 +212,24 @@ int _from(plan* self, query* query)
 	self->current = from_node;
 	dnode* join_node = NULL;
 
-	for (++table_iter; table_iter != vec_end(query->sources); ++table_iter) {
+	for (++table_iter; table_iter != vec_end(query->sources);
+	     ++table_iter) {
 
 		/* TODO */
 		if (table_iter->source_type == SOURCE_SUBQUERY) {
 			fputs("currently cannot join with a"
-			      "sub-query on the right side\n", stderr);
+			      "sub-query on the right side\n",
+			      stderr);
 			return FQL_FAIL;
 		}
 
 		process* join_proc = NULL;
-		_Bool is_hash_join = (table_iter->condition->join_logic != NULL);
+		_Bool is_hash_join =
+		        (table_iter->condition->join_logic != NULL);
 		if (is_hash_join) {
-			join_proc = _new_join_proc(table_iter->join_type, "hash", self);
+			join_proc = _new_join_proc(table_iter->join_type,
+			                           "hash",
+			                           self);
 			join_proc->action__ = &fql_hash_join;
 			table_hash_join_init(table_iter);
 			process_add_second_input(join_proc);
@@ -233,14 +239,14 @@ int _from(plan* self, query* query)
 
 			/* TODO: subquery on right side of join */
 			//if (table_iter->source_type == SOURCE_TABLE) {
-				string_sprintf(&action_msg,
-					       "%s: %s",
-					       table_iter->reader->file_name.data,
-					       "mmap read");
+			string_sprintf(&action_msg,
+			               "%s: %s",
+			               table_iter->reader->file_name.data,
+			               "mmap read");
 
-				read_proc = new_(process, action_msg.data, self);
-				read_proc->action__ = &fql_read;
-				read_node = dgraph_add_data(self->processes, read_proc);
+			read_proc = new_(process, action_msg.data, self);
+			read_proc->action__ = &fql_read;
+			read_node = dgraph_add_data(self->processes, read_proc);
 			//} else {
 			//	read_proc = new_(process, "subquery select", self);
 			//	read_proc->action__ = &fql_read_subquery;
@@ -260,7 +266,9 @@ int _from(plan* self, query* query)
 			join_node = dgraph_add_data(self->processes, join_proc);
 			read_node->out[0] = join_node;
 		} else {
-			join_proc = _new_join_proc(table_iter->join_type, "cartesian", self);
+			join_proc = _new_join_proc(table_iter->join_type,
+			                           "cartesian",
+			                           self);
 			join_proc->action__ = &fql_cartesian_join;
 			join_proc->root_fifo = 1;
 			join_node = dgraph_add_data(self->processes, join_proc);
@@ -271,7 +279,9 @@ int _from(plan* self, query* query)
 		self->current = join_node;
 
 		if (table_iter->condition != NULL) {
-			_logicgroup_process(self, table_iter->condition, is_hash_join);
+			_logicgroup_process(self,
+			                    table_iter->condition,
+			                    is_hash_join);
 		}
 	}
 
@@ -295,7 +305,7 @@ void _where(plan* self, query* query)
 void _group(plan* self, query* query)
 {
 	if (!vec_empty(&query->groupby->columns)
-	 || !vec_empty(&query->groupby->aggregates)) {
+	    || !vec_empty(&query->groupby->aggregates)) {
 		process* group_proc = new_(process, "GROUP BY ", self);
 		self->source_count = 1;
 		group_proc->out_src_count = 1;
@@ -308,7 +318,8 @@ void _group(plan* self, query* query)
 		group_proc->wait_for_in0_end = true;
 		group_proc->root_fifo = 1;
 		group_cat_description(query->groupby, group_proc);
-		dnode* group_node = dgraph_add_data(self->processes, group_proc);
+		dnode* group_node =
+		        dgraph_add_data(self->processes, group_proc);
 		group_node->is_root = true;
 		self->current->out[0] = group_node;
 		self->current = group_node;
@@ -325,7 +336,8 @@ void _group(plan* self, query* query)
 		group_proc->action__ = &fql_distinct;
 		group_proc->proc_data = query->distinct;
 		group_cat_description(query->distinct, group_proc);
-		dnode* group_node = dgraph_add_data(self->processes, group_proc);
+		dnode* group_node =
+		        dgraph_add_data(self->processes, group_proc);
 		self->current->out[0] = group_node;
 		self->current = group_node;
 	}
@@ -392,9 +404,9 @@ void _clear_passive(plan* self)
 		while (nodes[i]->out[0] != NULL) {
 			process* proc = nodes[i]->out[0]->data;
 			if (proc->is_passive) {
-			        nodes[i]->out[0] = nodes[i]->out[0]->out[0];
+				nodes[i]->out[0] = nodes[i]->out[0]->out[0];
 			} else {
-			        break;
+				break;
 			}
 		}
 
@@ -403,13 +415,15 @@ void _clear_passive(plan* self)
 		while (nodes[i]->out[1] != NULL) {
 			process* proc = nodes[i]->out[1]->data;
 			if (proc->is_passive) {
-			        if (nodes[i]->out[1]->out[1] != NULL) {
-			                nodes[i]->out[1] = nodes[i]->out[1]->out[1];
-			        } else {
-			                nodes[i]->out[1] = nodes[i]->out[1]->out[0];
-			        }
+				if (nodes[i]->out[1]->out[1] != NULL) {
+					nodes[i]->out[1] =
+					        nodes[i]->out[1]->out[1];
+				} else {
+					nodes[i]->out[1] =
+					        nodes[i]->out[1]->out[0];
+				}
 			} else {
-			        break;
+				break;
 			}
 		}
 	}
@@ -434,7 +448,8 @@ void _clear_passive(plan* self)
  */
 void _update_pipes(dgraph* proc_graph)
 {
-	while (dgraph_traverse(proc_graph));
+	while (dgraph_traverse(proc_graph))
+		;
 
 	dnode** it = vec_begin(proc_graph->nodes);
 	for (; it != vec_end(proc_graph->nodes); ++it) {
@@ -466,19 +481,18 @@ void _make_pipes(plan* self)
 		process* proc = (*nodes)->data;
 		if ((*nodes)->out[0] != NULL) {
 			process* proc0 = (*nodes)->out[0]->data;
-			proc->fifo_out[0] = (proc->is_secondary) ?
-					    proc0->fifo_in[1] :
-					    proc0->fifo_in[0];
+			proc->fifo_out[0] = (proc->is_secondary)
+			                            ? proc0->fifo_in[1]
+			                            : proc0->fifo_in[0];
 		}
 
 		if ((*nodes)->out[1] != NULL) {
 			process* proc1 = (*nodes)->out[1]->data;
-			proc->fifo_out[1] = (proc->is_secondary) ?
-					    proc1->fifo_in[1] :
-					    proc1->fifo_in[0];
+			proc->fifo_out[1] = (proc->is_secondary)
+			                            ? proc1->fifo_in[1]
+			                            : proc1->fifo_in[0];
 		}
 	}
-
 }
 
 void _mark_roots_const(vec* roots)
@@ -497,7 +511,7 @@ plan* plan_build(query* query, dnode* entry)
 
 	/* query */
 	if (_from(self, query)) {
-		delete_ (plan, self);
+		delete_(plan, self);
 		return NULL;
 	}
 	_where(self, query);
@@ -540,7 +554,7 @@ int build_plans(queue* query_list)
 
 	for (; node; node = node->next) {
 		query* query = node->data;
-		fail_if_ (plan_build(query, NULL) == NULL);
+		fail_if_(plan_build(query, NULL) == NULL);
 	}
 
 	return FQL_GOOD;
@@ -571,7 +585,6 @@ void _print_plan(plan* self)
 		}
 	}
 
-
 	/* Print Header */
 	fputs("NODE", stderr);
 	_col_sep(max_len - strlen("NODE"));
@@ -591,7 +604,6 @@ void _print_plan(plan* self)
 	for (i = 0; i < max_len; ++i) {
 		fputc('=', stderr);
 	}
-
 
 	/* print adjacency list */
 	for (it = vec_begin(nodes); it != vec_end(nodes); ++it) {
@@ -638,24 +650,23 @@ void _activate_procs(plan* self)
 	 * can be tracked easier
 	 */
 	process_activate(*nodes, self);
-	if(++nodes == vec_end(node_vec))
+	if (++nodes == vec_end(node_vec))
 		return;
 	process_activate(*nodes, self);
-	if(++nodes == vec_end(node_vec))
+	if (++nodes == vec_end(node_vec))
 		return;
 	process_activate(*nodes, self);
-	if(++nodes == vec_end(node_vec))
+	if (++nodes == vec_end(node_vec))
 		return;
 	process_activate(*nodes, self);
-	if(++nodes == vec_end(node_vec))
+	if (++nodes == vec_end(node_vec))
 		return;
 	process_activate(*nodes, self);
-	if(++nodes == vec_end(node_vec))
+	if (++nodes == vec_end(node_vec))
 		return;
 	process_activate(*nodes, self);
 
 	for (; nodes != vec_end(node_vec); ++nodes) {
-	        process_activate(*nodes, self);
+		process_activate(*nodes, self);
 	}
 }
-

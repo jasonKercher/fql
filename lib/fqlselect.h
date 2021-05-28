@@ -9,7 +9,7 @@
 
 struct record;
 struct fqlselect;
-typedef int(*select_fn)(struct fqlselect*, struct vec*);
+typedef int (*select_fn)(struct fqlselect*, struct vec*);
 
 struct fqlselect {
 	enum op oper_type;
@@ -40,4 +40,4 @@ void fqlselect_preop(struct fqlselect*, struct query*);
 int fqlselect_subquery_record(struct reader*, struct record*);
 int fqlselect_subquery_reset(struct reader*);
 
-#endif  /* SELECT_H */
+#endif /* SELECT_H */

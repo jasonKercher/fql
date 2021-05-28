@@ -13,16 +13,16 @@
 reader* reader_construct(reader* self)
 {
 	*self = (reader) {
-		 READ_UNDEFINED /* type */
-		,NULL           /* reader_data */
-		,NULL           /* subquery_recs */
-		,NULL           /* get_record__ */
-		,NULL           /* get_record_at__ */
-		,NULL           /* free__ */
-		,NULL           /* reset__ */
-		,{ 0 }          /* file_name */
-		,0              /* max_col_idx */
-		,false          /* eof */
+	        READ_UNDEFINED, /* type */
+	        NULL,           /* reader_data */
+	        NULL,           /* subquery_recs */
+	        NULL,           /* get_record__ */
+	        NULL,           /* get_record_at__ */
+	        NULL,           /* free__ */
+	        NULL,           /* reset__ */
+	        {0},            /* file_name */
+	        0,              /* max_col_idx */
+	        false           /* eof */
 	};
 
 	string_construct(&self->file_name);
@@ -45,8 +45,7 @@ void reader_assign(reader* self, table* table)
 {
 	int ret = 0;
 	switch (self->type) {
-	case READ_LIBCSV:
-	{
+	case READ_LIBCSV: {
 		struct csv_reader* csv = csv_reader_new();
 		self->reader_data = csv;
 		self->free__ = &libcsv_reader_free;
@@ -71,4 +70,3 @@ void reader_assign(reader* self, table* table)
 		csv_perror_exit();
 	}
 }
-

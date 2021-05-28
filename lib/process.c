@@ -19,26 +19,26 @@
 process* process_construct(process* proc, const char* action, plan* plan)
 {
 	*proc = (process) {
-		 0                              /* thread */
-		,NULL                           /* records */
-		,&fql_no_op                     /* action__ */
-		,{ NULL, NULL }                 /* fifo_in */
-		,{ NULL, NULL }                 /* fifo_out */
-		,NULL                           /* proc_data */
-		,string_from_char_ptr(action)   /* action_msg */
-		,NULL                           /* root_group */
-		,UINT_MAX                       /* max_recs_iter */
-		,plan->plan_id                  /* plan_id */
-		,0                              /* subquery_plan_id */
-		,0                              /* root_fifo */
-		,plan->source_count             /* in_src_count */
-		,plan->source_count             /* out_src_count */
-		,false                          /* is_secondary */
-		,false                          /* is_passive */
-		,true                           /* is_enabled */
-		,false                          /* is_const */
-		,true                           /* wait_for_in0 */
-		,false                          /* wait_for_in0_end */
+	        0,                            /* thread */
+	        NULL,                         /* records */
+	        &fql_no_op,                   /* action__ */
+	        {NULL, NULL},                 /* fifo_in */
+	        {NULL, NULL},                 /* fifo_out */
+	        NULL,                         /* proc_data */
+	        string_from_char_ptr(action), /* action_msg */
+	        NULL,                         /* root_group */
+	        UINT_MAX,                     /* max_recs_iter */
+	        plan->plan_id,                /* plan_id */
+	        0,                            /* subquery_plan_id */
+	        0,                            /* root_fifo */
+	        plan->source_count,           /* in_src_count */
+	        plan->source_count,           /* out_src_count */
+	        false,                        /* is_secondary */
+	        false,                        /* is_passive */
+	        true,                         /* is_enabled */
+	        false,                        /* is_const */
+	        true,                         /* wait_for_in0 */
+	        false                         /* wait_for_in0_end */
 	};
 
 	return proc;
@@ -75,7 +75,8 @@ void process_activate(dnode* proc_node, plan* plan)
 	unsigned graph_size = plan->processes->nodes->size;
 	_Bool is_subquery = proc->subquery_plan_id > 0;
 	if (is_subquery) {
-		proc->root_group = vec_at(plan->recycle_groups, proc->subquery_plan_id);
+		proc->root_group =
+		        vec_at(plan->recycle_groups, proc->subquery_plan_id);
 	} else {
 		proc->root_group = vec_at(plan->recycle_groups, proc->plan_id);
 	}
@@ -102,7 +103,8 @@ void process_activate(dnode* proc_node, plan* plan)
 		}
 	}
 
-	proc->fifo_in[proc->root_fifo] = new_t_(fifo, vec*, FIFO_SIZE * graph_size);
+	proc->fifo_in[proc->root_fifo] =
+	        new_t_(fifo, vec*, FIFO_SIZE * graph_size);
 
 	int field_count = 1;
 
@@ -112,12 +114,10 @@ void process_activate(dnode* proc_node, plan* plan)
 		reader* reader = table->reader;
 		field_count = reader->max_col_idx + 1;
 		owns_data = false;
-	}
-	else if (proc->action__ == &fql_read_subquery) {
+	} else if (proc->action__ == &fql_read_subquery) {
 		table* table = proc->proc_data;
 		field_count = table->schema->columns->size;
-	}
-	else if (proc->action__ == &fql_groupby) {
+	} else if (proc->action__ == &fql_groupby) {
 		group* group = proc->proc_data;
 		field_count = group->columns.size;
 	}
@@ -193,9 +193,8 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		if (!proc->is_enabled) {
 			continue;
 		}
-		if (proc->wait_for_in0
-		 && !proc->fifo_in[0]->is_open
-		 && fifo_is_empty(proc->fifo_in[0])) {
+		if (proc->wait_for_in0 && !proc->fifo_in[0]->is_open
+		    && fifo_is_empty(proc->fifo_in[0])) {
 			if (proc->wait_for_in0_end) {
 				proc->wait_for_in0 = false;
 			} else {
@@ -208,17 +207,17 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		 * as well as a place for it to go.
 		 */
 		if (proc->wait_for_in0 && fifo_is_empty(proc->fifo_in[0])
-		 || (proc->fifo_out[0] && !fifo_receivable(proc->fifo_out[0]))
-		 || (proc->fifo_out[1] && !fifo_receivable(proc->fifo_out[1]))) {
+		    || (proc->fifo_out[0]
+		        && !fifo_receivable(proc->fifo_out[0]))
+		    || (proc->fifo_out[1]
+		        && !fifo_receivable(proc->fifo_out[1]))) {
 			++run_count;
 			continue;
 		}
-		int ret = try_ (proc->action__(proc_graph, proc));
+		int ret = try_(proc->action__(proc_graph, proc));
 
-		if (proc_node == plan->op_true && (
-			        proc->action__ == fql_orderby
-			     || proc->wait_for_in0))
-		{
+		if (proc_node == plan->op_true
+		    && (proc->action__ == fql_orderby || proc->wait_for_in0)) {
 			plan->rows_affected += ret;
 		}
 		run_count += ret;
@@ -287,9 +286,8 @@ void* _thread_exec(void* data)
 			}
 		}
 		if (in1) {
-			if (fifo_is_open(in1) &&
-			    fifo_is_open(in0) &&
-			    fifo_is_empty(in1)) {
+			if (fifo_is_open(in1) && fifo_is_open(in0)
+			    && fifo_is_empty(in1)) {
 				//fifo_wait_for_work(in1);
 				fifo_wait_for_add(in1);
 			}
@@ -326,7 +324,7 @@ int process_exec_plan_thread(plan* plan)
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-	vec tdata_vec = { 0 };
+	vec tdata_vec = {0};
 	vec_construct_(&tdata_vec, struct thread_data);
 	vec_resize(&tdata_vec, proc_graph->nodes->size);
 
@@ -338,7 +336,10 @@ int process_exec_plan_thread(plan* plan)
 		tdata->proc_node = *proc_node;
 		tdata->proc_graph = proc_graph;
 		process* proc = (*proc_node)->data;
-		fail_if_ (pthread_create(&proc->thread, &attr, _thread_exec, tdata));
+		fail_if_(pthread_create(&proc->thread,
+		                        &attr,
+		                        _thread_exec,
+		                        tdata));
 	}
 
 	pthread_attr_destroy(&attr);
@@ -347,7 +348,7 @@ int process_exec_plan_thread(plan* plan)
 	for (i = 0; i < tdata_vec.size; ++i) {
 		struct thread_data* tdata = vec_at(&tdata_vec, i);
 		process* proc = tdata->proc_node->data;
-		fail_if_ (pthread_join(proc->thread, &status));
+		fail_if_(pthread_join(proc->thread, &status));
 	}
 
 	pthread_exit(NULL);

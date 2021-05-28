@@ -6,14 +6,14 @@
 record* record_construct(record* rec, unsigned idx, unsigned n, _Bool owns_recs)
 {
 	*rec = (record) {
-		 new_t_(vec, stringview) /* fields */
-		,NULL                    /* _field_data */
-		,csv_record_new()        /* libcsv_rec */
-		,{ 0 }                   /* rec_raw */
-		,0                       /* offset */
-		,0                       /* select_len */
-		,idx                     /* idx */
-		,0                       /* ref_count */
+	        new_t_(vec, stringview), /* fields */
+	        NULL,                    /* _field_data */
+	        csv_record_new(),        /* libcsv_rec */
+	        {0},                     /* rec_raw */
+	        0,                       /* offset */
+	        0,                       /* select_len */
+	        idx,                     /* idx */
+	        0                        /* ref_count */
 	};
 
 	vec_resize(rec->fields, n);

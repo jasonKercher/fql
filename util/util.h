@@ -15,63 +15,66 @@ extern "C" {
 
 #include "queue.h"
 
-typedef void(*generic_data_fn)(void*);
-typedef int(*int_generic_data_fn)(void*);
-
+typedef void (*generic_data_fn)(void*);
+typedef int (*int_generic_data_fn)(void*);
 
 /**
  * malloc wrapper that does error checking
  */
-#define malloc_(size_) ({            \
-	void* dest_ = malloc(size_); \
-	if (!dest_) {                \
-		perror("malloc");    \
-		exit(EXIT_FAILURE);  \
-	}                            \
-	dest_;                       \
-})
+#define malloc_(size_)                                                         \
+	({                                                                     \
+		void* dest_ = malloc(size_);                                   \
+		if (!dest_) {                                                  \
+			perror("malloc");                                      \
+			exit(EXIT_FAILURE);                                    \
+		}                                                              \
+		dest_;                                                         \
+	})
 
 /**
  * realloc wrapper that does error checking
  */
-#define realloc_(dest_, size_) ({                \
-	void* new_dest_ = realloc(dest_, size_); \
-	if (!new_dest_) {                        \
-		perror("realloc");               \
-		exit(EXIT_FAILURE);              \
-	}                                        \
-	dest_ = new_dest_;                       \
-	new_dest_;                               \
-})
+#define realloc_(dest_, size_)                                                 \
+	({                                                                     \
+		void* new_dest_ = realloc(dest_, size_);                       \
+		if (!new_dest_) {                                              \
+			perror("realloc");                                     \
+			exit(EXIT_FAILURE);                                    \
+		}                                                              \
+		dest_ = new_dest_;                                             \
+		new_dest_;                                                     \
+	})
 
 /**
  * strncpy but guaranteed to end with '\0'
  */
-#define strncpy_(dest_, src_, n_) { \
-	strncpy(dest_, src_, n_-1); \
-	dest_[n_-1] = '\0';         \
-}
+#define strncpy_(dest_, src_, n_)                                              \
+	{                                                                      \
+		strncpy(dest_, src_, n_ - 1);                                  \
+		dest_[n_ - 1] = '\0';                                          \
+	}
 
 /**
  * free pointer if not NULL and set to NULL
  */
-#define free_(ptr_) {              \
-	if (ptr_) {                \
-		free((void*)ptr_); \
-		ptr_ = NULL;       \
-	}                          \
-}
+#define free_(ptr_)                                                            \
+	{                                                                      \
+		if (ptr_) {                                                    \
+			free((void*)ptr_);                                     \
+			ptr_ = NULL;                                           \
+		}                                                              \
+	}
 
 /* Allow blank __VA_ARGS__ */
-#define optarg_(...) ,##__VA_ARGS__
+#define optarg_(...) , ##__VA_ARGS__
 
 /* allocate space and pass args to ${T_}_construct */
-#define new_(T_, ...) ({                     \
-	T_* alloc_ = malloc_(sizeof(T_));    \
-	T_##_construct(alloc_                \
-		      optarg_(__VA_ARGS__)); \
-	alloc_;                              \
-})
+#define new_(T_, ...)                                                          \
+	({                                                                     \
+		T_* alloc_ = malloc_(sizeof(T_));                              \
+		T_##_construct(alloc_ optarg_(__VA_ARGS__));                   \
+		alloc_;                                                        \
+	})
 
 /* same as new_ except second arg is a type that
  * we take the sizeof. For example:
@@ -82,46 +85,46 @@ typedef int(*int_generic_data_fn)(void*);
  *
  *     vec* v = new_(vec, sizeof(int));
  */
-#define new_t_(T_, data_T_, ...) ({          \
-	T_* alloc_ = malloc_(sizeof(T_));    \
-	T_##_construct(alloc_                \
-		      ,sizeof(data_T_)       \
-	              optarg_(__VA_ARGS__)); \
-	alloc_;                              \
-})
+#define new_t_(T_, data_T_, ...)                                               \
+	({                                                                     \
+		T_* alloc_ = malloc_(sizeof(T_));                              \
+		T_##_construct(alloc_, sizeof(data_T_) optarg_(__VA_ARGS__));  \
+		alloc_;                                                        \
+	})
 
 /* Will call ${T_}_destroy and free allocation */
-#define delete_(T_, p_, ...) {                     \
-	if (p_ != NULL) {                          \
-		T_##_destroy(p_                    \
-			     optarg_(__VA_ARGS__));\
-		free_(p_);                         \
-		p_ = NULL;                         \
-	}                                          \
-}
+#define delete_(T_, p_, ...)                                                   \
+	{                                                                      \
+		if (p_ != NULL) {                                              \
+			T_##_destroy(p_ optarg_(__VA_ARGS__));                 \
+			free_(p_);                                             \
+			p_ = NULL;                                             \
+		}                                                              \
+	}
 
 /* If the condition returns FQL_FAIL, then we
  * want to pass that up. A program relying on
  * user input has to check everything...
  */
-#define try_(condition_) ({      \
-	int ret_ = (condition_); \
-	if (ret_ == FQL_FAIL) {  \
-		return FQL_FAIL; \
-	}                        \
-	ret_;                    \
-})
+#define try_(condition_)                                                       \
+	({                                                                     \
+		int ret_ = (condition_);                                       \
+		if (ret_ == FQL_FAIL) {                                        \
+			return FQL_FAIL;                                       \
+		}                                                              \
+		ret_;                                                          \
+	})
 
-#define fail_if_(condition_) ({  \
-	int ret_ = (condition_); \
-	if (ret_) {              \
-		return FQL_FAIL; \
-	}                        \
-	ret_;                    \
-})
+#define fail_if_(condition_)                                                   \
+	({                                                                     \
+		int ret_ = (condition_);                                       \
+		if (ret_) {                                                    \
+			return FQL_FAIL;                                       \
+		}                                                              \
+		ret_;                                                          \
+	})
 
 #define num_compare_(a, b) (((a) > (b)) - ((a) < (b)))
-
 
 /**
  * this function is a wrapper for the standard strtol
@@ -162,7 +165,6 @@ void removecharat(char* s, int i);
  */
 char* randstr(char* s, const int n);
 
-
 /**
  * getnoext assigns a filename with no extension
  */
@@ -197,7 +199,7 @@ void string_to_lower(char* s);
 /**
  * copy BSD's strnstr
  */
-char* strnstr(const char *s, const char *find, size_t slen);
+char* strnstr(const char* s, const char* find, size_t slen);
 
 struct queue* dir_list_files(const char* dir);
 

@@ -10,7 +10,10 @@ void libcsv_writer_free(void* writer_data)
 	csv_writer_free(writer_data);
 }
 
-int libcsv_write_record(void* writer_data, vec* col_vec, vec* recs, FILE* outstream)
+int libcsv_write_record(void* writer_data,
+                        vec* col_vec,
+                        vec* recs,
+                        FILE* outstream)
 {
 	csv_writer* handle = writer_data;
 
@@ -23,7 +26,8 @@ int libcsv_write_record(void* writer_data, vec* col_vec, vec* recs, FILE* outstr
 	}
 
 	const struct csv_field delim = csv_writer_get_delim_field(handle);
-	const struct csv_field terminator = csv_writer_get_terminator_field(handle);
+	const struct csv_field terminator =
+	        csv_writer_get_terminator_field(handle);
 	int len = 0;
 
 	column** cols = vec_begin(col_vec);
@@ -39,19 +43,13 @@ int libcsv_write_record(void* writer_data, vec* col_vec, vec* recs, FILE* outstr
 			int quote_store = handle->quotes;
 			handle->quotes = QUOTE_NONE;
 			record** rec = vec_at(recs, cols[i]->src_idx);
-			struct csv_field field = {
-				 (*rec)->rec_raw.data
-				,(*rec)->rec_raw.len
-			};
+			struct csv_field field = {(*rec)->rec_raw.data,
+			                          (*rec)->rec_raw.len};
 			len += csv_write_field(handle, &field);
 			handle->quotes = quote_store;
-		}
-		else {
-			try_ (column_get_stringview(&sv, cols[i], recs));
-			struct csv_field field = {
-				 sv.data
-				,sv.len
-			};
+		} else {
+			try_(column_get_stringview(&sv, cols[i], recs));
+			struct csv_field field = {sv.data, sv.len};
 			len += csv_write_field(handle, &field);
 		}
 	}
@@ -69,12 +67,12 @@ int libcsv_write_record(void* writer_data, vec* col_vec, vec* recs, FILE* outstr
 writer* writer_construct(writer* self)
 {
 	*self = (writer) {
-		 WRITE_UNDEFINED        /* type */
-		,NULL                   /* writer_data */
-		,NULL                   /* write_record__ */
-		,NULL                   /* free__ */
-		,new_t_(vec, string)    /* raw_rec */
-		,{ 0 }                  /* file_name */
+	        WRITE_UNDEFINED,     /* type */
+	        NULL,                /* writer_data */
+	        NULL,                /* write_record__ */
+	        NULL,                /* free__ */
+	        new_t_(vec, string), /* raw_rec */
+	        {0}                  /* file_name */
 	};
 
 	string_construct(&self->file_name);
@@ -85,7 +83,7 @@ writer* writer_construct(writer* self)
 	self->type = WRITE_LIBCSV;
 	writer_assign(self);
 
-       return self;
+	return self;
 }
 
 void writer_destroy(writer* self)
@@ -104,9 +102,8 @@ void writer_destroy(writer* self)
 void writer_set_delimiter(writer* self, const char* delim)
 {
 	int ret = 0;
-	switch(self->type) {
-	case WRITE_LIBCSV:
-	{
+	switch (self->type) {
+	case WRITE_LIBCSV: {
 		csv_writer* csv = self->writer_data;
 		csv_writer_set_delim(csv, delim);
 		break;
@@ -116,13 +113,11 @@ void writer_set_delimiter(writer* self, const char* delim)
 	}
 }
 
-
 void writer_assign(writer* self)
 {
 	int ret = 0;
-	switch(self->type) {
-	case WRITE_LIBCSV:
-	{
+	switch (self->type) {
+	case WRITE_LIBCSV: {
 		csv_writer* data = csv_writer_new();
 		self->writer_data = data;
 		self->write_record__ = &libcsv_write_record;

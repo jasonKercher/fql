@@ -8,22 +8,25 @@
 #include "function.h"
 #include "util/util.h"
 
-column* column_construct(column* col, enum expr_type expr, void* data, const char* table_name)
+column* column_construct(column* col,
+                         enum expr_type expr,
+                         void* data,
+                         const char* table_name)
 {
 	*col = (column) {
-		 expr            /* expr */
-		,NULL            /* table */
-		,NULL            /* data_source */
-		,{ 0 }           /* name */
-		,{ 0 }           /* alias */
-		,{ 0 }           /* table_name */
-		,{ 0 }           /* buf */
-		,FIELD_UNDEFINED /* field_type */
-		,NULL            /* field */
-		,0               /* location */
-		,0               /* width */
-		,0               /* src_idx */
-		,false           /* descending */
+	        expr,            /* expr */
+	        NULL,            /* table */
+	        NULL,            /* data_source */
+	        {0},             /* name */
+	        {0},             /* alias */
+	        {0},             /* table_name */
+	        {0},             /* buf */
+	        FIELD_UNDEFINED, /* field_type */
+	        NULL,            /* field */
+	        0,               /* location */
+	        0,               /* width */
+	        0,               /* src_idx */
+	        false            /* descending */
 	};
 
 	string_construct(&col->buf);
@@ -55,7 +58,7 @@ void column_destroy(void* generic_col)
 {
 	column* col = generic_col;
 
-	switch(col->expr) {
+	switch (col->expr) {
 	case EXPR_FUNCTION:
 		delete_(function, col->field.fn);
 		break;
@@ -63,8 +66,7 @@ void column_destroy(void* generic_col)
 		/* TODO - this will double delete ?? */
 		delete_(aggregate, col->field.agg);
 		break;
-	default:
-		;
+	default:;
 	}
 
 	string_destroy(&col->name);
@@ -79,8 +81,7 @@ void column_cat_description(column* col, string* msg)
 	case EXPR_COLUMN_NAME:
 		string_append(msg, &col->alias);
 		break;
-	case EXPR_FUNCTION:
-	{
+	case EXPR_FUNCTION: {
 		function* func = col->field.fn;
 		string_strcat(msg, function_get_name(func));
 		string_push_back(msg, '(');
@@ -88,7 +89,7 @@ void column_cat_description(column* col, string* msg)
 		column** it = vec_begin(func->args);
 		for (; it != vec_end(func->args); ++it) {
 			if (it != vec_begin(func->args)) {
-			        string_push_back(msg, ',');
+				string_push_back(msg, ',');
 			}
 			column_cat_description(*it, msg);
 		}
@@ -105,15 +106,13 @@ void column_cat_description(column* col, string* msg)
 			string_append(msg, col->field.s);
 			string_push_back(msg, '\'');
 			break;
-		case FIELD_INT:
-		{
+		case FIELD_INT: {
 			char buf[20];
 			sprintf(buf, "%ld", col->field.i);
 			string_strcat(msg, buf);
 			break;
 		}
-		case FIELD_FLOAT:
-		{
+		case FIELD_FLOAT: {
 			char buf[30];
 			sprintf(buf, "%lf", col->field.f);
 			string_strcat(msg, buf);
@@ -121,7 +120,6 @@ void column_cat_description(column* col, string* msg)
 		}
 		default:
 			string_strcat(msg, "<<const>>");
-
 		}
 		break;
 	case EXPR_ASTERISK:
@@ -167,21 +165,20 @@ int column_get_int(long* ret, column* col, vec* recs)
 {
 	switch (col->expr) {
 	case EXPR_AGGREGATE:
-	case EXPR_COLUMN_NAME:
-	{
+	case EXPR_COLUMN_NAME: {
 		record** rec = vec_at(recs, col->src_idx);
 		if ((*rec)->fields->size <= col->data_source->location) {
 			string_clear(&col->buf);
 			*ret = 0;
 			return FQL_GOOD;
 		}
-		stringview* sv = vec_at((*rec)->fields, col->data_source->location);
+		stringview* sv =
+		        vec_at((*rec)->fields, col->data_source->location);
 		string_copy_from_stringview(&col->buf, sv);
 		fail_if_(str2long(ret, col->buf.data));
 		return FQL_GOOD;
 	}
-	case EXPR_FUNCTION:
-	{
+	case EXPR_FUNCTION: {
 		function* func = col->field.fn;
 		/* TODO: maybe struct this?? */
 		union field new_field;
@@ -190,12 +187,12 @@ int column_get_int(long* ret, column* col, vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		try_ (func->call__(func, &new_field, recs));
-		try_ (field_to_int(ret, &new_field, &new_field_type));
+		try_(func->call__(func, &new_field, recs));
+		try_(field_to_int(ret, &new_field, &new_field_type));
 		break;
 	}
 	case EXPR_CONST:
-		try_ (field_to_int(ret, &col->field, &col->field_type));
+		try_(field_to_int(ret, &col->field, &col->field_type));
 		break;
 	default:
 		fprintf(stderr, "col_get_int: Unexpected expression\n");
@@ -209,21 +206,20 @@ int column_get_float(double* ret, column* col, vec* recs)
 {
 	switch (col->expr) {
 	case EXPR_AGGREGATE:
-	case EXPR_COLUMN_NAME:
-	{
+	case EXPR_COLUMN_NAME: {
 		record** rec = vec_at(recs, col->src_idx);
 		if ((*rec)->fields->size <= col->data_source->location) {
 			string_clear(&col->buf);
 			*ret = 0;
 			return FQL_GOOD;
 		}
-		stringview* sv = vec_at((*rec)->fields, col->data_source->location);
+		stringview* sv =
+		        vec_at((*rec)->fields, col->data_source->location);
 		string_copy_from_stringview(&col->buf, sv);
-		fail_if_ (str2double(ret, col->buf.data));
+		fail_if_(str2double(ret, col->buf.data));
 		return FQL_GOOD;
 	}
-	case EXPR_FUNCTION:
-	{
+	case EXPR_FUNCTION: {
 		function* func = col->field.fn;
 		union field new_field;
 		enum field_type new_field_type = col->field_type;
@@ -231,12 +227,12 @@ int column_get_float(double* ret, column* col, vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		try_ (func->call__(func, &new_field, recs));
-		try_ (field_to_float(ret, &new_field, &new_field_type));
+		try_(func->call__(func, &new_field, recs));
+		try_(field_to_float(ret, &new_field, &new_field_type));
 		break;
 	}
 	case EXPR_CONST:
-		try_ (field_to_float(ret, &col->field, &col->field_type));
+		try_(field_to_float(ret, &col->field, &col->field_type));
 		break;
 	default:
 		return FQL_FAIL;
@@ -249,8 +245,7 @@ int column_get_stringview(stringview* ret, column* col, vec* recs)
 {
 	switch (col->expr) {
 	case EXPR_AGGREGATE:
-	case EXPR_COLUMN_NAME:
-	{
+	case EXPR_COLUMN_NAME: {
 		record** rec = vec_at(recs, col->src_idx);
 		if ((*rec)->fields->size <= col->data_source->location) {
 			string_clear(&col->buf);
@@ -258,13 +253,13 @@ int column_get_stringview(stringview* ret, column* col, vec* recs)
 			ret->len = 0;
 			return FQL_GOOD;
 		}
-		stringview* sv = vec_at((*rec)->fields, col->data_source->location);
+		stringview* sv =
+		        vec_at((*rec)->fields, col->data_source->location);
 		ret->data = sv->data;
 		ret->len = sv->len;
 		return FQL_GOOD;
 	}
-	case EXPR_FUNCTION:
-	{
+	case EXPR_FUNCTION: {
 		function* func = col->field.fn;
 		union field new_field;
 		enum field_type new_field_type = col->field_type;
@@ -272,12 +267,12 @@ int column_get_stringview(stringview* ret, column* col, vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		try_ (func->call__(func, &new_field, recs));
-		try_ (field_to_stringview(ret, &new_field, &new_field_type));
+		try_(func->call__(func, &new_field, recs));
+		try_(field_to_stringview(ret, &new_field, &new_field_type));
 		break;
 	}
 	case EXPR_CONST:
-		try_ (field_to_stringview(ret, &col->field, &col->field_type));
+		try_(field_to_stringview(ret, &col->field, &col->field_type));
 		break;
 	default:
 		return FQL_FAIL;
@@ -285,4 +280,3 @@ int column_get_stringview(stringview* ret, column* col, vec* recs)
 
 	return FQL_GOOD;
 }
-

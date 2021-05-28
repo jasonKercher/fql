@@ -15,12 +15,12 @@ int _select_record_order_api(fqlselect*, struct vec* rec);
 fqlselect* fqlselect_construct(fqlselect* self)
 {
 	*self = (fqlselect) {
-		 OP_SELECT              /* oper_type */
-		,NULL                   /* api */
-		,new_(schema)           /* schema */
-		,new_(writer)           /* writer */
-		,&_select_record        /* select_record__ */
-		,0                      /* offset */
+	        OP_SELECT,       /* oper_type */
+	        NULL,            /* api */
+	        new_(schema),    /* schema */
+	        new_(writer),    /* writer */
+	        &_select_record, /* select_record__ */
+	        0                /* offset */
 	};
 
 	return self;
@@ -61,7 +61,10 @@ void _resize_raw_rec(vec* raw_rec, unsigned size)
 }
 
 /* this should be in schema.c */
-int _expand_asterisk(vec* col_vec, table* table, unsigned src_idx, unsigned* col_idx)
+int _expand_asterisk(vec* col_vec,
+                     table* table,
+                     unsigned src_idx,
+                     unsigned* col_idx)
 {
 	vec* src_col_vec = table->schema->columns;
 
@@ -70,7 +73,8 @@ int _expand_asterisk(vec* col_vec, table* table, unsigned src_idx, unsigned* col
 	column** it = vec_begin(src_col_vec);
 	for (; it != vec_end(src_col_vec); ++it) {
 		//string* col_name = string_from_string(&(*it)->alias);
-		column* new_col = new_(column, EXPR_COLUMN_NAME, (*it)->alias.data, "");
+		column* new_col =
+		        new_(column, EXPR_COLUMN_NAME, (*it)->alias.data, "");
 		new_col->data_source = *it;
 		new_col->src_idx = src_idx;
 		new_col->field_type = (*it)->field_type;
@@ -95,10 +99,11 @@ void _expand_asterisks(query* query, _Bool force_expansion)
 
 		table* table = vec_at(query->sources, (*col)->src_idx);
 
-		if (table->subquery == NULL  /* is not a subquery source */
+		if (table->subquery == NULL /* is not a subquery source */
 		    && !force_expansion
-		    && query->query_id == 0  /* is in main query */
-		    && string_eq(table->schema->delimiter, self->schema->delimiter)) {
+		    && query->query_id == 0 /* is in main query */
+		    && string_eq(table->schema->delimiter,
+		                 self->schema->delimiter)) {
 			continue;
 		}
 
@@ -131,7 +136,7 @@ int fqlselect_connect_api(query* query, vec* api)
 	unsigned i = 0;
 	for (; i < cols->size; ++i) {
 		struct fql_field* field = vec_at(api, i);
-		switch(it[i]->field_type) {
+		switch (it[i]->field_type) {
 		case FIELD_INT:
 			field->type = FQL_INT;
 			break;
@@ -220,7 +225,7 @@ int fqlselect_close(fqlselect* self)
 {
 	/* TODO: move to writer.c */
 	int ret = csv_writer_close(self->writer->writer_data);
-	fail_if_ (ret == CSV_FAIL);
+	fail_if_(ret == CSV_FAIL);
 	return FQL_GOOD;
 }
 
@@ -239,12 +244,15 @@ void fqlselect_preop(fqlselect* self, query* query)
 	column** it = vec_begin(self->schema->columns);
 	for (; it != vec_end(self->schema->columns); ++it) {
 		if ((*it)->expr == EXPR_ASTERISK) {
-			table* aster_src = vec_at(query->sources, (*it)->src_idx);
+			table* aster_src =
+			        vec_at(query->sources, (*it)->src_idx);
 			vec* aster_cols = aster_src->schema->columns;
 			column** it2 = vec_begin(aster_cols);
 			for (; it2 != vec_end(aster_cols); ++it2) {
-				column* field_col = new_(column, EXPR_CONST, NULL, "");
-				string* field_str = string_from_string(&(*it2)->alias);
+				column* field_col =
+				        new_(column, EXPR_CONST, NULL, "");
+				string* field_str =
+				        string_from_string(&(*it2)->alias);
 				field_col->field.s = field_str;
 				field_col->field_type = FIELD_STRING;
 				vec_push_back(&header, &field_col);
@@ -284,9 +292,9 @@ int _select_record(fqlselect* self, vec* recs)
 	vec* col_vec = self->schema->columns;
 
 	int ret = writer->write_record__(writer->writer_data,
-			                 col_vec,
-			                 recs,
-			                 NULL);
+	                                 col_vec,
+	                                 recs,
+	                                 NULL);
 
 	if (ret == FQL_FAIL || recs == NULL) {
 		return ret;
@@ -314,22 +322,20 @@ int _select_record_api(fqlselect* self, struct vec* recs)
 		struct fql_field* field = vec_at(self->api, i);
 		switch (cols[i]->field_type) {
 		case FIELD_INT:
-			try_ (column_get_int(&field->data.i, cols[i], recs));
+			try_(column_get_int(&field->data.i, cols[i], recs));
 			break;
 		case FIELD_FLOAT:
-			try_ (column_get_float(&field->data.f, cols[i], recs));
+			try_(column_get_float(&field->data.f, cols[i], recs));
 			break;
-		case FIELD_STRING:
-		{
+		case FIELD_STRING: {
 			stringview sv;
-			try_ (column_get_stringview(&sv, cols[i], recs));
+			try_(column_get_stringview(&sv, cols[i], recs));
 			string* s = field->_in;
 			string_copy_from_stringview(s, &sv);
 			field->data.s = s->data;
 			break;
 		}
-		default:
-			;
+		default:;
 		}
 	}
 
@@ -347,33 +353,29 @@ int _select_record_order_api(fqlselect* self, struct vec* recs)
 	for (; i < col_vec->size; ++i) {
 		struct fql_field* field = vec_at(self->api, i);
 		switch (cols[i]->field_type) {
-		case FIELD_INT:
-		 {
+		case FIELD_INT: {
 			long num = 0;
-			try_ (column_get_int(&num, cols[i], recs));
+			try_(column_get_int(&num, cols[i], recs));
 			fwrite(&num, sizeof(num), 1, order_input);
 			len += sizeof(num);
 			break;
-		 }
-		case FIELD_FLOAT:
-		 {
+		}
+		case FIELD_FLOAT: {
 			double num = 0;
-			try_ (column_get_float(&num, cols[i], recs));
+			try_(column_get_float(&num, cols[i], recs));
 			fwrite(&num, sizeof(num), 1, order_input);
 			len += sizeof(num);
 			break;
-		 }
-		case FIELD_STRING:
-		 {
+		}
+		case FIELD_STRING: {
 			stringview sv;
-			try_ (column_get_stringview(&sv, cols[i], recs));
+			try_(column_get_stringview(&sv, cols[i], recs));
 			fwrite(&sv.len, sizeof(sv.len), 1, order_input);
 			fwrite(sv.data, 1, sv.len, order_input);
 			len += sizeof(sv.len) + sv.len;
 			break;
-		 }
-		default:
-			;
+		}
+		default:;
 		}
 	}
 	record** rec = vec_begin(recs);

@@ -10,7 +10,7 @@ vec* op_get_validation_list(void* op)
 
 	switch (*type) {
 	case OP_SELECT:
-		return ((fqlselect*) op)->schema->columns;
+		return ((fqlselect*)op)->schema->columns;
 	default:
 		return NULL;
 	}
@@ -29,8 +29,7 @@ void op_preop(struct fql_handle* fql)
 			fqlselect_preop(query->op, query);
 		}
 		break;
-	default:
-		;
+	default:;
 	}
 }
 
@@ -50,8 +49,7 @@ void op_set_delim(enum op* op, const char* delim)
 	case OP_SELECT:
 		fqlselect_set_delim((fqlselect*)op, delim);
 		break;
-	default:
-		;
+	default:;
 	}
 }
 
@@ -73,8 +71,7 @@ void op_preflight(query* query)
 	case OP_SELECT:
 		fqlselect_preflight(query->op, query);
 		break;
-	default:
-		;
+	default:;
 	}
 }
 
@@ -86,8 +83,7 @@ void op_apply_process(query* query, plan* plan)
 	case OP_SELECT:
 		fqlselect_apply_process(query, plan);
 		break;
-	default:
-		;
+	default:;
 	}
 }
 
@@ -97,7 +93,6 @@ void op_destroy(enum op* op)
 	case OP_SELECT:
 		fqlselect_destroy((fqlselect*)op);
 		break;
-	default:
-		;
+	default:;
 	}
 }

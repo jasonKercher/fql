@@ -12,7 +12,7 @@ struct process;
 struct order;
 struct _entry;
 
-typedef int(*order_select_fn)(struct order*);
+typedef int (*order_select_fn)(struct order*);
 
 struct order {
 	struct vec columns;
@@ -39,4 +39,4 @@ void order_connect_api(struct query*, struct vec*);
 int order_add_record(struct order*, struct vec*);
 int order_sort(struct order*);
 
-#endif  /* ORDER_H */
+#endif /* ORDER_H */

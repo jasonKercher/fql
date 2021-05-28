@@ -38,7 +38,8 @@ struct column {
 };
 typedef struct column column;
 
-struct column* column_construct(struct column*, enum expr_type, void*, const char*);
+struct column*
+column_construct(struct column*, enum expr_type, void*, const char*);
 void column_destroy(void*);
 
 void column_cat_description(struct column* col, string*);

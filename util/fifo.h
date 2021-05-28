@@ -70,5 +70,4 @@ void fifo_wait_for_add(struct fifo*);
 void fifo_wait_for_get(struct fifo*);
 void fifo_wait_for_work(struct fifo*);
 
-
-#endif  /* FIFO_H */
+#endif /* FIFO_H */

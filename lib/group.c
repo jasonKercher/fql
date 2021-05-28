@@ -7,9 +7,9 @@ group* group_construct(group* self)
 {
 	memset(self, 0, sizeof(*self));
 	compositemap_construct_(&self->val_map,
-			        unsigned,
-				128,
-				HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
+	                        unsigned,
+	                        128,
+	                        HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 	vec_construct_(&self->columns, column*);
 	vec_construct_(&self->aggregates, aggregate*);
 	vec_construct_(&self->_composite, stringview);
@@ -21,7 +21,7 @@ group* group_construct(group* self)
 void group_destroy(group* self)
 {
 	if (self->expr_map != NULL) {
-		delete_ (compositemap, self->expr_map);
+		delete_(compositemap, self->expr_map);
 	}
 	compositemap_destroy(&self->val_map);
 	vec_destroy(&self->columns);
@@ -55,7 +55,7 @@ int _add_agg_result(group* self, vec* recs)
 	aggregate** it = vec_begin(&self->aggregates);
 	for (; it != vec_end(&self->aggregates); ++it) {
 		struct aggresult* result = vec_add_one(&(*it)->results);
-		*result = (struct aggresult) { 0 };
+		*result = (struct aggresult) {0};
 		if ((*it)->data_type == FIELD_STRING) {
 			string_construct(&result->data.s);
 		}
@@ -86,24 +86,23 @@ int group_record(group* self, vec* recs)
 		}
 		switch (cols[i]->field_type) {
 		case FIELD_STRING:
-			try_ (column_get_stringview(sv, cols[i], recs));
-			flex_push_back(&self->group_data, (void*) sv->data, sv->len);
+			try_(column_get_stringview(sv, cols[i], recs));
+			flex_push_back(&self->group_data,
+			               (void*)sv->data,
+			               sv->len);
 			break;
-		case FIELD_INT:
-		 {
+		case FIELD_INT: {
 			long num_i = 0;
-			try_ (column_get_int(&num_i, cols[i], recs));
+			try_(column_get_int(&num_i, cols[i], recs));
 			flex_push_back_str_int(&self->group_data, num_i);
 			break;
-		 }
-		case FIELD_FLOAT:
-		 {
+		}
+		case FIELD_FLOAT: {
 			double num_f = 0;
-			try_ (column_get_float(&num_f, cols[i], recs));
+			try_(column_get_float(&num_f, cols[i], recs));
 			flex_push_back_str_float(&self->group_data, num_f);
-		 }
-		default:
-			;
+		}
+		default:;
 		}
 	}
 
@@ -116,8 +115,8 @@ int group_record(group* self, vec* recs)
 	int ret = 0;
 	if (idx_ptr == NULL) {
 		compositemap_set(&self->val_map,
-				 &self->_composite,
-				 &group_count);
+		                 &self->_composite,
+		                 &group_count);
 		_add_agg_result(self, recs);
 		ret = 1;
 	} else {
@@ -146,8 +145,7 @@ void _read_aggregate(column* agg_col, string* raw, stringview* sv, size_t idx)
 		break;
 	case FIELD_STRING:
 		stringview_set_string(sv, &result->data.s);
-	default:
-		;
+	default:;
 	}
 }
 
@@ -167,9 +165,9 @@ int group_dump_record(group* self, record* rec)
 	for (; i < self->columns.size; ++i) {
 		if (group_cols[i]->expr == EXPR_AGGREGATE) {
 			_read_aggregate(group_cols[i],
-					vec_at(rec->_field_data, i),
-					&rec_svs[i],
-					self->_dump_idx);
+			                vec_at(rec->_field_data, i),
+			                &rec_svs[i],
+			                self->_dump_idx);
 			continue;
 		}
 		rec_svs[i] = flex_pair_at(&self->group_data, idx++);

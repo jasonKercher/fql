@@ -24,7 +24,7 @@ void* stack_pop(struct stack** head);
 struct stack* stack_top(struct stack* node);
 struct stack* stack_bottom(struct stack* node);
 int stack_count(struct stack* head);
-void stack_free_func(struct stack**, void(*)(void*));
+void stack_free_func(struct stack**, void (*)(void*));
 void stack_free_data(struct stack** head);
 void stack_free(struct stack** head);
 

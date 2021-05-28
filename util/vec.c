@@ -6,10 +6,10 @@
 vec* vec_construct(vec* self, size_t elem_size)
 {
 	*self = (vec) {
-		 NULL           /* data */
-		,0              /* size */
-		,2              /* _alloc */
-		,elem_size      /* _elem_s */
+	        NULL,     /* data */
+	        0,        /* size */
+	        2,        /* _alloc */
+	        elem_size /* _elem_s */
 	};
 
 	/* allocate space for first element and
@@ -112,7 +112,7 @@ void vec_shrink_to_fit(vec* self)
 
 void vec_pop_back(vec* self)
 {
-	if (self->size == 0) { 
+	if (self->size == 0) {
 		return;
 	}
 	--self->size;
@@ -186,11 +186,7 @@ void vec_sort_r(vec* self, qsort_r_cmp_fn cmp__, void* context)
 	if (self->size == 0) {
 		return;
 	}
-	qsort_r(self->data,
-	        self->size, 
-	        self->_elem_size,
-	        cmp__,
-	        context);
+	qsort_r(self->data, self->size, self->_elem_size, cmp__, context);
 }
 
 

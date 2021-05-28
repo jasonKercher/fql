@@ -31,17 +31,17 @@ hashmap* hashmap_construct(hashmap* m, const unsigned elem_size, size_t limit, c
 	limit = _next_power_of_2(limit);
 
 	*m = (hashmap) {
-		 { 0 }          /* values */
-		,NULL           /* _entries */
-		,NULL           /* _keys */
-		,NULL           /* _key_temp */
-		,NULL           /* get_hash__ */
-		,limit          /* _limit */
-		,NULL           /* _keybuf */
-		,0              /* _keybuf_head */
-		,limit          /* _keybuf_len */
-		,elem_size      /* elem_size */
-		,props          /* props */
+	        {0},       /* values */
+	        NULL,      /* _entries */
+	        NULL,      /* _keys */
+	        NULL,      /* _key_temp */
+	        NULL,      /* get_hash__ */
+	        limit,     /* _limit */
+	        NULL,      /* _keybuf */
+	        0,         /* _keybuf_head */
+	        limit,     /* _keybuf_len */
+	        elem_size, /* elem_size */
+	        props      /* props */
 	};
 
 	switch (m->props) {

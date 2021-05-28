@@ -5,10 +5,10 @@
 dnode* dnode_construct(dnode* node, void* data)
 {
 	*node = (dnode) {
-		 data           /* data */
-		,{NULL, NULL}   /* out */
-		,0              /* visit_count */
-		,false          /* is_root */
+	        data,         /* data */
+	        {NULL, NULL}, /* out */
+	        0,            /* visit_count */
+	        false         /* is_root */
 	};
 
 	return node;
@@ -19,12 +19,12 @@ void dnode_destroy(dnode* node) { }
 dgraph* dgraph_construct(dgraph* graph)
 {
 	*graph = (dgraph) {
-		 new_t_(vec, dnode*)    /* nodes */
-		,NULL                   /* newest */
-		,new_t_(fifo, dnode*, 5)/* _trav */
-		,new_t_(vec, dnode*)    /* _roots */
-		,0                      /* _root_idx */
-		,false                  /* _roots_good */
+	        new_t_(vec, dnode*),     /* nodes */
+	        NULL,                    /* newest */
+	        new_t_(fifo, dnode*, 5), /* _trav */
+	        new_t_(vec, dnode*),     /* _roots */
+	        0,                       /* _root_idx */
+	        false                    /* _roots_good */
 	};
 
 	return graph;

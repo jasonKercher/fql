@@ -24,7 +24,7 @@ void* queue_dequeue(struct queue** head);
 struct queue* queue_front(struct queue* node);
 struct queue* queue_back(struct queue* node);
 int queue_count(struct queue* head);
-void queue_free_func(struct queue**, void(*)(void*));
+void queue_free_func(struct queue**, void (*)(void*));
 void queue_free_data(struct queue** head);
 void queue_free(struct queue** head);
 

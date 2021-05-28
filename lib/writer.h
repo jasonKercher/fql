@@ -33,4 +33,4 @@ void writer_destroy(struct writer*);
 void writer_set_delimiter(struct writer*, const char*);
 void writer_assign(struct writer*);
 
-#endif  /* WRTIER_H */
+#endif /* WRTIER_H */

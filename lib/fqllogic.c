@@ -5,34 +5,35 @@
 
 #include "util/stringview.h"
 
-#define get_integers(n0_, n1_) {                                \
-	if (column_get_int(&n0_, logic->col[0], recs)) {        \
-		return FQL_FAIL;                                \
-	}                                                       \
-	if (column_get_int(&n1_, logic->col[1], recs)) {        \
-		return FQL_FAIL;                                \
-	}                                                       \
-}
+#define get_integers(n0_, n1_)                                                 \
+	{                                                                      \
+		if (column_get_int(&n0_, logic->col[0], recs)) {               \
+			return FQL_FAIL;                                       \
+		}                                                              \
+		if (column_get_int(&n1_, logic->col[1], recs)) {               \
+			return FQL_FAIL;                                       \
+		}                                                              \
+	}
 
-#define get_floats(n0_, n1_) {                                  \
-	if (column_get_float(&n0_, logic->col[0], recs)) {      \
-		return FQL_FAIL;                                \
-	}                                                       \
-	if (column_get_float(&n1_, logic->col[1], recs)) {      \
-		return FQL_FAIL;                                \
-	}                                                       \
-}
+#define get_floats(n0_, n1_)                                                   \
+	{                                                                      \
+		if (column_get_float(&n0_, logic->col[0], recs)) {             \
+			return FQL_FAIL;                                       \
+		}                                                              \
+		if (column_get_float(&n1_, logic->col[1], recs)) {             \
+			return FQL_FAIL;                                       \
+		}                                                              \
+	}
 
-#define get_stringviews(s0_, s1_) {                             \
-	if (column_get_stringview(&s0_, logic->col[0], recs)) { \
-		return FQL_FAIL;                                \
-	}                                                       \
-	if (column_get_stringview(&s1_, logic->col[1], recs)) { \
-		return FQL_FAIL;                                \
-	}                                                       \
-}
-
-
+#define get_stringviews(s0_, s1_)                                              \
+	{                                                                      \
+		if (column_get_stringview(&s0_, logic->col[0], recs)) {        \
+			return FQL_FAIL;                                       \
+		}                                                              \
+		if (column_get_stringview(&s1_, logic->col[1], recs)) {        \
+			return FQL_FAIL;                                       \
+		}                                                              \
+	}
 
 int fql_logic_eq_i(logic* logic, vec* recs)
 {

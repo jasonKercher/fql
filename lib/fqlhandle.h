@@ -24,7 +24,7 @@ struct fql_handle {
 };
 
 #ifdef __cplusplus
-}  /* extern "C" */
+} /* extern "C" */
 #endif
 
-#endif  /* FQL_HANDLE_H */
+#endif /* FQL_HANDLE_H */

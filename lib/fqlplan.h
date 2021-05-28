@@ -11,7 +11,7 @@ struct fql_plan {
 	struct dgraph* processes;
 	struct dnode* op_true;
 	struct dnode* op_false;
-	struct dnode* current;  /* temp */
+	struct dnode* current; /* temp */
 	struct vec* recycle_groups;
 	size_t rows_affected;
 	int source_count;

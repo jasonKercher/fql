@@ -22,25 +22,24 @@ query* query_new(int id)
 query* query_construct(query* self, int id)
 {
 	*self = (query) {
-		 NULL                   /* plan */
-		,new_t_(vec, table)     /* sources */
-		,NULL                   /* where */
-		,new_t_(vec, column*)   /* validation_list */
-		,new_(group)            /* groupby */
-		,NULL                   /* distinct */
-		,NULL                   /* orderby */
-		//,NULL                   /* into_name */
-		,NULL                   /* op */
-		,id                     /* query_id */
-		,0                      /* query_total */
+	        NULL,                 /* plan */
+	        new_t_(vec, table),   /* sources */
+	        NULL,                 /* where */
+	        new_t_(vec, column*), /* validation_list */
+	        new_(group),          /* groupby */
+	        NULL,                 /* distinct */
+	        NULL,                 /* orderby */
+	        NULL,                 /* op */
+	        id,                   /* query_id */
+	        0,                    /* query_total */
 
-		,NULL                   /* logic_stack */
-		,NULL                   /* joinable */
-		,NULL                   /* function_stack */
+	        NULL, /* logic_stack */
+	        NULL, /* joinable */
+	        NULL, /* function_stack */
 
-		,MODE_UNDEFINED         /* mode */
-		,LOGIC_UNDEFINED        /* logic_mode */
-		,JOIN_FROM              /* join */
+	        MODE_UNDEFINED,  /* mode */
+	        LOGIC_UNDEFINED, /* logic_mode */
+	        JOIN_FROM        /* join */
 	};
 
 	return self;
@@ -100,13 +99,14 @@ int _distribute_column(query* self, column* col)
 		function_add_column(fn_col->field.fn, col);
 		return FQL_GOOD;
 	}
-	switch(self->mode) {
+	switch (self->mode) {
 	case MODE_SELECT:
 		fqlselect_add_column(self->op, col);
 
 		/* TODO */
 		if (col->expr == EXPR_AGGREGATE && self->distinct) {
-			fputs("currently unsafe to mix DISTINCT and GROUP BY\n", stderr);
+			fputs("currently unsafe to mix DISTINCT and GROUP BY\n",
+			      stderr);
 		}
 		if (self->distinct) {
 			group_add_column(self->distinct, col);
@@ -119,12 +119,11 @@ int _distribute_column(query* self, column* col)
 	case MODE_GROUPBY:
 		group_add_column(self->groupby, col);
 		break;
-	case MODE_AGGREGATE:
-	 {
+	case MODE_AGGREGATE: {
 		aggregate** back = vec_back(&self->groupby->aggregates);
 		aggregate_add_column(*back, col);
 		break;
-	 }
+	}
 	case MODE_ORDERBY:
 		order_add_column(self->orderby, col);
 		break;
@@ -163,29 +162,30 @@ int query_add_constant(query* self, const char* s, int len)
 	enum field_type type = FIELD_UNDEFINED;
 	if (s[0] == '\'') {
 		type = FIELD_STRING;
-		string_strcpy(&col->buf, s+1);
-		((char*) col->buf.data)[len-2] = '\0';
+		string_strcpy(&col->buf, s + 1);
+		((char*)col->buf.data)[len - 2] = '\0';
 		--col->buf.size;
 		col->field.s = &col->buf;
 	} else {
 		if (strhaschar(s, '.')) {
 			type = FIELD_FLOAT;
-			fail_if_ (str2double(&col->field.f, s));
+			fail_if_(str2double(&col->field.f, s));
 		} else {
 			type = FIELD_INT;
-			fail_if_ (str2long(&col->field.i, s));
+			fail_if_(str2long(&col->field.i, s));
 		}
 	}
 
 	col->field_type = type;
 	if (_distribute_column(self, col)) {
-		fprintf(stderr, "unhandled constant expression: %d\n", self->mode);
+		fprintf(stderr,
+		        "unhandled constant expression: %d\n",
+		        self->mode);
 		exit(EXIT_FAILURE);
 	}
 
 	return FQL_GOOD;
 }
-
 
 /**
  * create new table and source object
@@ -194,9 +194,7 @@ int query_add_constant(query* self, const char* s, int len)
  * object->schema->database->server
  * we ignore database and server for now.
  */
-void query_add_source(query* self,
-		      stack** source_stack,
-		      const char* alias)
+void query_add_source(query* self, stack** source_stack, const char* alias)
 {
 	char* table_name = stack_pop(source_stack);
 	char* schema_name = stack_pop(source_stack);
@@ -204,30 +202,25 @@ void query_add_source(query* self,
 	stack_free_data(source_stack);
 	table* new_table = vec_add_one(self->sources);
 	table_construct(new_table,
-			table_name,
-			alias,
-			self->sources->size - 1,
-			self->join);
+	                table_name,
+	                alias,
+	                self->sources->size - 1,
+	                self->join);
 
 	if (schema_name != NULL) {
-		strncpy_(new_table->schema->name
-			,schema_name
-			,TABLE_NAME_MAX);
+		strncpy_(new_table->schema->name, schema_name, TABLE_NAME_MAX);
 		free_(schema_name);
 	}
 }
 
-void query_add_subquery_source(query* self,
-			       query* subquery,
-			       const char* alias)
+void query_add_subquery_source(query* self, query* subquery, const char* alias)
 {
 	table* new_table = vec_add_one(self->sources);
 	table_construct_subquery(new_table,
-				 subquery,
-				 alias,
-				 self->sources->size - 1,
-				 self->join);
-
+	                         subquery,
+	                         alias,
+	                         self->sources->size - 1,
+	                         self->join);
 }
 
 void query_apply_table_alias(query* self, const char* alias)
@@ -248,10 +241,10 @@ void query_set_distinct(query* self)
 
 int query_set_into_table(query* self, const char* table_name)
 {
-	if (access(table_name, F_OK) == 0 ) {
+	if (access(table_name, F_OK) == 0) {
 		fprintf(stderr,
-			"Cannot SELECT INTO: file `%s' already exists\n",
-			table_name);
+		        "Cannot SELECT INTO: file `%s' already exists\n",
+		        table_name);
 		return FQL_FAIL;
 	}
 	return fqlselect_writer_open(self->op, table_name);
@@ -267,7 +260,7 @@ int query_add_aggregate(query* self, enum aggregate_function agg_type)
 
 	column* op_col = new_(column, EXPR_AGGREGATE, agg, "");
 	op_col->data_source = group_col;
-	try_ (_distribute_column(self, op_col));
+	try_(_distribute_column(self, op_col));
 
 	return FQL_GOOD;
 }
@@ -279,8 +272,8 @@ void _add_function(query* self, function* func, enum field_type type)
 
 	if (_distribute_column(self, col)) {
 		fprintf(stderr,
-			"unhandled function: %s\n",
-			function_get_name(func));
+		        "unhandled function: %s\n",
+		        function_get_name(func));
 		exit(EXIT_FAILURE);
 	}
 	stack_push(&self->function_stack, col);
@@ -293,9 +286,7 @@ int query_init_op(query* self)
 		self->op = new_(fqlselect);
 		break;
 	default:
-		fprintf(stderr,
-		        "unexpected operation mode `%d'\n",
-			self->mode);
+		fprintf(stderr, "unexpected operation mode `%d'\n", self->mode);
 		return FQL_FAIL;
 	}
 	return FQL_GOOD;
@@ -314,17 +305,19 @@ int query_init_orderby(query* self)
 	return (self->orderby->out_file) ? FQL_GOOD : FQL_FAIL;
 }
 
-void query_set_order_desc(query* self) 
+void query_set_order_desc(query* self)
 {
 	column** col = vec_back(&self->orderby->columns);
 	(*col)->descending = true;
 }
 
-int query_enter_function(query* self, enum scalar_function scalar_type, int char_as_byte)
+int query_enter_function(query* self,
+                         enum scalar_function scalar_type,
+                         int char_as_byte)
 {
 	enum field_type type = FIELD_UNDEFINED;
 	function* func = new_(function, scalar_type, &type, char_as_byte);
-	fail_if_ (func->call__ == NULL);
+	fail_if_(func->call__ == NULL);
 	_add_function(self, func, type);
 
 	return FQL_GOOD;
@@ -423,11 +416,9 @@ void exit_search_not(query* self)
 	 * until all logic columns have been resolved
 	 * to a source.
 	 */
-	if (top->condition != NULL &&
-	    top->condition->comp_type == COMP_EQ &&
-	    top->condition->col[0]->expr != EXPR_CONST &&
-	    top->condition->col[1]->expr != EXPR_CONST) {
+	if (top->condition != NULL && top->condition->comp_type == COMP_EQ
+	    && top->condition->col[0]->expr != EXPR_CONST
+	    && top->condition->col[1]->expr != EXPR_CONST) {
 		vec_push_back(self->joinable, &top->condition);
 	}
-
 }
