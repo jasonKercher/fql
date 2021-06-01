@@ -17,11 +17,9 @@ static const char* help_string = "\n No Help here !\n\n";
 
 static int use_api = 0;
 
-void clean_up(int x)
-{
-}
+void clean_up(int x) { }
 
-int main (int argc, char **argv)
+int main(int argc, char** argv)
 {
 	///* Set up signal handling */
 	//struct sigaction act;
@@ -39,50 +37,52 @@ int main (int argc, char **argv)
 
 	struct fql_handle* handle = fql_new();
 
-	static struct option long_options[] =
-	{
-		/* long option, (no) arg, 0, short option */
-		//{"verbose", no_argument, 0, 'v'},
-		{"api", no_argument, 0, 'A'},
-		{"char-as-byte", no_argument, 0, 'b'},
-		{"force-cartesian", no_argument, 0, 'C'},
-		{"dry-run", no_argument, 0, 'd'},
-		{"no-header", no_argument, 0, 'h'},
-		{"help", no_argument, 0, 'H'},
-		{"override-warnings", no_argument, 0, 'O'},
-		{"print-plan", no_argument, 0, 'p'},
-		{"in-delimiter", required_argument, 0, 's'},
-		{"out-delimiter", required_argument, 0, 'S'},
-		{"threading", no_argument, 0, 't'},
-		{"verbose", no_argument, 0, 'v'},
-		{0, 0, 0, 0}
-	};
+	static struct option long_options[] = {
+	        /* long option, (no) arg, 0, short option */
+	        //{"verbose", no_argument, 0, 'v'},
+	        {"api", no_argument, 0, 'A'},
+	        {"char-as-byte", no_argument, 0, 'b'},
+	        {"force-cartesian", no_argument, 0, 'C'},
+	        {"dry-run", no_argument, 0, 'd'},
+	        {"no-header", no_argument, 0, 'h'},
+	        {"help", no_argument, 0, 'H'},
+	        {"override-warnings", no_argument, 0, 'O'},
+	        {"print-plan", no_argument, 0, 'p'},
+	        {"in-delimiter", required_argument, 0, 's'},
+	        {"out-delimiter", required_argument, 0, 'S'},
+	        {"threading", no_argument, 0, 't'},
+	        {"verbose", no_argument, 0, 'v'},
+	        {"strict", no_argument, 0, 'X'},
+	        {0, 0, 0, 0}};
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
 
-	while ( (c = getopt_long (argc, argv, "AbCdhHOps:S:tv",
-					long_options, &option_index)) != -1)
-			_parse_args(handle, c);
-
+	while ((c = getopt_long(argc,
+	                        argv,
+	                        "AbCdhHOps:S:tvX",
+	                        long_options,
+	                        &option_index))
+	       != -1)
+		_parse_args(handle, c);
 
 	char query[1024] = "";
 	char* line = NULL;
 
 	/* Get input from readline if we are interactive */
-	if(isatty(STDIN_FILENO)) {
+	if (isatty(STDIN_FILENO)) {
 		/* Send readline output to /dev/tty */
 		FILE* devtty = fopen("/dev/tty", "w");
 		rl_outstream = devtty;
 		do {
 			line = readline("");
-			if(line)
+			if (line)
 				sprintf(query, "%s\n%s", query, line);
 			else
 				break;
-		} while(1);
+		} while (1);
 	} else {
 		size_t n = 0;
-		while(getline(&line, &n, stdin) != -1)
+		while (getline(&line, &n, stdin) != -1)
 			strcat(query, line);
 	}
 
@@ -93,7 +93,6 @@ int main (int argc, char **argv)
 	if (!use_api) {
 		return fql_exec(handle, query);
 	}
-
 
 	/* Using API will only execute first query.
 	 * This is more of a debugging tool and
@@ -158,11 +157,14 @@ void _parse_args(struct fql_handle* handle, char c)
 	case 'S':
 		fql_set_out_delim(handle, optarg);
 		break;
+	case 't':
+		fql_set_threading(handle, 1);
+		break;
 	case 'v':
 		fql_set_verbose(handle, 1);
 		break;
-	case 't':
-		fql_set_threading(handle, 1);
+	case 'X':
+		fql_set_strict_mode(handle, 1);
 		break;
 	default:
 		abort();

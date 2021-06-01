@@ -74,6 +74,19 @@ START_TEST(test_failure_columns)
 	/* overwrite table name by alias */
 	plan_count = fql_make_plans(fql, "select t1.foo from t1 x");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/** T4 header 
+foo	bar	foo
+	**/
+
+	/* strict mode failure */
+	fql_set_strict_mode(fql, 1);
+	plan_count = fql_make_plans(fql, "select foo from [t4.tsv]");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* Only exact match on file name */
+	plan_count = fql_make_plans(fql, "select * from t1");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
 }
 END_TEST
 
