@@ -75,6 +75,23 @@ void column_destroy(void* generic_col)
 	string_destroy(&col->buf);
 }
 
+void column_link(struct column* dest, struct column* src)
+{
+	dest->data_source = src;
+
+	//dest->expr = src->expr;
+	dest->src_idx = src->src_idx;
+	dest->field_type = src->field_type;
+
+	table* src_table = src->table;
+	if (src_table == NULL) {
+		return;
+	}
+	if (src->location > src_table->reader->max_col_idx) {
+		src_table->reader->max_col_idx = src->location;
+	}
+}
+
 void column_cat_description(column* col, string* msg)
 {
 	switch (col->expr) {
@@ -144,12 +161,13 @@ int column_try_assign_source(column* col, table* table, int idx)
 {
 	column** src_col = hashmap_get(table->schema->col_map, col->name.data);
 	if (src_col != NULL) {
-		col->data_source = *src_col;
-		col->src_idx = idx;
-		col->field_type = (*src_col)->field_type;
-		if (col->data_source->location > table->reader->max_col_idx) {
-			table->reader->max_col_idx = col->data_source->location;
-		}
+		//col->data_source = *src_col;
+		//col->src_idx = idx;
+		//col->field_type = (*src_col)->field_type;
+		//if (col->data_source->location > table->reader->max_col_idx) {
+		//	table->reader->max_col_idx = col->data_source->location;
+		//}
+		column_link(col, *src_col);
 		return 1;
 	}
 
@@ -180,7 +198,6 @@ int column_get_int(long* ret, column* col, vec* recs)
 	}
 	case EXPR_FUNCTION: {
 		function* func = col->field.fn;
-		/* TODO: maybe struct this?? */
 		union field new_field;
 		enum field_type new_field_type = col->field_type;
 		if (col->field_type == FIELD_STRING) {

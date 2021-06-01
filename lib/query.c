@@ -255,6 +255,7 @@ int query_add_aggregate(query* self, enum aggregate_function agg_type)
 	aggregate* agg = new_(aggregate, agg_type);
 	vec_push_back(&self->groupby->aggregates, &agg);
 
+	/* TODO LINK THESE */
 	column* group_col = new_(column, EXPR_AGGREGATE, agg, "");
 	group_add_column(self->groupby, group_col);
 

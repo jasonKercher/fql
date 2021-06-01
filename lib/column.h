@@ -42,6 +42,7 @@ struct column*
 column_construct(struct column*, enum expr_type, void*, const char*);
 void column_destroy(void*);
 
+void column_link(struct column* dest, struct column* src);
 void column_cat_description(struct column* col, string*);
 int column_try_assign_source(struct column*, struct table*, int);
 

@@ -8,7 +8,7 @@
 struct query;
 struct column;
 struct process;
-
+struct fqlselect;
 struct order;
 struct _entry;
 
@@ -36,6 +36,7 @@ void order_destroy(struct order*);
 int order_add_column(struct order*, struct column*);
 void order_cat_description(struct order*, struct process*);
 void order_connect_api(struct query*, struct vec*);
+int order_preresolve_columns(struct order*, struct fqlselect*);
 int order_add_record(struct order*, struct vec*);
 int order_sort(struct order*);
 

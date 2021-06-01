@@ -65,6 +65,41 @@ void order_destroy(order* self)
 	}
 }
 
+int order_preresolve_columns(order* self, fqlselect* select)
+{
+	/* First, we want to try and resolve by ordinal:
+	 * SELECT foo
+	 * FROM T1
+	 * ORDER BY 1
+	 */
+	vec* select_cols = select->schema->columns;
+
+	column** it = vec_begin(&self->columns);
+	for (; it != vec_end(&self->columns); ++it) {
+		if ((*it)->expr != EXPR_CONST) {
+			continue;
+		}
+
+		long ordinal = 0;
+		try_(column_get_int(&ordinal, *it, NULL));
+
+		if (ordinal <= 0 || ordinal > select_cols->size) {
+			fprintf(stderr,
+			        "Ordinal `%ld' out of range\n",
+			        ordinal);
+			return FQL_FAIL;
+		}
+		column** ordinal_col = vec_at(select_cols, ordinal - 1);
+
+		column_link(*it, *ordinal_col);
+		(*it)->expr = EXPR_COLUMN_NAME;
+	}
+
+	/* Now, we want to try and match fields by alias */
+
+	return FQL_GOOD;
+}
+
 void order_connect_api(query* query, vec* api_vec)
 {
 	order* self = query->orderby;
@@ -93,11 +128,9 @@ int order_add_record(order* self, vec* recs)
 {
 	record** top = vec_begin(recs);
 	struct _entry entry = {
-	        flex_size(&self->order_data) /* idx */
-	        ,
-	        (*top)->offset /* offset */
-	        ,
-	        (*top)->select_len /* len */
+	        flex_size(&self->order_data), /* idx */
+	        (*top)->offset,               /* offset */
+	        (*top)->select_len,           /* len */
 	};
 
 	column** cols = vec_begin(&self->columns);

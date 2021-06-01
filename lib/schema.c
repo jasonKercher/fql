@@ -196,7 +196,7 @@ success_return:
 	return FQL_GOOD;
 }
 
-void schema_assign_header(table* table, record* rec)
+void schema_assign_header(table* table, record* rec, int src_idx)
 {
 	int i = 0;
 	stringview* it = vec_begin(rec->fields);
@@ -207,6 +207,7 @@ void schema_assign_header(table* table, record* rec)
 		        new_(column, EXPR_COLUMN_NAME, col_str.data, "");
 		schema_add_column(table->schema, new_col);
 
+		new_col->src_idx = src_idx;
 		new_col->location = i++;
 		new_col->table = table;
 		new_col->field_type = FIELD_STRING;
@@ -217,7 +218,7 @@ void schema_assign_header(table* table, record* rec)
 	schema_preflight(table->schema);
 }
 
-int schema_resolve_source(struct fql_handle* fql, table* table)
+int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 {
 	if (!vec_empty(table->schema->columns)) {
 		return FQL_GOOD; /* self already set */
@@ -258,7 +259,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table)
 	strncpy_(table->schema->delimiter, delim, DELIM_LEN_MAX);
 	table->reader->max_col_idx = 0;
 
-	schema_assign_header(table, &rec);
+	schema_assign_header(table, &rec, src_idx);
 	record_destroy(&rec);
 
 	return FQL_GOOD;
@@ -303,7 +304,8 @@ int schema_assign_columns_limited(vec* columns, vec* sources, int limit)
 			try_(_evaluate_if_const(*it));
 			continue;
 		}
-		if ((*it)->expr != EXPR_COLUMN_NAME) {
+		if ((*it)->expr != EXPR_COLUMN_NAME
+		    || (*it)->data_source != NULL) {
 			continue;
 		}
 
@@ -631,10 +633,21 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 {
 	vec* sources = query->sources;
 
+	/* Oh this is fun.  Let's try to link and verify
+	 * _everything_. First, let's verify the sources
+	 * exist and populate schemas.  As we loop, we
+	 * check resolve the columns that are listed in
+	 * join clauses because of the following caveat:
+	 *
+	 * SELECT *
+	 * FROM T1
+	 * JOIN T2 ON T1.FOO = T3.FOO -- Cannot read T3 yet!
+	 * JOIN T3 ON T2.FOO = T3.FOO
+	 */
 	int i = 0;
 	for (; i < sources->size; ++i) {
 		table* table = vec_at(query->sources, i);
-		try_(schema_resolve_source(fql, table));
+		try_(schema_resolve_source(fql, table, i));
 
 		if (i == 0 && !op_has_delim(query->op)) {
 			op_set_delim(query->op, table->schema->delimiter);
@@ -651,27 +664,39 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 		}
 	}
 
+	/* Validation list is fields in where clause?! */
 	try_(schema_assign_columns(query->validation_list, query->sources));
 
-	/* skip validating groups if no group columns */
+	/* Validate the columns from the operation.
+	 * (e.g. columns listed in SELECT).
+	 */
 	vec* op_cols = op_get_validation_list(query->op);
 	try_(_asterisk_resolve(op_cols, sources));
 	try_(schema_assign_columns(op_cols, sources));
 
+	/* Validate ORDER BY columns if they exist */
 	vec* order_cols = NULL;
 	if (query->orderby) {
 		order_cols = &query->orderby->columns;
-		int ret = schema_assign_columns(order_cols, query->sources);
-		/* TODO: map select aliases as well */
-		if (ret == FQL_FAIL) {
-			return FQL_FAIL;
-		}
+
+		try_(order_preresolve_columns(query->orderby, query->op));
+		try_(schema_assign_columns(order_cols, query->sources));
 	}
 
+	/* Do GROUP BY last. There are less caveats having
+	 * waited until everything else is already resolved
+	 */
 	if (!vec_empty(&query->groupby->columns)
 	    || !vec_empty(&query->groupby->aggregates)) {
 		try_(_map_groups(fql, query));
+
+		/* Now that we have mapped the groups,
+		 * we must re-resolve each operation and
+		 * ORDER BY column to a group.
+		 */
 		try_(_group_validation(fql, query, op_cols));
+
+		/* exceptions: ordinal ordering or matched by alias */
 		if (order_cols) {
 			try_(_group_validation(fql, query, order_cols));
 		}
