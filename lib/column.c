@@ -78,11 +78,7 @@ void column_destroy(void* generic_col)
 void column_link(struct column* dest, struct column* src)
 {
 	dest->data_source = src;
-
-	//dest->expr = src->expr;
-	dest->src_idx = src->src_idx;
 	dest->field_type = src->field_type;
-
 	table* src_table = src->table;
 	if (src_table == NULL) {
 		return;
@@ -151,9 +147,8 @@ void column_cat_description(column* col, string* msg)
 	case EXPR_SUBQUERY_CONST:
 		string_strcat(msg, "SUBQUERY CONST");
 		break;
-	case EXPR_NONE:
+	default:
 		string_strcat(msg, "no expression");
-		break;
 	}
 }
 
@@ -161,12 +156,6 @@ int column_try_assign_source(column* col, table* table, int idx)
 {
 	column** src_col = hashmap_get(table->schema->col_map, col->name.data);
 	if (src_col != NULL) {
-		//col->data_source = *src_col;
-		//col->src_idx = idx;
-		//col->field_type = (*src_col)->field_type;
-		//if (col->data_source->location > table->reader->max_col_idx) {
-		//	table->reader->max_col_idx = col->data_source->location;
-		//}
 		column_link(col, *src_col);
 		return 1;
 	}
@@ -184,14 +173,14 @@ int column_get_int(long* ret, column* col, vec* recs)
 	switch (col->expr) {
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
-		record** rec = vec_at(recs, col->src_idx);
-		if ((*rec)->fields->size <= col->data_source->location) {
+		column* src_col = col->data_source;
+		record** rec = vec_at(recs, src_col->src_idx);
+		if ((*rec)->fields->size <= src_col->location) {
 			string_clear(&col->buf);
 			*ret = 0;
 			return FQL_GOOD;
 		}
-		stringview* sv =
-		        vec_at((*rec)->fields, col->data_source->location);
+		stringview* sv = vec_at((*rec)->fields, src_col->location);
 		string_copy_from_stringview(&col->buf, sv);
 		fail_if_(str2long(ret, col->buf.data));
 		return FQL_GOOD;
@@ -224,14 +213,14 @@ int column_get_float(double* ret, column* col, vec* recs)
 	switch (col->expr) {
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
-		record** rec = vec_at(recs, col->src_idx);
-		if ((*rec)->fields->size <= col->data_source->location) {
+		column* src_col = col->data_source;
+		record** rec = vec_at(recs, src_col->src_idx);
+		if ((*rec)->fields->size <= src_col->location) {
 			string_clear(&col->buf);
 			*ret = 0;
 			return FQL_GOOD;
 		}
-		stringview* sv =
-		        vec_at((*rec)->fields, col->data_source->location);
+		stringview* sv = vec_at((*rec)->fields, src_col->location);
 		string_copy_from_stringview(&col->buf, sv);
 		fail_if_(str2double(ret, col->buf.data));
 		return FQL_GOOD;
@@ -252,6 +241,7 @@ int column_get_float(double* ret, column* col, vec* recs)
 		try_(field_to_float(ret, &col->field, &col->field_type));
 		break;
 	default:
+		fprintf(stderr, "col_get_float: Unexpected expression\n");
 		return FQL_FAIL;
 	}
 
@@ -263,15 +253,15 @@ int column_get_stringview(stringview* ret, column* col, vec* recs)
 	switch (col->expr) {
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
-		record** rec = vec_at(recs, col->src_idx);
-		if ((*rec)->fields->size <= col->data_source->location) {
+		column* src_col = col->data_source;
+		record** rec = vec_at(recs, src_col->src_idx);
+		if ((*rec)->fields->size <= src_col->location) {
 			string_clear(&col->buf);
 			ret->data = col->buf.data;
 			ret->len = 0;
 			return FQL_GOOD;
 		}
-		stringview* sv =
-		        vec_at((*rec)->fields, col->data_source->location);
+		stringview* sv = vec_at((*rec)->fields, src_col->location);
 		ret->data = sv->data;
 		ret->len = sv->len;
 		return FQL_GOOD;
@@ -292,6 +282,7 @@ int column_get_stringview(stringview* ret, column* col, vec* recs)
 		try_(field_to_stringview(ret, &col->field, &col->field_type));
 		break;
 	default:
+		fprintf(stderr, "col_get_stringview: Unexpected expression\n");
 		return FQL_FAIL;
 	}
 

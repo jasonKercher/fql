@@ -10,6 +10,7 @@
 /** expression **/
 enum expr_type {
 	EXPR_NONE,
+	//EXPR_COLUMN_SOURCE,
 	EXPR_COLUMN_NAME,
 	EXPR_CONST,
 	EXPR_ASTERISK,
