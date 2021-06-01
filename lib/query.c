@@ -295,6 +295,13 @@ int query_init_op(query* self)
 
 int query_init_orderby(query* self)
 {
+	/* If there are no sources, then we are trying to
+	 * order a const expression... Don't bother...
+	 */
+	if (vec_empty(self->sources)) {
+		return FQL_GOOD;
+	}
+
 	/* orderby allows us to assume SELECT */
 	char* out_name = fqlselect_take_filename(self->op);
 	const char* in_name = fqlselect_get_tempname(self->op);

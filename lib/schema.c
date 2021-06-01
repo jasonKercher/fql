@@ -653,8 +653,8 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 	/* Oh this is fun.  Let's try to link and verify
 	 * _everything_. First, let's verify the sources
 	 * exist and populate schemas.  As we loop, we
-	 * check resolve the columns that are listed in
-	 * join clauses because of the following caveat:
+	 * resolve the columns that are listed in join
+	 * clauses because of the following caveat:
 	 *
 	 * SELECT *
 	 * FROM T1
@@ -682,7 +682,7 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 		}
 	}
 
-	/* Validation list is fields in where clause?! */
+	/* Validation list is fields in WHERE clause */
 	try_(schema_assign_columns(query->validation_list,
 	                           query->sources,
 	                           fql->props.strictness));
@@ -698,7 +698,6 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 	vec* order_cols = NULL;
 	if (query->orderby) {
 		order_cols = &query->orderby->columns;
-
 		try_(order_preresolve_columns(query->orderby, query->op));
 		try_(schema_assign_columns(order_cols,
 		                           query->sources,

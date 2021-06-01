@@ -74,28 +74,63 @@ int order_preresolve_columns(order* self, fqlselect* select)
 	 */
 	vec* select_cols = select->schema->columns;
 
+	/* We also want to try and match fields by SELECT alias:
+	 * SELECT foo bar
+	 * FROM T1
+	 * ORDER BY bar
+	 *
+	 * These were never mapped. Preflight does this.
+	 */
+	schema_preflight(select->schema);
+	multimap* select_map = select->schema->col_map;
+
 	column** it = vec_begin(&self->columns);
 	for (; it != vec_end(&self->columns); ++it) {
-		if ((*it)->expr != EXPR_CONST) {
+		column** result = NULL;
+		switch ((*it)->expr) {
+		case EXPR_COLUMN_NAME: {
+			vec* cols = multimap_get(select_map, (*it)->alias.data);
+			if (cols == NULL) {
+				break;
+			}
+			if (cols->size > 1) {
+				fprintf(stderr,
+				        "ORDER BY column `%s' ambiguous\n",
+				        (const char*)(*it)->alias.data);
+				return FQL_FAIL;
+			}
+			result = vec_begin(cols);
+			break;
+		}
+		case EXPR_CONST: {
+			long ordinal = 0;
+			try_(column_get_int(&ordinal, *it, NULL));
+
+			if (ordinal <= 0 || ordinal > select_cols->size) {
+				fprintf(stderr,
+				        "Ordinal `%ld' out of range\n",
+				        ordinal);
+				return FQL_FAIL;
+			}
+			result = vec_at(select_cols, ordinal - 1);
+			break;
+		}
+		default:;
+			// fprintf(stderr, "unexpected column type");
+			// return FQL_FAIL;
+		}
+
+		if (result == NULL) {
 			continue;
 		}
-
-		long ordinal = 0;
-		try_(column_get_int(&ordinal, *it, NULL));
-
-		if (ordinal <= 0 || ordinal > select_cols->size) {
-			fprintf(stderr,
-			        "Ordinal `%ld' out of range\n",
-			        ordinal);
-			return FQL_FAIL;
+		if ((*result)->expr == EXPR_CONST) {
+			//(*it)->data_source = *result;
+			column_link(*it, *result);
+			continue;
 		}
-		column** ordinal_col = vec_at(select_cols, ordinal - 1);
-
-		column_link(*it, *ordinal_col);
+		column_link(*it, (*result)->data_source);
 		(*it)->expr = EXPR_COLUMN_NAME;
 	}
-
-	/* Now, we want to try and match fields by alias */
 
 	return FQL_GOOD;
 }
@@ -109,6 +144,9 @@ void order_connect_api(query* query, vec* api_vec)
 
 int order_add_column(order* self, column* col)
 {
+	if (self == NULL) {
+		return FQL_GOOD;
+	}
 	vec_push_back(&self->columns, &col);
 	return FQL_GOOD;
 }

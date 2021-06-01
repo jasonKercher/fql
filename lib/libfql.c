@@ -158,9 +158,8 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 {
 	int i = 0;
 	int ret = 0;
-	queue* node = fql->query_list;
-	query* query = node->data;
-	for (; node && i < plan_count; ++i) {
+	query* query = fql->query_list->data;
+	for (; fql->query_list && i < plan_count; ++i) {
 		plan* plan = query->plan;
 		if (plan->has_stepped) {
 			fputs("Cannot execute plan that has been"
@@ -178,7 +177,7 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 		}
 
 		query_free(query);
-		query = queue_dequeue(&node);
+		query = queue_dequeue(&fql->query_list);
 		if (ret == FQL_FAIL) {
 			break;
 		}

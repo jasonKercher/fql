@@ -372,7 +372,7 @@ void _operation(plan* self, query* query, dnode* entry)
 
 void _order(plan* self, query* query)
 {
-	if (query->orderby == NULL) {
+	if (query->orderby == NULL) { // || vec_empty(query->sources)) {
 		return;
 	}
 	process* order_proc = new_(process, "ORDER BY ", self);

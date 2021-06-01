@@ -126,6 +126,40 @@ START_TEST(test_order_mutiple)
 
 	ck_assert_int_eq(rows, 0);
 	ck_assert_int_eq(fql_field_count(fql), 0);
+
+	plan_count =
+	        fql_make_plans(fql,
+	                       "select foo from t3 order by bar desc, foo");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+
+	ck_assert_str_eq(fields[0].data.s, "2764151e");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "44b72d44");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "8e4690dc");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "0d88f1f3");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "24b256e0");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3c3cc25d");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "9f04f0a0");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "0cda1b43");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "6Ed156a7");
+	rows = fql_step(fql, &fields);
+
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
 }
 
 START_TEST(test_order_numeric)
@@ -135,10 +169,6 @@ START_TEST(test_order_numeric)
 	int field_count = 0;
 	int rows = 0;
 
-	/* Turns out SQL Server isn't smart enough to put this
-	 * one together. Of course, I don't know what sort of
-	 * smooth brain would even write something so dumb...
-	 */
 	plan_count = fql_make_plans(fql, "select baz + 2   "
 			                 " from t3         "
 			                 " order by baz + 0");
@@ -182,10 +212,6 @@ START_TEST(test_order_aggregate)
 	int field_count = 0;
 	int rows = 0;
 
-	/* The parser supports this so, I probably should
-	 * as well. What kind of clown even needs this
-	 * ability? I don't know...
-	 */
 	plan_count = fql_make_plans(fql, "select count(*)   "
 			                 " from t3          "
 					 " group by bar     "
@@ -221,8 +247,8 @@ Suite* fql_order_suite(void)
 	TCase* tc_order = tcase_create("order");
 	tcase_add_checked_fixture(tc_order, fql_setup, fql_teardown);
 
-	//tcase_add_test(tc_order, test_order_const);
-	//tcase_add_test(tc_order, test_order_distinct);
+	tcase_add_test(tc_order, test_order_const);
+	tcase_add_test(tc_order, test_order_distinct);
 	tcase_add_test(tc_order, test_order_mutiple);
 	tcase_add_test(tc_order, test_order_numeric);
 	//tcase_add_test(tc_order, test_order_aggregate);
