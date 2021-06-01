@@ -154,13 +154,14 @@ void column_cat_description(column* col, string* msg)
 
 int column_try_assign_source(column* col, table* table, int idx)
 {
-	column** src_col = hashmap_get(table->schema->col_map, col->name.data);
-	if (src_col != NULL) {
-		column_link(col, *src_col);
-		return 1;
+	vec* cols = multimap_get(table->schema->col_map, col->name.data);
+	if (cols == NULL) {
+		return 0;
 	}
 
-	return 0;
+	column** first_match = vec_begin(cols);
+	column_link(col, *first_match);
+	return cols->size;
 }
 
 /* TODO: field_to_xx functions should only be called once.

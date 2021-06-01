@@ -41,7 +41,7 @@ void schema_destroy(void* generic_schema)
 
 	delete_(vec, self->columns);
 	if (self->col_map != NULL) {
-		delete_(hashmap, self->col_map);
+		delete_(multimap, self->col_map);
 	}
 }
 
@@ -63,7 +63,7 @@ void schema_preflight(schema* self)
 	 * new alias to the column. we don't care about a
 	 * column name once it has an alias.
 	 */
-	self->col_map = new_t_(hashmap,
+	self->col_map = new_t_(multimap,
 	                       column*,
 	                       self->columns->size * 2,
 	                       HASHMAP_PROP_NOCASE);
@@ -72,7 +72,7 @@ void schema_preflight(schema* self)
 	column** col = vec_begin(self->columns);
 	for (; i < self->columns->size; ++i) {
 		col[i]->location = i;
-		hashmap_set(self->col_map, col[i]->alias.data, &col[i]);
+		multimap_set(self->col_map, col[i]->alias.data, &col[i]);
 	}
 
 	if (self->delimiter[0] == '\0') {
@@ -81,7 +81,7 @@ void schema_preflight(schema* self)
 	}
 }
 
-int schema_resolve_file(table* table)
+int schema_resolve_file(table* table, int strictness)
 {
 	if (table->source_type == SOURCE_SUBQUERY) {
 		return FQL_GOOD;
@@ -117,6 +117,10 @@ int schema_resolve_file(table* table)
 
 	if (matches) {
 		goto success_return;
+	}
+
+	if (strictness) {
+		goto fail_return;
 	}
 
 	/* match exact ignoring case */
@@ -183,6 +187,7 @@ int schema_resolve_file(table* table)
 		goto success_return;
 	}
 
+fail_return:
 	fprintf(stderr,
 	        "%s: unable to find matching file\n",
 	        (char*)table->name.data);
@@ -241,7 +246,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		 * row of the file and assume a delimited
 		 * list of field names.
 		 */
-		try_(schema_resolve_file(table));
+		try_(schema_resolve_file(table, fql->props.strictness));
 		table->reader->type = READ_LIBCSV;
 	}
 	reader_assign(table->reader, table);
@@ -290,7 +295,10 @@ int _evaluate_if_const(column* col)
 	return FQL_GOOD;
 }
 
-int schema_assign_columns_limited(vec* columns, vec* sources, int limit)
+int schema_assign_columns_limited(vec* columns,
+                                  vec* sources,
+                                  int limit,
+                                  int strictness)
 {
 	column** it = vec_begin(columns);
 	for (; it != vec_end(columns); ++it) {
@@ -298,7 +306,8 @@ int schema_assign_columns_limited(vec* columns, vec* sources, int limit)
 			function* func = (*it)->field.fn;
 			try_(schema_assign_columns_limited(func->args,
 			                                   sources,
-			                                   limit));
+			                                   limit,
+			                                   strictness));
 			try_(function_op_resolve(func, &(*it)->field_type));
 			try_(function_validate(func));
 			try_(_evaluate_if_const(*it));
@@ -317,10 +326,13 @@ int schema_assign_columns_limited(vec* columns, vec* sources, int limit)
 			if (string_empty(&(*it)->table_name)
 			    || istring_eq((*it)->table_name.data,
 			                  search_table->alias.data)) {
-				matches +=
-				        column_try_assign_source(*it,
+				int n = column_try_assign_source(*it,
 				                                 search_table,
 				                                 j);
+				if (n > 1 && !strictness) {
+					n = 1;
+				}
+				matches += n;
 			}
 		}
 
@@ -342,11 +354,12 @@ int schema_assign_columns_limited(vec* columns, vec* sources, int limit)
 	return FQL_GOOD;
 }
 
-int schema_assign_columns(vec* columns, vec* sources)
+int schema_assign_columns(vec* columns, vec* sources, int strictness)
 {
 	return schema_assign_columns_limited(columns,
 	                                     sources,
-	                                     sources->size - 1);
+	                                     sources->size - 1,
+	                                     strictness);
 }
 
 int _asterisk_resolve(vec* columns, vec* sources)
@@ -580,7 +593,9 @@ int _map_groups(struct fql_handle* fql, query* query)
 {
 	/* verify group columns and build composite key for each */
 	vec* group_cols = &query->groupby->columns;
-	try_(schema_assign_columns(group_cols, query->sources));
+	try_(schema_assign_columns(group_cols,
+	                           query->sources,
+	                           fql->props.strictness));
 
 	compositemap* expr_map =
 	        new_t_(compositemap,
@@ -603,7 +618,9 @@ int _map_groups(struct fql_handle* fql, query* query)
 			continue;
 		}
 		aggregate* agg = (*it)->field.agg;
-		try_(schema_assign_columns(agg->args, query->sources));
+		try_(schema_assign_columns(agg->args,
+		                           query->sources,
+		                           fql->props.strictness));
 		try_(aggregate_resolve(agg));
 		(*it)->field_type = agg->data_type;
 	}
@@ -655,7 +672,8 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 
 		if (schema_assign_columns_limited(table->validation_list,
 		                                  sources,
-		                                  i)) {
+		                                  i,
+		                                  fql->props.strictness)) {
 			return FQL_FAIL;
 		}
 
@@ -665,14 +683,16 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 	}
 
 	/* Validation list is fields in where clause?! */
-	try_(schema_assign_columns(query->validation_list, query->sources));
+	try_(schema_assign_columns(query->validation_list,
+	                           query->sources,
+	                           fql->props.strictness));
 
 	/* Validate the columns from the operation.
 	 * (e.g. columns listed in SELECT).
 	 */
 	vec* op_cols = op_get_validation_list(query->op);
 	try_(_asterisk_resolve(op_cols, sources));
-	try_(schema_assign_columns(op_cols, sources));
+	try_(schema_assign_columns(op_cols, sources, fql->props.strictness));
 
 	/* Validate ORDER BY columns if they exist */
 	vec* order_cols = NULL;
@@ -680,7 +700,9 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 		order_cols = &query->orderby->columns;
 
 		try_(order_preresolve_columns(query->orderby, query->op));
-		try_(schema_assign_columns(order_cols, query->sources));
+		try_(schema_assign_columns(order_cols,
+		                           query->sources,
+		                           fql->props.strictness));
 	}
 
 	/* Do GROUP BY last. There are less caveats having

@@ -13,6 +13,12 @@
 #include "util/queue.h"
 #include "antlr/antlr.h"
 
+/**
+ * No need to expose this function. A user will
+ * not know the size of struct fql_handle.
+ */
+struct fql_handle* fql_construct(struct fql_handle* fql);
+
 struct fql_handle* fql_new()
 {
 	struct fql_handle* new_handle = malloc_(sizeof(*new_handle));
@@ -138,6 +144,11 @@ void fql_set_char_as_byte(struct fql_handle* fql, int char_as_byte)
 void fql_set_force_cartesian(struct fql_handle* fql, int force_cartesian)
 {
 	fql->props.force_cartesian = force_cartesian;
+}
+
+void fql_set_strict_mode(struct fql_handle* fql, int strictness)
+{
+	fql->props.strictness = strictness;
 }
 
 /**

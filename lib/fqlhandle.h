@@ -20,6 +20,7 @@ struct fql_handle {
 		int threading;
 		int verbose;
 		int char_as_byte;
+		int strictness;
 	} props;
 };
 
