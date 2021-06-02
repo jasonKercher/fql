@@ -6,6 +6,7 @@
 #include "column.h"
 #include "schema.h"
 #include "process.h"
+#include "misc.h"
 #include "util/util.h"
 
 int _select_record(fqlselect*, struct vec* rec);
@@ -148,7 +149,7 @@ int fqlselect_connect_api(query* query, vec* api)
 			field->_in = new_(string);
 			break;
 		default:
-			fputs("Unexpected API type\n", stderr);
+			fputs("Undefined API type\n", stderr);
 			return FQL_FAIL;
 		}
 	}

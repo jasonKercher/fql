@@ -1,9 +1,11 @@
 #include "logic.h"
 
+#include <string.h>
+
 #include "column.h"
 #include "field.h"
+#include "misc.h"
 #include "util/util.h"
-#include <string.h>
 
 logic* logic_construct(logic* self)
 {

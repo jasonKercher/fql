@@ -1,4 +1,5 @@
 #include "fql.h"
+#include "misc.h"
 #include "query.h"
 #include "table.h"
 #include "order.h"

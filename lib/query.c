@@ -11,6 +11,7 @@
 #include "aggregate.h"
 #include "field.h"
 #include "function.h"
+#include "misc.h"
 #include "util/dgraph.h"
 #include "util/util.h"
 
@@ -255,13 +256,12 @@ int query_add_aggregate(query* self, enum aggregate_function agg_type)
 	aggregate* agg = new_(aggregate, agg_type);
 	vec_push_back(&self->groupby->aggregates, &agg);
 
-	/* TODO LINK THESE */
 	column* group_col = new_(column, EXPR_AGGREGATE, agg, "");
 	group_add_column(self->groupby, group_col);
 
-	column* op_col = new_(column, EXPR_AGGREGATE, agg, "");
-	op_col->data_source = group_col;
-	try_(_distribute_column(self, op_col));
+	column* linked_col = new_(column, EXPR_AGGREGATE, agg, "");
+	linked_col->data_source = group_col;
+	try_(_distribute_column(self, linked_col));
 
 	return FQL_GOOD;
 }

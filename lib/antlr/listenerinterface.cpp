@@ -458,26 +458,6 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 {
 	_subquery = (struct query*) stack_pop(&_query_stack);
 	_query = (struct query*) _query_stack->data;
-
-	//switch(_query->mode) {
-	//case MODE_SELECT:
-	//        new_expr->type = EXPR_SUBQUERY_CONST;
-	//        select_add_column((struct select*) _query->op, new_expr, "");
-	//        break;
-	//case MODE_UPDATE:
-	//        new_expr->type = EXPR_SUBQUERY;
-	//        /* TODO */
-	//        break;
-	//case MODE_SOURCES:
-	//        new_expr->type = EXPR_SUBQUERY;
-	//        /* TODO */
-	//        break;
-	//case MODE_SEARCH:
-	//        break;
-	//default:
-	//        std::cerr << "Undefined mode\n";
-	//        exit(EXIT_FAILURE);
-	//}
 }
 
 void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContext * ctx)

@@ -2,12 +2,14 @@
 
 #include <stdbool.h>
 #include <pthread.h>
+
 #include "fql.h"
+#include "misc.h"
 #include "table.h"
 #include "group.h"
-#include "operation.h"
 #include "reader.h"
 #include "record.h"
+#include "operation.h"
 #include "util/vec.h"
 #include "util/util.h"
 #include "util/dgraph.h"

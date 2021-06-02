@@ -41,6 +41,11 @@ string* string_construct_from_stringview(string* s, struct stringview* sv)
 	return s;
 }
 
+stringview string_get_stringview(string* s)
+{
+	return (stringview) {s->data, s->size};
+}
+
 string* string_from_char_ptr(const char* src)
 {
 	string* new_string = new_t_(vec, char);
@@ -70,10 +75,10 @@ string* string_construct_take(string* s, char* src)
 	 * but it is >= len + 1
 	 */
 	*s = (string) {
-	        src,     /* data */
-	        len,     /* size */
-	        len + 1, /* _alloc */
-	        1        /* _elem_s */
+		 src            /* data */
+		,len            /* size */
+		,len + 1        /* _alloc */
+		,1              /* _elem_s */
 	};
 
 	return s;
@@ -160,6 +165,13 @@ size_t string_sprintf(string* s, const char* fmt, ...)
 const char* string_c_str(string* s)
 {
 	return (const char*) s->data;
+}
+
+char* string_export(string* s)
+{
+	char* data = s->data;
+	string_construct(s);
+	return data;
 }
 
 void string_clear(string* s)

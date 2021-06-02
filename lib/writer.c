@@ -3,6 +3,7 @@
 #include "fql.h"
 #include "column.h"
 #include "record.h"
+#include "misc.h"
 #include "util/stringview.h"
 
 void libcsv_writer_free(void* writer_data)

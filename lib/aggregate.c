@@ -56,10 +56,56 @@ void aggregate_add_column(aggregate* agg, column* col)
 
 int aggregate_resolve(aggregate* agg)
 {
+	column* col = *(column**)vec_begin(agg->args);
 	switch (agg->agg_type) {
 	case AGG_COUNT:
 		agg->call__ = &fql_count;
 		agg->data_type = FIELD_INT;
+		return FQL_GOOD;
+	case AGG_MIN:
+		switch (col->field_type) {
+		case FIELD_INT:
+			agg->call__ = &fql_min_i;
+			break;
+		case FIELD_FLOAT:
+			agg->call__ = &fql_min_f;
+			break;
+		case FIELD_STRING:
+			agg->call__ = &fql_min_s;
+			break;
+		default:
+			goto unexpected_type;
+		}
+		agg->data_type = col->field_type;
+		return FQL_GOOD;
+	case AGG_MAX:
+		switch (col->field_type) {
+		case FIELD_INT:
+			agg->call__ = &fql_max_i;
+			break;
+		case FIELD_FLOAT:
+			agg->call__ = &fql_max_f;
+			break;
+		case FIELD_STRING:
+			agg->call__ = &fql_max_s;
+			break;
+		default:
+			goto unexpected_type;
+		}
+		agg->data_type = col->field_type;
+		return FQL_GOOD;
+	case AGG_SUM:
+		switch (col->field_type) {
+		case FIELD_INT:
+			agg->call__ = &fql_sum_i;
+			break;
+		case FIELD_FLOAT:
+			agg->call__ = &fql_sum_f;
+			break;
+		default:
+			goto unexpected_type;
+		}
+		agg->data_type = col->field_type;
 		return FQL_GOOD;
 	default:
 		fprintf(stderr,
@@ -67,4 +113,11 @@ int aggregate_resolve(aggregate* agg)
 		        agg_str[agg->agg_type]);
 		return FQL_FAIL;
 	}
+
+unexpected_type:
+	fprintf(stderr,
+	        "unexpected type `%s' in aggregate `%s'\n",
+	        field_description(col->field_type),
+	        agg_str[agg->agg_type]);
+	return FQL_FAIL;
 }

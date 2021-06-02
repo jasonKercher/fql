@@ -1,11 +1,14 @@
 #include "order.h"
+
 #include <stdio.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+#include "misc.h"
+#include "field.h"
 #include "record.h"
 #include "column.h"
-#include "field.h"
 #include "fqlselect.h"
 #include "process.h"
 #include "util/util.h"

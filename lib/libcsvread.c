@@ -1,6 +1,7 @@
 #include "reader.h"
 #include <csv.h>
 #include "fql.h"
+#include "misc.h"
 
 void libcsv_reader_free(void* csv)
 {

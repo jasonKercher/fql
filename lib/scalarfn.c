@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include "fql.h"
 #include "column.h"
+#include "misc.h"
 #include "util/stringview.h"
 #include "util/util.h"
 
@@ -196,20 +197,7 @@ int fql_op_plus_i(function* fn, union field* ret, vec* recs)
 	try_(column_get_int(&n0, args[0], recs));
 	try_(column_get_int(&n1, args[1], recs));
 
-	/* detect overflow */
-	if (n0 > 0 && n1 > 0
-	    && (unsigned long)n0 + (unsigned long)n1
-	               > (unsigned long)LONG_MAX) {
-		fputs("arithmetic overflow detected\n", stderr);
-		return FQL_FAIL;
-	} else if (n0 < 0 && n1 < 0
-	           && (unsigned long)-n0 + (unsigned long)-n1
-	                      > (unsigned long)LONG_MAX + 1) {
-		fputs("arithmetic overflow detected\n", stderr);
-		return FQL_FAIL;
-	}
-
-	ret->i = n0 + n1;
+	ret->i = overflow_safe_add_i(n0, n1);
 
 	return FQL_GOOD;
 }
@@ -249,20 +237,7 @@ int fql_op_minus_i(function* fn, union field* ret, vec* recs)
 	try_(column_get_int(&n0, args[0], recs));
 	try_(column_get_int(&n1, args[1], recs));
 
-	/* detect overflow */
-	if (n0 > 0 && n1 < 0
-	    && (unsigned long)n0 + (unsigned long)-n1
-	               > (unsigned long)LONG_MAX) {
-		fputs("arithmetic overflow detected\n", stderr);
-		return FQL_FAIL;
-	} else if (n0 < 0 && n1 > 0
-	           && (unsigned long)-n0 + (unsigned long)n1
-	                      > (unsigned long)LONG_MAX + 1) {
-		fputs("arithmetic overflow detected\n", stderr);
-		return FQL_FAIL;
-	}
-
-	ret->i = n0 - n1;
+	ret->i = overflow_safe_minus_i(n0, n1);
 
 	return FQL_GOOD;
 }
@@ -288,31 +263,7 @@ int fql_op_mult_i(function* fn, union field* ret, vec* recs)
 	try_(column_get_int(&n0, args[0], recs));
 	try_(column_get_int(&n1, args[1], recs));
 
-	unsigned long u0 = 0;
-	unsigned long u1 = 0;
-	_Bool neg = false;
-	/* use unsigned so not undefined behavior */
-	if (n0 < 0) {
-		u0 = n0 * -1;
-		neg = true;
-	} else {
-		u0 = n0;
-	}
-
-	if (n1 < 0) {
-		u1 = n1 * -1;
-		neg = !neg;
-	} else {
-		u1 = n1;
-	}
-	unsigned long result = u0 * u1;
-
-	if (u0 != 0 && (result / u0 != u1 || result > LONG_MAX + neg)) {
-		fputs("arithmetic overflow detected\n", stderr);
-		return FQL_FAIL;
-	}
-
-	ret->i = (neg) ? -1 * result : result;
+	ret->i = overflow_safe_multiply_i(n0, n1);
 
 	return FQL_GOOD;
 }

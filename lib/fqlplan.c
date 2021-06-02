@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "misc.h"
 #include "query.h"
 #include "group.h"
 #include "order.h"

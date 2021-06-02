@@ -1,4 +1,5 @@
 #include "group.h"
+#include "misc.h"
 #include "aggregate.h"
 #include "util/util.h"
 #include "util/stringview.h"
@@ -59,7 +60,8 @@ int _add_agg_result(group* self, vec* recs)
 		if ((*it)->data_type == FIELD_STRING) {
 			string_construct(&result->data.s);
 		}
-		(*it)->call__(*it, self, result, recs);
+		try_((*it)->call__(*it, self, result, recs));
+		++result->qty;
 	}
 	return FQL_GOOD;
 }
@@ -69,7 +71,8 @@ int _update_agg_result(group* self, vec* recs, unsigned idx)
 	aggregate** it = vec_begin(&self->aggregates);
 	for (; it != vec_end(&self->aggregates); ++it) {
 		struct aggresult* result = vec_at(&(*it)->results, idx);
-		(*it)->call__(*it, self, result, recs);
+		try_((*it)->call__(*it, self, result, recs));
+		++result->qty;
 	}
 	return FQL_GOOD;
 }
@@ -117,11 +120,11 @@ int group_record(group* self, vec* recs)
 		compositemap_set(&self->val_map,
 		                 &self->_composite,
 		                 &group_count);
-		_add_agg_result(self, recs);
+		try_(_add_agg_result(self, recs));
 		ret = 1;
 	} else {
 		flex_resize(&self->group_data, org_size);
-		_update_agg_result(self, recs, *idx_ptr);
+		try_(_update_agg_result(self, recs, *idx_ptr));
 	}
 
 	return ret;

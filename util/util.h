@@ -102,28 +102,6 @@ typedef int (*int_generic_data_fn)(void*);
 		}                                                              \
 	}
 
-/* If the condition returns FQL_FAIL, then we
- * want to pass that up. A program relying on
- * user input has to check everything...
- */
-#define try_(condition_)                                                       \
-	({                                                                     \
-		int ret_ = (condition_);                                       \
-		if (ret_ == FQL_FAIL) {                                        \
-			return FQL_FAIL;                                       \
-		}                                                              \
-		ret_;                                                          \
-	})
-
-#define fail_if_(condition_)                                                   \
-	({                                                                     \
-		int ret_ = (condition_);                                       \
-		if (ret_) {                                                    \
-			return FQL_FAIL;                                       \
-		}                                                              \
-		ret_;                                                          \
-	})
-
 #define num_compare_(a, b) (((a) > (b)) - ((a) < (b)))
 
 /**

@@ -2,6 +2,25 @@
 #include "fql.h"
 #include "util/util.h"
 
+static const char* _int_descript = "INT";
+static const char* _float_descript = "FLOAT";
+static const char* _string_descript = "STRING";
+static const char* _unknown_descript = "<unknown>";
+
+const char* field_description(enum field_type type)
+{
+	switch (type) {
+	case FIELD_INT:
+		return _int_descript;
+	case FIELD_FLOAT:
+		return _float_descript;
+	case FIELD_STRING:
+		return _string_descript;
+	default:
+		return _unknown_descript;
+	}
+}
+
 enum field_type field_determine_type(enum field_type t0, enum field_type t1)
 {
 	if (t0 == t1) {
