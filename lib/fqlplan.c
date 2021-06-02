@@ -108,7 +108,7 @@ int _logic_to_process(process* logic_proc, logicgroup* lg)
 
 	logicgroup** it = vec_begin(&lg->items);
 	for (; it != vec_end(&lg->items); ++it) {
-		return _logic_to_process(logic_proc, *it);
+		try_(_logic_to_process(logic_proc, *it));
 	}
 
 	string_strcat(logic_proc->action_msg, ")");
