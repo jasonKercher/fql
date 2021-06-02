@@ -260,7 +260,8 @@ int query_add_aggregate(query* self, enum aggregate_function agg_type)
 	group_add_column(self->groupby, group_col);
 
 	column* linked_col = new_(column, EXPR_AGGREGATE, agg, "");
-	linked_col->data_source = group_col;
+	column_link(linked_col, group_col);
+	agg->linked_column = linked_col;
 	try_(_distribute_column(self, linked_col));
 
 	return FQL_GOOD;

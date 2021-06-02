@@ -624,19 +624,26 @@ int _map_groups(struct fql_handle* fql, query* query)
 		                           fql->props.strictness));
 		try_(aggregate_resolve(agg));
 		(*it)->field_type = agg->data_type;
+		agg->linked_column->field_type = agg->data_type;
 	}
 
 	vec_destroy(&key);
 	return FQL_GOOD;
 }
 
-int _group_validation(struct fql_handle* fql, query* query, vec* cols)
+int _group_validation(struct fql_handle* fql,
+                      query* query,
+                      vec* cols,
+                      _Bool force_validation)
 {
 	compositemap* expr_map = query->groupby->expr_map;
 	vec key;
 	vec_construct_(&key, stringview);
 	column** it = vec_begin(cols);
 	for (; it != vec_end(cols); ++it) {
+		if (!force_validation && (*it)->data_source != NULL) {
+			continue;
+		}
 		if (_op_find_group(expr_map, *it, &key)) {
 			vec_destroy(&key);
 			return FQL_FAIL;
@@ -716,11 +723,11 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 		 * we must re-resolve each operation and
 		 * ORDER BY column to a group.
 		 */
-		try_(_group_validation(fql, query, op_cols));
+		try_(_group_validation(fql, query, op_cols, true));
 
 		/* exceptions: ordinal ordering or matched by alias */
 		if (order_cols) {
-			try_(_group_validation(fql, query, order_cols));
+			try_(_group_validation(fql, query, order_cols, false));
 		}
 	}
 

@@ -27,6 +27,7 @@ struct aggregate {
 	aggregate_fn call__;
 	struct vec* args;
 	struct vec results;
+	struct column* linked_column;
 	enum aggregate_function agg_type;
 	enum field_type data_type;
 };

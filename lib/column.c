@@ -80,6 +80,12 @@ void column_link(struct column* dest, struct column* src)
 {
 	dest->data_source = src;
 	dest->field_type = src->field_type;
+
+	if (src->expr == EXPR_AGGREGATE) {
+		aggregate* agg = src->field.agg;
+		agg->linked_column = dest;
+	}
+
 	table* src_table = src->table;
 	if (src_table == NULL) {
 		return;

@@ -109,8 +109,8 @@ int group_record(group* self, vec* recs)
 		}
 	}
 
-	for (i = 0; i < self->columns.size; ++i) {
-		sv[i] = flex_pair_at(&self->group_data, org_size);
+	for (i = 0; i < self->_composite.size; ++i) {
+		sv[i] = flex_pair_at(&self->group_data, org_size + i);
 	}
 
 	unsigned group_count = self->val_map.values.size;

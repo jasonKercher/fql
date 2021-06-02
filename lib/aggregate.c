@@ -21,11 +21,12 @@ static const char* agg_str[14] = {
 
 aggregate* aggregate_construct(aggregate* agg, enum aggregate_function agg_type)
 {
-	*agg = (aggregate) {NULL,
-	                    new_t_(vec, column*),
-	                    {0},
-	                    agg_type,
-	                    FIELD_UNDEFINED};
+	*agg = (aggregate) {NULL,                 /* call__ */
+	                    new_t_(vec, column*), /* args */
+	                    {0},                  /* results */
+	                    NULL,                 /* linked_column */
+	                    agg_type,             /* agg_type */
+	                    FIELD_UNDEFINED};     /* data_type */
 
 	vec_construct(&agg->results, sizeof(struct aggresult));
 
@@ -56,14 +57,14 @@ void aggregate_add_column(aggregate* agg, column* col)
 
 int aggregate_resolve(aggregate* agg)
 {
-	column* col = *(column**)vec_begin(agg->args);
+	column* argument = *(column**)vec_begin(agg->args);
 	switch (agg->agg_type) {
 	case AGG_COUNT:
 		agg->call__ = &fql_count;
 		agg->data_type = FIELD_INT;
 		return FQL_GOOD;
 	case AGG_MIN:
-		switch (col->field_type) {
+		switch (argument->field_type) {
 		case FIELD_INT:
 			agg->call__ = &fql_min_i;
 			break;
@@ -76,10 +77,10 @@ int aggregate_resolve(aggregate* agg)
 		default:
 			goto unexpected_type;
 		}
-		agg->data_type = col->field_type;
+		agg->data_type = argument->field_type;
 		return FQL_GOOD;
 	case AGG_MAX:
-		switch (col->field_type) {
+		switch (argument->field_type) {
 		case FIELD_INT:
 			agg->call__ = &fql_max_i;
 			break;
@@ -92,10 +93,10 @@ int aggregate_resolve(aggregate* agg)
 		default:
 			goto unexpected_type;
 		}
-		agg->data_type = col->field_type;
+		agg->data_type = argument->field_type;
 		return FQL_GOOD;
 	case AGG_SUM:
-		switch (col->field_type) {
+		switch (argument->field_type) {
 		case FIELD_INT:
 			agg->call__ = &fql_sum_i;
 			break;
@@ -105,7 +106,7 @@ int aggregate_resolve(aggregate* agg)
 		default:
 			goto unexpected_type;
 		}
-		agg->data_type = col->field_type;
+		agg->data_type = argument->field_type;
 		return FQL_GOOD;
 	default:
 		fprintf(stderr,
@@ -117,7 +118,7 @@ int aggregate_resolve(aggregate* agg)
 unexpected_type:
 	fprintf(stderr,
 	        "unexpected type `%s' in aggregate `%s'\n",
-	        field_description(col->field_type),
+	        field_description(argument->field_type),
 	        agg_str[agg->agg_type]);
 	return FQL_FAIL;
 }
