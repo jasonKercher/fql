@@ -27,14 +27,14 @@ string* string_construct_from_string(string* dest, string* src)
 	return dest;
 }
 
-string* string_from_stringview(struct stringview* sv)
+string* string_from_stringview(const struct stringview* sv)
 {
 	string* new_string = new_(string);
 	string_copy_from_stringview(new_string, sv);
 	return new_string;
 }
 
-string* string_construct_from_stringview(string* s, struct stringview* sv)
+string* string_construct_from_stringview(string* s, const struct stringview* sv)
 {
 	string_construct(s);
 	string_copy_from_stringview(s, sv);
@@ -84,12 +84,12 @@ string* string_construct_take(string* s, char* src)
 	return s;
 }
 
-void string_copy_from_stringview(string* s, struct stringview* sv)
+void string_copy_from_stringview(string* s, const struct stringview* sv)
 {
 	string_strncpy(s, sv->data, sv->len);
 }
 
-void string_append_stringview(string* dest, struct stringview* sv)
+void string_append_stringview(string* dest, const struct stringview* sv)
 {
 	size_t index = dest->size;
 	vec_resize(dest, dest->size + sv->len);

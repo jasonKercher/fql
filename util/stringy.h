@@ -24,8 +24,8 @@ string* string_from_string(string*);
 string* string_construct_from_string(string*, string*);
 string* string_from_char_ptr(const char*);
 string* string_construct_from_char_ptr(string*, const char*);
-string* string_from_stringview(struct stringview*);
-string* string_construct_from_stringview(string*, struct stringview*);
+string* string_from_stringview(const struct stringview*);
+string* string_construct_from_stringview(string*, const struct stringview*);
 string* string_take(char*);
 string* string_construct_take(string*, char*);
 
@@ -36,8 +36,8 @@ string* string_construct_take(string*, char*);
 #define string_append(src_, dest_) vec_extend(src_, dest_)
 
 /* stringview interface */
-void string_copy_from_stringview(string* s, struct stringview*);
-void string_append_stringview(string*, struct stringview*);
+void string_copy_from_stringview(string* s, const struct stringview*);
+void string_append_stringview(string*, const struct stringview*);
 struct stringview string_get_stringview(string*);
 
 /* char interface */

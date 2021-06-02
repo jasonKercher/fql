@@ -11,7 +11,8 @@ logic* logic_construct(logic* self)
 {
 	*self = (logic) {
 	        {NULL, NULL},    /* col */
-	        NULL,            /* proc */
+	        NULL,            /* like_data */
+	        NULL,            /* logic__ */
 	        FIELD_UNDEFINED, /* data_type */
 	        COMP_NOT_SET     /* comp_type */
 	};
@@ -28,7 +29,29 @@ void logic_destroy(logic* self)
 	delete_(column, self->col[1]);
 }
 
-void logic_assign_process(logic* self, process* proc)
+string* _like_to_regex(stringview* like)
+{
+	return NULL;
+}
+
+int logic_compile_like(logic* self, stringview* like)
+{
+
+	return FQL_GOOD;
+}
+
+int _precompile_like(logic* self)
+{
+	self->like_data = new_(like);
+	if (self->col[1]->expr != EXPR_CONST) {
+		return FQL_GOOD;
+	}
+	stringview sv = {0};
+	try_(column_get_stringview(&sv, self->col[1], NULL));
+	return logic_compile_like(self, &sv);
+}
+
+int logic_assign_process(logic* self, process* proc)
 {
 	self->data_type = field_determine_type(self->col[0]->field_type,
 	                                       self->col[1]->field_type);
@@ -55,9 +78,11 @@ void logic_assign_process(logic* self, process* proc)
 		string_strcat(proc->action_msg, " <= ");
 		break;
 	case COMP_LIKE:
+		try_(_precompile_like(self));
 		string_strcat(proc->action_msg, " LIKE ");
 		break;
 	case COMP_NOT_LIKE:
+		try_(_precompile_like(self));
 		string_strcat(proc->action_msg, " NOT LIKE ");
 		break;
 	case COMP_NULL:
@@ -73,6 +98,8 @@ void logic_assign_process(logic* self, process* proc)
 		break;
 	}
 	column_cat_description(self->col[1], proc->action_msg);
+
+	return FQL_GOOD;
 }
 
 void logic_add_column(logic* self, struct column* col)
@@ -108,18 +135,29 @@ void logic_set_comparison(logic* self, const char* op)
 		self->comp_type = COMP_NOT_NULL;
 }
 
+/** LIKE **/
+
+like* like_construct(like* self)
+{
+	string_construct(&self->regex_buffer);
+	return self;
+}
+
+void like_destroy(like* self)
+{
+	string_destroy(&self->regex_buffer);
+}
+
+/** LOGIC GROUP **/
+
 logicgroup* logicgroup_construct(logicgroup* lg, enum logicgroup_type type)
 {
 	*lg = (logicgroup) {
-	        type /* type */
-	        ,
-	        {0} /* items */
-	        ,
-	        NULL /* joinable */
-	        ,
-	        NULL /* join_logic */
-	        ,
-	        NULL /* condition */
+	        type, /* type */
+	        {0},  /* items */
+	        NULL, /* joinable */
+	        NULL, /* join_logic */
+	        NULL, /* condition */
 	};
 
 	vec_construct_(&lg->items, logicgroup*);
@@ -160,7 +198,7 @@ unsigned logicgroup_get_condition_count(logicgroup* lg)
 }
 
 /* essentially the same as logicgroup_eval.
- * every self is true except the one provided.
+ * except all logic is true except the one provided.
  * the point is to determine if that self MUST be
  * true for the group to evaluate to true.
  */
@@ -188,7 +226,7 @@ int logic_can_be_false(logicgroup* lg, logic* check_logic)
 }
 
 /* evaluate the self statement
- * the skip argument is for self that can
+ * the skip argument is for logic that can
  * be assumed true because it was evaluated
  * prior to calling this function.
  */

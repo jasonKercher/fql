@@ -86,7 +86,7 @@ void plan_destroy(void* generic_plan)
 /* build process nodes from logic graph
  * assign processes for true and false
  */
-void _logic_to_process(process* logic_proc, logicgroup* lg)
+int _logic_to_process(process* logic_proc, logicgroup* lg)
 {
 	switch (lg->type) {
 	case LG_ROOT:
@@ -98,28 +98,29 @@ void _logic_to_process(process* logic_proc, logicgroup* lg)
 	case LG_NOT:
 		string_strcat(logic_proc->action_msg, "NOT(");
 		if (lg->condition != NULL) {
-			logic_assign_process(lg->condition, logic_proc);
+			try_(logic_assign_process(lg->condition, logic_proc));
 		}
 		break;
 	default:
 		fprintf(stderr, "unexpected logic group %d\n", lg->type);
-		return;
+		return FQL_FAIL;
 	}
 
 	logicgroup** it = vec_begin(&lg->items);
 	for (; it != vec_end(&lg->items); ++it) {
-		_logic_to_process(logic_proc, *it);
+		return _logic_to_process(logic_proc, *it);
 	}
 
 	string_strcat(logic_proc->action_msg, ")");
+	return FQL_GOOD;
 }
 
-void _logicgroup_process(plan* self, logicgroup* lg, _Bool is_from_hash_join)
+int _logicgroup_process(plan* self, logicgroup* lg, _Bool is_from_hash_join)
 {
 	process* logic_proc = new_(process, "", self);
 	logic_proc->action__ = &fql_logic;
 	logic_proc->proc_data = lg;
-	_logic_to_process(logic_proc, lg);
+	try_(_logic_to_process(logic_proc, lg));
 	dnode* logic_node = dgraph_add_data(self->processes, logic_proc);
 
 	if (is_from_hash_join) {
@@ -140,6 +141,8 @@ void _logicgroup_process(plan* self, logicgroup* lg, _Bool is_from_hash_join)
 	logic_node->out[1] = logic_true_node;
 
 	self->current = logic_true_node;
+
+	return FQL_GOOD;
 }
 
 process* _new_join_proc(enum join_type type, const char* algorithm, plan* self)
@@ -280,9 +283,9 @@ int _from(plan* self, query* query)
 		self->current = join_node;
 
 		if (table_iter->condition != NULL) {
-			_logicgroup_process(self,
-			                    table_iter->condition,
-			                    is_hash_join);
+			try_(_logicgroup_process(self,
+			                         table_iter->condition,
+			                         is_hash_join));
 		}
 	}
 
@@ -291,13 +294,14 @@ int _from(plan* self, query* query)
 	return FQL_GOOD;
 }
 
-void _where(plan* self, query* query)
+int _where(plan* self, query* query)
 {
 	if (query->where == NULL) {
-		return;
+		return FQL_GOOD;
 	}
 
-	_logicgroup_process(self, query->where, false);
+	try_(_logicgroup_process(self, query->where, false));
+	return FQL_GOOD;
 }
 
 /* NOTE: If there is a grouping, the grouping becomes new
@@ -511,11 +515,12 @@ plan* plan_build(query* query, dnode* entry)
 	plan* self = query->plan;
 
 	/* query */
-	if (_from(self, query)) {
-		delete_(plan, self);
-		return NULL;
+	if (_from(self, query) == FQL_FAIL) {
+		goto build_fail_return;
 	}
-	_where(self, query);
+	if (_where(self, query) == FQL_FAIL) {
+		goto build_fail_return;
+	}
 	_group(self, query);
 	_having(self, query);
 	_operation(self, query, entry);
@@ -547,6 +552,10 @@ plan* plan_build(query* query, dnode* entry)
 	_update_pipes(self->processes);
 
 	return self;
+
+build_fail_return:
+	delete_(plan, self);
+	return NULL;
 }
 
 int build_plans(queue* query_list)

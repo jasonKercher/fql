@@ -13,8 +13,7 @@ enum comparison {
 	COMP_NOT_SET = -3,
 	COMP_FALSE,
 	COMP_TRUE,
-	COMP_EQ /* 0 */
-	,
+	COMP_EQ, /* 0 */
 	COMP_NE,
 	COMP_GT,
 	COMP_GE,
@@ -27,10 +26,12 @@ enum comparison {
 };
 
 struct logic;
+struct like;
 typedef int (*logic_fn)(struct logic*, struct vec*);
 
 struct logic {
 	struct column* col[2];
+	struct like* like_data;
 	logic_fn logic__;
 	enum field_type data_type;
 	enum comparison comp_type;
@@ -40,9 +41,17 @@ typedef struct logic logic;
 struct logic* logic_construct(struct logic*);
 void logic_destroy(struct logic*);
 
-void logic_assign_process(struct logic*, struct process*);
+int logic_assign_process(struct logic*, struct process*);
 void logic_add_column(struct logic*, struct column*);
 void logic_set_comparison(struct logic* logic, const char* op);
+
+struct like {
+	string regex_buffer;
+};
+typedef struct like like;
+
+struct like* like_construct(struct like*);
+void like_destroy(struct like*);
 
 enum logicgroup_type {
 	LG_UNDEFINED = -1,
