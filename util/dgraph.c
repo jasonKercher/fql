@@ -79,7 +79,7 @@ void* dgraph_remove(dgraph* graph, dnode** node)
 {
 	void* data = (*node)->data;
 	delete_(dnode, *node);
-	vec_erase(graph->nodes, node);
+	vec_erase_one(graph->nodes, node);
 	graph->_roots_good = false;
 	return data;
 }
@@ -151,7 +151,6 @@ void dgraph_traverse_reset(dgraph* graph)
 	/* we are going to enter the first root manually */
 	graph->_root_idx = 1;
 
-	int i = 0;
 	dnode** it = vec_begin(graph->nodes);
 	for (; it != vec_end(graph->nodes); ++it) {
 		(*it)->visit_count = 0;

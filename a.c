@@ -12,158 +12,156 @@
 
 #include "util/stringy.h"
 #include "util/stringview.h"
+#include "util/vec.h"
 #include "util/util.h"
 
-void _replace_all(string* s, const stringview oldstr, const stringview newstr)
+/* return END if none fount */
+const char* _replace_one(string* s,
+                         const char* oldstr,
+                         const char* newstr,
+                         unsigned begin_idx)
 {
-	if (oldstr.len > s->size) {
-		return;
+	unsigned oldlen = strlen(oldstr);
+	unsigned newlen = strlen(newstr);
+
+	char* begin = vec_at(s, begin_idx);
+	char* pos = memmem(begin, s->size, oldstr, oldlen);
+
+	if (pos == NULL) {
+		return vec_end(s);
 	}
 
-	char* cstr = s->data;
+	int idx = pos - begin;
+
+	unsigned i = 0;
+	for (; i < oldlen && i < newlen; ++i) {
+		begin[idx++] = newstr[i];
+	}
+
+	if (i == newlen) {
+		return begin + idx;
+	}
+
+	if (i < oldlen) {
+		vec_erase_at(s, i, oldlen - i);
+	} else { /* j < newstr.len */
+		vec_insert_at(s, i, &newstr[i], newlen - i);
+	}
+
+	return begin + idx;
+}
+
+void _replace_all(string* s, const char* oldstr, const char* newstr)
+{
 	unsigned i = 0;
 	for (; i < s->size; ++i) {
-		char* pos = memmem(cstr, s->size, oldstr.data, oldstr.len);
-
-		if (pos == NULL) {
-			return;
-		}
-
-		i = pos - cstr;
-
-		unsigned j = 0;
-		for (; j < oldstr.len && j < newstr.len; ++j) {
-			cstr[i++] = newstr.data[j];
-		}
-
-		if (j == newstr.len) {
-			continue;
-		}
-
-		if (j < oldstr.len) {
-			while (j++ < oldstr.len) {
-				vec_remove(s, i);
-			}
-		} else { /* j < newstr.len */
-			while (j < newstr.len) {
-				vec_insert(s, i++, &newstr.data[j++]);
-			}
-		}
+		const char* next = _replace_one(s, oldstr, newstr, i);
+		i += next - (const char*)vec_begin(s) - 1;
 	}
 	return;
 }
 
-void extract_character_ranges(vec* ranges, string* str)
+void extract_character_ranges(vec* ranges, string* likebuf)
 {
+	int range_idx = 0;
+	const char* begin = vec_begin(likebuf);
+	const char* start = begin;
+	char* end = NULL;
 
-	//std::map<std::string, std::string> ranges;
+	char key[10];
 
-	int rangeID = 0;
-	//std::string::size_type startPos = 0;
-	//std::string::size_type endPos = 0;
+	while ((start = memchr(start, '[', likebuf->size - (start - begin)))
+	       && (end = memchr(start, ']', likebuf->size - (start - begin)))) {
+		string bracketed = {0};
+		string_construct(&bracketed);
 
-	//while ((startPos = str.find("[", startPos)) != std::string::npos && (endPos = str.find("]", startPos + 1)) != std::string::npos)
-	//{
-	//    std::stringstream ss;
-	//    ss << "[[" << rangeID << "]]";
-	//    std::string chars = str.substr(startPos + 1, endPos - startPos - 1);
-	//    str.replace(startPos, chars.size() + 2, ss.str());
-	//    rangeID++;
-	//    startPos += ss.str().size();
+		sprintf(key, "[[%d]]", range_idx);
+		string_strncpy(&bracketed, start, end - start);
+		_replace_one(likebuf,
+		             string_c_str(&bracketed),
+		             key,
+		             start - begin);
 
-	//    replace_all(chars, "[", "\\[");
-	//    replace_all(chars, "]", "\\]");
-	//    ranges[ss.str()] = "[" + chars + "]";
-	//}
+		/* in case of realloc */
+		unsigned begin_idx = start - begin;
+		begin = vec_begin(likebuf);
+		start = begin + begin_idx;
+		start += strlen(key);
 
-	//int open = 0;
-	//std::string::size_type searchPos = 0;
-	//startPos = 0; endPos = 0;
-	//do
-	//{
-	//    startPos = str.find("[", searchPos);
-	//    endPos = str.find("]", searchPos);
+		_replace_all(&bracketed, "[", "\\[");
+		_replace_all(&bracketed, "]", "\\]");
 
-	//    if (startPos == std::string::npos && endPos == std::string::npos)
-	//        break;
+		char* bracket_cpy = strdup(string_c_str(&bracketed));
+		string_sprintf(&bracketed, "[%s]", bracket_cpy);
+		free_(bracket_cpy);
 
-	//    if (startPos < endPos || endPos == std::string::npos)
-	//    {
-	//        open++;
-	//        searchPos = startPos + 1;
-	//    }
-	//    else
-	//    {
-	//        if (open <= 0)
-	//        {
-	//            str.replace(endPos, 1, "\\]");
-	//            searchPos = endPos + 2;
-	//        }
-	//        else
-	//        {
-	//            open--;
-	//            searchPos = endPos + 1;
-	//        }
-	//    }
-	//} while (searchPos < str.size());
-	//return ranges;
+		vec_push_back(ranges, &bracketed);
+
+		++range_idx;
+	}
+
+	int open = 0;
+	begin = vec_begin(likebuf);
+	start = begin;
+	const char* search = start;
+
+	do {
+		start = memchr(search, '[', likebuf->size - (search - begin));
+		end = memchr(search, ']', likebuf->size - (search - begin));
+
+		if (start == NULL && end == NULL) {
+			break;
+		}
+
+		if (start < end || end == NULL) {
+			open++;
+			search = start + 1;
+		} else {
+			if (open <= 0) {
+				end[1] = '\\';
+				char end_bracket = ']';
+				vec_insert_at(likebuf,
+				              vec_get_idx_(likebuf, end + 1),
+				              &end_bracket,
+				              1);
+				search = end + 2;
+			} else {
+				open--;
+				search = end + 1;
+			}
+		}
+	} while (search < (const char*)vec_end(likebuf));
 }
 
 void like_to_regex(string* regex_buffer,
                    string* like_buffer,
                    vec* ranges,
-                   const stringview* sqllike)
+                   const stringview sqllike)
 {
-	string_copy_from_stringview(like_buffer, sqllike);
-	_replace_all(like_buffer,
-	             (stringview) {".", 1},
-	             (stringview) {"\\.", 2});
-	_replace_all(like_buffer,
-	             (stringview) {"^", 1},
-	             (stringview) {"\\^", 2});
-	_replace_all(like_buffer,
-	             (stringview) {"$", 1},
-	             (stringview) {"\\$", 2});
-	_replace_all(like_buffer,
-	             (stringview) {"+", 1},
-	             (stringview) {"\\+", 2});
-	_replace_all(like_buffer,
-	             (stringview) {"?", 1},
-	             (stringview) {"\\?", 2});
-	_replace_all(like_buffer,
-	             (stringview) {"(", 1},
-	             (stringview) {"\\(", 2});
-	_replace_all(like_buffer,
-	             (stringview) {")", 1},
-	             (stringview) {"\\)", 2});
-	_replace_all(like_buffer,
-	             (stringview) {"{", 1},
-	             (stringview) {"\\{", 2});
-	_replace_all(like_buffer,
-	             (stringview) {"}", 1},
-	             (stringview) {"\\}", 2});
-	_replace_all(like_buffer,
-	             (stringview) {"\\", 1},
-	             (stringview) {"\\\\", 2});
-	_replace_all(like_buffer,
-	             (stringview) {"|", 1},
-	             (stringview) {"\\|", 2});
-	_replace_all(like_buffer,
-	             (stringview) {".", 1},
-	             (stringview) {"\\.", 2});
-	_replace_all(like_buffer,
-	             (stringview) {"*", 1},
-	             (stringview) {"\\*", 2});
-	extract_character_ranges(like_buffer,
-	                         ranges); //Escapes [ and ] where necessary
-	_replace_all(like_buffer,
-	             (stringview) {"%", 1},
-	             (stringview) {".*", 1});
-	_replace_all(like_buffer, (stringview) {"_", 1}, (stringview) {".", 1});
-	//for (auto& range : ranges)
-	//{
-	//    replace_all(sqllike, range.first, range.second);
-	//}
+	string_copy_from_stringview(like_buffer, &sqllike);
+	_replace_all(like_buffer, ".", "\\.");
+	_replace_all(like_buffer, "^", "\\^");
+	_replace_all(like_buffer, "$", "\\$");
+	_replace_all(like_buffer, "+", "\\+");
+	_replace_all(like_buffer, "?", "\\?");
+	_replace_all(like_buffer, "(", "\\(");
+	_replace_all(like_buffer, ")", "\\)");
+	_replace_all(like_buffer, "{", "\\{");
+	_replace_all(like_buffer, "}", "\\}");
+	_replace_all(like_buffer, "\\", "\\\\");
+	_replace_all(like_buffer, "|", "\\|");
+	_replace_all(like_buffer, ".", "\\.");
+	_replace_all(like_buffer, "*", "\\*");
+	extract_character_ranges(ranges, like_buffer);
+	_replace_all(like_buffer, "%", ".*");
+	_replace_all(like_buffer, "_", ".");
+
+	char key[10];
+	unsigned i = 0;
+	for (; i < ranges->size; ++i) {
+		sprintf(key, "[[%d]]", i);
+		_replace_all(like_buffer, key, string_c_str(vec_at(ranges, i)));
+	}
 	string_sprintf(regex_buffer, "^%s$", string_c_str(like_buffer));
 }
 
@@ -176,7 +174,12 @@ int main(int argc, char** argv)
 
 	string* likebuf = new_(string);
 	string* rebuf = new_(string);
-	vec* ranges = new_t_(vec, stringview);
+	vec* ranges = new_t_(vec, string);
 
-	//like_to_regex(rebuf, likebuf, ranges, (stringview){argv[1],strlen(argv[1])});
+	like_to_regex(rebuf,
+	              likebuf,
+	              ranges,
+	              (stringview) {argv[1], strlen(argv[1])});
+
+	puts(string_c_str(rebuf));
 }

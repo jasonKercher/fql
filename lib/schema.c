@@ -385,7 +385,10 @@ int _asterisk_resolve(vec* columns, vec* sources)
 					                       NULL,
 					                       "");
 					new_col->src_idx = j;
-					vec_insert(columns, ++i, &new_col);
+					vec_insert_at(columns,
+					              ++i,
+					              &new_col,
+					              1);
 					col = vec_at(columns, col_idx);
 				} else {
 					(*col)->src_idx = j;

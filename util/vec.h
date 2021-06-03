@@ -54,14 +54,24 @@ void vec_pop_back(struct vec*);
 
 void* vec_add_one(struct vec*);
 void vec_set(struct vec*, size_t, const void*);
-void vec_append(struct vec*, const void* src, size_t);
-void vec_insert(struct vec*, size_t, const void*);
 void vec_push_back(struct vec*, const void*);
 
+void vec_insert_one(struct vec*, void* pos, const void* elem);
+void vec_insert_at(struct vec*, size_t idx, const void* data, size_t len);
+void vec_insert(struct vec*, void* pos, const void* begin, const void* back);
+
+void vec_erase_one(struct vec*, void* elem);
+void vec_erase_at(struct vec*, size_t idx, size_t len);
+void vec_erase(struct vec*, void* begin, void* back);
+
+void vec_append(struct vec*, const void* src, size_t);
 void vec_extend(struct vec* dest, const struct vec* src);
-void vec_erase(struct vec*, void*);
-void vec_remove(struct vec*, size_t);
 
 void vec_sort_r(struct vec*, qsort_r_cmp_fn, void* context);
+
+#define vec_iter_size_(v_, begin_, back_)                                      \
+	(((const char*)back_ - (const char*)begin_) / v_->_elem_size) + 1
+
+#define vec_get_idx_(v_, pos_) vec_iter_size_(v_, vec_begin(v_), pos_) - 1
 
 #endif /* VEC_H */

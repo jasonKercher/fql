@@ -88,17 +88,17 @@ void flex_pop_back(flex* self)
 	vec_pop_back(&self->_pairs);
 }
 
-void flex_insert(flex* self, size_t idx, void* data, unsigned datalen)
+void flex_insert(flex* self, size_t idx, const void* data, unsigned datalen)
 {
 	struct _pair pair = {
 		 self->_raw.size
 		,datalen
 	};
-	vec_insert(&self->_pairs, idx, &pair);
+	vec_insert_at(&self->_pairs, idx, &pair, 1);
 	vec_append(&self->_raw, data, datalen);
 }
 
-void flex_push_back(flex* self, void* data, unsigned datalen)
+void flex_push_back(flex* self, const void* data, unsigned datalen)
 {
 	struct _pair pair = {
 		 self->_raw.size
@@ -133,5 +133,5 @@ void flex_push_back_str_float(struct flex* self, double num)
 
 void flex_remove(flex* self, size_t idx)
 {
-	vec_remove(&self->_pairs, idx);
+	vec_erase_at(&self->_pairs, idx, 1);
 }

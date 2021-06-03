@@ -3,6 +3,7 @@
 #include <limits.h>
 #include "util.h"
 
+
 vec* vec_construct(vec* self, size_t elem_size)
 {
 	*self = (vec) {
@@ -141,16 +142,6 @@ void vec_append(vec* self, const void* src, size_t n)
 	memcpy(end, src, n * self->_elem_size);
 }
 
-void vec_insert(vec* self, size_t n, const void* src)
-{
-	vec_add_one(self);
-	char* dest = vec_at(self, n);
-	size_t shift_size = self->_elem_size * (self->size - n);
-
-	memmove(dest + self->_elem_size, dest, shift_size);
-	vec_set(self, n, src);
-}
-
 void vec_push_back(vec* self, const void* item)
 {
 	memcpy(vec_add_one(self), item, self->_elem_size);
@@ -162,30 +153,61 @@ void vec_extend(vec* dest, const vec* src)
 	vec_resize(dest, dest->size + src->size);
 	void* end = vec_at(dest, index);
 	size_t bytes = src->_elem_size * (src->size + 1);
-	memcpy(end, vec_begin(src), bytes);
+	memmove(end, vec_begin(src), bytes);
 }
 
-void vec_erase(vec* self, void* elem)
+void vec_insert_one(vec* self, void* pos, const void* src)
 {
-	size_t bytes = (char*)vec_end(self) - (char*)elem;
-	memmove(elem, (char*)elem + self->_elem_size, bytes);
-	--self->size;
+	vec_add_one(self);
+	size_t move_bytes =
+	        self->_elem_size * (self->size - vec_get_idx_(self, pos));
+
+	memmove((char*)pos + self->_elem_size, pos, move_bytes);
+	memcpy(pos, src, self->_elem_size);
 }
 
-void vec_remove(vec* self, size_t index)
+void vec_insert_at(vec* self, size_t idx, const void* data, size_t len)
 {
-	if (index >= self->size) {
-		return; /* abort? */
-	}
+	void* pos = vec_at(self, idx);
+	const void* back = (const char*)data + ((len - 1) * self->_elem_size);
+	vec_insert(self, pos, data, back);
+}
 
-	vec_erase(self, vec_at(self, index));
+void vec_insert(vec* self, void* pos, const void* begin, const void* back)
+{
+	size_t idx = vec_get_idx_(self, pos);
+	size_t iter_size = vec_iter_size_(self, begin, back);
+	size_t iter_bytes = self->_elem_size * iter_size;
+	size_t move_bytes = self->_elem_size * (self->size - idx);
+	vec_resize(self, self->size + iter_size);
+
+	pos = vec_at(self, idx);
+
+	memmove((char*)pos + iter_bytes, pos, move_bytes);
+	memcpy(pos, begin, iter_bytes);
+}
+
+void vec_erase_one(vec* self, void* elem)
+{
+	vec_erase(self, elem, elem);
+}
+
+void vec_erase_at(vec* self, size_t index, size_t len)
+{
+	void* begin = vec_at(self, index);
+	void* back = vec_at(self, index + len - 1);
+	vec_erase(self, begin, back);
+}
+
+void vec_erase(vec* self, void* begin, void* back)
+{
+	size_t bytes = (char*)vec_end(self) - (const char*)back;
+	self->size -= vec_iter_size_(self, begin, back);
+	memmove(begin, (char*)back + self->_elem_size, bytes);
 }
 
 void vec_sort_r(vec* self, qsort_r_cmp_fn cmp__, void* context)
 {
-	if (self->size == 0) {
-		return;
-	}
 	qsort_r(self->data, self->size, self->_elem_size, cmp__, context);
 }
 

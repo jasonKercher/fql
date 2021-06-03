@@ -80,7 +80,7 @@ int _expand_asterisk(vec* col_vec,
 		new_col->src_idx = src_idx;
 		new_col->field_type = (*it)->field_type;
 		++(*col_idx);
-		vec_insert(col_vec, *col_idx, &new_col);
+		vec_insert_at(col_vec, *col_idx, &new_col, 1);
 	}
 
 	return table->schema->columns->size;
@@ -113,7 +113,7 @@ void _expand_asterisks(query* query, _Bool force_expansion)
 
 		column** asterisk_col = vec_at(col_vec, asterisk_index);
 		delete_(column, *asterisk_col);
-		vec_remove(col_vec, asterisk_index);
+		vec_erase_at(col_vec, asterisk_index, 1);
 		--i;
 	}
 

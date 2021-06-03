@@ -12,7 +12,7 @@ check_order
 check_difficult
 check_failure
 
-run.sql
+sample.sql
 
 *~
 
