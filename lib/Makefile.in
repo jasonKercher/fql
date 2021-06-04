@@ -140,7 +140,7 @@ am_libfql_la_OBJECTS = libfql_la-libfql.lo libfql_la-fqlplan.lo \
 	libfql_la-aggregatefn.lo libfql_la-order.lo \
 	libfql_la-operation.lo libfql_la-reader.lo \
 	libfql_la-libcsvread.lo libfql_la-writer.lo libfql_la-logic.lo \
-	libfql_la-fqllogic.lo libfql_la-fqlselect.lo \
+	libfql_la-fqllogic.lo libfql_la-like.lo libfql_la-fqlselect.lo \
 	libfql_la-function.lo libfql_la-scalarfn.lo \
 	libfql_la-record.lo libfql_la-field.lo
 libfql_la_OBJECTS = $(am_libfql_la_OBJECTS)
@@ -178,7 +178,7 @@ am__depfiles_remade = ./$(DEPDIR)/libfql_la-aggregate.Plo \
 	./$(DEPDIR)/libfql_la-group.Plo \
 	./$(DEPDIR)/libfql_la-libcsvread.Plo \
 	./$(DEPDIR)/libfql_la-libfql.Plo \
-	./$(DEPDIR)/libfql_la-logic.Plo \
+	./$(DEPDIR)/libfql_la-like.Plo ./$(DEPDIR)/libfql_la-logic.Plo \
 	./$(DEPDIR)/libfql_la-operation.Plo \
 	./$(DEPDIR)/libfql_la-order.Plo \
 	./$(DEPDIR)/libfql_la-process.Plo \
@@ -293,6 +293,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHECK_CFLAGS = @CHECK_CFLAGS@
 CHECK_LIBS = @CHECK_LIBS@
+CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -397,7 +398,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -423,7 +423,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					operation.h operation.c \
 					reader.h reader.c libcsvread.c \
 					writer.h writer.c \
-					logic.h logic.c fqllogic.c \
+					logic.h logic.c fqllogic.c like.c \
 					fqlselect.h fqlselect.c \
 					function.h function.c scalarfn.c \
 					record.h record.c \
@@ -431,7 +431,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					misc.h
 
 libfql_la_CFLAGS = -Wextra -Wall -Wno-unused-parameter
-libfql_la_LDFLAGS = -l:libcsv.so.1 -lantlr4-runtime -pthread -version-info 1:1:0
+libfql_la_LDFLAGS = -l:libcsv.so.1 -lpcre2-8 -lantlr4-runtime -pthread -version-info 1:1:0
 libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la
 all: all-recursive
 
@@ -523,6 +523,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-group.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-libcsvread.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-libfql.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-like.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-logic.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-operation.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-order.Plo@am__quote@ # am--include-marker
@@ -687,6 +688,13 @@ libfql_la-fqllogic.lo: fqllogic.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fqllogic.c' object='libfql_la-fqllogic.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-fqllogic.lo `test -f 'fqllogic.c' || echo '$(srcdir)/'`fqllogic.c
+
+libfql_la-like.lo: like.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-like.lo -MD -MP -MF $(DEPDIR)/libfql_la-like.Tpo -c -o libfql_la-like.lo `test -f 'like.c' || echo '$(srcdir)/'`like.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libfql_la-like.Tpo $(DEPDIR)/libfql_la-like.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='like.c' object='libfql_la-like.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-like.lo `test -f 'like.c' || echo '$(srcdir)/'`like.c
 
 libfql_la-fqlselect.lo: fqlselect.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-fqlselect.lo -MD -MP -MF $(DEPDIR)/libfql_la-fqlselect.Tpo -c -o libfql_la-fqlselect.lo `test -f 'fqlselect.c' || echo '$(srcdir)/'`fqlselect.c
@@ -963,6 +971,7 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/libfql_la-group.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-libcsvread.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-libfql.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-like.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-logic.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-operation.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-order.Plo
@@ -1031,6 +1040,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/libfql_la-group.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-libcsvread.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-libfql.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-like.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-logic.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-operation.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-order.Plo

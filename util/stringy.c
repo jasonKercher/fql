@@ -192,3 +192,48 @@ void string_resize(string* s, size_t n)
 	vec_resize(s, n);
 	_null_terminate_(s);
 }
+
+const char* string_find_replace_one(string* s,
+                                    const char* oldstr,
+                                    const char* newstr,
+                                    size_t begin_idx)
+{
+	unsigned oldlen = strlen(oldstr);
+	unsigned newlen = strlen(newstr);
+
+	char* begin = vec_at(s, begin_idx);
+	char* pos = memmem(begin, s->size, oldstr, oldlen);
+
+	if (pos == NULL) {
+		return vec_end(s);
+	}
+
+	int idx = pos - begin;
+
+	unsigned i = 0;
+	for (; i < oldlen && i < newlen; ++i) {
+		begin[idx++] = newstr[i];
+	}
+
+	if (oldlen == newlen) {
+		return begin + idx;
+	}
+
+	if (i < oldlen) {
+		vec_erase_at(s, idx + begin_idx, oldlen - i);
+	} else { /* j < newstr.len */
+		vec_insert_at(s, idx + begin_idx, &newstr[i], newlen - i);
+	}
+
+	return begin + newlen;
+}
+
+void string_find_replace(string* s, const char* oldstr, const char* newstr)
+{
+	unsigned i = 0;
+	for (; i < s->size; ++i) {
+		const char* next =
+		        string_find_replace_one(s, oldstr, newstr, i);
+		i += next - (const char*)vec_begin(s) - 1;
+	}
+}

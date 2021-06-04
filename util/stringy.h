@@ -54,5 +54,8 @@ char* string_export(string*);
 void string_clear(string*);
 void string_resize(string*, size_t);
 void string_copy(string* dest, string* src);
+void string_find_replace(string*, const char* from, const char* to);
+const char*
+string_find_replace_one(string*, const char* from, const char* to, size_t);
 
 #endif  /* STRINGY_H */

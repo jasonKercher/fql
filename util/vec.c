@@ -178,7 +178,7 @@ void vec_insert(vec* self, void* pos, const void* begin, const void* back)
 	size_t idx = vec_get_idx_(self, pos);
 	size_t iter_size = vec_iter_size_(self, begin, back);
 	size_t iter_bytes = self->_elem_size * iter_size;
-	size_t move_bytes = self->_elem_size * (self->size - idx);
+	size_t move_bytes = self->_elem_size * ((self->size + 1) - idx);
 	vec_resize(self, self->size + iter_size);
 
 	pos = vec_at(self, idx);

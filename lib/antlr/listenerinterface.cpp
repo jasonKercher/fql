@@ -492,7 +492,12 @@ void ListenerInterface::exitSearch_condition_not(TSqlParser::Search_condition_no
 }
 
 void ListenerInterface::enterPredicate(TSqlParser::PredicateContext * ctx) { }
-void ListenerInterface::exitPredicate(TSqlParser::PredicateContext * ctx) { }
+void ListenerInterface::exitPredicate(TSqlParser::PredicateContext * ctx)
+{ 
+	if (ctx->LIKE()) {
+		query_set_logic_comparison(_query, "LIKE");
+	}
+}
 
 void ListenerInterface::enterQuery_expression(TSqlParser::Query_expressionContext * ctx) { }
 void ListenerInterface::exitQuery_expression(TSqlParser::Query_expressionContext * ctx) { }

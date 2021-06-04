@@ -29,17 +29,6 @@ void logic_destroy(logic* self)
 	delete_(column, self->col[1]);
 }
 
-string* _like_to_regex(stringview* like)
-{
-	return NULL;
-}
-
-int logic_compile_like(logic* self, stringview* like)
-{
-
-	return FQL_GOOD;
-}
-
 int _precompile_like(logic* self)
 {
 	self->like_data = new_(like);
@@ -48,7 +37,15 @@ int _precompile_like(logic* self)
 	}
 	stringview sv = {0};
 	try_(column_get_stringview(&sv, self->col[1], NULL));
-	return logic_compile_like(self, &sv);
+	try_(like_to_regex(self->like_data, sv));
+
+	pcre2_jit_compile(self->like_data->regex, PCRE2_JIT_COMPLETE);
+	//int ret = pcre2_jit_compile(self->like_data->regex, PCRE2_JIT_COMPLETE);
+	//if (ret) {
+	//	fprintf(stderr, "pcre2_jit_compile failed (%d)\n", ret);
+	//}
+
+	return FQL_GOOD;
 }
 
 int logic_assign_process(logic* self, process* proc)
@@ -81,15 +78,8 @@ int logic_assign_process(logic* self, process* proc)
 		try_(_precompile_like(self));
 		string_strcat(proc->action_msg, " LIKE ");
 		break;
-	case COMP_NOT_LIKE:
-		try_(_precompile_like(self));
-		string_strcat(proc->action_msg, " NOT LIKE ");
-		break;
 	case COMP_NULL:
 		string_strcat(proc->action_msg, " NULL ");
-		break;
-	case COMP_NOT_NULL:
-		string_strcat(proc->action_msg, " NOT NULL ");
 		break;
 	case COMP_NOT_SET:
 		string_strcat(proc->action_msg, " <no comparison> ");
@@ -127,25 +117,8 @@ void logic_set_comparison(logic* self, const char* op)
 		self->comp_type = COMP_LE;
 	else if (istring_eq(op, "LIKE"))
 		self->comp_type = COMP_LIKE;
-	else if (istring_eq(op, "NOT_LIKE"))
-		self->comp_type = COMP_NOT_LIKE;
 	else if (istring_eq(op, "NULL"))
 		self->comp_type = COMP_NULL;
-	else if (istring_eq(op, "NOT_NULL"))
-		self->comp_type = COMP_NOT_NULL;
-}
-
-/** LIKE **/
-
-like* like_construct(like* self)
-{
-	string_construct(&self->regex_buffer);
-	return self;
-}
-
-void like_destroy(like* self)
-{
-	string_destroy(&self->regex_buffer);
 }
 
 /** LOGIC GROUP **/

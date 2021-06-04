@@ -77,7 +77,8 @@
 		}                                                              \
 		unsigned long result = u0 * u1;                                \
 		if (u0 != 0                                                    \
-		    && (result / u0 != u1 || result > LONG_MAX + neg)) {       \
+		    && (result / u0 != u1                                      \
+		        || result > (unsigned long)LONG_MAX + neg)) {          \
 			fputs("arithmetic overflow detected\n", stderr);       \
 			return FQL_FAIL;                                       \
 		}                                                              \

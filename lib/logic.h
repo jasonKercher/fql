@@ -1,6 +1,9 @@
 #ifndef LOGIC_H
 #define LOGIC_H
 
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
+
 #include "process.h"
 #include "field.h"
 #include "util/dgraph.h"
@@ -20,9 +23,7 @@ enum comparison {
 	COMP_LT,
 	COMP_LE,
 	COMP_LIKE,
-	COMP_NOT_LIKE,
 	COMP_NULL,
-	COMP_NOT_NULL
 };
 
 struct logic;
@@ -46,12 +47,17 @@ void logic_add_column(struct logic*, struct column*);
 void logic_set_comparison(struct logic* logic, const char* op);
 
 struct like {
+	string like_buffer;
 	string regex_buffer;
+	struct vec ranges;
+	pcre2_code* regex;
+	pcre2_match_data* match;
 };
 typedef struct like like;
 
 struct like* like_construct(struct like*);
 void like_destroy(struct like*);
+int like_to_regex(struct like*, const struct stringview);
 
 enum logicgroup_type {
 	LG_UNDEFINED = -1,
@@ -97,9 +103,7 @@ int fql_logic_le_i(struct logic*, struct vec*);
 int fql_logic_le_f(struct logic*, struct vec*);
 int fql_logic_le_s(struct logic*, struct vec*);
 int fql_logic_like(struct logic*, struct vec*);
-int fql_logic_not_like(struct logic*, struct vec*);
 int fql_logic_is_null(struct logic*, struct vec*);
-int fql_logic_not_null(struct logic*, struct vec*);
 
 static logic_fn logic_matrix[COMP_COUNT][FIELD_TYPE_COUNT] = {
         {&fql_logic_eq_i, &fql_logic_eq_f, &fql_logic_eq_s},
@@ -109,9 +113,7 @@ static logic_fn logic_matrix[COMP_COUNT][FIELD_TYPE_COUNT] = {
         {&fql_logic_lt_i, &fql_logic_lt_f, &fql_logic_lt_s},
         {&fql_logic_le_i, &fql_logic_le_f, &fql_logic_le_s},
         {NULL, NULL, &fql_logic_like},
-        {NULL, NULL, &fql_logic_not_like},
         {&fql_logic_is_null, &fql_logic_is_null, &fql_logic_is_null},
-        {&fql_logic_not_null, &fql_logic_not_null, &fql_logic_not_null},
 };
 
 #endif /* LOGIC_H */
