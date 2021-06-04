@@ -45,7 +45,7 @@ void column_destroy(void*);
 
 void column_link(struct column* dest, struct column* src);
 void column_cat_description(struct column* col, string*);
-int column_try_assign_source(struct column*, struct table*, int);
+int column_try_assign_source(struct column*, struct table*);
 
 /* data access */
 int column_get_int(long*, struct column*, struct vec*);

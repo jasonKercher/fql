@@ -109,7 +109,7 @@ int order_preresolve_columns(order* self, fqlselect* select)
 			long ordinal = 0;
 			try_(column_get_int(&ordinal, *it, NULL));
 
-			if (ordinal <= 0 || ordinal > select_cols->size) {
+			if (ordinal <= 0 || ordinal > (int)select_cols->size) {
 				fprintf(stderr,
 				        "Ordinal `%ld' out of range\n",
 				        ordinal);
@@ -176,7 +176,7 @@ int order_add_record(order* self, vec* recs)
 
 	column** cols = vec_begin(&self->columns);
 
-	int i = 0;
+	unsigned i = 0;
 	for (; i < self->columns.size; ++i) {
 		switch (cols[i]->field_type) {
 		case FIELD_INT: {

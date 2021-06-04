@@ -22,6 +22,6 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					record.h record.c \
 					field.h field.c \
 					misc.h
-libfql_la_CFLAGS = -Wextra -Wall
+libfql_la_CFLAGS = -Wextra -Wall -Wno-unused-parameter
 libfql_la_LDFLAGS = -l:libcsv.so.1 -lantlr4-runtime -pthread -version-info 1:1:0
 libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la

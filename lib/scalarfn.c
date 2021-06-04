@@ -15,7 +15,7 @@ int _get_byte_count(char c, unsigned limit)
 		return 1;
 	}
 
-	int n = 0;
+	unsigned n = 0;
 	if ((c & 0xE0) == 0xC0) {
 		n = 2;
 	} else if ((c & 0xF0) == 0xE0) {
@@ -41,10 +41,10 @@ int _get_rev_byte_count(const char* s, unsigned limit)
 	}
 
 	int i = 0;
-	for (; (s[i] & 0xC0) == 0x80 && -i < limit; --i)
+	for (; (s[i] & 0xC0) == 0x80 && -i < (int)limit; --i)
 		;
 
-	if (-i >= limit) {
+	if (-i >= (int)limit) {
 		fputs("invalid UTF-8 sequence\n", stderr);
 		return FQL_FAIL;
 	}
@@ -80,7 +80,7 @@ int fql_len(function* fn, union field* ret, vec* recs)
 
 	try_(column_get_stringview(&sv, *arg, recs));
 
-	int i = 0;
+	unsigned i = 0;
 	int bytes = 1;
 	int len = 0;
 	int len_nospace = 0;
@@ -142,7 +142,7 @@ int fql_left(function* fn, union field* ret, vec* recs)
 		return FQL_GOOD;
 	}
 
-	int i = 0;
+	unsigned i = 0;
 	int bytes = 0;
 	unsigned byte_count = 0;
 	for (; i < n && i < sv.len; i += bytes) {
@@ -326,19 +326,6 @@ int fql_op_mod_i(function* fn, union field* ret, vec* recs)
 	try_(column_get_int(&n1, args[1], recs));
 
 	ret->i = n0 % n1;
-
-	return FQL_GOOD;
-}
-
-int fql_op_mod_f(function* fn, union field* ret, vec* recs)
-{
-	//column** args = vec_begin(fn->args);
-	//double n0 = 0;
-	//double n1 = 0;
-	//try_ (column_get_float(&n0, args[0], recs));
-	//try_ (column_get_float(&n1, args[1], recs));
-
-	//ret->f = n0 % n1;
 
 	return FQL_GOOD;
 }

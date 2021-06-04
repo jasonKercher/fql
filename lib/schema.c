@@ -25,7 +25,8 @@ schema* schema_construct(schema* self)
 	        new_t_(vec, column*), /* columns */
 	        NULL,                 /* col_map */
 	        "",                   /* name */
-	        ""                    /* delimiter */
+	        "",                   /* delimiter */
+	        0,                    /* strictness */
 	};
 
 	return self;
@@ -69,7 +70,7 @@ void schema_preflight(schema* self)
 	                       self->columns->size * 2,
 	                       HASHMAP_PROP_NOCASE);
 
-	int i = 0;
+	unsigned i = 0;
 	column** col = vec_begin(self->columns);
 	for (; i < self->columns->size; ++i) {
 		col[i]->location = i;
@@ -328,8 +329,7 @@ int schema_assign_columns_limited(vec* columns,
 			    || istring_eq((*it)->table_name.data,
 			                  search_table->alias.data)) {
 				int n = column_try_assign_source(*it,
-				                                 search_table,
-				                                 j);
+				                                 search_table);
 				if (n > 1 && !strictness) {
 					n = 1;
 				}
@@ -365,7 +365,7 @@ int schema_assign_columns(vec* columns, vec* sources, int strictness)
 
 int _asterisk_resolve(vec* columns, vec* sources)
 {
-	int i = 0;
+	unsigned i = 0;
 	for (; i < columns->size; ++i) {
 		int col_idx = i;
 		column** col = vec_at(columns, i);
@@ -373,7 +373,7 @@ int _asterisk_resolve(vec* columns, vec* sources)
 			continue;
 		}
 		int matches = 0;
-		int j = 0;
+		unsigned j = 0;
 		for (; j < sources->size; ++j) {
 			table* search_table = vec_at(sources, j);
 			if (string_empty(&(*col)->table_name)
@@ -634,10 +634,7 @@ int _map_groups(struct fql_handle* fql, query* query)
 	return FQL_GOOD;
 }
 
-int _group_validation(struct fql_handle* fql,
-                      query* query,
-                      vec* cols,
-                      _Bool force_validation)
+int _group_validation(query* query, vec* cols, _Bool force_validation)
 {
 	compositemap* expr_map = query->groupby->expr_map;
 	vec key;
@@ -672,7 +669,7 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 	 * JOIN T2 ON T1.FOO = T3.FOO -- Cannot read T3 yet!
 	 * JOIN T3 ON T2.FOO = T3.FOO
 	 */
-	int i = 0;
+	unsigned i = 0;
 	for (; i < sources->size; ++i) {
 		table* table = vec_at(query->sources, i);
 		try_(schema_resolve_source(fql, table, i));
@@ -726,11 +723,11 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 		 * we must re-resolve each operation and
 		 * ORDER BY column to a group.
 		 */
-		try_(_group_validation(fql, query, op_cols, true));
+		try_(_group_validation(query, op_cols, true));
 
 		/* exceptions: ordinal ordering or matched by alias */
 		if (order_cols) {
-			try_(_group_validation(fql, query, order_cols, false));
+			try_(_group_validation(query, order_cols, false));
 		}
 	}
 

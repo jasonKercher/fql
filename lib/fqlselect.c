@@ -318,7 +318,7 @@ int _select_record_api(fqlselect* self, struct vec* recs)
 	vec* col_vec = self->schema->columns;
 
 	column** cols = vec_begin(col_vec);
-	int i = 0;
+	unsigned i = 0;
 	for (; i < col_vec->size; ++i) {
 		struct fql_field* field = vec_at(self->api, i);
 		switch (cols[i]->field_type) {
@@ -349,10 +349,9 @@ int _select_record_order_api(fqlselect* self, struct vec* recs)
 
 	vec* col_vec = self->schema->columns;
 	column** cols = vec_begin(col_vec);
-	int i = 0;
+	unsigned i = 0;
 	unsigned len = 0;
 	for (; i < col_vec->size; ++i) {
-		struct fql_field* field = vec_at(self->api, i);
 		switch (cols[i]->field_type) {
 		case FIELD_INT: {
 			long num = 0;
@@ -397,7 +396,7 @@ int fqlselect_subquery_record(reader* reader, record* rec)
 	vec* sub_col_vec = sub_schema->columns;
 	vec* sub_recs = reader->subquery_recs;
 
-	int i = 0;
+	unsigned i = 0;
 	column** sub_cols = vec_begin(sub_col_vec);
 
 	for (; i < sub_col_vec->size; ++i) {

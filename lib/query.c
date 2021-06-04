@@ -341,7 +341,8 @@ void query_enter_operator(query* self, enum scalar_function op)
 
 void query_exit_function(query* self)
 {
-	column* col = stack_pop(&self->function_stack);
+	//column* col = stack_pop(&self->function_stack);
+	stack_pop(&self->function_stack);
 }
 
 void query_set_logic_comparison(query* self, const char* op)

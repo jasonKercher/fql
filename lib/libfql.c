@@ -42,7 +42,8 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	                false, /* print_plan */
 	                false, /* threading */
 	                false, /* verbose */
-	                false  /* char_as_byte */
+	                false, /* char_as_byte */
+	                false  /* strictness */
 	        }              /* props */
 	};
 	return fql;

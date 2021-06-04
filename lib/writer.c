@@ -32,7 +32,7 @@ int libcsv_write_record(void* writer_data,
 	int len = 0;
 
 	column** cols = vec_begin(col_vec);
-	int i = 0;
+	unsigned i = 0;
 	for (; i < col_vec->size; ++i) {
 		stringview sv;
 		if (i > 0) {
@@ -102,7 +102,6 @@ void writer_destroy(writer* self)
 
 void writer_set_delimiter(writer* self, const char* delim)
 {
-	int ret = 0;
 	switch (self->type) {
 	case WRITE_LIBCSV: {
 		csv_writer* csv = self->writer_data;
@@ -116,7 +115,6 @@ void writer_set_delimiter(writer* self, const char* delim)
 
 void writer_assign(writer* self)
 {
-	int ret = 0;
 	switch (self->type) {
 	case WRITE_LIBCSV: {
 		csv_writer* data = csv_writer_new();

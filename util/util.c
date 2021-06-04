@@ -54,7 +54,7 @@ int str2double(double* ret, const char* s)
 int charncount(const char* s, char c, unsigned n)
 {
 	int count = 0;
-	int i = 0;
+	unsigned i = 0;
 	for(; s[i] != '\0' && i < n; ++i)
 		if (s[i] == c)
 			++count;

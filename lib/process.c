@@ -127,7 +127,7 @@ void process_activate(dnode* proc_node, plan* plan)
 	proc->records = new_t_(vec, vec);
 	vec_resize(proc->records, FIFO_SIZE * graph_size);
 
-	int i = 0;
+	unsigned i = 0;
 
 	/* if root, it will own the vector of records */
 	vec* buf = proc->fifo_in[proc->root_fifo]->buf;
@@ -208,7 +208,7 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		/* check to see that there is something to process
 		 * as well as a place for it to go.
 		 */
-		if (proc->wait_for_in0 && fifo_is_empty(proc->fifo_in[0])
+		if ((proc->wait_for_in0 && fifo_is_empty(proc->fifo_in[0]))
 		    || (proc->fifo_out[0]
 		        && !fifo_receivable(proc->fifo_out[0]))
 		    || (proc->fifo_out[1]
@@ -330,7 +330,7 @@ int process_exec_plan_thread(plan* plan)
 	vec_construct_(&tdata_vec, struct thread_data);
 	vec_resize(&tdata_vec, proc_graph->nodes->size);
 
-	int i = 0;
+	unsigned i = 0;
 
 	for (; i < tdata_vec.size; ++i) {
 		struct thread_data* tdata = vec_at(&tdata_vec, i);

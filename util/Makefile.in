@@ -103,13 +103,18 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libutil_la_LIBADD =
-am_libutil_la_OBJECTS = util.lo stack.lo queue.lo hashmap.lo vec.lo \
-	flex.lo stringy.lo fifo.lo stringview.lo dgraph.lo
+am_libutil_la_OBJECTS = libutil_la-util.lo libutil_la-stack.lo \
+	libutil_la-queue.lo libutil_la-hashmap.lo libutil_la-vec.lo \
+	libutil_la-flex.lo libutil_la-stringy.lo libutil_la-fifo.lo \
+	libutil_la-stringview.lo libutil_la-dgraph.lo
 libutil_la_OBJECTS = $(am_libutil_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+libutil_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libutil_la_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -125,11 +130,15 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/dgraph.Plo ./$(DEPDIR)/fifo.Plo \
-	./$(DEPDIR)/flex.Plo ./$(DEPDIR)/hashmap.Plo \
-	./$(DEPDIR)/queue.Plo ./$(DEPDIR)/stack.Plo \
-	./$(DEPDIR)/stringview.Plo ./$(DEPDIR)/stringy.Plo \
-	./$(DEPDIR)/util.Plo ./$(DEPDIR)/vec.Plo
+am__depfiles_remade = ./$(DEPDIR)/libutil_la-dgraph.Plo \
+	./$(DEPDIR)/libutil_la-fifo.Plo \
+	./$(DEPDIR)/libutil_la-flex.Plo \
+	./$(DEPDIR)/libutil_la-hashmap.Plo \
+	./$(DEPDIR)/libutil_la-queue.Plo \
+	./$(DEPDIR)/libutil_la-stack.Plo \
+	./$(DEPDIR)/libutil_la-stringview.Plo \
+	./$(DEPDIR)/libutil_la-stringy.Plo \
+	./$(DEPDIR)/libutil_la-util.Plo ./$(DEPDIR)/libutil_la-vec.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -191,7 +200,6 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHECK_CFLAGS = @CHECK_CFLAGS@
 CHECK_LIBS = @CHECK_LIBS@
-CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -296,6 +304,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -305,6 +314,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libutil.la
+libutil_la_CFLAGS = -Wextra -Wall
 libutil_la_SOURCES = util.h util.c \
 		stack.h stack.c \
 		queue.h queue.c \
@@ -362,7 +372,7 @@ clean-noinstLTLIBRARIES:
 	}
 
 libutil.la: $(libutil_la_OBJECTS) $(libutil_la_DEPENDENCIES) $(EXTRA_libutil_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(LINK)  $(libutil_la_OBJECTS) $(libutil_la_LIBADD) $(LIBS)
+	$(AM_V_CCLD)$(libutil_la_LINK)  $(libutil_la_OBJECTS) $(libutil_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -370,16 +380,16 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dgraph.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fifo.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flex.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hashmap.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/queue.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stack.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stringview.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stringy.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/util.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/vec.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-dgraph.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-fifo.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-flex.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-hashmap.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-queue.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-stack.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-stringview.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-stringy.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-util.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-vec.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -407,6 +417,76 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+libutil_la-util.lo: util.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-util.lo -MD -MP -MF $(DEPDIR)/libutil_la-util.Tpo -c -o libutil_la-util.lo `test -f 'util.c' || echo '$(srcdir)/'`util.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-util.Tpo $(DEPDIR)/libutil_la-util.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='util.c' object='libutil_la-util.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-util.lo `test -f 'util.c' || echo '$(srcdir)/'`util.c
+
+libutil_la-stack.lo: stack.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-stack.lo -MD -MP -MF $(DEPDIR)/libutil_la-stack.Tpo -c -o libutil_la-stack.lo `test -f 'stack.c' || echo '$(srcdir)/'`stack.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-stack.Tpo $(DEPDIR)/libutil_la-stack.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stack.c' object='libutil_la-stack.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-stack.lo `test -f 'stack.c' || echo '$(srcdir)/'`stack.c
+
+libutil_la-queue.lo: queue.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-queue.lo -MD -MP -MF $(DEPDIR)/libutil_la-queue.Tpo -c -o libutil_la-queue.lo `test -f 'queue.c' || echo '$(srcdir)/'`queue.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-queue.Tpo $(DEPDIR)/libutil_la-queue.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='queue.c' object='libutil_la-queue.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-queue.lo `test -f 'queue.c' || echo '$(srcdir)/'`queue.c
+
+libutil_la-hashmap.lo: hashmap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-hashmap.lo -MD -MP -MF $(DEPDIR)/libutil_la-hashmap.Tpo -c -o libutil_la-hashmap.lo `test -f 'hashmap.c' || echo '$(srcdir)/'`hashmap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-hashmap.Tpo $(DEPDIR)/libutil_la-hashmap.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='hashmap.c' object='libutil_la-hashmap.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-hashmap.lo `test -f 'hashmap.c' || echo '$(srcdir)/'`hashmap.c
+
+libutil_la-vec.lo: vec.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-vec.lo -MD -MP -MF $(DEPDIR)/libutil_la-vec.Tpo -c -o libutil_la-vec.lo `test -f 'vec.c' || echo '$(srcdir)/'`vec.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-vec.Tpo $(DEPDIR)/libutil_la-vec.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vec.c' object='libutil_la-vec.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-vec.lo `test -f 'vec.c' || echo '$(srcdir)/'`vec.c
+
+libutil_la-flex.lo: flex.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-flex.lo -MD -MP -MF $(DEPDIR)/libutil_la-flex.Tpo -c -o libutil_la-flex.lo `test -f 'flex.c' || echo '$(srcdir)/'`flex.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-flex.Tpo $(DEPDIR)/libutil_la-flex.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='flex.c' object='libutil_la-flex.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-flex.lo `test -f 'flex.c' || echo '$(srcdir)/'`flex.c
+
+libutil_la-stringy.lo: stringy.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-stringy.lo -MD -MP -MF $(DEPDIR)/libutil_la-stringy.Tpo -c -o libutil_la-stringy.lo `test -f 'stringy.c' || echo '$(srcdir)/'`stringy.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-stringy.Tpo $(DEPDIR)/libutil_la-stringy.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stringy.c' object='libutil_la-stringy.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-stringy.lo `test -f 'stringy.c' || echo '$(srcdir)/'`stringy.c
+
+libutil_la-fifo.lo: fifo.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-fifo.lo -MD -MP -MF $(DEPDIR)/libutil_la-fifo.Tpo -c -o libutil_la-fifo.lo `test -f 'fifo.c' || echo '$(srcdir)/'`fifo.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-fifo.Tpo $(DEPDIR)/libutil_la-fifo.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fifo.c' object='libutil_la-fifo.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-fifo.lo `test -f 'fifo.c' || echo '$(srcdir)/'`fifo.c
+
+libutil_la-stringview.lo: stringview.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-stringview.lo -MD -MP -MF $(DEPDIR)/libutil_la-stringview.Tpo -c -o libutil_la-stringview.lo `test -f 'stringview.c' || echo '$(srcdir)/'`stringview.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-stringview.Tpo $(DEPDIR)/libutil_la-stringview.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stringview.c' object='libutil_la-stringview.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-stringview.lo `test -f 'stringview.c' || echo '$(srcdir)/'`stringview.c
+
+libutil_la-dgraph.lo: dgraph.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-dgraph.lo -MD -MP -MF $(DEPDIR)/libutil_la-dgraph.Tpo -c -o libutil_la-dgraph.lo `test -f 'dgraph.c' || echo '$(srcdir)/'`dgraph.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-dgraph.Tpo $(DEPDIR)/libutil_la-dgraph.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dgraph.c' object='libutil_la-dgraph.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-dgraph.lo `test -f 'dgraph.c' || echo '$(srcdir)/'`dgraph.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -539,16 +619,16 @@ clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/dgraph.Plo
-	-rm -f ./$(DEPDIR)/fifo.Plo
-	-rm -f ./$(DEPDIR)/flex.Plo
-	-rm -f ./$(DEPDIR)/hashmap.Plo
-	-rm -f ./$(DEPDIR)/queue.Plo
-	-rm -f ./$(DEPDIR)/stack.Plo
-	-rm -f ./$(DEPDIR)/stringview.Plo
-	-rm -f ./$(DEPDIR)/stringy.Plo
-	-rm -f ./$(DEPDIR)/util.Plo
-	-rm -f ./$(DEPDIR)/vec.Plo
+		-rm -f ./$(DEPDIR)/libutil_la-dgraph.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-fifo.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-flex.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-hashmap.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-queue.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-stack.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-stringview.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-stringy.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-util.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-vec.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -594,16 +674,16 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/dgraph.Plo
-	-rm -f ./$(DEPDIR)/fifo.Plo
-	-rm -f ./$(DEPDIR)/flex.Plo
-	-rm -f ./$(DEPDIR)/hashmap.Plo
-	-rm -f ./$(DEPDIR)/queue.Plo
-	-rm -f ./$(DEPDIR)/stack.Plo
-	-rm -f ./$(DEPDIR)/stringview.Plo
-	-rm -f ./$(DEPDIR)/stringy.Plo
-	-rm -f ./$(DEPDIR)/util.Plo
-	-rm -f ./$(DEPDIR)/vec.Plo
+		-rm -f ./$(DEPDIR)/libutil_la-dgraph.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-fifo.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-flex.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-hashmap.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-queue.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-stack.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-stringview.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-stringy.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-util.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-vec.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

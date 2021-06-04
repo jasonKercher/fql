@@ -23,7 +23,7 @@ column* column_construct(column* col,
 	        {0},             /* table_name */
 	        {0},             /* buf */
 	        FIELD_UNDEFINED, /* field_type */
-	        NULL,            /* field */
+	        {0},             /* field */
 	        0,               /* location */
 	        0,               /* width */
 	        0,               /* src_idx */
@@ -159,7 +159,7 @@ void column_cat_description(column* col, string* msg)
 	}
 }
 
-int column_try_assign_source(column* col, table* table, int idx)
+int column_try_assign_source(column* col, table* table)
 {
 	vec* cols = multimap_get(table->schema->col_map, col->name.data);
 	if (cols == NULL) {

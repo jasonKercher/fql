@@ -143,10 +143,8 @@ int fql_cartesian_join(dgraph* proc_graph, process* proc)
 			break;
 		case FQL_FAIL:
 			return FQL_FAIL;
-		default: /* eof */
-		{
+		default: { /* eof */
 			reader->reset__(reader);
-			record** it = vec_begin(*it_left);
 			fifo_iter(in_left);
 			return 1;
 		}
@@ -342,7 +340,7 @@ int fql_groupby(dgraph* proc_graph, process* proc)
 	for (; it != fifo_end(in_data); it = fifo_iter(in_data)) {
 		/* TODO: something with returns? */
 		if (!vec_empty(&group->columns)) {
-			int ret = try_(group_record(group, *it));
+			try_(group_record(group, *it));
 		}
 
 		/* this entire if block needs to exist in case
@@ -354,7 +352,7 @@ int fql_groupby(dgraph* proc_graph, process* proc)
 		} else {
 			vec** recs = fifo_get(in_fresh);
 			record** rec = vec_at(*recs, 0);
-			int ret = try_(group_dump_record(group, *rec));
+			try_(group_dump_record(group, *rec));
 			fifo_add(out, recs);
 			process_disable(proc);
 		}
@@ -432,7 +430,7 @@ int fql_orderby(dgraph* proc_graph, process* proc)
 	vec** it = fifo_begin(in);
 	for (; iters++ < proc->max_recs_iter && it != fifo_end(in);
 	     it = fifo_iter(in)) {
-		int ret = try_(order_add_record(order, *it));
+		try_(order_add_record(order, *it));
 		_recycle_recs(proc, *it, (*it)->size);
 	}
 	fifo_update(in);

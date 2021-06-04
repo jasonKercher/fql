@@ -236,7 +236,7 @@ const char* function_get_name(function* func)
 
 int function_validate(function* func)
 {
-	int argc = func->args->size;
+	unsigned argc = func->args->size;
 	if (argc >= func->arg_min && argc <= func->arg_max) {
 		return FQL_GOOD;
 	}

@@ -82,7 +82,7 @@ int group_record(group* self, vec* recs)
 
 	column** cols = vec_begin(&self->columns);
 	stringview* sv = vec_begin(&self->_composite);
-	int i = 0;
+	unsigned i = 0;
 	for (; i < self->columns.size; ++i) {
 		if (cols[i]->expr == EXPR_AGGREGATE) {
 			continue;
@@ -163,8 +163,7 @@ int group_dump_record(group* self, record* rec)
 	column** group_cols = vec_begin(&self->columns);
 	stringview* rec_svs = vec_begin(rec->fields);
 
-	int i = 0;
-
+	unsigned i = 0;
 	for (; i < self->columns.size; ++i) {
 		if (group_cols[i]->expr == EXPR_AGGREGATE) {
 			_read_aggregate(group_cols[i],

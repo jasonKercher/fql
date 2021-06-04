@@ -37,6 +37,7 @@ plan* plan_construct(plan* self, query* query)
 	        NULL,         /* recycle_groups */
 	        0,            /* rows_affected */
 	        0,            /* source_count */
+	        0,            /* plan_id */
 	        false         /* has_stepped */
 	};
 
@@ -401,9 +402,9 @@ void _clear_passive(plan* self)
 {
 	vec* node_vec = self->processes->nodes;
 	dnode** nodes = vec_begin(node_vec);
-	int i = 0;
 
 	/* re-link nodes so passive ones get skipped during traversal */
+	unsigned i = 0;
 	for (; i < node_vec->size; ++i) {
 		/* Check branch 0 */
 		while (nodes[i]->out[0] != NULL) {
@@ -416,7 +417,6 @@ void _clear_passive(plan* self)
 		}
 
 		/* Check branch 1 */
-		_Bool first_pass = true;
 		while (nodes[i]->out[1] != NULL) {
 			process* proc = nodes[i]->out[1]->data;
 			if (proc->is_passive) {
