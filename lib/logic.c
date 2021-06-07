@@ -7,11 +7,24 @@
 #include "misc.h"
 #include "util/util.h"
 
+static logic_fn _logic_matrix[COMP_COUNT][FIELD_TYPE_COUNT] = {
+        {&fql_logic_eq_i, &fql_logic_eq_f, &fql_logic_eq_s},
+        {&fql_logic_ne_i, &fql_logic_ne_f, &fql_logic_ne_s},
+        {&fql_logic_gt_i, &fql_logic_gt_f, &fql_logic_gt_s},
+        {&fql_logic_ge_i, &fql_logic_ge_f, &fql_logic_ge_s},
+        {&fql_logic_lt_i, &fql_logic_lt_f, &fql_logic_lt_s},
+        {&fql_logic_le_i, &fql_logic_le_f, &fql_logic_le_s},
+        {&fql_logic_in_i, &fql_logic_in_f, &fql_logic_in_s},
+        {NULL, NULL, &fql_logic_like},
+        {&fql_logic_is_null, &fql_logic_is_null, &fql_logic_is_null},
+};
+
 logic* logic_construct(logic* self)
 {
 	*self = (logic) {
 	        {NULL, NULL},    /* col */
 	        NULL,            /* like_data */
+	        NULL,            /* in_data */
 	        NULL,            /* logic__ */
 	        FIELD_UNDEFINED, /* data_type */
 	        COMP_NOT_SET,    /* comp_type */
@@ -50,9 +63,15 @@ int _precompile_like(logic* self)
 
 int logic_assign_process(logic* self, process* proc)
 {
-	self->data_type = field_determine_type(self->col[0]->field_type,
-	                                       self->col[1]->field_type);
-	self->logic__ = logic_matrix[self->comp_type][self->data_type];
+	if (self->in_data != NULL) {
+		self->data_type =
+		        inlist_determine_type(self->in_data, self->col[0]);
+	} else {
+		self->data_type =
+		        field_determine_type(self->col[0]->field_type,
+		                             self->col[1]->field_type);
+	}
+	self->logic__ = _logic_matrix[self->comp_type][self->data_type];
 
 	column_cat_description(self->col[0], proc->action_msg);
 	switch (self->comp_type) {
@@ -90,7 +109,11 @@ int logic_assign_process(logic* self, process* proc)
 	default:
 		break;
 	}
-	column_cat_description(self->col[1], proc->action_msg);
+	if (self->in_data != NULL) {
+		inlist_cat_description(self->in_data, proc->action_msg);
+	} else {
+		column_cat_description(self->col[1], proc->action_msg);
+	}
 
 	return FQL_GOOD;
 }
@@ -99,6 +122,10 @@ void logic_add_column(logic* self, struct column* col)
 {
 	if (self->col[0] == NULL) {
 		self->col[0] = col;
+		return;
+	}
+	if (self->in_data != NULL) {
+		inlist_add_column(self->in_data, col);
 		return;
 	}
 	self->col[1] = col;
@@ -180,7 +207,8 @@ unsigned logicgroup_get_condition_count(logicgroup* lg)
 /* essentially the same as logicgroup_eval.
  * except all logic is true except the one provided.
  * the point is to determine if that self MUST be
- * true for the group to evaluate to true.
+ * true for the group to evaluate to true. I believe
+ * ignoring negation here is correct.
  */
 int logic_can_be_false(logicgroup* lg, logic* check_logic)
 {

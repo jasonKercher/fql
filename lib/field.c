@@ -46,10 +46,8 @@ int field_to_int(long* ret, union field* field, enum field_type* type)
 		*type = FIELD_INT;
 		long val = 0;
 		if (str2long(&val, field->s->data)) {
-			//string_destroy(field->s);
 			return FQL_FAIL;
 		}
-		//string_destroy(field->s);
 		field->i = val;
 		break;
 	default:
@@ -72,10 +70,8 @@ int field_to_float(double* ret, union field* field, enum field_type* type)
 		*type = FIELD_FLOAT;
 		double val = 0;
 		if (str2double(&val, field->s->data)) {
-			//string_destroy(field->s);
 			return FQL_FAIL;
 		}
-		//string_destroy(field->s);
 		field->f = val;
 		break;
 	default:

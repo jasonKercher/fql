@@ -5,7 +5,20 @@
 #include "query.h"
 #include "util/util.h"
 
-static const char* scalar_str[] = {
+/* order is important here */
+static scalar_fn _scalar_ops[OPERATOR_COUNT][FIELD_TYPE_COUNT] = {
+        {&fql_op_plus_i, &fql_op_plus_f, &fql_op_plus_s},
+        {&fql_op_minus_i, &fql_op_minus_f, NULL},
+        {&fql_op_mult_i, &fql_op_mult_f, NULL},
+        {&fql_op_divi_i, &fql_op_divi_f, NULL},
+        {&fql_op_mod_i, NULL, NULL},
+        {&fql_op_bit_or, NULL, NULL},
+        {&fql_op_bit_and, NULL, NULL},
+        {&fql_op_bit_xor, NULL, NULL},
+        {&fql_op_bit_not, NULL, NULL},
+        {&fql_op_unary_minus_i, &fql_op_unary_minus_f, NULL}};
+
+static const char* _scalar_str[] = {
         "PLUS",      "MINUS",      "MULTIPY",  "DIVIDE",        "MODULE",
         "BIT_OR",    "BIT_AND",    "BIT_XOR",  "UNARY_BIT_NOT", "UNARY_MINUS",
         "ABS",       "ASCII",      "CEILING",  "CHAR",          "CHARINDEX",
@@ -18,7 +31,9 @@ static const char* scalar_str[] = {
 
 int _not_implemented(function* fn, union field* f, vec* rec)
 {
-	fprintf(stderr, "function not implemented: %s\n", scalar_str[fn->type]);
+	fprintf(stderr,
+	        "function not implemented: %s\n",
+	        _scalar_str[fn->type]);
 	return 0;
 }
 
@@ -218,11 +233,11 @@ int function_op_resolve(function* func, enum field_type* type)
 	default:;
 	}
 
-	func->call__ = scalar_ops[func->type][*type];
+	func->call__ = _scalar_ops[func->type][*type];
 	if (func->call__ == NULL) {
 		fprintf(stderr,
 		        "invalid type for %s operation\n",
-		        scalar_str[func->type]);
+		        _scalar_str[func->type]);
 		return FQL_FAIL;
 	}
 
@@ -231,7 +246,7 @@ int function_op_resolve(function* func, enum field_type* type)
 
 const char* function_get_name(function* func)
 {
-	return scalar_str[func->type];
+	return _scalar_str[func->type];
 }
 
 int function_validate(function* func)
@@ -243,14 +258,14 @@ int function_validate(function* func)
 	if (func->arg_min == func->arg_max) {
 		fprintf(stderr,
 		        "function `%s' expected %d argument(s)... found %d\n",
-		        scalar_str[func->type],
+		        _scalar_str[func->type],
 		        func->arg_min,
 		        argc);
 	} else {
 		fprintf(stderr,
 		        "function `%s' expected between %d and %d arguments... "
 		        "found %d\n",
-		        scalar_str[func->type],
+		        _scalar_str[func->type],
 		        func->arg_min,
 		        func->arg_max,
 		        argc);

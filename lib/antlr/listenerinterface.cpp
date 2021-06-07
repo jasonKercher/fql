@@ -492,7 +492,13 @@ void ListenerInterface::exitSearch_condition_not(TSqlParser::Search_condition_no
 	exit_search_not(_query);
 }
 
-void ListenerInterface::enterPredicate(TSqlParser::PredicateContext * ctx) { }
+void ListenerInterface::enterPredicate(TSqlParser::PredicateContext * ctx)
+{
+	if (ctx->IN()) {
+		query_init_in_statement(_query);
+	}
+}
+
 void ListenerInterface::exitPredicate(TSqlParser::PredicateContext * ctx)
 {
 	bool negation = (ctx->NOT() != NULL);
@@ -501,6 +507,7 @@ void ListenerInterface::exitPredicate(TSqlParser::PredicateContext * ctx)
 	} else if (ctx->LIKE()) {
 		query_set_logic_comparison(_query, "LIKE", negation);
 	}
+	_query->mode = MODE_SEARCH;
 }
 
 void ListenerInterface::enterQuery_expression(TSqlParser::Query_expressionContext * ctx) { }

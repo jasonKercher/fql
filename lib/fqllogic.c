@@ -178,6 +178,16 @@ int fql_logic_in_i(logic* self, vec* recs)
 	long n0 = 0;
 	try_(column_get_int(&n0, self->col[0], recs));
 
+	vec* list_vec = self->in_data->columns;
+	column** it = vec_begin(list_vec);
+	for (; it != vec_end(list_vec); ++it) {
+		long n1 = 0;
+		try_(column_get_int(&n1, *it, recs));
+		if (n1 == n0) {
+			return true;
+		}
+	}
+
 	return false;
 }
 
@@ -186,6 +196,16 @@ int fql_logic_in_f(logic* self, vec* recs)
 	double n0 = 0;
 	try_(column_get_float(&n0, self->col[0], recs));
 
+	vec* list_vec = self->in_data->columns;
+	column** it = vec_begin(list_vec);
+	for (; it != vec_end(list_vec); ++it) {
+		double n1 = 0;
+		try_(column_get_float(&n1, *it, recs));
+		if (n1 == n0) {
+			return true;
+		}
+	}
+
 	return false;
 }
 
@@ -193,6 +213,16 @@ int fql_logic_in_s(logic* self, vec* recs)
 {
 	stringview sv0;
 	try_(column_get_stringview(&sv0, self->col[0], recs));
+
+	vec* list_vec = self->in_data->columns;
+	column** it = vec_begin(list_vec);
+	for (; it != vec_end(list_vec); ++it) {
+		stringview sv1;
+		try_(column_get_stringview(&sv1, *it, recs));
+		if (!stringview_compare_nocase_rtrim(&sv0, &sv1)) {
+			return true;
+		}
+	}
 
 	return false;
 }

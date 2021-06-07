@@ -314,6 +314,15 @@ int query_init_orderby(query* self)
 	return (self->orderby->out_file) ? FQL_GOOD : FQL_FAIL;
 }
 
+void query_init_in_statement(query* self)
+{
+	logicgroup* lg = self->logic_stack->data;
+	if (lg->condition == NULL) {
+		lg->condition = new_(logic);
+	}
+	lg->condition->in_data = new_(inlist);
+}
+
 void query_set_order_desc(query* self)
 {
 	column** col = vec_back(&self->orderby->columns);

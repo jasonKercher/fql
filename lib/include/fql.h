@@ -78,7 +78,7 @@ void fql_set_print_plan(struct fql_handle*, int);
 /**
  * Set an input delimiter if it is something weird
  * (default schema only). The default schema will
- * attempt to resolve a delimiter from < , | ; \t >
+ * attempt to resolve a delimiter from < , | ; TAB >
  */
 void fql_set_in_delim(struct fql_handle*, const char*);
 

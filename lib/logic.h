@@ -7,6 +7,7 @@
 #include "process.h"
 #include "field.h"
 #include "util/dgraph.h"
+#include "util/hashmap.h"
 
 /* COMP_FALSE and COMP_TRUE are passive processes
  * that are removed. they do not count.
@@ -29,11 +30,13 @@ enum comparison {
 
 struct logic;
 struct like;
+struct inlist;
 typedef int (*logic_fn)(struct logic*, struct vec*);
 
 struct logic {
 	struct column* col[2];
 	struct like* like_data;
+	struct inlist* in_data;
 	logic_fn logic__;
 	enum field_type data_type;
 	enum comparison comp_type;
@@ -46,6 +49,18 @@ void logic_destroy(struct logic*);
 int logic_assign_process(struct logic*, struct process*);
 void logic_add_column(struct logic*, struct column*);
 void logic_set_comparison(struct logic* logic, const char* op);
+
+struct inlist {
+	vec* columns;
+	set* list_data;
+};
+typedef struct inlist inlist;
+
+struct inlist* inlist_construct(struct inlist*);
+void inlist_destroy(struct inlist*);
+void inlist_add_column(struct inlist*, struct column*);
+enum field_type inlist_determine_type(struct inlist*, struct column*);
+void inlist_cat_description(struct inlist*, string* msg);
 
 struct like {
 	string like_buffer;
@@ -109,17 +124,5 @@ int fql_logic_in_f(struct logic*, struct vec*);
 int fql_logic_in_s(struct logic*, struct vec*);
 int fql_logic_like(struct logic*, struct vec*);
 int fql_logic_is_null(struct logic*, struct vec*);
-
-static logic_fn logic_matrix[COMP_COUNT][FIELD_TYPE_COUNT] = {
-        {&fql_logic_eq_i, &fql_logic_eq_f, &fql_logic_eq_s},
-        {&fql_logic_ne_i, &fql_logic_ne_f, &fql_logic_ne_s},
-        {&fql_logic_gt_i, &fql_logic_gt_f, &fql_logic_gt_s},
-        {&fql_logic_ge_i, &fql_logic_ge_f, &fql_logic_ge_s},
-        {&fql_logic_lt_i, &fql_logic_lt_f, &fql_logic_lt_s},
-        {&fql_logic_le_i, &fql_logic_le_f, &fql_logic_le_s},
-        {&fql_logic_in_i, &fql_logic_in_f, &fql_logic_in_s},
-        {NULL, NULL, &fql_logic_like},
-        {&fql_logic_is_null, &fql_logic_is_null, &fql_logic_is_null},
-};
 
 #endif /* LOGIC_H */
