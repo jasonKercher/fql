@@ -28,7 +28,7 @@ struct _keyloc {
 };
 
 struct hashmap {
-	struct vec values;
+	struct vec* values;
 	struct hm_entry* _entries;
 	struct vec* _keys;     /* only for compositemap */
 	struct vec* _key_temp; /* only for compositemap */
@@ -41,6 +41,15 @@ struct hashmap {
 	unsigned props;
 };
 typedef struct hashmap hashmap;
+
+typedef struct hashmap set;
+
+set* set_construct(set*, size_t limit, const unsigned props);
+void set_destroy(set*);
+void set_nadd(set*, const char* key, unsigned len);
+#define set_add(s_, key_) set_nadd(s_, key_, strlen(key_))
+_Bool set_nhas(set*, const char* key, unsigned len);
+#define set_has(s_, key_) set_nhas(s_, key_, strlen(key_))
 
 struct hashmap* hashmap_construct(struct hashmap*,
                                   const unsigned elem_size,

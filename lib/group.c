@@ -113,7 +113,7 @@ int group_record(group* self, vec* recs)
 		sv[i] = flex_pair_at(&self->group_data, org_size + i);
 	}
 
-	unsigned group_count = self->val_map.values.size;
+	unsigned group_count = self->val_map.values->size;
 	unsigned* idx_ptr = compositemap_get(&self->val_map, &self->_composite);
 	int ret = 0;
 	if (idx_ptr == NULL) {
@@ -154,7 +154,7 @@ void _read_aggregate(column* agg_col, string* raw, stringview* sv, size_t idx)
 
 int group_dump_record(group* self, record* rec)
 {
-	if (self->_dump_idx >= self->val_map.values.size) {
+	if (self->_dump_idx >= self->val_map.values->size) {
 		return -1;
 	}
 

@@ -22,65 +22,105 @@ uint64_t _hash_nocase(const hashmap* m, const char* key, unsigned* n);
 uint64_t _hash_rtrim(const hashmap* m, const char* key, unsigned* n);
 uint64_t _hash_nocase_rtrim(const hashmap* m, const char* key, unsigned* n);
 
-struct hm_entry*
-_get_entry(hashmap* m, const char* key, unsigned* n, uint64_t* h);
 void _increase_size(hashmap* m);
+struct hm_entry* _get_entry(hashmap*, const char* k, unsigned* n, uint64_t* h);
 struct hm_entry* _composite_get_entry(compositemap* m,
                                       const vec* key,
                                       unsigned* key_len,
                                       uint64_t* hash);
+
+set* set_construct(set* self, size_t limit, const unsigned props)
+{
+	limit = _next_power_of_2(limit);
+
+	*self = (hashmap) {
+	        NULL,  /* values */
+	        NULL,  /* _entries */
+	        NULL,  /* _keys */
+	        NULL,  /* _key_temp */
+	        NULL,  /* get_hash__ */
+	        limit, /* _limit */
+	        NULL,  /* _keybuf */
+	        0,     /* _keybuf_head */
+	        limit, /* _keybuf_len */
+	        0,     /* elem_size */
+	        props  /* props */
+	};
+
+	switch (self->props) {
+	case HASHMAP_PROP_NOCASE:
+		self->get_hash__ = _hash_nocase;
+		break;
+	case HASHMAP_PROP_RTRIM:
+		self->get_hash__ = _hash_rtrim;
+		break;
+	case HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM:
+		self->get_hash__ = _hash_nocase_rtrim;
+		break;
+	default:
+		self->get_hash__ = _hash;
+	}
+
+	self->_entries = malloc_(sizeof(struct hm_entry) * limit);
+	memset(self->_entries, -1, sizeof(struct hm_entry) * limit);
+
+	self->_keybuf = malloc_(limit); /* expect this to grow */
+
+	return self;
+}
+
+void set_destroy(set* self)
+{
+	free_(self->_entries);
+	free_(self->_keybuf);
+}
+
+void set_nadd(set* self, const char* key, unsigned n)
+{
+	uint64_t hash = 0;
+	struct hm_entry* entry = _get_entry(self, key, &n, &hash);
+
+	if (entry->val_idx != _NONE) {
+		return;
+	}
+
+	/* new value */
+	entry->key_idx = self->_keybuf_head;
+	entry->key_len = n;
+	entry->hash = hash;
+	self->_keybuf_head += n;
+	uintptr_t* size = (uintptr_t*)&self->values;
+	++(*size);
+	if (*size > _FULL_PERCENT * self->_limit) {
+		_increase_size(self);
+	}
+}
+
+_Bool set_nhas(set* self, const char* key, unsigned n)
+{
+	uint64_t hash = 0;
+	struct hm_entry* entry = _get_entry(self, key, &n, &hash);
+	return (entry->val_idx != _NONE);
+}
 
 hashmap* hashmap_construct(hashmap* m,
                            const unsigned elem_size,
                            size_t limit,
                            const unsigned props)
 {
-	limit = _next_power_of_2(limit);
+	set_construct(m, limit, props);
+	m->elem_size = elem_size;
 
-	*m = (hashmap) {
-	        {0},       /* values */
-	        NULL,      /* _entries */
-	        NULL,      /* _keys */
-	        NULL,      /* _key_temp */
-	        NULL,      /* get_hash__ */
-	        limit,     /* _limit */
-	        NULL,      /* _keybuf */
-	        0,         /* _keybuf_head */
-	        limit,     /* _keybuf_len */
-	        elem_size, /* elem_size */
-	        props      /* props */
-	};
-
-	switch (m->props) {
-	case HASHMAP_PROP_NOCASE:
-		m->get_hash__ = _hash_nocase;
-		break;
-	case HASHMAP_PROP_RTRIM:
-		m->get_hash__ = _hash_rtrim;
-		break;
-	case HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM:
-		m->get_hash__ = _hash_nocase_rtrim;
-		break;
-	default:
-		m->get_hash__ = _hash;
-	}
-
-	vec_construct(&m->values, elem_size);
-	vec_reserve(&m->values, limit / 2);
-
-	m->_entries = malloc_(sizeof(struct hm_entry) * limit);
-	memset(m->_entries, -1, sizeof(struct hm_entry) * limit);
-
-	m->_keybuf = malloc_(limit); /* expect this to grow */
+	m->values = new_(vec, elem_size);
+	vec_reserve(m->values, limit / 2);
 
 	return m;
 }
 
 void hashmap_destroy(hashmap* m)
 {
-	vec_destroy(&m->values);
-	free_(m->_entries);
-	free_(m->_keybuf);
+	set_destroy(m);
+	vec_destroy(m->values);
 }
 
 void hashmap_nset(hashmap* m, const char* key, void* data, unsigned n)
@@ -91,15 +131,15 @@ void hashmap_nset(hashmap* m, const char* key, void* data, unsigned n)
 	if (entry->val_idx == _NONE) { /* new value */
 		entry->key_idx = m->_keybuf_head;
 		entry->key_len = n;
-		entry->val_idx = m->values.size;
+		entry->val_idx = m->values->size;
 		entry->hash = hash;
 		m->_keybuf_head += n;
-		vec_push_back(&m->values, data);
-		if (m->values.size > _FULL_PERCENT * m->_limit) {
+		vec_push_back(m->values, data);
+		if (m->values->size > _FULL_PERCENT * m->_limit) {
 			_increase_size(m);
 		}
 	} else {
-		vec_set(&m->values, entry->val_idx, data);
+		vec_set(m->values, entry->val_idx, data);
 	}
 }
 
@@ -112,7 +152,7 @@ void* hashmap_nget(hashmap* m, const char* key, unsigned n)
 		return NULL;
 	}
 
-	return vec_at(&m->values, entry->val_idx);
+	return vec_at(m->values, entry->val_idx);
 }
 
 /* elem size is vec elements now */
@@ -130,8 +170,8 @@ multimap* multimap_construct(multimap* m,
 
 void multimap_destroy(multimap* m)
 {
-	vec* it = vec_begin(&m->values);
-	for (; it != vec_end(&m->values); ++it) {
+	vec* it = vec_begin(m->values);
+	for (; it != vec_end(m->values); ++it) {
 		vec_destroy(it);
 	}
 	hashmap_destroy(m);
@@ -145,18 +185,18 @@ void multimap_nset(multimap* m, const char* key, void* data, unsigned n)
 	if (entry->val_idx == _NONE) { /* new value */
 		entry->key_idx = m->_keybuf_head;
 		entry->key_len = n;
-		entry->val_idx = m->values.size;
+		entry->val_idx = m->values->size;
 		entry->hash = hash;
 		m->_keybuf_head += n;
 		vec new_vec;
 		vec_construct(&new_vec, m->elem_size);
 		vec_push_back(&new_vec, data);
-		vec_push_back(&m->values, &new_vec);
-		if (m->values.size > _FULL_PERCENT * m->_limit) {
+		vec_push_back(m->values, &new_vec);
+		if (m->values->size > _FULL_PERCENT * m->_limit) {
 			_increase_size(m);
 		}
 	} else {
-		vec* entryvec = vec_at(&m->values, entry->val_idx);
+		vec* entryvec = vec_at(m->values, entry->val_idx);
 		vec_push_back(entryvec, data);
 	}
 }
@@ -207,16 +247,16 @@ void compositemap_set(compositemap* m, const struct vec* key, void* data)
 	if (entry->val_idx == _NONE) { /* new value */
 		entry->key_idx = m->_keys->size;
 		entry->key_len = key->size;
-		entry->val_idx = m->values.size;
+		entry->val_idx = m->values->size;
 		entry->hash = hash;
 		m->_keybuf_head += key_len;
 		vec_extend(m->_keys, m->_key_temp);
-		vec_push_back(&m->values, data);
-		if (m->values.size > _FULL_PERCENT * m->_limit) {
+		vec_push_back(m->values, data);
+		if (m->values->size > _FULL_PERCENT * m->_limit) {
 			_increase_size(m);
 		}
 	} else {
-		vec_set(&m->values, entry->val_idx, data);
+		vec_set(m->values, entry->val_idx, data);
 	}
 }
 
@@ -236,7 +276,7 @@ void* compositemap_get(compositemap* m, const struct vec* key)
 		return NULL;
 	}
 
-	return vec_at(&m->values, entry->val_idx);
+	return vec_at(m->values, entry->val_idx);
 }
 
 _Bool _composite_eq(compositemap* m, struct hm_entry* ent)
