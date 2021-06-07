@@ -14,7 +14,7 @@ logic* logic_construct(logic* self)
 	        NULL,            /* like_data */
 	        NULL,            /* logic__ */
 	        FIELD_UNDEFINED, /* data_type */
-	        COMP_NOT_SET     /* comp_type */
+	        COMP_NOT_SET,    /* comp_type */
 	};
 
 	return self;
@@ -74,6 +74,9 @@ int logic_assign_process(logic* self, process* proc)
 	case COMP_LE:
 		string_strcat(proc->action_msg, " <= ");
 		break;
+	case COMP_IN:
+		string_strcat(proc->action_msg, " IN ");
+		break;
 	case COMP_LIKE:
 		try_(_precompile_like(self));
 		string_strcat(proc->action_msg, " LIKE ");
@@ -103,22 +106,25 @@ void logic_add_column(logic* self, struct column* col)
 
 void logic_set_comparison(logic* self, const char* op)
 {
-	if (string_eq(op, "="))
+	if (string_eq(op, "=")) {
 		self->comp_type = COMP_EQ;
-	else if (string_eq(op, "<>") || string_eq(op, "!="))
+	} else if (string_eq(op, "<>") || string_eq(op, "!=")) {
 		self->comp_type = COMP_NE;
-	else if (string_eq(op, ">"))
+	} else if (string_eq(op, ">")) {
 		self->comp_type = COMP_GT;
-	else if (string_eq(op, ">="))
+	} else if (string_eq(op, ">=")) {
 		self->comp_type = COMP_GE;
-	else if (string_eq(op, "<"))
+	} else if (string_eq(op, "<")) {
 		self->comp_type = COMP_LT;
-	else if (string_eq(op, "<="))
+	} else if (string_eq(op, "<=")) {
 		self->comp_type = COMP_LE;
-	else if (istring_eq(op, "LIKE"))
+	} else if (istring_eq(op, "IN")) {
+		self->comp_type = COMP_IN;
+	} else if (istring_eq(op, "LIKE")) {
 		self->comp_type = COMP_LIKE;
-	else if (istring_eq(op, "NULL"))
+	} else if (istring_eq(op, "NULL")) {
 		self->comp_type = COMP_NULL;
+	}
 }
 
 /** LOGIC GROUP **/
@@ -126,11 +132,12 @@ void logic_set_comparison(logic* self, const char* op)
 logicgroup* logicgroup_construct(logicgroup* lg, enum logicgroup_type type)
 {
 	*lg = (logicgroup) {
-	        type, /* type */
-	        {0},  /* items */
-	        NULL, /* joinable */
-	        NULL, /* join_logic */
-	        NULL, /* condition */
+	        type,  /* type */
+	        {0},   /* items */
+	        NULL,  /* joinable */
+	        NULL,  /* join_logic */
+	        NULL,  /* condition */
+	        false, /* negation */
 	};
 
 	vec_construct_(&lg->items, logicgroup*);
@@ -205,24 +212,27 @@ int logic_can_be_false(logicgroup* lg, logic* check_logic)
  */
 int logicgroup_eval(logicgroup* lg, vec* recs, logic* skip)
 {
-	logicgroup** it = vec_begin(&lg->items);
 	if (lg->type == LG_NOT && lg->condition != NULL) {
 		if (lg->condition == skip) {
 			return 1;
 		}
-		return lg->condition->logic__(lg->condition, recs);
+		int ret = try_(lg->condition->logic__(lg->condition, recs));
+		if (lg->negation) {
+			return !ret;
+		}
+		return ret;
 	}
 
 	int ret = 0;
+	logicgroup** it = vec_begin(&lg->items);
 	for (; it != vec_end(&lg->items); ++it) {
-		ret = logicgroup_eval(*it, recs, skip);
+		ret = try_(logicgroup_eval(*it, recs, skip));
 		if (ret == 0 && lg->type == LG_AND) {
 			return 0;
 		}
 		if (ret == 1 && (*it)->type == LG_AND) {
 			return 1;
 		}
-		fail_if_(ret == FQL_FAIL);
 	}
 	return ret;
 }

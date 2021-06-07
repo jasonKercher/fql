@@ -345,9 +345,16 @@ void query_exit_function(query* self)
 	stack_pop(&self->function_stack);
 }
 
-void query_set_logic_comparison(query* self, const char* op)
+void query_set_logic_comparison(query* self, const char* op, int negation)
 {
 	logicgroup* lg = self->logic_stack->data;
+	/* Check for negation first because standard
+	 * comparisons like = or > set the negation
+	 * in the enter_search_not function.
+	 */
+	if (negation) {
+		lg->negation = true;
+	}
 	logic* logic = lg->condition;
 	logic_set_comparison(logic, op);
 }
@@ -368,12 +375,13 @@ void _assign_logic(query* self, logicgroup* lg)
 	}
 }
 
-void _add_item(query* self, enum logicgroup_type type)
+logicgroup* _add_item(query* self, enum logicgroup_type type)
 {
 	logicgroup* lg = new_(logicgroup, type);
 	logicgroup* parent = self->logic_stack->data;
 	vec_push_back(&parent->items, &lg);
 	stack_push(&self->logic_stack, lg);
+	return lg;
 }
 
 void enter_search(query* self)
@@ -412,9 +420,10 @@ void exit_search_and(query* self)
 	stack_pop(&self->logic_stack);
 }
 
-void enter_search_not(query* self)
+void enter_search_not(query* self, int negation)
 {
-	_add_item(self, LG_NOT);
+	logicgroup* lg = _add_item(self, LG_NOT);
+	lg->negation = negation;
 }
 
 void exit_search_not(query* self)

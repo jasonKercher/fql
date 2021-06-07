@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include "column.h"
-
+#include "misc.h"
 #include "util/stringview.h"
 
 #define get_integers(n0_, n1_)                                                 \
@@ -173,12 +173,38 @@ int fql_logic_le_s(logic* self, vec* recs)
 	return (stringview_compare_nocase_rtrim(&sv0, &sv1) <= 0);
 }
 
+int fql_logic_in_i(logic* self, vec* recs)
+{
+	long n0 = 0;
+	try_(column_get_int(&n0, self->col[0], recs));
+
+	return false;
+}
+
+int fql_logic_in_f(logic* self, vec* recs)
+{
+	double n0 = 0;
+	try_(column_get_float(&n0, self->col[0], recs));
+
+	return false;
+}
+
+int fql_logic_in_s(logic* self, vec* recs)
+{
+	stringview sv0;
+	try_(column_get_stringview(&sv0, self->col[0], recs));
+
+	return false;
+}
+
 int fql_logic_like(logic* self, vec* recs)
 {
-	stringview sv0, sv1;
-	get_stringviews(sv0, sv1);
+	stringview sv0;
+	try_(column_get_stringview(&sv0, self->col[0], recs));
 
 	if (self->col[1]->expr != EXPR_CONST) {
+		stringview sv1;
+		try_(column_get_stringview(&sv1, self->col[1], recs));
 		like_to_regex(self->like_data, sv1);
 	}
 	int match_ret = pcre2_match(self->like_data->regex,

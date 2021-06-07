@@ -22,6 +22,7 @@ enum comparison {
 	COMP_GE,
 	COMP_LT,
 	COMP_LE,
+	COMP_IN,
 	COMP_LIKE,
 	COMP_NULL,
 };
@@ -72,6 +73,7 @@ struct logicgroup {
 	struct vec* joinable;
 	struct logic* join_logic;
 	struct logic* condition;
+	_Bool negation;
 };
 typedef struct logicgroup logicgroup;
 
@@ -102,6 +104,9 @@ int fql_logic_lt_s(struct logic*, struct vec*);
 int fql_logic_le_i(struct logic*, struct vec*);
 int fql_logic_le_f(struct logic*, struct vec*);
 int fql_logic_le_s(struct logic*, struct vec*);
+int fql_logic_in_i(struct logic*, struct vec*);
+int fql_logic_in_f(struct logic*, struct vec*);
+int fql_logic_in_s(struct logic*, struct vec*);
 int fql_logic_like(struct logic*, struct vec*);
 int fql_logic_is_null(struct logic*, struct vec*);
 
@@ -112,6 +117,7 @@ static logic_fn logic_matrix[COMP_COUNT][FIELD_TYPE_COUNT] = {
         {&fql_logic_ge_i, &fql_logic_ge_f, &fql_logic_ge_s},
         {&fql_logic_lt_i, &fql_logic_lt_f, &fql_logic_lt_s},
         {&fql_logic_le_i, &fql_logic_le_f, &fql_logic_le_s},
+        {&fql_logic_in_i, &fql_logic_in_f, &fql_logic_in_s},
         {NULL, NULL, &fql_logic_like},
         {&fql_logic_is_null, &fql_logic_is_null, &fql_logic_is_null},
 };

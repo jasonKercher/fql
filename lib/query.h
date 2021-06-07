@@ -155,13 +155,13 @@ void query_exit_function(struct query*);
 void query_enter_operator(struct query*, enum scalar_function op);
 
 /* search building functions */
-void query_set_logic_comparison(struct query*, const char*);
+void query_set_logic_comparison(struct query*, const char*, int negation);
 
 void enter_search(struct query*);
 void exit_search(struct query*);
 void enter_search_and(struct query*);
 void exit_search_and(struct query*);
-void enter_search_not(struct query*);
+void enter_search_not(struct query*, int negation);
 void exit_search_not(struct query*);
 
 #ifdef __cplusplus

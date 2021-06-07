@@ -329,7 +329,7 @@ void ListenerInterface::exitSimple_id(TSqlParser::Simple_idContext * ctx) { }
 
 void ListenerInterface::enterComparison_operator(TSqlParser::Comparison_operatorContext * ctx)
 {
-	query_set_logic_comparison(_query, ctx->getText().c_str());
+	query_set_logic_comparison(_query, ctx->getText().c_str(), false);
 }
 void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorContext * ctx)
 {
@@ -484,7 +484,8 @@ void ListenerInterface::exitSearch_condition_and(TSqlParser::Search_condition_an
 
 void ListenerInterface::enterSearch_condition_not(TSqlParser::Search_condition_notContext * ctx)
 {
-	enter_search_not(_query);
+	bool negation = (ctx->NOT() != NULL);
+	enter_search_not(_query, negation);
 }
 void ListenerInterface::exitSearch_condition_not(TSqlParser::Search_condition_notContext * ctx)
 {
@@ -493,9 +494,12 @@ void ListenerInterface::exitSearch_condition_not(TSqlParser::Search_condition_no
 
 void ListenerInterface::enterPredicate(TSqlParser::PredicateContext * ctx) { }
 void ListenerInterface::exitPredicate(TSqlParser::PredicateContext * ctx)
-{ 
-	if (ctx->LIKE()) {
-		query_set_logic_comparison(_query, "LIKE");
+{
+	bool negation = (ctx->NOT() != NULL);
+	if (ctx->IN()) {
+		query_set_logic_comparison(_query, "IN", negation);
+	} else if (ctx->LIKE()) {
+		query_set_logic_comparison(_query, "LIKE", negation);
 	}
 }
 
