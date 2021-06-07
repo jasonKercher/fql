@@ -227,6 +227,9 @@ int logicgroup_eval(logicgroup* lg, vec* recs, logic* skip)
 	logicgroup** it = vec_begin(&lg->items);
 	for (; it != vec_end(&lg->items); ++it) {
 		ret = try_(logicgroup_eval(*it, recs, skip));
+		if (lg->negation) {
+			ret = !ret;
+		}
 		if (ret == 0 && lg->type == LG_AND) {
 			return 0;
 		}
