@@ -2,6 +2,7 @@
 #include "csv.h"
 #include "fql.h"
 #include "order.h"
+#include "logic.h"
 #include "reader.h"
 #include "column.h"
 #include "schema.h"
@@ -12,6 +13,7 @@
 int _select_record(fqlselect*, struct vec* rec);
 int _select_record_api(fqlselect*, struct vec* rec);
 int _select_record_order_api(fqlselect*, struct vec* rec);
+int _select_record_to_list(fqlselect*, struct vec* rec);
 
 fqlselect* fqlselect_construct(fqlselect* self)
 {
@@ -20,6 +22,7 @@ fqlselect* fqlselect_construct(fqlselect* self)
 	        NULL,            /* api */
 	        new_(schema),    /* schema */
 	        new_(writer),    /* writer */
+	        NULL,            /* list_data */
 	        &_select_record, /* select_record__ */
 	        0                /* offset */
 	};
@@ -187,6 +190,24 @@ void fqlselect_apply_column_alias(fqlselect* self, const char* alias)
 	schema_apply_column_alias(self->schema, alias);
 }
 
+int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
+{
+	if (self->schema->columns->size == 1) {
+		column** col = vec_begin(self->schema->columns);
+		if ((*col)->expr == EXPR_ASTERISK) {
+			_expand_asterisks(inlist->subquery, true);
+		}
+	}
+	if (self->schema->columns->size != 1) {
+		fputs("Only one expression can be specified in subquery\n",
+		      stderr);
+		return FQL_FAIL;
+	}
+	self->list_data = inlist->list_data;
+	self->select__ = &_select_record_to_list;
+	return FQL_GOOD;
+}
+
 int fqlselect_writer_open(fqlselect* self, const char* file_name)
 {
 	/* TODO: move to writer.c */
@@ -334,6 +355,7 @@ int _select_record_api(fqlselect* self, struct vec* recs)
 			string* s = field->_in;
 			string_copy_from_stringview(s, &sv);
 			field->data.s = s->data;
+
 			break;
 		}
 		default:;
@@ -382,6 +404,11 @@ int _select_record_order_api(fqlselect* self, struct vec* recs)
 	(*rec)->offset = self->offset;
 	self->offset += len;
 
+	return 1;
+}
+
+int _select_record_to_list(fqlselect* self, vec* recs)
+{
 	return 1;
 }
 

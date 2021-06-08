@@ -85,6 +85,7 @@ enum mode {
 	MODE_UPDATE,
 	MODE_SOURCES,
 	MODE_SEARCH,
+	MODE_IN,
 	MODE_GROUPBY,
 	MODE_ORDERBY,
 };
@@ -124,7 +125,9 @@ struct query {
 	struct vec* joinable;         /* denotes a joinable condition */
 	struct stack* function_stack; /* used to track function nesting */
 
-	//struct expression* expr;
+	int in_bracket_expression; /* boolean for whether we are in a
+				       bracket expression or not */
+
 	enum mode mode;
 	enum logic_mode logic_mode;
 	enum join_type join;
@@ -149,6 +152,7 @@ int query_add_aggregate(struct query*, enum aggregate_function);
 int query_init_op(struct query*);
 int query_init_orderby(struct query*);
 void query_init_in_statement(struct query*);
+void query_assign_in_subquery(struct query*, struct query*);
 void query_set_order_desc(struct query*);
 
 int query_enter_function(struct query*, enum scalar_function, int);

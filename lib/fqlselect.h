@@ -9,6 +9,7 @@
 
 struct record;
 struct fqlselect;
+struct inlist;
 typedef int (*select_fn)(struct fqlselect*, struct vec*);
 
 struct fqlselect {
@@ -16,6 +17,7 @@ struct fqlselect {
 	struct vec* api;
 	struct schema* schema;
 	struct writer* writer;
+	set* list_data;
 	select_fn select__;
 	size_t offset;
 };
@@ -30,6 +32,7 @@ void fqlselect_add_column(struct fqlselect*, struct column*);
 int fqlselect_connect_api(struct query*, struct vec*);
 void fqlselect_apply_process(struct query*, struct fql_plan*);
 void fqlselect_apply_column_alias(struct fqlselect*, const char* alias);
+int fqlselect_set_as_inlist(struct fqlselect*, struct inlist*);
 int fqlselect_writer_open(struct fqlselect*, const char* file_name);
 void fqlselect_preflight(struct fqlselect*, struct query*);
 int fqlselect_close(struct fqlselect*);

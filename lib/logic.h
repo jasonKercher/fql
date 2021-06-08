@@ -31,6 +31,7 @@ enum comparison {
 struct logic;
 struct like;
 struct inlist;
+struct query;
 typedef int (*logic_fn)(struct logic*, struct vec*);
 
 struct logic {
@@ -51,7 +52,8 @@ void logic_add_column(struct logic*, struct column*);
 void logic_set_comparison(struct logic* logic, const char* op);
 
 struct inlist {
-	vec* columns;
+	struct vec* columns;
+	struct query* subquery;
 	set* list_data;
 };
 typedef struct inlist inlist;

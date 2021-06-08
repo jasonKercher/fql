@@ -1,12 +1,14 @@
 #include "logic.h"
 #include "column.h"
+#include "fqlselect.h"
 #include "util/util.h"
 
 inlist* inlist_construct(inlist* self)
 {
 	*self = (inlist) {
-		NULL, /* columns */
-		NULL, /* list_data */
+	        NULL, /* columns */
+	        NULL, /* subquery */
+	        NULL, /* list_data */
 	};
 	return self;
 }
@@ -33,8 +35,14 @@ void inlist_add_column(inlist* self, column* col)
 enum field_type inlist_determine_type(inlist* self, column* left_side)
 {
 	enum field_type type = left_side->field_type;
-	column** it = vec_begin(self->columns);
-	for (; it != vec_end(self->columns); ++it) {
+	vec* columns = self->columns;
+	if (self->subquery != NULL) {
+		fqlselect* select = self->subquery->op;
+		columns = select->schema->columns;
+	}
+
+	column** it = vec_begin(columns);
+	for (; it != vec_end(columns); ++it) {
 		type = field_determine_type(type, (*it)->field_type);
 	}
 

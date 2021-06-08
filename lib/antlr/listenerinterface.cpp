@@ -440,18 +440,45 @@ void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx)
 void ListenerInterface::enterPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { }
 void ListenerInterface::exitPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { }
 
-void ListenerInterface::enterBracket_expression(TSqlParser::Bracket_expressionContext * ctx) { }
-void ListenerInterface::exitBracket_expression(TSqlParser::Bracket_expressionContext * ctx) { }
+void ListenerInterface::enterBracket_expression(TSqlParser::Bracket_expressionContext * ctx)
+{
+	_query->in_bracket_expression = true;
+}
+void ListenerInterface::exitBracket_expression(TSqlParser::Bracket_expressionContext * ctx)
+{
+	_query->in_bracket_expression = false;
+}
 
 void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 {
 	/* Check if an operation is already defined.
 	 * If it is, this is a sub-query
 	 */
-	if (_query->op != NULL) {
-		_query = query_new(++_query_id);
-		stack_push(&_query_stack, _query);
+	query* subquery = query_new(++_query_id);
+	stack_push(&_query_stack, subquery);
+
+	/* subquery as constant */
+	if (_query->in_bracket_expression) {
+		std::cerr << "subquery as constant not yet supported\n";
+		_return_code = FQL_FAIL;
+		_walker->set_walking(false);
+		return;
 	}
+
+	switch(_query->mode) {
+	case MODE_SOURCES: /* subquery as table */
+		break;
+	case MODE_IN:      /* subquery as list */
+		query_assign_in_subquery(_query, subquery);
+		break;
+	default:
+		std::cerr << "Unexpected mode for subquery\n";
+		_return_code = FQL_FAIL;
+		_walker->set_walking(false);
+		return;
+	}
+
+	_query = subquery;
 
 }
 void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
@@ -495,6 +522,7 @@ void ListenerInterface::exitSearch_condition_not(TSqlParser::Search_condition_no
 void ListenerInterface::enterPredicate(TSqlParser::PredicateContext * ctx)
 {
 	if (ctx->IN()) {
+		_query->mode = MODE_IN;
 		query_init_in_statement(_query);
 	}
 }
@@ -504,6 +532,7 @@ void ListenerInterface::exitPredicate(TSqlParser::PredicateContext * ctx)
 	bool negation = (ctx->NOT() != NULL);
 	if (ctx->IN()) {
 		query_set_logic_comparison(_query, "IN", negation);
+		_query->mode = MODE_SEARCH;
 	} else if (ctx->LIKE()) {
 		query_set_logic_comparison(_query, "LIKE", negation);
 	}
@@ -592,7 +621,7 @@ void ListenerInterface::enterEveryRule(antlr4::ParserRuleContext * ctx)
 		} else {
 			std::cerr << "\nTerminated: Use -O to Override at your own risk.\n";
 			_return_code = FQL_FAIL;
-		_walker->set_walking(false);
+			_walker->set_walking(false);
 		}
 	}
 }

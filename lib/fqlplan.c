@@ -12,6 +12,7 @@
 #include "reader.h"
 #include "column.h"
 #include "process.h"
+#include "fqlselect.h"
 #include "operation.h"
 #include "util/util.h"
 
@@ -70,9 +71,12 @@ plan* plan_construct(plan* self, query* query)
 void plan_destroy(void* generic_plan)
 {
 	plan* self = generic_plan;
-	dnode** it = vec_begin(self->processes->nodes);
-	for (; it != vec_end(self->processes->nodes); ++it) {
-		process_node_free(*it);
+	if (self->processes != NULL) {
+		dnode** it = vec_begin(self->processes->nodes);
+		for (; it != vec_end(self->processes->nodes); ++it) {
+			process_node_free(*it);
+		}
+		delete_(dgraph, self->processes);
 	}
 	if (self->recycle_groups != NULL) {
 		vec* it = vec_begin(self->recycle_groups);
@@ -81,13 +85,12 @@ void plan_destroy(void* generic_plan)
 		}
 		delete_(vec, self->recycle_groups);
 	}
-	delete_(dgraph, self->processes);
 }
 
 /* build process nodes from logic graph
  * assign processes for true and false
  */
-int _logic_to_process(process* logic_proc, logicgroup* lg)
+int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 {
 	switch (lg->type) {
 	case LG_ROOT:
@@ -99,6 +102,20 @@ int _logic_to_process(process* logic_proc, logicgroup* lg)
 	case LG_NOT:
 		string_strcat(logic_proc->action_msg, "NOT(");
 		if (lg->condition != NULL) {
+			if (lg->condition->in_data
+			    && !lg->condition->in_data->columns) {
+				/* SUBQUERY LIST */
+				query* subquery =
+				        lg->condition->in_data->subquery;
+				plan* subplan = plan_build(subquery, NULL);
+				fail_if_(subplan == NULL);
+				dgraph_consume(self->processes,
+				               subplan->processes);
+				/* We can assume select because subquery */
+				try_(fqlselect_set_as_inlist(
+				        subquery->op,
+				        lg->condition->in_data));
+			}
 			try_(logic_assign_process(lg->condition, logic_proc));
 		}
 		break;
@@ -109,7 +126,7 @@ int _logic_to_process(process* logic_proc, logicgroup* lg)
 
 	logicgroup** it = vec_begin(&lg->items);
 	for (; it != vec_end(&lg->items); ++it) {
-		try_(_logic_to_process(logic_proc, *it));
+		try_(_logic_to_process(self, logic_proc, *it));
 	}
 
 	string_strcat(logic_proc->action_msg, ")");
@@ -121,9 +138,18 @@ int _logicgroup_process(plan* self, logicgroup* lg, _Bool is_from_hash_join)
 	process* logic_proc = new_(process, "", self);
 	logic_proc->action__ = &fql_logic;
 	logic_proc->proc_data = lg;
-	try_(_logic_to_process(logic_proc, lg));
+	try_(_logic_to_process(self, logic_proc, lg));
 	dnode* logic_node = dgraph_add_data(self->processes, logic_proc);
 
+	/* If we are dealing with join logic that
+	 * has been optimized to a hash join, the
+	 * hash join process will take control of
+	 * the logic condition that it was created
+	 * from. If there is only one condition in
+	 * the relevant logic, it must be the join
+	 * condition. If this is all true, the
+	 * logic process can be marked passive.
+	 */
 	if (is_from_hash_join) {
 		self->current->out[1] = logic_node;
 		if (logicgroup_get_condition_count(lg) == 1) {
@@ -378,7 +404,7 @@ void _operation(plan* self, query* query, dnode* entry)
 
 void _order(plan* self, query* query)
 {
-	if (query->orderby == NULL) { // || vec_empty(query->sources)) {
+	if (query->orderby == NULL) {
 		return;
 	}
 	process* order_proc = new_(process, "ORDER BY ", self);
@@ -554,7 +580,7 @@ plan* plan_build(query* query, dnode* entry)
 	return self;
 
 build_fail_return:
-	delete_(plan, self);
+	//delete_(plan, self);
 	return NULL;
 }
 

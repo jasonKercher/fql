@@ -38,6 +38,8 @@ query* query_construct(query* self, int id)
 	        NULL, /* joinable */
 	        NULL, /* function_stack */
 
+	        0, /* in_bracket_expression */
+
 	        MODE_UNDEFINED,  /* mode */
 	        LOGIC_UNDEFINED, /* logic_mode */
 	        JOIN_FROM        /* join */
@@ -113,6 +115,7 @@ int _distribute_column(query* self, column* col)
 			group_add_column(self->distinct, col);
 		}
 		break;
+	case MODE_IN:
 	case MODE_SEARCH:
 		_add_logic_column(self, col);
 		_add_validation_column(self, col);
@@ -321,6 +324,12 @@ void query_init_in_statement(query* self)
 		lg->condition = new_(logic);
 	}
 	lg->condition->in_data = new_(inlist);
+}
+
+void query_assign_in_subquery(query* self, query* subquery)
+{
+	logicgroup* lg = self->logic_stack->data;
+	lg->condition->in_data->subquery = subquery;
 }
 
 void query_set_order_desc(query* self)
