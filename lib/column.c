@@ -18,6 +18,7 @@ column* column_construct(column* col,
 	        expr,            /* expr */
 	        NULL,            /* table */
 	        NULL,            /* data_source */
+	        NULL,            /* subquery */
 	        {0},             /* name */
 	        {0},             /* alias */
 	        {0},             /* table_name */

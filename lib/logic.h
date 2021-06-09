@@ -24,6 +24,7 @@ enum comparison {
 	COMP_LT,
 	COMP_LE,
 	COMP_IN,
+	COMP_SUBIN,
 	COMP_LIKE,
 	COMP_NULL,
 };
@@ -124,6 +125,9 @@ int fql_logic_le_s(struct logic*, struct vec*);
 int fql_logic_in_i(struct logic*, struct vec*);
 int fql_logic_in_f(struct logic*, struct vec*);
 int fql_logic_in_s(struct logic*, struct vec*);
+int fql_logic_subin_i(struct logic*, struct vec*);
+int fql_logic_subin_f(struct logic*, struct vec*);
+int fql_logic_subin_s(struct logic*, struct vec*);
 int fql_logic_like(struct logic*, struct vec*);
 int fql_logic_is_null(struct logic*, struct vec*);
 

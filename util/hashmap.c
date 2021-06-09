@@ -85,6 +85,7 @@ void set_nadd(set* self, const char* key, unsigned n)
 	}
 
 	/* new value */
+	entry->val_idx = 0;
 	entry->key_idx = self->_keybuf_head;
 	entry->key_len = n;
 	entry->hash = hash;

@@ -15,6 +15,7 @@ static logic_fn _logic_matrix[COMP_COUNT][FIELD_TYPE_COUNT] = {
         {&fql_logic_lt_i, &fql_logic_lt_f, &fql_logic_lt_s},
         {&fql_logic_le_i, &fql_logic_le_f, &fql_logic_le_s},
         {&fql_logic_in_i, &fql_logic_in_f, &fql_logic_in_s},
+        {&fql_logic_subin_i, &fql_logic_subin_f, &fql_logic_subin_s},
         {NULL, NULL, &fql_logic_like},
         {&fql_logic_is_null, &fql_logic_is_null, &fql_logic_is_null},
 };

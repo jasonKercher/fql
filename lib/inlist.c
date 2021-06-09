@@ -51,7 +51,7 @@ enum field_type inlist_determine_type(inlist* self, column* left_side)
 
 void inlist_cat_description(inlist* self, string* msg)
 {
-	if (self->list_data != NULL) {
+	if (self->subquery != NULL) {
 		string_strcat(msg, " <subquery>");
 		return;
 	}

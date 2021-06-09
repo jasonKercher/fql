@@ -203,6 +203,8 @@ int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 		      stderr);
 		return FQL_FAIL;
 	}
+	inlist->list_data =
+	        new_(set, 16, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 	self->list_data = inlist->list_data;
 	self->select__ = &_select_record_to_list;
 	return FQL_GOOD;
@@ -409,7 +411,33 @@ int _select_record_order_api(fqlselect* self, struct vec* recs)
 
 int _select_record_to_list(fqlselect* self, vec* recs)
 {
-	return 1;
+	set* list = self->list_data;
+
+	column* col = *(column**)vec_begin(self->schema->columns);
+
+	switch (col->field_type) {
+	case FIELD_INT: {
+		long num = 0;
+		try_(column_get_int(&num, col, recs));
+		set_nadd(list, (char*)&num, sizeof(num));
+		return 1;
+	}
+	case FIELD_FLOAT: {
+		double num = 0;
+		try_(column_get_float(&num, col, recs));
+		set_nadd(list, (char*)&num, sizeof(num));
+		return 1;
+	}
+	case FIELD_STRING: {
+		stringview sv;
+		try_(column_get_stringview(&sv, col, recs));
+		set_nadd(list, sv.data, sv.len);
+		return 1;
+	}
+	default:
+		fputs("Unexpected type in select list\n", stderr);
+		return FQL_FAIL;
+	}
 }
 
 /* TODO... reader.c? lol */

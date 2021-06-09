@@ -26,10 +26,11 @@ query* query_construct(query* self, int id)
 	        NULL,                 /* plan */
 	        new_t_(vec, table),   /* sources */
 	        NULL,                 /* where */
-	        new_t_(vec, column*), /* validation_list */
 	        new_(group),          /* groupby */
 	        NULL,                 /* distinct */
 	        NULL,                 /* orderby */
+	        new_t_(vec, query*),  /* subquery_const_vec */
+	        new_t_(vec, column*), /* validation_list */
 	        NULL,                 /* op */
 	        id,                   /* query_id */
 	        0,                    /* query_total */
@@ -330,6 +331,8 @@ void query_assign_in_subquery(query* self, query* subquery)
 {
 	logicgroup* lg = self->logic_stack->data;
 	lg->condition->in_data->subquery = subquery;
+	lg->condition->comp_type = COMP_SUBIN;
+	vec_push_back(self->subquery_const_vec, &subquery);
 }
 
 void query_set_order_desc(query* self)

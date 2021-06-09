@@ -29,6 +29,7 @@ process* process_construct(process* proc, const char* action, plan* plan)
 	        NULL,                         /* proc_data */
 	        string_from_char_ptr(action), /* action_msg */
 	        NULL,                         /* root_group */
+	        NULL,                         /* wait_list */
 	        UINT_MAX,                     /* max_recs_iter */
 	        plan->plan_id,                /* plan_id */
 	        0,                            /* subquery_plan_id */
@@ -158,6 +159,14 @@ void process_add_second_input(process* proc)
 	proc->fifo_in[1] = new_t_(fifo, vec*, FIFO_SIZE);
 }
 
+void process_add_to_wait_list(process* proc, const process* wait_proc)
+{
+	if (proc->wait_list == NULL) {
+		proc->wait_list = new_t_(vec, process*);
+	}
+	vec_push_back(proc->wait_list, &wait_proc);
+}
+
 void process_disable(process* proc)
 {
 	if (proc->fifo_out[0] != NULL) {
@@ -183,7 +192,7 @@ void process_enable(process* proc)
 }
 
 /* returns number of processes that executed or FQL_FAIL
- * 0 should not happen unless we EOF
+ * 0 should not happen unless we are done.
  */
 int _exec_one_pass(plan* plan, dgraph* proc_graph)
 {
@@ -201,6 +210,20 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 				proc->wait_for_in0 = false;
 			} else {
 				process_disable(proc);
+				continue;
+			}
+		}
+
+		if (proc->wait_list != NULL) {
+			_Bool enabled = false;
+			process** it = vec_begin(proc->wait_list);
+			for (; it != vec_end(proc->wait_list); ++it) {
+				if ((*it)->is_enabled) {
+					enabled = true;
+					break;
+				}
+			}
+			if (enabled) {
 				continue;
 			}
 		}

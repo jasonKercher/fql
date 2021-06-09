@@ -110,10 +110,11 @@ struct query {
 	struct fql_plan* plan;
 	struct vec* sources;
 	struct logicgroup* where;
-	struct vec* validation_list; /* for no-source tables */
 	struct group* groupby;
 	struct group* distinct;
 	struct order* orderby;
+	struct vec* subquery_const_vec;
+	struct vec* validation_list; /* for no-source tables */
 	void* op; /* operation structure */
 	int query_id;
 	int query_total;

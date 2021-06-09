@@ -242,7 +242,6 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		table->schema = select->schema;
 		table->reader->type = READ_SUBQUERY;
 	} else {
-
 		/* if we've made it this far, we want to try
 		 * and determine schema by reading the top
 		 * row of the file and assume a delimited
@@ -654,9 +653,15 @@ int _group_validation(query* query, vec* cols, _Bool force_validation)
 	return FQL_GOOD;
 }
 
-int schema_resolve_query(struct fql_handle* fql, query* query)
+int schema_resolve_query(struct fql_handle* fql, query* aquery)
 {
-	vec* sources = query->sources;
+	vec* subqueries = aquery->subquery_const_vec;
+	query** it = vec_begin(subqueries);
+	for (; it != vec_end(subqueries); ++it) {
+		schema_resolve_query(fql, *it);
+	}
+
+	vec* sources = aquery->sources;
 
 	/* Oh this is fun.  Let's try to link and verify
 	 * _everything_. First, let's verify the sources
@@ -671,11 +676,11 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 	 */
 	unsigned i = 0;
 	for (; i < sources->size; ++i) {
-		table* table = vec_at(query->sources, i);
+		table* table = vec_at(aquery->sources, i);
 		try_(schema_resolve_source(fql, table, i));
 
-		if (i == 0 && !op_has_delim(query->op)) {
-			op_set_delim(query->op, table->schema->delimiter);
+		if (i == 0 && !op_has_delim(aquery->op)) {
+			op_set_delim(aquery->op, table->schema->delimiter);
 		}
 
 		if (schema_assign_columns_limited(table->validation_list,
@@ -691,47 +696,47 @@ int schema_resolve_query(struct fql_handle* fql, query* query)
 	}
 
 	/* Validation list is fields in WHERE clause */
-	try_(schema_assign_columns(query->validation_list,
-	                           query->sources,
+	try_(schema_assign_columns(aquery->validation_list,
+	                           aquery->sources,
 	                           fql->props.strictness));
 
 	/* Validate the columns from the operation.
 	 * (e.g. columns listed in SELECT).
 	 */
-	vec* op_cols = op_get_validation_list(query->op);
+	vec* op_cols = op_get_validation_list(aquery->op);
 	try_(_asterisk_resolve(op_cols, sources));
 	try_(schema_assign_columns(op_cols, sources, fql->props.strictness));
 
 	/* Validate ORDER BY columns if they exist */
 	vec* order_cols = NULL;
-	if (query->orderby) {
-		order_cols = &query->orderby->columns;
-		try_(order_preresolve_columns(query->orderby, query->op));
+	if (aquery->orderby) {
+		order_cols = &aquery->orderby->columns;
+		try_(order_preresolve_columns(aquery->orderby, aquery->op));
 		try_(schema_assign_columns(order_cols,
-		                           query->sources,
+		                           aquery->sources,
 		                           fql->props.strictness));
 	}
 
 	/* Do GROUP BY last. There are less caveats having
 	 * waited until everything else is already resolved
 	 */
-	if (!vec_empty(&query->groupby->columns)
-	    || !vec_empty(&query->groupby->aggregates)) {
-		try_(_map_groups(fql, query));
+	if (!vec_empty(&aquery->groupby->columns)
+	    || !vec_empty(&aquery->groupby->aggregates)) {
+		try_(_map_groups(fql, aquery));
 
 		/* Now that we have mapped the groups,
 		 * we must re-resolve each operation and
 		 * ORDER BY column to a group.
 		 */
-		try_(_group_validation(query, op_cols, true));
+		try_(_group_validation(aquery, op_cols, true));
 
 		/* exceptions: ordinal ordering or matched by alias */
 		if (order_cols) {
-			try_(_group_validation(query, order_cols, false));
+			try_(_group_validation(aquery, order_cols, false));
 		}
 	}
 
-	op_preflight(query);
+	op_preflight(aquery);
 
 	return FQL_GOOD;
 }

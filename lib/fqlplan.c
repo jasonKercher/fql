@@ -87,6 +87,19 @@ void plan_destroy(void* generic_plan)
 	}
 }
 
+int _subquery_inlist(plan* self, process* logic_proc, logicgroup* lg)
+{
+	query* subquery = lg->condition->in_data->subquery;
+	plan* subplan = plan_build(subquery, NULL);
+	fail_if_(subplan == NULL);
+	dgraph_consume(self->processes, subplan->processes);
+	/* We can assume select because subquery */
+	try_(fqlselect_set_as_inlist(subquery->op, lg->condition->in_data));
+	lg->condition->comp_type = COMP_SUBIN;
+	process_add_to_wait_list(logic_proc, subquery->plan->op_true->data);
+	return FQL_GOOD;
+}
+
 /* build process nodes from logic graph
  * assign processes for true and false
  */
@@ -100,21 +113,15 @@ int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 		string_strcat(logic_proc->action_msg, "AND(");
 		break;
 	case LG_NOT:
-		string_strcat(logic_proc->action_msg, "NOT(");
+		if (lg->negation) {
+			string_strcat(logic_proc->action_msg, "NOT(");
+		} else {
+			string_strcat(logic_proc->action_msg, "(");
+		}
 		if (lg->condition != NULL) {
 			if (lg->condition->in_data
-			    && !lg->condition->in_data->columns) {
-				/* SUBQUERY LIST */
-				query* subquery =
-				        lg->condition->in_data->subquery;
-				plan* subplan = plan_build(subquery, NULL);
-				fail_if_(subplan == NULL);
-				dgraph_consume(self->processes,
-				               subplan->processes);
-				/* We can assume select because subquery */
-				try_(fqlselect_set_as_inlist(
-				        subquery->op,
-				        lg->condition->in_data));
+			    && lg->condition->in_data->subquery) {
+				try_(_subquery_inlist(self, logic_proc, lg));
 			}
 			try_(logic_assign_process(lg->condition, logic_proc));
 		}

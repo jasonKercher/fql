@@ -227,6 +227,30 @@ int fql_logic_in_s(logic* self, vec* recs)
 	return false;
 }
 
+int fql_logic_subin_i(logic* self, vec* recs)
+{
+	long n0 = 0;
+	try_(column_get_int(&n0, self->col[0], recs));
+
+	return set_nhas(self->in_data->list_data, (char*)&n0, sizeof(n0));
+}
+
+int fql_logic_subin_f(logic* self, vec* recs)
+{
+	double n0 = 0;
+	try_(column_get_float(&n0, self->col[0], recs));
+
+	return set_nhas(self->in_data->list_data, (char*)&n0, sizeof(n0));
+}
+
+int fql_logic_subin_s(logic* self, vec* recs)
+{
+	stringview sv0;
+	try_(column_get_stringview(&sv0, self->col[0], recs));
+
+	return set_nhas(self->in_data->list_data, sv0.data, sv0.len);
+}
+
 int fql_logic_like(logic* self, vec* recs)
 {
 	stringview sv0;

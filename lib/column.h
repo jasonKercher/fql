@@ -26,6 +26,7 @@ struct column {
 	enum expr_type expr;
 	struct table* table;
 	struct column* data_source;
+	struct query* subquery;
 	string name;
 	string alias;
 	string table_name;
