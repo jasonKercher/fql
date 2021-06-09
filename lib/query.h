@@ -11,6 +11,7 @@ extern "C" {
 struct vec;
 struct logicgroup;
 struct group;
+struct column;
 typedef struct vec string;
 
 enum aggregate_function {
@@ -113,9 +114,9 @@ struct query {
 	struct group* groupby;
 	struct group* distinct;
 	struct order* orderby;
+	void* op; /* operation structure */
 	struct vec* subquery_const_vec;
 	struct vec* validation_list; /* for no-source tables */
-	void* op; /* operation structure */
 	int query_id;
 	int query_total;
 
@@ -154,6 +155,7 @@ int query_init_op(struct query*);
 int query_init_orderby(struct query*);
 void query_init_in_statement(struct query*);
 void query_assign_in_subquery(struct query*, struct query*);
+void query_add_subquery_const(struct query*, struct query*);
 void query_set_order_desc(struct query*);
 
 int query_enter_function(struct query*, enum scalar_function, int);

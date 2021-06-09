@@ -459,9 +459,8 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 
 	/* subquery as constant */
 	if (_query->in_bracket_expression) {
-		std::cerr << "subquery as constant not yet supported\n";
-		_return_code = FQL_FAIL;
-		_walker->set_walking(false);
+		/* Handle this in subquery exit */
+		_query = subquery;
 		return;
 	}
 
@@ -485,6 +484,11 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 {
 	_subquery = (struct query*) stack_pop(&_query_stack);
 	_query = (struct query*) _query_stack->data;
+
+	/* subquery as constant */
+	if (_query->in_bracket_expression) {
+		query_add_subquery_const(_query, _subquery);
+	}
 }
 
 void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContext * ctx)

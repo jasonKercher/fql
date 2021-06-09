@@ -18,7 +18,6 @@ enum expr_type {
 	EXPR_AGGREGATE,
 	EXPR_SOURCE,
 	EXPR_SUBQUERY,
-	EXPR_SUBQUERY_CONST,
 };
 
 /** column **/

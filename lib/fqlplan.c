@@ -87,12 +87,30 @@ void plan_destroy(void* generic_plan)
 	}
 }
 
+void _check_for_subquery_expression(process* proc, column* col)
+{
+	if (col == NULL || col->expr != EXPR_SUBQUERY) {
+		return;
+	}
+	process_add_to_wait_list(proc, col->subquery->plan->op_true->data);
+}
+void _check_all_for_subquery_expression(process* proc, vec* columns)
+{
+	if (columns == NULL) {
+		return;
+	}
+	column** it = vec_begin(columns);
+	for (; it != vec_end(columns); ++it) {
+		_check_for_subquery_expression(proc, *it);
+	}
+}
+
 int _subquery_inlist(plan* self, process* logic_proc, logicgroup* lg)
 {
 	query* subquery = lg->condition->in_data->subquery;
-	plan* subplan = plan_build(subquery, NULL);
-	fail_if_(subplan == NULL);
-	dgraph_consume(self->processes, subplan->processes);
+	//plan* subplan = plan_build(subquery, NULL);
+	//fail_if_(subplan == NULL);
+	//dgraph_consume(self->processes, subquery->plan->processes);
 	/* We can assume select because subquery */
 	try_(fqlselect_set_as_inlist(subquery->op, lg->condition->in_data));
 	lg->condition->comp_type = COMP_SUBIN;
@@ -123,6 +141,10 @@ int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 			    && lg->condition->in_data->subquery) {
 				try_(_subquery_inlist(self, logic_proc, lg));
 			}
+			_check_for_subquery_expression(logic_proc,
+			                               lg->condition->col[0]);
+			_check_for_subquery_expression(logic_proc,
+			                               lg->condition->col[1]);
 			try_(logic_assign_process(lg->condition, logic_proc));
 		}
 		break;
@@ -346,6 +368,8 @@ void _group(plan* self, query* query)
 	if (!vec_empty(&query->groupby->columns)
 	    || !vec_empty(&query->groupby->aggregates)) {
 		process* group_proc = new_(process, "GROUP BY ", self);
+		_check_all_for_subquery_expression(group_proc,
+		                                   &query->groupby->columns);
 		self->source_count = 1;
 		group_proc->out_src_count = 1;
 		process* true_proc = self->op_true->data;
@@ -388,6 +412,8 @@ void _operation(plan* self, query* query, dnode* entry)
 {
 	self->current->out[0] = self->op_true;
 	self->current = self->op_true;
+	_check_all_for_subquery_expression(self->op_true->data,
+	                                   op_get_validation_list(query->op));
 	if (entry == NULL) {
 		op_apply_process(query, self);
 		return;
@@ -415,6 +441,8 @@ void _order(plan* self, query* query)
 		return;
 	}
 	process* order_proc = new_(process, "ORDER BY ", self);
+	_check_all_for_subquery_expression(order_proc,
+	                                   &query->orderby->columns);
 	order_proc->action__ = &fql_orderby;
 	order_proc->proc_data = query->orderby;
 	order_proc->wait_for_in0_end = true;
@@ -542,23 +570,40 @@ void _mark_roots_const(vec* roots)
 	}
 }
 
-plan* plan_build(query* query, dnode* entry)
+plan* plan_build(query* aquery, dnode* entry)
 {
-	query->plan = new_(plan, query);
-	plan* self = query->plan;
+	/* Loop through constant value subqueries and
+	 * build their plans
+	 */
+	query** it = vec_begin(aquery->subquery_const_vec);
+	for (; it != vec_end(aquery->subquery_const_vec); ++it) {
+		plan_build(*it, NULL);
+	}
 
-	/* query */
-	if (_from(self, query) == FQL_FAIL) {
+	aquery->plan = new_(plan, aquery);
+	plan* self = aquery->plan;
+
+	/* aquery */
+	if (_from(self, aquery) == FQL_FAIL) {
 		goto build_fail_return;
 	}
-	if (_where(self, query) == FQL_FAIL) {
+	if (_where(self, aquery) == FQL_FAIL) {
 		goto build_fail_return;
 	}
-	_group(self, query);
-	_having(self, query);
-	_operation(self, query, entry);
-	_order(self, query);
-	_limit(self, query);
+	_group(self, aquery);
+	_having(self, aquery);
+	_operation(self, aquery, entry);
+	_order(self, aquery);
+	_limit(self, aquery);
+
+	/* Loop through constant value subqueries again,
+	 * but this time, consume all process nodes into 
+	 * main plan
+	 */
+	it = vec_begin(aquery->subquery_const_vec);
+	for (; it != vec_end(aquery->subquery_const_vec); ++it) {
+		dgraph_consume(aquery->plan->processes, (*it)->plan->processes);
+	}
 
 	/* Uncomment this to view the plan *with* passive nodes */
 	//_print_plan(self);
@@ -573,11 +618,11 @@ plan* plan_build(query* query, dnode* entry)
 
 	dgraph_get_roots(self->processes);
 
-	if (vec_empty(query->sources)) {
+	if (vec_empty(aquery->sources)) {
 		_mark_roots_const(self->processes->_roots);
 	}
 
-	if (query->query_id != 0) { /* is subquery */
+	if (aquery->query_id != 0) { /* is subquery */
 		return self;
 	}
 	_activate_procs(self);

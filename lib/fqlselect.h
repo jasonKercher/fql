@@ -18,6 +18,7 @@ struct fqlselect {
 	struct schema* schema;
 	struct writer* writer;
 	set* list_data;
+	struct column* const_dest;
 	select_fn select__;
 	size_t offset;
 };

@@ -40,19 +40,19 @@ column* column_construct(column* col,
 		string_construct_from_char_ptr(&col->name, data);
 		//string_copy(&col->buf, &col->alias);
 		//col->field.s = data;
-		break;
+		return col; /* skip alias construct */
 	case EXPR_FUNCTION:
 		col->field.fn = data;
-		string_construct(&col->alias);
 		break;
 	case EXPR_AGGREGATE:
 		col->field.agg = data;
-		string_construct(&col->alias);
 		break;
-	default:
-		string_construct(&col->alias);
+	case EXPR_SUBQUERY:
+		col->subquery = data;
+	default:;
 	}
 
+	string_construct(&col->alias);
 	return col;
 }
 
@@ -151,9 +151,6 @@ void column_cat_description(column* col, string* msg)
 		break;
 	case EXPR_SUBQUERY:
 		string_strcat(msg, "SUBQUERY");
-		break;
-	case EXPR_SUBQUERY_CONST:
-		string_strcat(msg, "SUBQUERY CONST");
 		break;
 	default:
 		string_strcat(msg, "no expression");

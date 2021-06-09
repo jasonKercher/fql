@@ -8,12 +8,14 @@
 #include "schema.h"
 #include "process.h"
 #include "misc.h"
+#include "stringy.h"
 #include "util/util.h"
 
 int _select_record(fqlselect*, struct vec* rec);
 int _select_record_api(fqlselect*, struct vec* rec);
 int _select_record_order_api(fqlselect*, struct vec* rec);
 int _select_record_to_list(fqlselect*, struct vec* rec);
+int _select_record_to_const(fqlselect*, struct vec* rec);
 
 fqlselect* fqlselect_construct(fqlselect* self)
 {
@@ -23,7 +25,8 @@ fqlselect* fqlselect_construct(fqlselect* self)
 	        new_(schema),    /* schema */
 	        new_(writer),    /* writer */
 	        NULL,            /* list_data */
-	        &_select_record, /* select_record__ */
+	        NULL,            /* const_dest */
+	        &_select_record, /* select__ */
 	        0                /* offset */
 	};
 
@@ -168,6 +171,11 @@ void fqlselect_apply_process(query* query, plan* plan)
 	proc->action__ = &fql_select;
 	proc->wait_for_in0_end = true;
 	proc->proc_data = self;
+
+	if (self->const_dest != NULL) {
+		self->select__ = &_select_record_to_const;
+	}
+
 	string_strcpy(proc->action_msg, "SELECT ");
 
 	writer_set_delimiter(self->writer, self->schema->delimiter);
@@ -432,6 +440,45 @@ int _select_record_to_list(fqlselect* self, vec* recs)
 		stringview sv;
 		try_(column_get_stringview(&sv, col, recs));
 		set_nadd(list, sv.data, sv.len);
+		return 1;
+	}
+	default:
+		fputs("Unexpected type in select list\n", stderr);
+		return FQL_FAIL;
+	}
+}
+
+int _select_record_to_const(fqlselect* self, vec* recs)
+{
+	if (self->const_dest->expr == EXPR_CONST) {
+		fputs("subquery returned more than 1 value as expression\n",
+		      stderr);
+		return FQL_FAIL;
+	}
+
+	column* col = *(column**)vec_begin(self->schema->columns);
+
+	self->const_dest->field_type = col->field_type;
+	self->const_dest->expr = EXPR_CONST;
+
+	switch (col->field_type) {
+	case FIELD_INT: {
+		long num = 0;
+		try_(column_get_int(&num, col, recs));
+		self->const_dest->field.i = num;
+		return 1;
+	}
+	case FIELD_FLOAT: {
+		double num = 0;
+		try_(column_get_float(&num, col, recs));
+		self->const_dest->field.f = num;
+		return 1;
+	}
+	case FIELD_STRING: {
+		stringview sv;
+		try_(column_get_stringview(&sv, col, recs));
+		string_copy_from_stringview(&self->const_dest->buf, &sv);
+		self->const_dest->field.s = &self->const_dest->buf;
 		return 1;
 	}
 	default:

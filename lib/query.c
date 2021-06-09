@@ -29,9 +29,9 @@ query* query_construct(query* self, int id)
 	        new_(group),          /* groupby */
 	        NULL,                 /* distinct */
 	        NULL,                 /* orderby */
+	        NULL,                 /* op */
 	        new_t_(vec, query*),  /* subquery_const_vec */
 	        new_t_(vec, column*), /* validation_list */
-	        NULL,                 /* op */
 	        id,                   /* query_id */
 	        0,                    /* query_total */
 
@@ -333,6 +333,15 @@ void query_assign_in_subquery(query* self, query* subquery)
 	lg->condition->in_data->subquery = subquery;
 	lg->condition->comp_type = COMP_SUBIN;
 	vec_push_back(self->subquery_const_vec, &subquery);
+}
+
+void query_add_subquery_const(query* self, query* subquery)
+{
+	column* subquery_column = new_(column, EXPR_SUBQUERY, subquery, "");
+	fqlselect* subselect = subquery->op;
+	subselect->const_dest = subquery_column;
+	vec_push_back(self->subquery_const_vec, &subquery);
+	_distribute_column(self, subquery_column);
 }
 
 void query_set_order_desc(query* self)
