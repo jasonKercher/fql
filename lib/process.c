@@ -224,6 +224,7 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 				}
 			}
 			if (enabled) {
+				++run_count;
 				continue;
 			}
 		}

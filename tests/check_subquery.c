@@ -13,7 +13,204 @@ c1519b0d	c8	87082
 6ed156a7	ae	229701
 */
 
-START_TEST(test_subquery_const)
+START_TEST(test_subquery_const_select)
+{
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
+
+	plan_count = fql_make_plans(fql, "select (select 7)");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_INT);
+	ck_assert_int_eq(fields[0].data.i, 7);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+
+	plan_count = fql_make_plans(fql, "select (select (select (select 7)))");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_INT);
+	ck_assert_int_eq(fields[0].data.i, 7);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+
+	plan_count = fql_make_plans(fql, "select '6' + (select 7)");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_INT);
+	ck_assert_int_eq(fields[0].data.i, 13);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+
+	plan_count = fql_make_plans(fql, "select '6' + (select '7')");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "67");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+
+	plan_count = fql_make_plans(
+	        fql,
+	        "select (select bar from t1 where foo = '44b72d44')");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "70");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+}
+END_TEST
+
+START_TEST(test_subquery_const_where)
+{
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
+
+	plan_count = fql_make_plans(fql, "select 7 where 1 = (select 1)");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_INT);
+	ck_assert_int_eq(fields[0].data.i, 7);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+
+	plan_count = fql_make_plans(fql,
+	                            "select 13 where 71 = (     "
+	                            "    select bar             "
+	                            "    from t1                "
+	                            "    where foo = '44b72d44' "
+	                            ") + 1                      ");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_INT);
+	ck_assert_int_eq(fields[0].data.i, 13);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+
+	plan_count = fql_make_plans(fql,
+	                            "select '67'                "
+	                            "where '67' = '6' + (       "
+	                            "    select '7'             "
+	                            "    from t1                "
+	                            "    where foo = '3138b3f8' "
+	                            ")");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "67");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+}
+END_TEST
+
+START_TEST(test_subquery_where_in)
+{
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
+
+	/* Some lax rules here compared to SQL Server...
+	 * No alias really necessary on 7 or subquery
+	 */
+	plan_count = fql_make_plans(
+	        fql,
+	        "select baz from t1 where foo in (select '282a4957')");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "121263");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+
+	plan_count = fql_make_plans(
+	        fql,
+	        "select foo from t2 where foo in (select foo from t1)");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "6Ed156A7");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+}
+END_TEST
+
+START_TEST(test_subquery_source_const)
 {
 	struct fql_field* fields = NULL;
 	int plan_count = 0;
@@ -38,7 +235,6 @@ START_TEST(test_subquery_const)
 	ck_assert_int_eq(rows, 0);
 	ck_assert_int_eq(fql_field_count(fql), 0);
 
-
 	plan_count = fql_make_plans(fql, "select '6' + t from (select 7 t)");
 	ck_assert_int_eq(plan_count, 1);
 
@@ -53,7 +249,6 @@ START_TEST(test_subquery_const)
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 0);
 	ck_assert_int_eq(fql_field_count(fql), 0);
-
 
 	plan_count = fql_make_plans(fql, "select '6' + t from (select '7' t)");
 	ck_assert_int_eq(plan_count, 1);
@@ -72,7 +267,7 @@ START_TEST(test_subquery_const)
 }
 END_TEST
 
-START_TEST(test_subquery_read)
+START_TEST(test_subquery_source_read)
 {
 	struct fql_field* fields = NULL;
 	int plan_count = 0;
@@ -80,7 +275,9 @@ START_TEST(test_subquery_read)
 	int rows = 0;
 
 	//c1519b0d	c8	87082
-	plan_count = fql_make_plans(fql, "select * from (select bar from t1 where foo = 'c1519b0d')");
+	plan_count = fql_make_plans(
+	        fql,
+	        "select * from (select bar from t1 where foo = 'c1519b0d')");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -95,7 +292,9 @@ START_TEST(test_subquery_read)
 	ck_assert_int_eq(rows, 0);
 	ck_assert_int_eq(fql_field_count(fql), 0);
 
-	plan_count = fql_make_plans(fql, "select shnt, bar from (select left(foo, 1) shnt, * from t1)");
+	plan_count = fql_make_plans(
+	        fql,
+	        "select shnt, bar from (select left(foo, 1) shnt, * from t1)");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -147,8 +346,7 @@ START_TEST(test_subquery_read)
 }
 END_TEST
 
-
-START_TEST(test_subquery_nested)
+START_TEST(test_subquery_source_nested)
 {
 	struct fql_field* fields = NULL;
 	int plan_count = 0;
@@ -157,11 +355,13 @@ START_TEST(test_subquery_nested)
 
 	//8ab25d8f	f8	75882
 	//c1519b0d	c8	87082
-	plan_count = fql_make_plans(fql, "select shnt from (           "
-					 "  select bar shnt from (     "
-				         "    select * from t1 where right(baz, 2) = 82"
-					 "  )                          "
-					 ")                            ");
+	plan_count =
+	        fql_make_plans(fql,
+	                       "select shnt from (           "
+	                       "  select bar shnt from (     "
+	                       "    select * from t1 where right(baz, 2) = 82"
+	                       "  )                          "
+	                       ")                            ");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -178,7 +378,6 @@ START_TEST(test_subquery_nested)
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 0);
 	ck_assert_int_eq(fql_field_count(fql), 0);
-
 }
 END_TEST
 
@@ -190,9 +389,12 @@ Suite* fql_subquery_suite(void)
 	TCase* tc_subquery = tcase_create("subquery");
 	tcase_add_checked_fixture(tc_subquery, fql_setup, fql_teardown);
 
-	tcase_add_test(tc_subquery, test_subquery_const);
-	tcase_add_test(tc_subquery, test_subquery_read);
-	tcase_add_test(tc_subquery, test_subquery_nested);
+	tcase_add_test(tc_subquery, test_subquery_const_select);
+	tcase_add_test(tc_subquery, test_subquery_const_where);
+	tcase_add_test(tc_subquery, test_subquery_where_in);
+	tcase_add_test(tc_subquery, test_subquery_source_const);
+	tcase_add_test(tc_subquery, test_subquery_source_read);
+	tcase_add_test(tc_subquery, test_subquery_source_nested);
 
 	suite_add_tcase(s, tc_subquery);
 
@@ -204,7 +406,7 @@ int main(void)
 	int number_failed;
 	Suite* subquery_suite = fql_subquery_suite();
 	SRunner* subquery_runner = srunner_create(subquery_suite);
-	srunner_set_fork_status (subquery_runner, CK_NOFORK);
+	srunner_set_fork_status(subquery_runner, CK_NOFORK);
 
 	srunner_run_all(subquery_runner, CK_VERBOSE);
 	number_failed = srunner_ntests_failed(subquery_runner);
@@ -212,5 +414,3 @@ int main(void)
 
 	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-

@@ -1,8 +1,9 @@
 #include "function.h"
 
 #include "fql.h"
-#include "column.h"
 #include "query.h"
+#include "column.h"
+#include "fqlselect.h"
 #include "util/util.h"
 
 /* order is important here */
@@ -43,17 +44,12 @@ function* function_construct(function* func,
                              int char_as_byte)
 {
 	*func = (function) {
-	        &_not_implemented /* call__ */
-	        ,
-	        new_t_(vec, column*) /* args */
-	        ,
-	        scalar_type /* type */
-	        ,
-	        0 /* arg_min */
-	        ,
-	        0 /* arg_max */
-	        ,
-	        char_as_byte /* char_as_byte */
+	        &_not_implemented,    /* call__ */
+	        new_t_(vec, column*), /* args */
+	        scalar_type,          /* type */
+	        0,                    /* arg_min */
+	        0,                    /* arg_max */
+	        char_as_byte          /* char_as_byte */
 	};
 
 	/* if this is an operator, we don't have enough info */
@@ -217,6 +213,13 @@ int function_op_resolve(function* func, enum field_type* type)
 	column* col1 = col0;
 	if (func->args->size == 2) {
 		col1 = args[1];
+	}
+
+	if (col0->subquery != NULL) {
+		fqlselect_resolve_type_from_subquery(col0);
+	}
+	if (col1->subquery != NULL) {
+		fqlselect_resolve_type_from_subquery(col1);
 	}
 
 	*type = field_determine_type(col0->field_type, col1->field_type);

@@ -12,6 +12,7 @@
 #include "reader.h"
 #include "column.h"
 #include "process.h"
+#include "function.h"
 #include "fqlselect.h"
 #include "operation.h"
 #include "util/util.h"
@@ -87,12 +88,20 @@ void plan_destroy(void* generic_plan)
 	}
 }
 
+void _check_all_for_subquery_expression(process* proc, vec* columns);
 void _check_for_subquery_expression(process* proc, column* col)
 {
-	if (col == NULL || col->expr != EXPR_SUBQUERY) {
+	if (col == NULL) {
 		return;
 	}
-	process_add_to_wait_list(proc, col->subquery->plan->op_true->data);
+	if (col->expr == EXPR_SUBQUERY) {
+		process_add_to_wait_list(proc,
+		                         col->subquery->plan->op_true->data);
+		return;
+	}
+	if (col->expr == EXPR_FUNCTION) {
+		_check_all_for_subquery_expression(proc, col->field.fn->args);
+	}
 }
 void _check_all_for_subquery_expression(process* proc, vec* columns)
 {
@@ -577,7 +586,9 @@ void _mark_roots_const(vec* roots)
 	dnode** it = vec_begin(roots);
 	for (; it != vec_end(roots); ++it) {
 		process* proc = (*it)->data;
-		proc->is_const = true;
+		if (proc->action__ != fql_read) {
+			proc->is_const = true;
+		}
 	}
 }
 
@@ -611,11 +622,6 @@ plan* plan_build(query* aquery, dnode* entry)
 	 * but this time, consume all process nodes into
 	 * current plan.
 	 */
-	it = vec_begin(aquery->subquery_const_vec);
-	for (; it != vec_end(aquery->subquery_const_vec); ++it) {
-		dgraph_consume(aquery->plan->processes, (*it)->plan->processes);
-	}
-
 	/* Uncomment this to view the plan *with* passive nodes */
 	//_print_plan(self);
 
@@ -627,15 +633,11 @@ plan* plan_build(query* aquery, dnode* entry)
 		return self;
 	}
 
-	/* If this is a constant query, we need to unmark
-	 * all roots in case they came from subquery. If this
-	 * is a constant query, every unreachable node must
-	 * be a root process.
-	 */
-	if (vec_empty(aquery->sources)) {
-		_unmark_const_is_root(self->processes->nodes);
+	dgraph_get_roots(self->processes);
+	it = vec_begin(aquery->subquery_const_vec);
+	for (; it != vec_end(aquery->subquery_const_vec); ++it) {
+		dgraph_consume(aquery->plan->processes, (*it)->plan->processes);
 	}
-
 	dgraph_get_roots(self->processes);
 
 	if (vec_empty(aquery->sources)) {

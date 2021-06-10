@@ -3,6 +3,7 @@
 #include "fql.h"
 #include "order.h"
 #include "logic.h"
+#include "query.h"
 #include "reader.h"
 #include "column.h"
 #include "schema.h"
@@ -126,6 +127,19 @@ void _expand_asterisks(query* query, _Bool force_expansion)
 	_resize_raw_rec(self->writer->raw_rec, col_vec->size);
 }
 
+void fqlselect_resolve_type_from_subquery(column* col)
+{
+	query* subquery = col->subquery;
+	fqlselect* subselect = subquery->op;
+	column** subcol = vec_begin(subselect->schema->columns);
+	if ((*subcol)->subquery == NULL) {
+		col->field_type = (*subcol)->field_type;
+		return;
+	}
+	fqlselect_resolve_type_from_subquery(*subcol);
+	col->field_type = (*subcol)->field_type;
+}
+
 int fqlselect_connect_api(query* query, vec* api)
 {
 	fqlselect* self = query->op;
@@ -142,6 +156,9 @@ int fqlselect_connect_api(query* query, vec* api)
 	column** it = vec_begin(cols);
 	unsigned i = 0;
 	for (; i < cols->size; ++i) {
+		if ((*it)->subquery != NULL) {
+			fqlselect_resolve_type_from_subquery(*it);
+		}
 		struct fql_field* field = vec_at(api, i);
 		switch (it[i]->field_type) {
 		case FIELD_INT:
