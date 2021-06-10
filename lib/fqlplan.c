@@ -561,6 +561,17 @@ void _make_pipes(plan* self)
 	}
 }
 
+void _unmark_const_is_root(vec* nodes)
+{
+	dnode** it = vec_begin(nodes);
+	for (; it != vec_end(nodes); ++it) {
+		process* proc = (*it)->data;
+		if (proc->is_const) {
+			(*it)->is_root = false;
+		}
+	}
+}
+
 void _mark_roots_const(vec* roots)
 {
 	dnode** it = vec_begin(roots);
@@ -597,8 +608,8 @@ plan* plan_build(query* aquery, dnode* entry)
 	_limit(self, aquery);
 
 	/* Loop through constant value subqueries again,
-	 * but this time, consume all process nodes into 
-	 * main plan
+	 * but this time, consume all process nodes into
+	 * current plan.
 	 */
 	it = vec_begin(aquery->subquery_const_vec);
 	for (; it != vec_end(aquery->subquery_const_vec); ++it) {
@@ -614,6 +625,15 @@ plan* plan_build(query* aquery, dnode* entry)
 		process* entry_proc = entry->data;
 		entry_proc->is_const = true;
 		return self;
+	}
+
+	/* If this is a constant query, we need to unmark
+	 * all roots in case they came from subquery. If this
+	 * is a constant query, every unreachable node must
+	 * be a root process.
+	 */
+	if (vec_empty(aquery->sources)) {
+		_unmark_const_is_root(self->processes->nodes);
 	}
 
 	dgraph_get_roots(self->processes);
