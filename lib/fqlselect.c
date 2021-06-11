@@ -127,17 +127,25 @@ void _expand_asterisks(query* query, _Bool force_expansion)
 	_resize_raw_rec(self->writer->raw_rec, col_vec->size);
 }
 
-void fqlselect_resolve_type_from_subquery(column* col)
+int fqlselect_resolve_type_from_subquery(column* col)
 {
 	query* subquery = col->subquery;
 	fqlselect* subselect = subquery->op;
+	if (subselect->schema->columns->size > 1) {
+		fputs("Only one column can be supplied if subquery is an "
+		      "expression\n",
+		      stderr);
+		return FQL_FAIL;
+	}
 	column** subcol = vec_begin(subselect->schema->columns);
 	if ((*subcol)->subquery == NULL) {
 		col->field_type = (*subcol)->field_type;
-		return;
+		return FQL_GOOD;
 	}
-	fqlselect_resolve_type_from_subquery(*subcol);
+	try_(fqlselect_resolve_type_from_subquery(*subcol));
 	col->field_type = (*subcol)->field_type;
+
+	return FQL_GOOD;
 }
 
 int fqlselect_connect_api(query* query, vec* api)
@@ -157,7 +165,7 @@ int fqlselect_connect_api(query* query, vec* api)
 	unsigned i = 0;
 	for (; i < cols->size; ++i) {
 		if ((*it)->subquery != NULL) {
-			fqlselect_resolve_type_from_subquery(*it);
+			try_(fqlselect_resolve_type_from_subquery(*it));
 		}
 		struct fql_field* field = vec_at(api, i);
 		switch (it[i]->field_type) {

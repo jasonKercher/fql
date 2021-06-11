@@ -296,70 +296,79 @@ int _evaluate_if_const(column* col)
 	return FQL_GOOD;
 }
 
-int schema_assign_columns_limited(vec* columns,
-                                  vec* sources,
-                                  int limit,
-                                  int strictness)
+int _assign_columns_limited(vec* columns,
+                            vec* sources,
+                            int limit,
+                            int strictness)
 {
 	column** it = vec_begin(columns);
 	for (; it != vec_end(columns); ++it) {
-		if ((*it)->expr == EXPR_FUNCTION) {
+		switch ((*it)->expr) {
+		case EXPR_FUNCTION: {
 			function* func = (*it)->field.fn;
-			try_(schema_assign_columns_limited(func->args,
-			                                   sources,
-			                                   limit,
-			                                   strictness));
+			try_(_assign_columns_limited(func->args,
+			                             sources,
+			                             limit,
+			                             strictness));
 			try_(function_op_resolve(func, &(*it)->field_type));
 			try_(function_validate(func));
 			try_(_evaluate_if_const(*it));
-			continue;
+			break;
+			//continue;
 		}
-		if ((*it)->expr != EXPR_COLUMN_NAME
-		    || (*it)->data_source != NULL) {
-			continue;
-		}
+		case EXPR_SUBQUERY:
+			try_(fqlselect_resolve_type_from_subquery(*it));
+			break;
+		case EXPR_COLUMN_NAME: {
+			if ((*it)->data_source != NULL) {
+				continue;
+			}
 
-		int matches = 0;
-		int j = 0;
+			int matches = 0;
+			int j = 0;
 
-		for (; j <= limit; ++j) {
-			table* search_table = vec_at(sources, j);
-			if (string_empty(&(*it)->table_name)
-			    || istring_eq((*it)->table_name.data,
-			                  search_table->alias.data)) {
-				int n = column_try_assign_source(*it,
-				                                 search_table);
-				if (n > 1 && !strictness) {
-					n = 1;
+			for (; j <= limit; ++j) {
+				table* search_table = vec_at(sources, j);
+				if (string_empty(&(*it)->table_name)
+				    || istring_eq((*it)->table_name.data,
+				                  search_table->alias.data)) {
+					int n = column_try_assign_source(
+					        *it,
+					        search_table);
+					if (n > 1 && !strictness) {
+						n = 1;
+					}
+					matches += n;
 				}
-				matches += n;
+			}
+
+			if (matches > 1) {
+				fprintf(stderr,
+				        "%s: ambiguous column\n",
+				        (char*)(*it)->name.data);
+				return FQL_FAIL;
+			}
+
+			if (matches == 0) {
+				fprintf(stderr,
+				        "%s: cannot find column\n",
+				        (char*)(*it)->name.data);
+				return FQL_FAIL;
 			}
 		}
-
-		if (matches > 1) {
-			fprintf(stderr,
-			        "%s: ambiguous column\n",
-			        (char*)(*it)->name.data);
-			return FQL_FAIL;
-		}
-
-		if (matches == 0) {
-			fprintf(stderr,
-			        "%s: cannot find column\n",
-			        (char*)(*it)->name.data);
-			return FQL_FAIL;
+		default:;
 		}
 	}
 
 	return FQL_GOOD;
 }
 
-int schema_assign_columns(vec* columns, vec* sources, int strictness)
+int _assign_columns(vec* columns, vec* sources, int strictness)
 {
-	return schema_assign_columns_limited(columns,
-	                                     sources,
-	                                     sources->size - 1,
-	                                     strictness);
+	return _assign_columns_limited(columns,
+	                               sources,
+	                               sources->size - 1,
+	                               strictness);
 }
 
 int _asterisk_resolve(vec* columns, vec* sources)
@@ -596,9 +605,9 @@ int _map_groups(struct fql_handle* fql, query* query)
 {
 	/* verify group columns and build composite key for each */
 	vec* group_cols = &query->groupby->columns;
-	try_(schema_assign_columns(group_cols,
-	                           query->sources,
-	                           fql->props.strictness));
+	try_(_assign_columns(group_cols,
+	                     query->sources,
+	                     fql->props.strictness));
 
 	compositemap* expr_map =
 	        new_t_(compositemap,
@@ -621,9 +630,9 @@ int _map_groups(struct fql_handle* fql, query* query)
 			continue;
 		}
 		aggregate* agg = (*it)->field.agg;
-		try_(schema_assign_columns(agg->args,
-		                           query->sources,
-		                           fql->props.strictness));
+		try_(_assign_columns(agg->args,
+		                     query->sources,
+		                     fql->props.strictness));
 		try_(aggregate_resolve(agg));
 		(*it)->field_type = agg->data_type;
 		agg->linked_column->field_type = agg->data_type;
@@ -640,6 +649,7 @@ int _group_validation(query* query, vec* cols, _Bool force_validation)
 	vec_construct_(&key, stringview);
 	column** it = vec_begin(cols);
 	for (; it != vec_end(cols); ++it) {
+		/* Should be ... && (*it)->expr == EXPR_COLUMN_NAME ?? */
 		if (!force_validation && (*it)->data_source != NULL) {
 			continue;
 		}
@@ -683,10 +693,10 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 			op_set_delim(aquery->op, table->schema->delimiter);
 		}
 
-		if (schema_assign_columns_limited(table->validation_list,
-		                                  sources,
-		                                  i,
-		                                  fql->props.strictness)) {
+		if (_assign_columns_limited(table->validation_list,
+		                            sources,
+		                            i,
+		                            fql->props.strictness)) {
 			return FQL_FAIL;
 		}
 
@@ -696,25 +706,25 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 	}
 
 	/* Validation list is fields in WHERE clause */
-	try_(schema_assign_columns(aquery->validation_list,
-	                           aquery->sources,
-	                           fql->props.strictness));
+	try_(_assign_columns(aquery->validation_list,
+	                     aquery->sources,
+	                     fql->props.strictness));
 
 	/* Validate the columns from the operation.
 	 * (e.g. columns listed in SELECT).
 	 */
 	vec* op_cols = op_get_validation_list(aquery->op);
 	try_(_asterisk_resolve(op_cols, sources));
-	try_(schema_assign_columns(op_cols, sources, fql->props.strictness));
+	try_(_assign_columns(op_cols, sources, fql->props.strictness));
 
 	/* Validate ORDER BY columns if they exist */
 	vec* order_cols = NULL;
 	if (aquery->orderby) {
 		order_cols = &aquery->orderby->columns;
 		try_(order_preresolve_columns(aquery->orderby, aquery->op));
-		try_(schema_assign_columns(order_cols,
-		                           aquery->sources,
-		                           fql->props.strictness));
+		try_(_assign_columns(order_cols,
+		                     aquery->sources,
+		                     fql->props.strictness));
 	}
 
 	/* Do GROUP BY last. There are less caveats having

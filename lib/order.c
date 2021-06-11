@@ -127,7 +127,6 @@ int order_preresolve_columns(order* self, fqlselect* select)
 			continue;
 		}
 		if ((*result)->expr == EXPR_CONST) {
-			//(*it)->data_source = *result;
 			column_link(*it, *result);
 			continue;
 		}

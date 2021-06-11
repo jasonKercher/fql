@@ -114,7 +114,10 @@ void ListenerInterface::exitTable_source(TSqlParser::Table_sourceContext * ctx)
 void ListenerInterface::enterTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
 void ListenerInterface::exitTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
 
-void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemContext * ctx) { }
+void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemContext * ctx) 
+{ 
+	_subquery = NULL;
+}
 void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx)
 {
 	if (_subquery == NULL) {

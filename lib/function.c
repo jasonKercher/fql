@@ -1,6 +1,7 @@
 #include "function.h"
 
 #include "fql.h"
+#include "misc.h"
 #include "query.h"
 #include "column.h"
 #include "fqlselect.h"
@@ -215,12 +216,12 @@ int function_op_resolve(function* func, enum field_type* type)
 		col1 = args[1];
 	}
 
-	if (col0->subquery != NULL) {
-		fqlselect_resolve_type_from_subquery(col0);
-	}
-	if (col1->subquery != NULL) {
-		fqlselect_resolve_type_from_subquery(col1);
-	}
+	//if (col0->subquery != NULL) {
+	//	try_(fqlselect_resolve_type_from_subquery(col0));
+	//}
+	//if (col1->subquery != NULL) {
+	//	try_(fqlselect_resolve_type_from_subquery(col1));
+	//}
 
 	*type = field_determine_type(col0->field_type, col1->field_type);
 

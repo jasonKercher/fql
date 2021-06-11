@@ -49,6 +49,10 @@ START_TEST(test_failure_syntax)
 	/* missing ')' */
 	plan_count = fql_make_plans(fql, "select left('mlrv', 1");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* More than 1 expression in constant subquery */
+	plan_count = fql_make_plans(fql, "select (select 1, 2)");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
 }
 END_TEST
 
@@ -75,11 +79,11 @@ START_TEST(test_failure_columns)
 	plan_count = fql_make_plans(fql, "select t1.foo from t1 x");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
 
-	/** T4 header 
-foo	bar	foo
-	**/
+	/** strict mode failures **/
 
-	/* strict mode failure */
+	/* T4 header
+	foo	bar	foo
+	*/
 	fql_set_strict_mode(fql, 1);
 	plan_count = fql_make_plans(fql, "select foo from [t4.tsv]");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
@@ -90,10 +94,6 @@ foo	bar	foo
 }
 END_TEST
 
-/* Unfortunately, fql fails to keep up with SQL Server here.
- * Many of the following queries will avoid overflows on SQL
- * Server by utilizing arbitrary precision types.
- */
 START_TEST(test_failure_const_runtime)
 {
 	struct fql_field* fields = NULL;
@@ -104,6 +104,19 @@ START_TEST(test_failure_const_runtime)
 	/* non-numeric data where not expected */
 	plan_count = fql_make_plans(fql, "select 's' + 1");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* divide by 0 */
+	plan_count = fql_make_plans(fql, "select 101 / 0");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* function args */
+	plan_count = fql_make_plans(fql, "select left('1234')");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* Unfortunately, fql fails to keep up with SQL Server here.
+	 * Many of the following queries will avoid overflows on SQL
+	 * Server by utilizing arbitrary precision types.
+	 */
 
 	/* addition overflow */
 	plan_count = fql_make_plans(fql, "select -9223372036854775806 + -124");
@@ -117,16 +130,8 @@ START_TEST(test_failure_const_runtime)
 	plan_count = fql_make_plans(fql, "select -922337203685477580 * 124");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
 
-	/* divide by 0 */
-	plan_count = fql_make_plans(fql, "select 101 / 0");
-	ck_assert_int_eq(plan_count, FQL_FAIL);
-
 	/* Unary overflow */
 	plan_count = fql_make_plans(fql, "select -(-9223372036854775808)");
-	ck_assert_int_eq(plan_count, FQL_FAIL);
-
-	/* function args */
-	plan_count = fql_make_plans(fql, "select left('1234')");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
 }
 END_TEST
@@ -170,14 +175,21 @@ START_TEST(test_failure_runtime)
 	} while (rows == 1);
 	ck_assert_int_eq(rows, FQL_FAIL);
 
-	plan_count = fql_make_plans(fql, "select right(foo, 2) from invalid_utf8");
+	/* subquery expression returning more than one result */
+	plan_count = fql_make_plans(fql, "select (select foo from t1)");
 	ck_assert_int_eq(plan_count, 1);
 	do {
 		rows = fql_step(fql, &fields);
 	} while (rows == 1);
 	ck_assert_int_eq(rows, FQL_FAIL);
 
-
+	/* subquery expression returning more than one result with source */
+	plan_count = fql_make_plans(fql, "select (select foo from t1) from t2");
+	ck_assert_int_eq(plan_count, 1);
+	do {
+		rows = fql_step(fql, &fields);
+	} while (rows == 1);
+	ck_assert_int_eq(rows, FQL_FAIL);
 }
 END_TEST
 

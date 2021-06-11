@@ -80,6 +80,7 @@ void column_destroy(void* generic_col)
 void column_link(struct column* dest, struct column* src)
 {
 	dest->data_source = src;
+	//dest->expr = src->expr;
 	dest->field_type = src->field_type;
 
 	if (src->expr == EXPR_AGGREGATE) {

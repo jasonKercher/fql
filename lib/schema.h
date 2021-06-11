@@ -29,10 +29,6 @@ struct query;
 struct schema* schema_construct(struct schema*);
 void schema_destroy(void*);
 
-//int schema_assign_columns_limited(struct vec* columns,
-//                                  struct vec* sources,
-//                                  int);
-//int schema_assign_columns(struct vec* columns, struct vec* sources);
 int schema_resolve_query(struct fql_handle*, struct query*);
 int schema_resolve(struct fql_handle*);
 

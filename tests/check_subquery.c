@@ -164,6 +164,33 @@ START_TEST(test_subquery_const_where)
 }
 END_TEST
 
+START_TEST(test_subquery_const_asterisk)
+{
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
+
+	/* This is legal if the subquery source only has one column */
+	plan_count = fql_make_plans(
+	        fql,
+	        "select (select * from T5 where foo = '0cda1b43')");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "0cda1b43");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+}
+END_TEST
+
 START_TEST(test_subquery_where_in)
 {
 	struct fql_field* fields = NULL;
@@ -171,9 +198,6 @@ START_TEST(test_subquery_where_in)
 	int field_count = 0;
 	int rows = 0;
 
-	/* Some lax rules here compared to SQL Server...
-	 * No alias really necessary on 7 or subquery
-	 */
 	plan_count = fql_make_plans(
 	        fql,
 	        "select baz from t1 where foo in (select '282a4957')");
@@ -203,6 +227,49 @@ START_TEST(test_subquery_where_in)
 	ck_assert_int_eq(rows, 1);
 	ck_assert_int_eq(fields[0].type, FQL_STRING);
 	ck_assert_str_eq(fields[0].data.s, "6Ed156A7");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+}
+END_TEST
+
+START_TEST(test_subquery_const_with_source)
+{
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
+
+	plan_count = fql_make_plans(
+	        fql,
+	        "select (select foo from t1 where bar = 'b0') from t2");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3138b3f8");
 
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 0);
@@ -391,7 +458,9 @@ Suite* fql_subquery_suite(void)
 
 	tcase_add_test(tc_subquery, test_subquery_const_select);
 	tcase_add_test(tc_subquery, test_subquery_const_where);
+	tcase_add_test(tc_subquery, test_subquery_const_asterisk);
 	tcase_add_test(tc_subquery, test_subquery_where_in);
+	tcase_add_test(tc_subquery, test_subquery_const_with_source);
 	tcase_add_test(tc_subquery, test_subquery_source_const);
 	tcase_add_test(tc_subquery, test_subquery_source_read);
 	tcase_add_test(tc_subquery, test_subquery_source_nested);
