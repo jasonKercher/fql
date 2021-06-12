@@ -95,6 +95,7 @@ enum logic_mode {
 	LOGIC_UNDEFINED,
 	LOGIC_WHERE,
 	LOGIC_JOIN,
+	LOGIC_HAVING,
 };
 
 enum join_type {
@@ -113,6 +114,7 @@ struct query {
 	struct logicgroup* where;
 	struct group* groupby;
 	struct group* distinct;
+	struct logicgroup* having;
 	struct order* orderby;
 	void* op; /* operation structure */
 	struct vec* subquery_const_vec;

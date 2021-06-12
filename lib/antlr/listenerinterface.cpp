@@ -61,9 +61,10 @@ void ListenerInterface::enterGroup_by_item(TSqlParser::Group_by_itemContext * ct
 {
 	_query->mode = MODE_GROUPBY;
 }
-void ListenerInterface::exitGroup_by_item(TSqlParser::Group_by_itemContext * ctx)
+void ListenerInterface::exitGroup_by_item(TSqlParser::Group_by_itemContext* ctx)
 {
 	_query->mode = MODE_UNDEFINED;
+	_query->logic_mode = LOGIC_HAVING;
 }
 
 void ListenerInterface::enterAsterisk(TSqlParser::AsteriskContext * ctx)
@@ -577,10 +578,8 @@ void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_w
 	else if (ctx->VAR())          fn = AGG_VAR;
 	else if (ctx->VARP())         fn = AGG_VARP;
 
-	int ret = query_add_aggregate(_query, fn);
-
-	if (ret) {
-		_return_code = ret;
+	if (query_add_aggregate(_query, fn)) {
+		_return_code = FQL_FAIL;
 		_walker->set_walking(false);
 	}
 	_query->mode = MODE_AGGREGATE;

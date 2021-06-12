@@ -365,11 +365,10 @@ int _where(plan* self, query* query)
 		return FQL_GOOD;
 	}
 
-	try_(_logicgroup_process(self, query->where, false));
-	return FQL_GOOD;
+	return _logicgroup_process(self, query->where, false);
 }
 
-/* NOTE: If there is a grouping, the grouping becomes new
+/* NOTE: If there is a grouping, the grouping becomes the
  *       one and only source. hence source_count = 1...
  */
 void _group(plan* self, query* query)
@@ -415,7 +414,14 @@ void _group(plan* self, query* query)
 	}
 }
 
-void _having(plan* self, query* query) { }
+int _having(plan* self, query* query)
+{
+	if (query->having == NULL) {
+		return FQL_GOOD;
+	}
+
+	return _logicgroup_process(self, query->having, false);
+}
 
 void _operation(plan* self, query* query, dnode* entry)
 {
@@ -613,7 +619,9 @@ plan* plan_build(query* aquery, dnode* entry)
 		goto build_fail_return;
 	}
 	_group(self, aquery);
-	_having(self, aquery);
+	if (_having(self, aquery) == FQL_FAIL) {
+		goto build_fail_return;
+	}
 	_operation(self, aquery, entry);
 	_order(self, aquery);
 	_limit(self, aquery);

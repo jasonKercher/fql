@@ -28,6 +28,7 @@ query* query_construct(query* self, int id)
 	        NULL,                 /* where */
 	        new_(group),          /* groupby */
 	        NULL,                 /* distinct */
+	        NULL,                 /* having */
 	        NULL,                 /* orderby */
 	        NULL,                 /* op */
 	        new_t_(vec, query*),  /* subquery_const_vec */
@@ -62,6 +63,7 @@ void query_destroy(query* self)
 	delete_(vec, self->validation_list);
 	delete_(group, self->groupby);
 	delete_(group, self->distinct);
+	delete_(logicgroup, self->having);
 	delete_(order, self->orderby);
 }
 
@@ -107,19 +109,26 @@ int _distribute_column(query* self, column* col)
 	case MODE_SELECT:
 		fqlselect_add_column(self->op, col);
 
-		/* TODO */
-		if (col->expr == EXPR_AGGREGATE && self->distinct) {
-			fputs("currently unsafe to mix DISTINCT and GROUP BY\n",
-			      stderr);
-		}
+		///* TODO */
+		//if (col->expr == EXPR_AGGREGATE && self->distinct) {
+		//	fputs("currently unsafe to mix DISTINCT and GROUP BY\n",
+		//	      stderr);
+		//}
 		if (self->distinct) {
 			group_add_column(self->distinct, col);
 		}
 		break;
 	case MODE_IN:
 	case MODE_SEARCH:
-		_add_logic_column(self, col);
-		_add_validation_column(self, col);
+		if (self->logic_mode != LOGIC_HAVING
+		    && col->expr == EXPR_AGGREGATE) {
+			fputs("Cannot have aggregate logic outside of HAVING\n",
+			      stderr);
+			return FQL_FAIL;
+		} else {
+			_add_logic_column(self, col);
+			_add_validation_column(self, col);
+		}
 		break;
 	case MODE_GROUPBY:
 		group_add_column(self->groupby, col);
@@ -400,7 +409,10 @@ void _assign_logic(query* self, logicgroup* lg)
 	case LOGIC_WHERE:
 		self->where = lg;
 		break;
-	case LOGIC_UNDEFINED:
+	case LOGIC_HAVING:
+		self->having = lg;
+		break;
+	default:
 		fprintf(stderr, "unexpected logic mode assigning group\n");
 	}
 }
