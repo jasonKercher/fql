@@ -39,7 +39,7 @@ void aggregate_destroy(struct aggregate*);
 
 const char* aggregate_get_name(struct aggregate*);
 void aggregate_add_column(struct aggregate*, struct column*);
-int aggregate_resolve(struct aggregate*);
+int aggregate_resolve(struct aggregate*, struct column*);
 
 int fql_count(struct aggregate*, struct group*, struct aggresult*, struct vec*);
 

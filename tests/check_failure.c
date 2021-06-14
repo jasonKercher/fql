@@ -1,3 +1,4 @@
+#include "check.h"
 #include "check_common.h"
 
 /* t1.tsv
@@ -28,11 +29,8 @@ f95b84ce,18,229701
 
 START_TEST(test_failure_syntax)
 {
-
 	struct fql_field* fields = NULL;
 	int plan_count = 0;
-	int field_count = 0;
-	int rows = 0;
 
 	/* [column] [alias] [??] */
 	plan_count = fql_make_plans(fql, "select shnt mlrv fgkc");
@@ -60,8 +58,6 @@ START_TEST(test_failure_columns)
 {
 	struct fql_field* fields = NULL;
 	int plan_count = 0;
-	int field_count = 0;
-	int rows = 0;
 
 	/* column doesn't exist */
 	plan_count = fql_make_plans(fql, "select nope from t1");
@@ -79,12 +75,28 @@ START_TEST(test_failure_columns)
 	plan_count = fql_make_plans(fql, "select t1.foo from t1 x");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
 
-	/** strict mode failures **/
+	/* In select list, but not in grouping */
+	plan_count = fql_make_plans(fql, "select foo from t1 group by bar");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* In order by list, but not in grouping */
+	plan_count =
+	        fql_make_plans(fql,
+	                       "select bar from t1 group by bar order by foo");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* In HAVING list, but not in grouping */
+}
+END_TEST
+
+START_TEST(test_failure_strict_mode)
+{
+	int plan_count = 0;
+	fql_set_strict_mode(fql, 1);
 
 	/* T4 header
 	foo	bar	foo
 	*/
-	fql_set_strict_mode(fql, 1);
 	plan_count = fql_make_plans(fql, "select foo from [t4.tsv]");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
 
@@ -98,8 +110,6 @@ START_TEST(test_failure_const_runtime)
 {
 	struct fql_field* fields = NULL;
 	int plan_count = 0;
-	int field_count = 0;
-	int rows = 0;
 
 	/* non-numeric data where not expected */
 	plan_count = fql_make_plans(fql, "select 's' + 1");
@@ -140,7 +150,6 @@ START_TEST(test_failure_runtime)
 {
 	struct fql_field* fields = NULL;
 	int plan_count = 0;
-	int field_count = 0;
 	int rows = 0;
 
 	/* non-numeric data where not expected */
@@ -203,6 +212,7 @@ Suite* fql_failure_suite(void)
 
 	tcase_add_test(tc_failure, test_failure_syntax);
 	tcase_add_test(tc_failure, test_failure_columns);
+	tcase_add_test(tc_failure, test_failure_strict_mode);
 	tcase_add_test(tc_failure, test_failure_const_runtime);
 	tcase_add_test(tc_failure, test_failure_runtime);
 

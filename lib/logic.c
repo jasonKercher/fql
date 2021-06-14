@@ -162,6 +162,7 @@ logicgroup* logicgroup_construct(logicgroup* lg, enum logicgroup_type type)
 	*lg = (logicgroup) {
 	        type,  /* type */
 	        {0},   /* items */
+	        NULL,  /* columns */
 	        NULL,  /* joinable */
 	        NULL,  /* join_logic */
 	        NULL,  /* condition */
@@ -185,6 +186,7 @@ void logicgroup_destroy(logicgroup* lg)
 		delete_(vec, lg->joinable);
 	}
 	vec_destroy(&lg->items);
+	delete_(vec, lg->columns);
 }
 
 void _get_condition_count(logicgroup* lg, unsigned* count)

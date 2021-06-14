@@ -59,12 +59,11 @@ void ListenerInterface::exitSelect_list(TSqlParser::Select_listContext * ctx)
 
 void ListenerInterface::enterGroup_by_item(TSqlParser::Group_by_itemContext * ctx)
 {
-	_query->mode = MODE_GROUPBY;
+	query_init_groupby(_query);
 }
 void ListenerInterface::exitGroup_by_item(TSqlParser::Group_by_itemContext* ctx)
 {
 	_query->mode = MODE_UNDEFINED;
-	_query->logic_mode = LOGIC_HAVING;
 }
 
 void ListenerInterface::enterAsterisk(TSqlParser::AsteriskContext * ctx)
@@ -115,8 +114,8 @@ void ListenerInterface::exitTable_source(TSqlParser::Table_sourceContext * ctx)
 void ListenerInterface::enterTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
 void ListenerInterface::exitTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
 
-void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemContext * ctx) 
-{ 
+void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemContext * ctx)
+{
 	_subquery = NULL;
 }
 void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx)
@@ -499,7 +498,19 @@ void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContex
 {
 	_query->mode = MODE_SEARCH;
 	if (_query->logic_mode == LOGIC_UNDEFINED) {
-		_query->logic_mode = LOGIC_WHERE;
+		if (_query->expect_where && !_query->where) {
+			_query->logic_mode = LOGIC_WHERE;
+		} else {
+			_query->logic_mode = LOGIC_HAVING;
+			/* NOTE: SQL Server DOES support this. Until I see
+			 *       a practical application for this, I will not.
+			 */
+			if (!_query->groupby) {
+				std::cerr << "HAVING without GROUP BY\n";
+				_walker->set_walking(false);
+				_return_code = FQL_FAIL;
+			}
+		}
 	}
 	enter_search(_query);
 }
@@ -555,6 +566,12 @@ void ListenerInterface::enterQuery_specification(TSqlParser::Query_specification
 	if (ctx->DISTINCT()) {
 		query_set_distinct(_query);
 	}
+	//if (ctx->HAVING()) {
+	//	query_set_expect_having(_query);
+	//}
+	if (ctx->WHERE()) {
+		_query->expect_where = true;
+	}
 }
 void ListenerInterface::exitQuery_specification(TSqlParser::Query_specificationContext * ctx) { }
 
@@ -582,9 +599,12 @@ void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_w
 		_return_code = FQL_FAIL;
 		_walker->set_walking(false);
 	}
-	_query->mode = MODE_AGGREGATE;
+	_query->in_aggregate = true;
 }
-void ListenerInterface::exitAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx) { }
+void ListenerInterface::exitAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx)
+{
+	_query->in_aggregate = false;
+}
 
 void ListenerInterface::enterAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * ctx) { }
 void ListenerInterface::exitAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * ctx) { }

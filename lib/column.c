@@ -28,6 +28,7 @@ column* column_construct(column* col,
 	        0,               /* location */
 	        0,               /* width */
 	        0,               /* src_idx */
+	        false,           /* is_resolved_to_group */
 	        false            /* descending */
 	};
 

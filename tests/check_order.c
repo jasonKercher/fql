@@ -60,10 +60,6 @@ START_TEST(test_order_distinct)
 	int field_count = 0;
 	int rows = 0;
 
-	/* The parser supports this so, I probably should
-	 * as well. What kind of clown even needs this
-	 * ability? I don't know...
-	 */
 	plan_count = fql_make_plans(fql, "select distinct bar from t3 order by bar");
 	ck_assert_int_eq(plan_count, 1);
 

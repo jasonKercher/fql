@@ -314,7 +314,6 @@ int _assign_columns_limited(vec* columns,
 			try_(function_validate(func));
 			try_(_evaluate_if_const(*it));
 			break;
-			//continue;
 		}
 		case EXPR_SUBQUERY:
 			try_(fqlselect_resolve_type_from_subquery(*it));
@@ -483,6 +482,7 @@ enum _expr_type {
 	MAP_CONST_STRING,
 	MAP_COLUMN,
 	MAP_FUNCTION,
+	MAP_AGGREGATE,
 };
 
 int _map_expression(vec* key, column* col)
@@ -494,6 +494,7 @@ int _map_expression(vec* key, column* col)
 	static const enum _expr_type _c_string = MAP_CONST_STRING;
 	static const enum _expr_type _col = MAP_COLUMN;
 	static const enum _expr_type _func = MAP_FUNCTION;
+	static const enum _expr_type _agg = MAP_AGGREGATE;
 
 	const enum _expr_type* map_type = &_undef;
 	stringview type_sv;
@@ -531,6 +532,12 @@ int _map_expression(vec* key, column* col)
 		stringview_nset(&val_sv,
 		                (char*)&col->field.fn->type,
 		                sizeof(enum scalar_function));
+		break;
+	case EXPR_AGGREGATE:
+		map_type = &_agg;
+		stringview_nset(&val_sv,
+		                (char*)&col->field.agg->agg_type,
+		                sizeof(enum aggregate_function));
 		break;
 	default:
 		fputs("unexpected expression\n", stderr);
@@ -573,6 +580,7 @@ int _op_find_group(compositemap* expr_map, column* col, vec* key)
 	if (result != NULL) {
 		col->src_idx = 0;
 		col->data_source = *result;
+		col->is_resolved_to_group = true;
 		/* the operation (select) will not be evaluating
 		 * the expression.  it is simply going to read
 		 * from the grouping as if it were a column.
@@ -633,7 +641,7 @@ int _map_groups(struct fql_handle* fql, query* query)
 		try_(_assign_columns(agg->args,
 		                     query->sources,
 		                     fql->props.strictness));
-		try_(aggregate_resolve(agg));
+		try_(aggregate_resolve(agg, *it));
 		(*it)->field_type = agg->data_type;
 		agg->linked_column->field_type = agg->data_type;
 	}
@@ -642,15 +650,30 @@ int _map_groups(struct fql_handle* fql, query* query)
 	return FQL_GOOD;
 }
 
-int _group_validation(query* query, vec* cols, _Bool force_validation)
+/* Forcing validation means even if the column has been linked
+ * already, we need to re-link. Why?
+ * SELECT foo -- (foo MUST refer to the grouping, not the column)
+ * FROM t1
+ * GROUP BY foo
+ *
+ * But in an ORDER BY, we want to use the group that was already
+ * resolved because it is already pointing at a grouping. This is
+ * because ORDER BY columns must try to match the select list
+ * _before_ trying to match groupings.
+ *
+ * SELECT foo bar
+ * FROM t1
+ * GROUP BY foo
+ * ORDER BY foo -- (OR bar OR 1)!!
+ */
+int _group_validation(query* query, vec* cols)
 {
 	compositemap* expr_map = query->groupby->expr_map;
 	vec key;
 	vec_construct_(&key, stringview);
 	column** it = vec_begin(cols);
 	for (; it != vec_end(cols); ++it) {
-		/* Should be ... && (*it)->expr == EXPR_COLUMN_NAME ?? */
-		if (!force_validation && (*it)->data_source != NULL) {
+		if ((*it)->is_resolved_to_group) {
 			continue;
 		}
 		if (_op_find_group(expr_map, *it, &key)) {
@@ -693,11 +716,12 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 			op_set_delim(aquery->op, table->schema->delimiter);
 		}
 
-		if (_assign_columns_limited(table->validation_list,
-		                            sources,
-		                            i,
-		                            fql->props.strictness)) {
-			return FQL_FAIL;
+		/* Validate columns used in JOIN clauses */
+		if (table->condition != NULL) {
+			try_(_assign_columns_limited(table->condition->columns,
+			                             sources,
+			                             i,
+			                             fql->props.strictness));
 		}
 
 		if (i > 0 && !fql->props.force_cartesian) {
@@ -705,10 +729,12 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 		}
 	}
 
-	/* Validation list is fields in WHERE clause */
-	try_(_assign_columns(aquery->validation_list,
-	                     aquery->sources,
-	                     fql->props.strictness));
+	/* Validate WHERE columns */
+	if (aquery->where != NULL) {
+		try_(_assign_columns(aquery->where->columns,
+		                     aquery->sources,
+		                     fql->props.strictness));
+	}
 
 	/* Validate the columns from the operation.
 	 * (e.g. columns listed in SELECT).
@@ -716,6 +742,15 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 	vec* op_cols = op_get_validation_list(aquery->op);
 	try_(_asterisk_resolve(op_cols, sources));
 	try_(_assign_columns(op_cols, sources, fql->props.strictness));
+
+	/* Validate HAVING columns */
+	vec* having_cols = NULL;
+	if (aquery->having != NULL) {
+		having_cols = aquery->having->columns;
+		try_(_assign_columns(having_cols,
+		                     aquery->sources,
+		                     fql->props.strictness));
+	}
 
 	/* Validate ORDER BY columns if they exist */
 	vec* order_cols = NULL;
@@ -730,19 +765,22 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 	/* Do GROUP BY last. There are less caveats having
 	 * waited until everything else is already resolved
 	 */
-	if (!vec_empty(&aquery->groupby->columns)
-	    || !vec_empty(&aquery->groupby->aggregates)) {
+	if (aquery->groupby != NULL) {
 		try_(_map_groups(fql, aquery));
 
 		/* Now that we have mapped the groups,
-		 * we must re-resolve each operation and
-		 * ORDER BY column to a group.
+		 * we must re-resolve each operation,
+		 * HAVING and ORDER BY column to a group.
 		 */
-		try_(_group_validation(aquery, op_cols, true));
+		try_(_group_validation(aquery, op_cols));
+
+		if (having_cols) {
+			try_(_group_validation(aquery, having_cols));
+		}
 
 		/* exceptions: ordinal ordering or matched by alias */
 		if (order_cols) {
-			try_(_group_validation(aquery, order_cols, false));
+			try_(_group_validation(aquery, order_cols));
 		}
 	}
 

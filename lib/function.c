@@ -4,6 +4,7 @@
 #include "misc.h"
 #include "query.h"
 #include "column.h"
+#include "aggregate.h"
 #include "fqlselect.h"
 #include "util/util.h"
 
@@ -216,12 +217,12 @@ int function_op_resolve(function* func, enum field_type* type)
 		col1 = args[1];
 	}
 
-	//if (col0->subquery != NULL) {
-	//	try_(fqlselect_resolve_type_from_subquery(col0));
-	//}
-	//if (col1->subquery != NULL) {
-	//	try_(fqlselect_resolve_type_from_subquery(col1));
-	//}
+	if (col0->expr == EXPR_AGGREGATE) {
+		aggregate_resolve(col0->field.agg, col0);
+	}
+	if (col1->expr == EXPR_AGGREGATE) {
+		aggregate_resolve(col1->field.agg, col1);
+	}
 
 	*type = field_determine_type(col0->field_type, col1->field_type);
 

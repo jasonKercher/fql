@@ -82,7 +82,7 @@ enum mode {
 	MODE_UNDEFINED,
 	MODE_SELECT,
 	MODE_INTO,
-	MODE_AGGREGATE,
+	//MODE_AGGREGATE,
 	MODE_UPDATE,
 	MODE_SOURCES,
 	MODE_SEARCH,
@@ -118,9 +118,9 @@ struct query {
 	struct order* orderby;
 	void* op; /* operation structure */
 	struct vec* subquery_const_vec;
-	struct vec* validation_list; /* for no-source tables */
 	int query_id;
 	int query_total;
+	int expect_where; /* Boolean */
 
 	/* all the variables below are temporaries for
 	 * tracking the query as antlr traverses it
@@ -129,8 +129,10 @@ struct query {
 	struct vec* joinable;         /* denotes a joinable condition */
 	struct stack* function_stack; /* used to track function nesting */
 
+	int in_aggregate;          /* Boolean for whether we are in aggregate */
 	int in_bracket_expression; /* boolean for whether we are in a
-				       bracket expression or not */
+	                            * bracket expression or not
+	                            */
 
 	enum mode mode;
 	enum logic_mode logic_mode;
@@ -154,6 +156,7 @@ int query_set_into_table(struct query*, const char*);
 void query_set_distinct(struct query*);
 int query_add_aggregate(struct query*, enum aggregate_function);
 int query_init_op(struct query*);
+void query_init_groupby(struct query*);
 int query_init_orderby(struct query*);
 void query_init_in_statement(struct query*);
 void query_assign_in_subquery(struct query*, struct query*);

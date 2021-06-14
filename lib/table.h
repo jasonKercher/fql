@@ -24,7 +24,6 @@ struct table {
 	struct reader* reader;
 	struct schema* schema;
 	struct logicgroup* condition;
-	struct vec* validation_list;
 	struct process* read_proc;
 	void* join_data;
 	size_t idx;

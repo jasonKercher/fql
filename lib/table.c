@@ -21,7 +21,6 @@ table* table_construct(table* self,
 	        new_(reader),         /* reader */
 	        new_(schema),         /* schema */
 	        NULL,                 /* condition */
-	        new_t_(vec, column*), /* validation_list */
 	        NULL,                 /* read_proc */
 	        NULL,                 /* join_data */
 	        idx,                  /* idx */
@@ -53,7 +52,6 @@ table* table_construct_subquery(table* self,
 	        new_(reader),         /* reader */
 	        new_(schema),         /* schema */
 	        NULL,                 /* condition */
-	        new_t_(vec, column*), /* validation_list */
 	        NULL,                 /* read_proc */
 	        NULL,                 /* join_data */
 	        idx,                  /* idx */
@@ -78,7 +76,6 @@ void table_destroy(table* self)
 	delete_(reader, self->reader);
 	delete_(schema, self->schema);
 	delete_(logicgroup, self->condition);
-	delete_(vec, self->validation_list);
 	string_destroy(&self->alias);
 	delete_(hashjoin, self->join_data);
 }

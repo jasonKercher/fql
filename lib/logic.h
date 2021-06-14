@@ -87,7 +87,8 @@ enum logicgroup_type {
 
 struct logicgroup {
 	enum logicgroup_type type;
-	struct vec items; /* logicgroup* */
+	struct vec items;    /* logicgroup* */
+	struct vec* columns; /* All columns in group */
 	struct vec* joinable;
 	struct logic* join_logic;
 	struct logic* condition;

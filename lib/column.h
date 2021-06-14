@@ -35,6 +35,7 @@ struct column {
 	unsigned location;
 	unsigned width;
 	int src_idx;
+	_Bool is_resolved_to_group;
 	_Bool descending;
 };
 typedef struct column column;

@@ -23,23 +23,24 @@ query* query_new(int id)
 query* query_construct(query* self, int id)
 {
 	*self = (query) {
-	        NULL,                 /* plan */
-	        new_t_(vec, table),   /* sources */
-	        NULL,                 /* where */
-	        new_(group),          /* groupby */
-	        NULL,                 /* distinct */
-	        NULL,                 /* having */
-	        NULL,                 /* orderby */
-	        NULL,                 /* op */
-	        new_t_(vec, query*),  /* subquery_const_vec */
-	        new_t_(vec, column*), /* validation_list */
-	        id,                   /* query_id */
-	        0,                    /* query_total */
+	        NULL,                /* plan */
+	        new_t_(vec, table),  /* sources */
+	        NULL,                /* where */
+	        NULL,                /* groupby */
+	        NULL,                /* distinct */
+	        NULL,                /* having */
+	        NULL,                /* orderby */
+	        NULL,                /* op */
+	        new_t_(vec, query*), /* subquery_const_vec */
+	        id,                  /* query_id */
+	        0,                   /* query_total */
+	        0,                   /* expect_where */
 
 	        NULL, /* logic_stack */
 	        NULL, /* joinable */
 	        NULL, /* function_stack */
 
+	        0, /* in_aggregate */
 	        0, /* in_bracket_expression */
 
 	        MODE_UNDEFINED,  /* mode */
@@ -60,7 +61,6 @@ void query_destroy(query* self)
 	delete_(op, self->op);
 	delete_(vec, self->sources);
 	delete_(logicgroup, self->where);
-	delete_(vec, self->validation_list);
 	delete_(group, self->groupby);
 	delete_(group, self->distinct);
 	delete_(logicgroup, self->having);
@@ -73,29 +73,23 @@ void query_free(void* data)
 	delete_(query, data);
 }
 
-void _add_validation_column(query* self, column* col)
+int _add_logic_column(query* self, column* col)
 {
-	/* if sources are empty we arrived here by way of
-	 * some retarded query like:
-	 * SELECT 'hello'
-	 * WHERE 1 = 0
-	 */
-	if (vec_empty(self->sources)) {
-		vec_push_back(self->validation_list, &col);
-		return;
+	if (self->logic_mode != LOGIC_HAVING && col->expr == EXPR_AGGREGATE) {
+		fputs("Cannot have aggregate logic outside of HAVING\n",
+		      stderr);
+		return FQL_FAIL;
 	}
+	logicgroup* lg = stack_bottom(self->logic_stack)->data;
+	vec_push_back(lg->columns, &col);
 
-	table* table = vec_back(self->sources);
-	vec_push_back(table->validation_list, &col);
-}
-
-void _add_logic_column(query* self, column* col)
-{
-	logicgroup* lg = self->logic_stack->data;
+	lg = self->logic_stack->data;
 	if (lg->condition == NULL) {
 		lg->condition = new_(logic);
 	}
 	logic_add_column(lg->condition, col);
+
+	return FQL_GOOD;
 }
 
 int _distribute_column(query* self, column* col)
@@ -105,39 +99,25 @@ int _distribute_column(query* self, column* col)
 		function_add_column(fn_col->field.fn, col);
 		return FQL_GOOD;
 	}
+	if (self->in_aggregate) {
+		aggregate** back = vec_back(&self->groupby->aggregates);
+		aggregate_add_column(*back, col);
+		return FQL_GOOD;
+	}
 	switch (self->mode) {
 	case MODE_SELECT:
 		fqlselect_add_column(self->op, col);
-
-		///* TODO */
-		//if (col->expr == EXPR_AGGREGATE && self->distinct) {
-		//	fputs("currently unsafe to mix DISTINCT and GROUP BY\n",
-		//	      stderr);
-		//}
 		if (self->distinct) {
 			group_add_column(self->distinct, col);
 		}
 		break;
 	case MODE_IN:
 	case MODE_SEARCH:
-		if (self->logic_mode != LOGIC_HAVING
-		    && col->expr == EXPR_AGGREGATE) {
-			fputs("Cannot have aggregate logic outside of HAVING\n",
-			      stderr);
-			return FQL_FAIL;
-		} else {
-			_add_logic_column(self, col);
-			_add_validation_column(self, col);
-		}
+		try_(_add_logic_column(self, col));
 		break;
 	case MODE_GROUPBY:
 		group_add_column(self->groupby, col);
 		break;
-	case MODE_AGGREGATE: {
-		aggregate** back = vec_back(&self->groupby->aggregates);
-		aggregate_add_column(*back, col);
-		break;
-	}
 	case MODE_ORDERBY:
 		order_add_column(self->orderby, col);
 		break;
@@ -266,6 +246,9 @@ int query_set_into_table(query* self, const char* table_name)
 
 int query_add_aggregate(query* self, enum aggregate_function agg_type)
 {
+	if (self->groupby == NULL) {
+		self->groupby = new_(group);
+	}
 	aggregate* agg = new_(aggregate, agg_type);
 	vec_push_back(&self->groupby->aggregates, &agg);
 
@@ -305,6 +288,14 @@ int query_init_op(query* self)
 		return FQL_FAIL;
 	}
 	return FQL_GOOD;
+}
+
+void query_init_groupby(query* self)
+{
+	if (self->groupby == NULL) {
+		self->groupby = new_(group);
+	}
+	self->mode = MODE_GROUPBY;
 }
 
 int query_init_orderby(query* self)
@@ -429,7 +420,9 @@ logicgroup* _add_item(query* self, enum logicgroup_type type)
 void enter_search(query* self)
 {
 	if (self->logic_stack == NULL) {
-		stack_push(&self->logic_stack, new_(logicgroup, LG_ROOT));
+		logicgroup* lg = new_(logicgroup, LG_ROOT);
+		lg->columns = new_t_(vec, column*);
+		stack_push(&self->logic_stack, lg);
 		self->joinable = new_t_(vec, logic*);
 		return;
 	}

@@ -128,9 +128,11 @@ int order_preresolve_columns(order* self, fqlselect* select)
 		}
 		if ((*result)->expr == EXPR_CONST) {
 			column_link(*it, *result);
+			(*it)->is_resolved_to_group = true;
 			continue;
 		}
 		column_link(*it, (*result)->data_source);
+		(*it)->is_resolved_to_group = true;
 		(*it)->expr = EXPR_COLUMN_NAME;
 	}
 

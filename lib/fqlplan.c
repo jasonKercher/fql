@@ -373,8 +373,7 @@ int _where(plan* self, query* query)
  */
 void _group(plan* self, query* query)
 {
-	if (!vec_empty(&query->groupby->columns)
-	    || !vec_empty(&query->groupby->aggregates)) {
+	if (query->groupby != NULL) {
 		process* group_proc = new_(process, "GROUP BY ", self);
 		_check_all_for_subquery_expression(group_proc,
 		                                   &query->groupby->columns);
