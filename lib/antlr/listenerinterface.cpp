@@ -629,6 +629,24 @@ void ListenerInterface::exitOrder_by_expression(TSqlParser::Order_by_expressionC
 	}
 }
 
+void ListenerInterface::enterTop_clause(TSqlParser::Top_clauseContext * ctx)
+{
+	_query->mode_store = _query->mode;
+	_query->mode = MODE_TOP;
+}
+void ListenerInterface::exitTop_clause(TSqlParser::Top_clauseContext * ctx)
+{
+	_query->mode = _query->mode_store;
+}
+
+void ListenerInterface::enterTop_count(TSqlParser::Top_countContext * ctx)
+{
+	if (ctx->DECIMAL()) {
+		query_set_top_count(_query, ctx->getText().c_str());
+	}
+}
+void ListenerInterface::exitTop_count(TSqlParser::Top_countContext * ctx) { }
+
 /* Every Rule Operations */
 
 void ListenerInterface::enterEveryRule(antlr4::ParserRuleContext * ctx)
@@ -1759,14 +1777,8 @@ void ListenerInterface::exitSearch_condition_list(TSqlParser::Search_condition_l
 void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitSql_union(TSqlParser::Sql_unionContext * ctx) { }
 
-void ListenerInterface::enterTop_clause(TSqlParser::Top_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitTop_clause(TSqlParser::Top_clauseContext * ctx) { }
-
 void ListenerInterface::enterTop_percent(TSqlParser::Top_percentContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitTop_percent(TSqlParser::Top_percentContext * ctx) { }
-
-void ListenerInterface::enterTop_count(TSqlParser::Top_countContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitTop_count(TSqlParser::Top_countContext * ctx) { }
 
 void ListenerInterface::enterFor_clause(TSqlParser::For_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitFor_clause(TSqlParser::For_clauseContext * ctx) { }

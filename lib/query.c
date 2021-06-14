@@ -32,6 +32,8 @@ query* query_construct(query* self, int id)
 	        NULL,                /* orderby */
 	        NULL,                /* op */
 	        new_t_(vec, query*), /* subquery_const_vec */
+	        NULL,                /* top_expr */
+	        0,                   /* top_count */
 	        id,                  /* query_id */
 	        0,                   /* query_total */
 	        0,                   /* expect_where */
@@ -44,6 +46,7 @@ query* query_construct(query* self, int id)
 	        0, /* in_bracket_expression */
 
 	        MODE_UNDEFINED,  /* mode */
+	        MODE_UNDEFINED,  /* mode_store */
 	        LOGIC_UNDEFINED, /* logic_mode */
 	        JOIN_FROM        /* join */
 	};
@@ -110,6 +113,9 @@ int _distribute_column(query* self, column* col)
 		if (self->distinct) {
 			group_add_column(self->distinct, col);
 		}
+		break;
+	case MODE_TOP:
+		self->top_expr = col;
 		break;
 	case MODE_IN:
 	case MODE_SEARCH:
@@ -231,6 +237,13 @@ void query_apply_column_alias(query* self, const char* alias)
 void query_set_distinct(query* self)
 {
 	self->distinct = new_(group);
+}
+
+int query_set_top_count(query* self, const char* count_str)
+{
+	long top_count;
+	fail_if_(str2long(&top_count, count_str));
+	return FQL_GOOD;
 }
 
 int query_set_into_table(query* self, const char* table_name)

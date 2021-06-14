@@ -81,8 +81,8 @@ enum scalar_function {
 enum mode {
 	MODE_UNDEFINED,
 	MODE_SELECT,
+	MODE_TOP,
 	MODE_INTO,
-	//MODE_AGGREGATE,
 	MODE_UPDATE,
 	MODE_SOURCES,
 	MODE_SEARCH,
@@ -118,6 +118,8 @@ struct query {
 	struct order* orderby;
 	void* op; /* operation structure */
 	struct vec* subquery_const_vec;
+	struct column* top_expr;
+	long top_count;
 	int query_id;
 	int query_total;
 	int expect_where; /* Boolean */
@@ -135,6 +137,7 @@ struct query {
 	                            */
 
 	enum mode mode;
+	enum mode mode_store;
 	enum logic_mode logic_mode;
 	enum join_type join;
 };
@@ -152,6 +155,7 @@ void query_add_source(struct query*, struct stack**, const char*);
 void query_add_subquery_source(struct query*, struct query*, const char*);
 void query_apply_table_alias(struct query*, const char*);
 void query_apply_column_alias(struct query*, const char*);
+int query_set_top_count(struct query*, const char*);
 int query_set_into_table(struct query*, const char*);
 void query_set_distinct(struct query*);
 int query_add_aggregate(struct query*, enum aggregate_function);

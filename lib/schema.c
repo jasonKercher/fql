@@ -650,22 +650,6 @@ int _map_groups(struct fql_handle* fql, query* query)
 	return FQL_GOOD;
 }
 
-/* Forcing validation means even if the column has been linked
- * already, we need to re-link. Why?
- * SELECT foo -- (foo MUST refer to the grouping, not the column)
- * FROM t1
- * GROUP BY foo
- *
- * But in an ORDER BY, we want to use the group that was already
- * resolved because it is already pointing at a grouping. This is
- * because ORDER BY columns must try to match the select list
- * _before_ trying to match groupings.
- *
- * SELECT foo bar
- * FROM t1
- * GROUP BY foo
- * ORDER BY foo -- (OR bar OR 1)!!
- */
 int _group_validation(query* query, vec* cols)
 {
 	compositemap* expr_map = query->groupby->expr_map;
@@ -695,6 +679,30 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 	}
 
 	vec* sources = aquery->sources;
+
+	if (aquery->top_expr != NULL) {
+		vec temp;
+		vec_construct_(&temp, column*);
+		vec_push_back(&temp, &aquery->top_expr);
+		_assign_columns_limited(&temp, NULL, 0, fql->props.strictness);
+		vec_destroy(&temp);
+		if (aquery->top_expr->expr != EXPR_CONST) {
+			fputs("Could not resolve top expression\n", stderr);
+			return FQL_FAIL;
+		}
+		if (aquery->top_expr->field_type != FIELD_INT) {
+			fputs("Input to TOP clause must be an integer\n",
+			      stderr);
+			return FQL_FAIL;
+		}
+		if (aquery->top_expr->field.i < 0) {
+			fputs("Input to TOP clause cannot be negative\n",
+			      stderr);
+			return FQL_FAIL;
+		}
+		aquery->top_count = aquery->top_expr->field.i;
+		delete_(column, aquery->top_expr);
+	}
 
 	/* Oh this is fun.  Let's try to link and verify
 	 * _everything_. First, let's verify the sources
