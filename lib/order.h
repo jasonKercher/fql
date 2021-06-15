@@ -12,7 +12,7 @@ struct fqlselect;
 struct order;
 struct _entry;
 
-typedef int (*order_select_fn)(struct order*);
+typedef int (*order_select_fn)(struct order*, struct process*);
 
 struct order {
 	struct vec columns;

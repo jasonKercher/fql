@@ -8,7 +8,9 @@ check_read
 check_join
 check_subquery
 check_group
+check_having
 check_order
+check_top
 check_difficult
 check_failure
 

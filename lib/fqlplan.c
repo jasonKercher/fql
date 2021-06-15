@@ -32,16 +32,16 @@ void _activate_procs(plan* self);
 plan* plan_construct(plan* self, query* query)
 {
 	*self = (plan) {
-	        new_(dgraph),     /* processes */
-	        NULL,             /* op_true */
-	        NULL,             /* op_false */
-	        NULL,             /* current */
-	        NULL,             /* recycle_groups */
-	        0,                /* rows_affected */
-	        query->top_count, /* top_count */
-	        0,                /* source_count */
-	        0,                /* plan_id */
-	        false             /* has_stepped */
+	        new_(dgraph), /* processes */
+	        NULL,         /* op_true */
+	        NULL,         /* op_false */
+	        NULL,         /* current */
+	        NULL,         /* recycle_groups */
+	        query,        /* query */
+	        0,            /* rows_affected */
+	        0,            /* source_count */
+	        0,            /* plan_id */
+	        false         /* has_stepped */
 	};
 
 	self->plan_id = query->query_id;

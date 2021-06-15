@@ -37,6 +37,7 @@ START_TEST(test_difficult_typing)
 	/* Difficulty here is keeping all the types correct.
 	 * Using '0x' + <hex string> + int should give us
 	 * integer output.
+	 * NOTE: SQL Server will not do this implicit cast to from hex
 	 */
 	plan_count = fql_make_plans(fql, "select bar, ('0x' + bar + 0) * 1 from t2");
 	ck_assert_int_eq(plan_count, 1);
@@ -82,6 +83,66 @@ START_TEST(test_difficult_typing)
 }
 END_TEST
 
+START_TEST(test_difficult_everything)
+{
+
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+	int field_count = 0;
+	int rows = 0;
+
+	/* Going to try and literally include everything this
+	 * library supports into a single query. I actually
+	 * had to upload these files into SQL server to get
+	 * the correct result =D
+	 */
+	plan_count = fql_make_plans(fql,
+	                            "select top (1*3)                      "
+	                            "     (select top 1 foo from t1),      "
+	                            "     bar+'eex',                       "
+	                            "     max(baz+0),                      "
+	                            "     qty                              "
+	                            "from (                                "
+	                            "     select bar shnt, count(*) qty    "
+	                            "     from t3                          "
+	                            "     group by bar                     "
+	                            ") x1                                  "
+	                            "join t3 x2                            "
+	                            "    on  x2.bar = x1.shnt              "
+	                            "    and 1=1                           "
+	                            "where len(bar) = right('shnt2',1)     "
+	                            "group by bar,qty                      "
+	                            "having min(baz+0) < 20000             "
+	                            "order by bar desc, 3                  ");
+
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 4);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_int_eq(fields[1].type, FQL_STRING);
+	ck_assert_int_eq(fields[2].type, FQL_INT);
+	ck_assert_int_eq(fields[3].type, FQL_INT);
+
+	ck_assert_str_eq(fields[0].data.s, "44b72d44");
+	ck_assert_str_eq(fields[1].data.s, "cdeex");
+	ck_assert_int_eq(fields[2].data.i, 83146);
+	ck_assert_int_eq(fields[3].data.i, 3);
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "44b72d44");
+	ck_assert_str_eq(fields[1].data.s, "aeeex");
+	ck_assert_int_eq(fields[2].data.i, 38038);
+	ck_assert_int_eq(fields[3].data.i, 2);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+}
+END_TEST
+
 Suite* fql_difficult_suite(void)
 {
 	Suite* s;
@@ -91,6 +152,7 @@ Suite* fql_difficult_suite(void)
 	tcase_add_checked_fixture(tc_difficult, fql_setup, fql_teardown);
 
 	tcase_add_test(tc_difficult, test_difficult_typing);
+	tcase_add_test(tc_difficult, test_difficult_everything);
 
 	suite_add_tcase(s, tc_difficult);
 

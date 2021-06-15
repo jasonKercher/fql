@@ -80,10 +80,6 @@ START_TEST(test_group_distinct)
 	int field_count = 0;
 	int rows = 0;
 
-	/* The parser supports this so, I probably should
-	 * as well. What kind of clown even needs this
-	 * ability? I don't know...
-	 */
 	plan_count = fql_make_plans(fql, "select distinct bar from t3");
 	ck_assert_int_eq(plan_count, 1);
 
@@ -204,10 +200,6 @@ START_TEST(test_group_aggregate)
 	int field_count = 0;
 	int rows = 0;
 
-	/* The parser supports this so, I probably should
-	 * as well. What kind of clown even needs this
-	 * ability? I don't know...
-	 */
 	plan_count = fql_make_plans(fql, "select count(*) from t3");
 	ck_assert_int_eq(plan_count, 1);
 
@@ -223,7 +215,6 @@ START_TEST(test_group_aggregate)
 	ck_assert_int_eq(rows, 0);
 	ck_assert_int_eq(fql_field_count(fql), 0);
 
-	/* Identical to distinct */
 	plan_count = fql_make_plans(fql, "select bar, count(*) from t3 group by bar");
 	ck_assert_int_eq(plan_count, 1);
 

@@ -400,7 +400,8 @@ int fql_select(dgraph* proc_graph, process* proc)
 	unsigned iters = 0;
 	vec** it = fifo_begin(in);
 	for (; iters++ < proc->max_recs_iter && it != fifo_end(in)
-	       && (!out || fifo_receivable(out));
+	       && (!out || fifo_receivable(out))
+	       && proc->rows_affected < proc->top_count;
 	     it = fifo_iter(in)) {
 		fqlselect* select = proc->proc_data;
 		ret = try_(select->select__(select, *it));
@@ -409,6 +410,7 @@ int fql_select(dgraph* proc_graph, process* proc)
 			fifo_add(out, it);
 		} else {
 			_recycle_recs(proc, *it, proc->in_src_count);
+			++proc->rows_affected;
 		}
 	}
 	fifo_update(in);
@@ -423,7 +425,7 @@ int fql_orderby(dgraph* proc_graph, process* proc)
 		if (!order->sorted) {
 			order_sort(order);
 		}
-		return order->select__(order);
+		return order->select__(order, proc);
 	}
 
 	unsigned iters = 0;

@@ -1,5 +1,5 @@
-TESTS =          check_hashmap check_constants check_read check_logic check_join check_subquery check_group check_order check_difficult check_failure
-check_PROGRAMS = check_hashmap check_constants check_read check_logic check_join check_subquery check_group check_order check_difficult check_failure
+TESTS =          check_hashmap check_constants check_read check_logic check_join check_subquery check_group check_having check_order check_top check_difficult check_failure
+check_PROGRAMS = check_hashmap check_constants check_read check_logic check_join check_subquery check_group check_having check_order check_top check_difficult check_failure
 
 check_hashmap_SOURCES = $(top_builddir)/util/hashmap.h check_hashmap.c
 check_hashmap_CFLAGS = @CHECK_CFLAGS@
@@ -41,11 +41,23 @@ check_group_SOURCES = $(top_builddir)/lib/include/fql.h \
 check_group_CFLAGS = @CHECK_CFLAGS@
 check_group_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 
+check_having_SOURCES = $(top_builddir)/lib/include/fql.h \
+			check_common.h check_common.c \
+			check_having.c
+check_having_CFLAGS = @CHECK_CFLAGS@
+check_having_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+
 check_order_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_common.h check_common.c \
 			check_order.c
 check_order_CFLAGS = @CHECK_CFLAGS@
 check_order_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+
+check_top_SOURCES = $(top_builddir)/lib/include/fql.h \
+			check_common.h check_common.c \
+			check_top.c
+check_top_CFLAGS = @CHECK_CFLAGS@
+check_top_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 
 check_difficult_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_common.h check_common.c \

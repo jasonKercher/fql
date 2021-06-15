@@ -483,6 +483,7 @@ enum _expr_type {
 	MAP_COLUMN,
 	MAP_FUNCTION,
 	MAP_AGGREGATE,
+	MAP_SUBQUERY,
 };
 
 int _map_expression(vec* key, column* col)
@@ -495,6 +496,7 @@ int _map_expression(vec* key, column* col)
 	static const enum _expr_type _col = MAP_COLUMN;
 	static const enum _expr_type _func = MAP_FUNCTION;
 	static const enum _expr_type _agg = MAP_AGGREGATE;
+	static const enum _expr_type _sub = MAP_SUBQUERY;
 
 	const enum _expr_type* map_type = &_undef;
 	stringview type_sv;
@@ -539,6 +541,11 @@ int _map_expression(vec* key, column* col)
 		                (char*)&col->field.agg->agg_type,
 		                sizeof(enum aggregate_function));
 		break;
+	/* Maybe let's not group by a subquery expression?? */
+	case EXPR_SUBQUERY:
+		map_type = &_sub;
+		stringview_nset(&val_sv, (char*)&col->subquery, sizeof(void*));
+		break;
 	default:
 		fputs("unexpected expression\n", stderr);
 		return FQL_FAIL;
@@ -563,7 +570,7 @@ int _map_expression(vec* key, column* col)
 
 int _op_find_group(compositemap* expr_map, column* col, vec* key)
 {
-	if (col->expr == EXPR_CONST) {
+	if (col->expr == EXPR_CONST || col->expr == EXPR_SUBQUERY) {
 		return FQL_GOOD;
 	}
 

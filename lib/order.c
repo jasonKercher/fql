@@ -19,8 +19,8 @@ struct _entry {
 	unsigned len;
 };
 
-int _order_select_api(order* self);
-int _order_select(order* self);
+int _order_select_api(order* self, process*);
+int _order_select(order* self, process*);
 
 order* order_construct(order* self, const char* in_name, char* out_name)
 {
@@ -256,7 +256,7 @@ int _compare(const void* a, const void* b, void* data)
 	return ret;
 }
 
-int _order_select_api(order* self)
+int _order_select_api(order* self, process* proc)
 {
 	if (self->entry_iter == vec_end(&self->entries)) {
 		return 0;
@@ -288,18 +288,22 @@ int _order_select_api(order* self)
 		}
 	}
 
+	++proc->rows_affected;
 	++self->entry_iter;
 	return 1;
 }
 
-int _order_select(order* self)
+int _order_select(order* self, process* proc)
 {
 	struct _entry* it = vec_begin(&self->entries);
-	for (; it != vec_end(&self->entries); ++it) {
+	for (; it != vec_end(&self->entries)
+	       && proc->rows_affected < proc->top_count;
+	     ++it) {
 		fprintf(self->out_file,
 		        "%.*s",
 		        it->len,
 		        &self->mmap[it->offset]);
+		++proc->rows_affected;
 	}
 
 	return 0;

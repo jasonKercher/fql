@@ -31,6 +31,8 @@ process* process_construct(process* proc, const char* action, plan* plan)
 	        string_from_char_ptr(action), /* action_msg */
 	        NULL,                         /* root_group */
 	        NULL,                         /* wait_list */
+	        0,                            /* rows_affected */
+	        plan->query->top_count,       /* top_count */
 	        -1,                           /* max_recs_iter */
 	        plan->plan_id,                /* plan_id */
 	        0,                            /* subquery_plan_id */
@@ -254,23 +256,16 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 			continue;
 		}
 
-		/* TODO: represent this logic better!!! */
-		if (proc_node == plan->op_true
-		    && (proc->action__ == fql_orderby || proc->wait_for_in0)
-		    && proc->max_recs_iter
-		               > (plan->top_count - plan->rows_affected)) {
-			proc->max_recs_iter =
-			        plan->top_count - plan->rows_affected;
-		}
-
 		int ret = try_(proc->action__(proc_graph, proc));
 
-		if (proc_node == plan->op_true
-		    && (proc->action__ == fql_orderby || proc->wait_for_in0)) {
-			plan->rows_affected += ret;
-			if (plan->rows_affected >= plan->top_count) {
-				process_disable(proc);
-			}
+		if (proc->wait_for_in0) {
+			++run_count;
+		}
+		if (proc->rows_affected >= proc->top_count) {
+			process_disable(proc);
+		}
+		if (proc_node == plan->op_true) {
+			plan->rows_affected = proc->rows_affected;
 		}
 		run_count += ret;
 	}

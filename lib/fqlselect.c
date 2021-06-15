@@ -475,6 +475,7 @@ int _select_record_to_list(fqlselect* self, vec* recs)
 
 int _select_record_to_const(fqlselect* self, vec* recs)
 {
+	//_Bool fail_if_on_result = (self->const_dest->expr == EXPR_CONST) {
 	if (self->const_dest->expr == EXPR_CONST) {
 		fputs("subquery returned more than 1 value as expression\n",
 		      stderr);

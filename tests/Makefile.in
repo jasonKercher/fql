@@ -90,13 +90,13 @@ host_triplet = @host@
 TESTS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
 	check_read$(EXEEXT) check_logic$(EXEEXT) check_join$(EXEEXT) \
 	check_subquery$(EXEEXT) check_group$(EXEEXT) \
-	check_order$(EXEEXT) check_difficult$(EXEEXT) \
-	check_failure$(EXEEXT)
+	check_having$(EXEEXT) check_order$(EXEEXT) check_top$(EXEEXT) \
+	check_difficult$(EXEEXT) check_failure$(EXEEXT)
 check_PROGRAMS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
 	check_read$(EXEEXT) check_logic$(EXEEXT) check_join$(EXEEXT) \
 	check_subquery$(EXEEXT) check_group$(EXEEXT) \
-	check_order$(EXEEXT) check_difficult$(EXEEXT) \
-	check_failure$(EXEEXT)
+	check_having$(EXEEXT) check_order$(EXEEXT) check_top$(EXEEXT) \
+	check_difficult$(EXEEXT) check_failure$(EXEEXT)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -150,6 +150,13 @@ check_hashmap_DEPENDENCIES = $(top_builddir)/util/libutil.la
 check_hashmap_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_hashmap_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+am_check_having_OBJECTS = check_having-check_common.$(OBJEXT) \
+	check_having-check_having.$(OBJEXT)
+check_having_OBJECTS = $(am_check_having_OBJECTS)
+check_having_DEPENDENCIES = $(top_builddir)/lib/libfql.la
+check_having_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_having_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_check_join_OBJECTS = check_join-check_common.$(OBJEXT) \
 	check_join-check_join.$(OBJEXT)
 check_join_OBJECTS = $(am_check_join_OBJECTS)
@@ -186,6 +193,13 @@ check_subquery_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(check_subquery_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
 	$@
+am_check_top_OBJECTS = check_top-check_common.$(OBJEXT) \
+	check_top-check_top.$(OBJEXT)
+check_top_OBJECTS = $(am_check_top_OBJECTS)
+check_top_DEPENDENCIES = $(top_builddir)/lib/libfql.la
+check_top_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_top_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -210,6 +224,8 @@ am__depfiles_remade = ./$(DEPDIR)/check_constants-check_common.Po \
 	./$(DEPDIR)/check_group-check_common.Po \
 	./$(DEPDIR)/check_group-check_group.Po \
 	./$(DEPDIR)/check_hashmap-check_hashmap.Po \
+	./$(DEPDIR)/check_having-check_common.Po \
+	./$(DEPDIR)/check_having-check_having.Po \
 	./$(DEPDIR)/check_join-check_common.Po \
 	./$(DEPDIR)/check_join-check_join.Po \
 	./$(DEPDIR)/check_logic-check_common.Po \
@@ -219,7 +235,9 @@ am__depfiles_remade = ./$(DEPDIR)/check_constants-check_common.Po \
 	./$(DEPDIR)/check_read-check_common.Po \
 	./$(DEPDIR)/check_read-check_read.Po \
 	./$(DEPDIR)/check_subquery-check_common.Po \
-	./$(DEPDIR)/check_subquery-check_subquery.Po
+	./$(DEPDIR)/check_subquery-check_subquery.Po \
+	./$(DEPDIR)/check_top-check_common.Po \
+	./$(DEPDIR)/check_top-check_top.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -241,14 +259,16 @@ am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(check_constants_SOURCES) $(check_difficult_SOURCES) \
 	$(check_failure_SOURCES) $(check_group_SOURCES) \
-	$(check_hashmap_SOURCES) $(check_join_SOURCES) \
-	$(check_logic_SOURCES) $(check_order_SOURCES) \
-	$(check_read_SOURCES) $(check_subquery_SOURCES)
+	$(check_hashmap_SOURCES) $(check_having_SOURCES) \
+	$(check_join_SOURCES) $(check_logic_SOURCES) \
+	$(check_order_SOURCES) $(check_read_SOURCES) \
+	$(check_subquery_SOURCES) $(check_top_SOURCES)
 DIST_SOURCES = $(check_constants_SOURCES) $(check_difficult_SOURCES) \
 	$(check_failure_SOURCES) $(check_group_SOURCES) \
-	$(check_hashmap_SOURCES) $(check_join_SOURCES) \
-	$(check_logic_SOURCES) $(check_order_SOURCES) \
-	$(check_read_SOURCES) $(check_subquery_SOURCES)
+	$(check_hashmap_SOURCES) $(check_having_SOURCES) \
+	$(check_join_SOURCES) $(check_logic_SOURCES) \
+	$(check_order_SOURCES) $(check_read_SOURCES) \
+	$(check_subquery_SOURCES) $(check_top_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -647,12 +667,24 @@ check_group_SOURCES = $(top_builddir)/lib/include/fql.h \
 
 check_group_CFLAGS = @CHECK_CFLAGS@
 check_group_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+check_having_SOURCES = $(top_builddir)/lib/include/fql.h \
+			check_common.h check_common.c \
+			check_having.c
+
+check_having_CFLAGS = @CHECK_CFLAGS@
+check_having_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 check_order_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_common.h check_common.c \
 			check_order.c
 
 check_order_CFLAGS = @CHECK_CFLAGS@
 check_order_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+check_top_SOURCES = $(top_builddir)/lib/include/fql.h \
+			check_common.h check_common.c \
+			check_top.c
+
+check_top_CFLAGS = @CHECK_CFLAGS@
+check_top_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 check_difficult_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_common.h check_common.c \
 			check_difficult.c
@@ -728,6 +760,10 @@ check_hashmap$(EXEEXT): $(check_hashmap_OBJECTS) $(check_hashmap_DEPENDENCIES) $
 	@rm -f check_hashmap$(EXEEXT)
 	$(AM_V_CCLD)$(check_hashmap_LINK) $(check_hashmap_OBJECTS) $(check_hashmap_LDADD) $(LIBS)
 
+check_having$(EXEEXT): $(check_having_OBJECTS) $(check_having_DEPENDENCIES) $(EXTRA_check_having_DEPENDENCIES) 
+	@rm -f check_having$(EXEEXT)
+	$(AM_V_CCLD)$(check_having_LINK) $(check_having_OBJECTS) $(check_having_LDADD) $(LIBS)
+
 check_join$(EXEEXT): $(check_join_OBJECTS) $(check_join_DEPENDENCIES) $(EXTRA_check_join_DEPENDENCIES) 
 	@rm -f check_join$(EXEEXT)
 	$(AM_V_CCLD)$(check_join_LINK) $(check_join_OBJECTS) $(check_join_LDADD) $(LIBS)
@@ -748,6 +784,10 @@ check_subquery$(EXEEXT): $(check_subquery_OBJECTS) $(check_subquery_DEPENDENCIES
 	@rm -f check_subquery$(EXEEXT)
 	$(AM_V_CCLD)$(check_subquery_LINK) $(check_subquery_OBJECTS) $(check_subquery_LDADD) $(LIBS)
 
+check_top$(EXEEXT): $(check_top_OBJECTS) $(check_top_DEPENDENCIES) $(EXTRA_check_top_DEPENDENCIES) 
+	@rm -f check_top$(EXEEXT)
+	$(AM_V_CCLD)$(check_top_LINK) $(check_top_OBJECTS) $(check_top_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -763,6 +803,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_group-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_group-check_group.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_hashmap-check_hashmap.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_having-check_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_having-check_having.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_join-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_join-check_join.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_logic-check_common.Po@am__quote@ # am--include-marker
@@ -773,6 +815,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_read-check_read.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_subquery-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_subquery-check_subquery.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_top-check_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_top-check_top.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -927,6 +971,34 @@ check_hashmap-check_hashmap.obj: check_hashmap.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_hashmap_CFLAGS) $(CFLAGS) -c -o check_hashmap-check_hashmap.obj `if test -f 'check_hashmap.c'; then $(CYGPATH_W) 'check_hashmap.c'; else $(CYGPATH_W) '$(srcdir)/check_hashmap.c'; fi`
 
+check_having-check_common.o: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_having_CFLAGS) $(CFLAGS) -MT check_having-check_common.o -MD -MP -MF $(DEPDIR)/check_having-check_common.Tpo -c -o check_having-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_having-check_common.Tpo $(DEPDIR)/check_having-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_having-check_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_having_CFLAGS) $(CFLAGS) -c -o check_having-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+
+check_having-check_common.obj: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_having_CFLAGS) $(CFLAGS) -MT check_having-check_common.obj -MD -MP -MF $(DEPDIR)/check_having-check_common.Tpo -c -o check_having-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_having-check_common.Tpo $(DEPDIR)/check_having-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_having-check_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_having_CFLAGS) $(CFLAGS) -c -o check_having-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+
+check_having-check_having.o: check_having.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_having_CFLAGS) $(CFLAGS) -MT check_having-check_having.o -MD -MP -MF $(DEPDIR)/check_having-check_having.Tpo -c -o check_having-check_having.o `test -f 'check_having.c' || echo '$(srcdir)/'`check_having.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_having-check_having.Tpo $(DEPDIR)/check_having-check_having.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_having.c' object='check_having-check_having.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_having_CFLAGS) $(CFLAGS) -c -o check_having-check_having.o `test -f 'check_having.c' || echo '$(srcdir)/'`check_having.c
+
+check_having-check_having.obj: check_having.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_having_CFLAGS) $(CFLAGS) -MT check_having-check_having.obj -MD -MP -MF $(DEPDIR)/check_having-check_having.Tpo -c -o check_having-check_having.obj `if test -f 'check_having.c'; then $(CYGPATH_W) 'check_having.c'; else $(CYGPATH_W) '$(srcdir)/check_having.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_having-check_having.Tpo $(DEPDIR)/check_having-check_having.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_having.c' object='check_having-check_having.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_having_CFLAGS) $(CFLAGS) -c -o check_having-check_having.obj `if test -f 'check_having.c'; then $(CYGPATH_W) 'check_having.c'; else $(CYGPATH_W) '$(srcdir)/check_having.c'; fi`
+
 check_join-check_common.o: check_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_join_CFLAGS) $(CFLAGS) -MT check_join-check_common.o -MD -MP -MF $(DEPDIR)/check_join-check_common.Tpo -c -o check_join-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_join-check_common.Tpo $(DEPDIR)/check_join-check_common.Po
@@ -1066,6 +1138,34 @@ check_subquery-check_subquery.obj: check_subquery.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_subquery.c' object='check_subquery-check_subquery.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_subquery_CFLAGS) $(CFLAGS) -c -o check_subquery-check_subquery.obj `if test -f 'check_subquery.c'; then $(CYGPATH_W) 'check_subquery.c'; else $(CYGPATH_W) '$(srcdir)/check_subquery.c'; fi`
+
+check_top-check_common.o: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_top_CFLAGS) $(CFLAGS) -MT check_top-check_common.o -MD -MP -MF $(DEPDIR)/check_top-check_common.Tpo -c -o check_top-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_top-check_common.Tpo $(DEPDIR)/check_top-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_top-check_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_top_CFLAGS) $(CFLAGS) -c -o check_top-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+
+check_top-check_common.obj: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_top_CFLAGS) $(CFLAGS) -MT check_top-check_common.obj -MD -MP -MF $(DEPDIR)/check_top-check_common.Tpo -c -o check_top-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_top-check_common.Tpo $(DEPDIR)/check_top-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_top-check_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_top_CFLAGS) $(CFLAGS) -c -o check_top-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+
+check_top-check_top.o: check_top.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_top_CFLAGS) $(CFLAGS) -MT check_top-check_top.o -MD -MP -MF $(DEPDIR)/check_top-check_top.Tpo -c -o check_top-check_top.o `test -f 'check_top.c' || echo '$(srcdir)/'`check_top.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_top-check_top.Tpo $(DEPDIR)/check_top-check_top.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_top.c' object='check_top-check_top.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_top_CFLAGS) $(CFLAGS) -c -o check_top-check_top.o `test -f 'check_top.c' || echo '$(srcdir)/'`check_top.c
+
+check_top-check_top.obj: check_top.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_top_CFLAGS) $(CFLAGS) -MT check_top-check_top.obj -MD -MP -MF $(DEPDIR)/check_top-check_top.Tpo -c -o check_top-check_top.obj `if test -f 'check_top.c'; then $(CYGPATH_W) 'check_top.c'; else $(CYGPATH_W) '$(srcdir)/check_top.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_top-check_top.Tpo $(DEPDIR)/check_top-check_top.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_top.c' object='check_top-check_top.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_top_CFLAGS) $(CFLAGS) -c -o check_top-check_top.obj `if test -f 'check_top.c'; then $(CYGPATH_W) 'check_top.c'; else $(CYGPATH_W) '$(srcdir)/check_top.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1315,9 +1415,23 @@ check_group.log: check_group$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+check_having.log: check_having$(EXEEXT)
+	@p='check_having$(EXEEXT)'; \
+	b='check_having'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 check_order.log: check_order$(EXEEXT)
 	@p='check_order$(EXEEXT)'; \
 	b='check_order'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+check_top.log: check_top$(EXEEXT)
+	@p='check_top$(EXEEXT)'; \
+	b='check_top'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1438,6 +1552,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/check_group-check_common.Po
 	-rm -f ./$(DEPDIR)/check_group-check_group.Po
 	-rm -f ./$(DEPDIR)/check_hashmap-check_hashmap.Po
+	-rm -f ./$(DEPDIR)/check_having-check_common.Po
+	-rm -f ./$(DEPDIR)/check_having-check_having.Po
 	-rm -f ./$(DEPDIR)/check_join-check_common.Po
 	-rm -f ./$(DEPDIR)/check_join-check_join.Po
 	-rm -f ./$(DEPDIR)/check_logic-check_common.Po
@@ -1448,6 +1564,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/check_read-check_read.Po
 	-rm -f ./$(DEPDIR)/check_subquery-check_common.Po
 	-rm -f ./$(DEPDIR)/check_subquery-check_subquery.Po
+	-rm -f ./$(DEPDIR)/check_top-check_common.Po
+	-rm -f ./$(DEPDIR)/check_top-check_top.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1502,6 +1620,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/check_group-check_common.Po
 	-rm -f ./$(DEPDIR)/check_group-check_group.Po
 	-rm -f ./$(DEPDIR)/check_hashmap-check_hashmap.Po
+	-rm -f ./$(DEPDIR)/check_having-check_common.Po
+	-rm -f ./$(DEPDIR)/check_having-check_having.Po
 	-rm -f ./$(DEPDIR)/check_join-check_common.Po
 	-rm -f ./$(DEPDIR)/check_join-check_join.Po
 	-rm -f ./$(DEPDIR)/check_logic-check_common.Po
@@ -1512,6 +1632,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/check_read-check_read.Po
 	-rm -f ./$(DEPDIR)/check_subquery-check_common.Po
 	-rm -f ./$(DEPDIR)/check_subquery-check_subquery.Po
+	-rm -f ./$(DEPDIR)/check_top-check_common.Po
+	-rm -f ./$(DEPDIR)/check_top-check_top.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

@@ -421,6 +421,7 @@ void _assign_logic(query* self, logicgroup* lg)
 	default:
 		fprintf(stderr, "unexpected logic mode assigning group\n");
 	}
+	self->logic_mode = LOGIC_UNDEFINED;
 }
 
 logicgroup* _add_item(query* self, enum logicgroup_type type)
