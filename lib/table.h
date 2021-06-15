@@ -48,7 +48,7 @@ const char* table_get_delim(struct table*);
 #define HASH_JOIN_MIN_SIZE 128
 
 struct hashjoin {
-	struct hashmap hash_data;
+	multimap* hash_data;
 	struct column* left_col;
 	struct column* right_col;
 	vec* recs;

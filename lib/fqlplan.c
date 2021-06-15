@@ -57,7 +57,7 @@ plan* plan_construct(plan* self, query* query)
 		vec_resize(self->recycle_groups, query->query_total);
 		vec* it = vec_begin(self->recycle_groups);
 		for (; it != vec_end(self->recycle_groups); ++it) {
-			vec_construct(it, sizeof(dnode*));
+			vec_construct_(it, dnode*);
 		}
 	}
 
@@ -96,8 +96,7 @@ void _check_for_subquery_expression(process* proc, column* col)
 		return;
 	}
 	if (col->expr == EXPR_SUBQUERY) {
-		process_add_to_wait_list(proc,
-		                         col->subquery->plan->op_true->data);
+		process_add_to_wait_list(proc, col->subquery->plan->op_true->data);
 		return;
 	}
 	if (col->expr == EXPR_FUNCTION) {
@@ -147,14 +146,11 @@ int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 			string_strcat(logic_proc->action_msg, "(");
 		}
 		if (lg->condition != NULL) {
-			if (lg->condition->in_data
-			    && lg->condition->in_data->subquery) {
+			if (lg->condition->in_data && lg->condition->in_data->subquery) {
 				try_(_subquery_inlist(self, logic_proc, lg));
 			}
-			_check_for_subquery_expression(logic_proc,
-			                               lg->condition->col[0]);
-			_check_for_subquery_expression(logic_proc,
-			                               lg->condition->col[1]);
+			_check_for_subquery_expression(logic_proc, lg->condition->col[0]);
+			_check_for_subquery_expression(logic_proc, lg->condition->col[1]);
 			try_(logic_assign_process(lg->condition, logic_proc));
 		}
 		break;
@@ -172,9 +168,15 @@ int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 	return FQL_GOOD;
 }
 
-int _logicgroup_process(plan* self, logicgroup* lg, _Bool is_from_hash_join)
+int _logicgroup_process(plan* self,
+                        logicgroup* lg,
+                        _Bool is_from_hash_join,
+                        _Bool is_from_having)
 {
 	process* logic_proc = new_(process, "", self);
+	if (is_from_having) {
+		logic_proc->root_group = &self->query->groupby->_root_group;
+	}
 	logic_proc->action__ = &fql_logic;
 	logic_proc->proc_data = lg;
 	try_(_logic_to_process(self, logic_proc, lg));
@@ -267,8 +269,7 @@ int _from(plan* self, query* query)
 		from_proc->root_fifo = 1;
 		from_node = dgraph_add_data(self->processes, from_proc);
 		from_node->is_root = true;
-		plan* subquery_plan =
-		        plan_build(table_iter->subquery, from_node);
+		plan* subquery_plan = plan_build(table_iter->subquery, from_node);
 		fail_if_(subquery_plan == NULL);
 		from_proc->subquery_plan_id = subquery_plan->plan_id;
 		dgraph_consume(self->processes, subquery_plan->processes);
@@ -282,8 +283,7 @@ int _from(plan* self, query* query)
 	self->current = from_node;
 	dnode* join_node = NULL;
 
-	for (++table_iter; table_iter != vec_end(query->sources);
-	     ++table_iter) {
+	for (++table_iter; table_iter != vec_end(query->sources); ++table_iter) {
 
 		/* TODO */
 		if (table_iter->source_type == SOURCE_SUBQUERY) {
@@ -294,12 +294,9 @@ int _from(plan* self, query* query)
 		}
 
 		process* join_proc = NULL;
-		_Bool is_hash_join =
-		        (table_iter->condition->join_logic != NULL);
+		_Bool is_hash_join = (table_iter->condition->join_logic != NULL);
 		if (is_hash_join) {
-			join_proc = _new_join_proc(table_iter->join_type,
-			                           "hash",
-			                           self);
+			join_proc = _new_join_proc(table_iter->join_type, "hash", self);
 			join_proc->action__ = &fql_hash_join;
 			table_hash_join_init(table_iter);
 			process_add_second_input(join_proc);
@@ -336,9 +333,8 @@ int _from(plan* self, query* query)
 			join_node = dgraph_add_data(self->processes, join_proc);
 			read_node->out[0] = join_node;
 		} else {
-			join_proc = _new_join_proc(table_iter->join_type,
-			                           "cartesian",
-			                           self);
+			join_proc =
+			        _new_join_proc(table_iter->join_type, "cartesian", self);
 			join_proc->action__ = &fql_cartesian_join;
 			join_proc->root_fifo = 1;
 			join_node = dgraph_add_data(self->processes, join_proc);
@@ -351,7 +347,8 @@ int _from(plan* self, query* query)
 		if (table_iter->condition != NULL) {
 			try_(_logicgroup_process(self,
 			                         table_iter->condition,
-			                         is_hash_join));
+			                         is_hash_join,
+			                         false));
 		}
 	}
 
@@ -366,7 +363,7 @@ int _where(plan* self, query* query)
 		return FQL_GOOD;
 	}
 
-	return _logicgroup_process(self, query->where, false);
+	return _logicgroup_process(self, query->where, false, false);
 }
 
 /* NOTE: If there is a grouping, the grouping becomes the
@@ -376,8 +373,7 @@ void _group(plan* self, query* query)
 {
 	if (query->groupby != NULL) {
 		process* group_proc = new_(process, "GROUP BY ", self);
-		_check_all_for_subquery_expression(group_proc,
-		                                   &query->groupby->columns);
+		_check_all_for_subquery_expression(group_proc, &query->groupby->columns);
 		self->source_count = 1;
 		group_proc->out_src_count = 1;
 		process* true_proc = self->op_true->data;
@@ -389,8 +385,8 @@ void _group(plan* self, query* query)
 		group_proc->wait_for_in0_end = true;
 		group_proc->root_fifo = 1;
 		group_cat_description(query->groupby, group_proc);
-		dnode* group_node =
-		        dgraph_add_data(self->processes, group_proc);
+		dnode* group_node = dgraph_add_data(self->processes, group_proc);
+		vec_push_back(&query->groupby->_root_group, &group_node);
 		group_node->is_root = true;
 		self->current->out[0] = group_node;
 		self->current = group_node;
@@ -398,17 +394,19 @@ void _group(plan* self, query* query)
 
 	if (query->distinct) {
 		process* group_proc = new_(process, "DISTINCT ", self);
-		self->source_count = 1;
-		group_proc->out_src_count = 1;
-		process* true_proc = self->op_true->data;
-		true_proc->in_src_count = 1;
-		true_proc->out_src_count = 1;
+		if (query->groupby) {
+			group_proc->root_group = &query->groupby->_root_group;
+		}
+		//self->source_count = 1;
+		//group_proc->out_src_count = 1;
+		//process* true_proc = self->op_true->data;
+		//true_proc->in_src_count = 1;
+		//true_proc->out_src_count = 1;
 
 		group_proc->action__ = &fql_distinct;
 		group_proc->proc_data = query->distinct;
 		group_cat_description(query->distinct, group_proc);
-		dnode* group_node =
-		        dgraph_add_data(self->processes, group_proc);
+		dnode* group_node = dgraph_add_data(self->processes, group_proc);
 		self->current->out[0] = group_node;
 		self->current = group_node;
 	}
@@ -420,13 +418,17 @@ int _having(plan* self, query* query)
 		return FQL_GOOD;
 	}
 
-	return _logicgroup_process(self, query->having, false);
+	return _logicgroup_process(self, query->having, false, true);
 }
 
 void _operation(plan* self, query* query, dnode* entry)
 {
 	self->current->out[0] = self->op_true;
 	self->current = self->op_true;
+	process* true_proc = self->op_true->data;
+	if (query->groupby) {
+		true_proc->root_group = &query->groupby->_root_group;
+	}
 	_check_all_for_subquery_expression(self->op_true->data,
 	                                   op_get_validation_list(query->op));
 	if (entry == NULL) {
@@ -444,7 +446,6 @@ void _operation(plan* self, query* query, dnode* entry)
 	 * op_true so both op_true and op_false can be
 	 * marked as passive.
 	 */
-	process* true_proc = self->op_true->data;
 	true_proc->is_passive = true;
 	process* false_proc = self->op_false->data;
 	false_proc->is_passive = true;
@@ -456,8 +457,10 @@ void _order(plan* self, query* query)
 		return;
 	}
 	process* order_proc = new_(process, "ORDER BY ", self);
-	_check_all_for_subquery_expression(order_proc,
-	                                   &query->orderby->columns);
+	if (query->groupby) {
+		order_proc->root_group = &query->groupby->_root_group;
+	}
+	_check_all_for_subquery_expression(order_proc, &query->orderby->columns);
 	order_proc->action__ = &fql_orderby;
 	order_proc->proc_data = query->orderby;
 	order_proc->wait_for_in0_end = true;
@@ -467,8 +470,6 @@ void _order(plan* self, query* query)
 	self->current = order_node;
 	self->op_true = order_node;
 }
-
-void _limit(plan* self, query* query) { }
 
 /* In an effort to make building of the process graph easier
  * passive nodes are used as a sort of link between the steps.
@@ -497,11 +498,9 @@ void _clear_passive(plan* self)
 			process* proc = nodes[i]->out[1]->data;
 			if (proc->is_passive) {
 				if (nodes[i]->out[1]->out[1] != NULL) {
-					nodes[i]->out[1] =
-					        nodes[i]->out[1]->out[1];
+					nodes[i]->out[1] = nodes[i]->out[1]->out[1];
 				} else {
-					nodes[i]->out[1] =
-					        nodes[i]->out[1]->out[0];
+					nodes[i]->out[1] = nodes[i]->out[1]->out[0];
 				}
 			} else {
 				break;
@@ -562,16 +561,14 @@ void _make_pipes(plan* self)
 		process* proc = (*nodes)->data;
 		if ((*nodes)->out[0] != NULL) {
 			process* proc0 = (*nodes)->out[0]->data;
-			proc->fifo_out[0] = (proc->is_secondary)
-			                            ? proc0->fifo_in[1]
-			                            : proc0->fifo_in[0];
+			proc->fifo_out[0] = (proc->is_secondary) ? proc0->fifo_in[1]
+			                                         : proc0->fifo_in[0];
 		}
 
 		if ((*nodes)->out[1] != NULL) {
 			process* proc1 = (*nodes)->out[1]->data;
-			proc->fifo_out[1] = (proc->is_secondary)
-			                            ? proc1->fifo_in[1]
-			                            : proc1->fifo_in[0];
+			proc->fifo_out[1] = (proc->is_secondary) ? proc1->fifo_in[1]
+			                                         : proc1->fifo_in[0];
 		}
 	}
 }
@@ -624,7 +621,6 @@ plan* plan_build(query* aquery, dnode* entry)
 	}
 	_operation(self, aquery, entry);
 	_order(self, aquery);
-	_limit(self, aquery);
 
 	/* Loop through constant value subqueries again,
 	 * but this time, consume all process nodes into

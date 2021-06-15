@@ -419,7 +419,7 @@ enum join_side _get_join_side(column* col, int right_idx)
 {
 	switch (col->expr) {
 	case EXPR_COLUMN_NAME:
-		return (col->src_idx < right_idx) ? SIDE_LEFT : SIDE_RIGHT;
+		return (col->data_source->src_idx < right_idx) ? SIDE_LEFT : SIDE_RIGHT;
 	case EXPR_FUNCTION: {
 		function* func = col->field.fn;
 		column** it = vec_begin(func->args);

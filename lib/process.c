@@ -80,10 +80,10 @@ void process_activate(dnode* proc_node, plan* plan)
 	process* proc = proc_node->data;
 	unsigned graph_size = plan->processes->nodes->size;
 	_Bool is_subquery = proc->subquery_plan_id > 0;
-	if (is_subquery) {
+	if (proc->root_group == NULL && is_subquery) {
 		proc->root_group =
 		        vec_at(plan->recycle_groups, proc->subquery_plan_id);
-	} else {
+	} else if (proc->root_group == NULL) {
 		proc->root_group = vec_at(plan->recycle_groups, proc->plan_id);
 	}
 
@@ -94,7 +94,8 @@ void process_activate(dnode* proc_node, plan* plan)
 
 	/* lol subquery hack
 	 * proc->root_group is subquery root
-	 * however, proc is a root of the upper query
+	 * however, proc is a root of the upper
+	 * query. Who wrote this garbage??
 	 */
 	vec* true_root_group = proc->root_group;
 	if (is_subquery) {

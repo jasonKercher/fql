@@ -9,7 +9,7 @@
 #include "schema.h"
 #include "process.h"
 #include "misc.h"
-#include "stringy.h"
+#include "util/stringy.h"
 #include "util/util.h"
 
 int _select_record(fqlselect*, struct vec* rec);

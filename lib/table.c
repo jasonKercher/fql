@@ -97,7 +97,7 @@ const char* table_get_delim(table* self)
 hashjoin* hashjoin_construct(hashjoin* join)
 {
 	*join = (struct hashjoin) {
-	        {0},        /* hash_data */
+	        NULL,       /* hash_data */
 	        NULL,       /* left_col */
 	        NULL,       /* right_col */
 	        NULL,       /* recs */
@@ -110,7 +110,7 @@ hashjoin* hashjoin_construct(hashjoin* join)
 
 void hashjoin_destroy(struct hashjoin* join)
 {
-	multimap_destroy(&join->hash_data);
+	delete_(multimap, join->hash_data);
 }
 
 size_t _guess_row_count(table* self)
@@ -170,9 +170,8 @@ void table_hash_join_init(table* self)
 
 	struct hashjoin* join = self->join_data;
 
-	multimap_construct_(&join->hash_data,
-	                    char* /* T_ */
-	                    ,
-	                    guessed_row_count * 2,
-	                    HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
+	join->hash_data = new_t_(multimap,
+	                         char*, /* T_ */
+	                         guessed_row_count * 2,
+	                         HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 }

@@ -174,10 +174,7 @@ void _hash_join_right_side(process* proc, table* table, fifo* in_right)
 		column_get_stringview(&sv, hj->right_col, *it);
 
 		record** rightrec = vec_back(*it);
-		multimap_nset(&hj->hash_data,
-		              sv.data,
-		              &(*rightrec)->rec_raw.data,
-		              sv.len);
+		multimap_nset(hj->hash_data, sv.data, &(*rightrec)->rec_raw.data, sv.len);
 
 		_recycle_specific(proc, *it, proc->in_src_count - 1);
 	}
@@ -192,7 +189,7 @@ vec* _hash_join_left_side(process* proc, table* table, vec* leftrecs)
 		stringview sv;
 		column_get_stringview(&sv, hj->left_col, leftrecs);
 
-		hj->recs = multimap_nget(&hj->hash_data, sv.data, sv.len);
+		hj->recs = multimap_nget(hj->hash_data, sv.data, sv.len);
 		if (hj->recs == NULL) {
 			return NULL;
 		}

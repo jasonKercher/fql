@@ -2,12 +2,13 @@
 #define GROUP_H
 
 #include "query.h"
-#include "record.h"
 #include "column.h"
 #include "process.h"
 #include "util/vec.h"
 #include "util/flex.h"
 #include "util/hashmap.h"
+
+struct record;
 
 struct group {
 	compositemap* expr_map;
@@ -16,6 +17,7 @@ struct group {
 	struct vec aggregates;
 	struct flex group_data;
 	struct vec _composite; /* temporary */
+	struct vec _root_group;
 	size_t _dump_idx;
 };
 typedef struct group group;
