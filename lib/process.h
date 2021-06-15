@@ -22,7 +22,7 @@ struct process {
 	string* action_msg;     /* message that prints with plan */
 	vec* root_group;        /* group of recyclable roots for this process */
 	vec* wait_list;         /* list of fifos that we wait for */
-	unsigned max_recs_iter; /* Max recs allowed to process per iteration */
+	size_t max_recs_iter;   /* Max recs allowed to process per iteration */
 	short plan_id;          /* plan ID for root grouping */
 	short subquery_plan_id; /* plan ID for subquery */
 	short root_fifo;        /* signify which fifo_inx is the root */

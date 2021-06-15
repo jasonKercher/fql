@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <stdlib.h>
+
 /* Try to get avoid includes since is our
  * interface to c++
  */
@@ -119,7 +121,7 @@ struct query {
 	void* op; /* operation structure */
 	struct vec* subquery_const_vec;
 	struct column* top_expr;
-	long top_count;
+	size_t top_count;
 	int query_id;
 	int query_total;
 	int expect_where; /* Boolean */

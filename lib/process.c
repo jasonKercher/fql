@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <pthread.h>
 
+#include "aggregate.h"
 #include "fql.h"
 #include "misc.h"
 #include "table.h"
@@ -30,7 +31,7 @@ process* process_construct(process* proc, const char* action, plan* plan)
 	        string_from_char_ptr(action), /* action_msg */
 	        NULL,                         /* root_group */
 	        NULL,                         /* wait_list */
-	        UINT_MAX,                     /* max_recs_iter */
+	        -1,                           /* max_recs_iter */
 	        plan->plan_id,                /* plan_id */
 	        0,                            /* subquery_plan_id */
 	        0,                            /* root_fifo */
@@ -204,6 +205,18 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		if (!proc->is_enabled) {
 			continue;
 		}
+
+
+		/* Check if the process in front is closed */
+		if (proc->fifo_out[0] && !fifo_is_open(proc->fifo_out[0])) {
+			process_disable(proc);
+			continue;
+		}
+		if (proc->fifo_out[1] && !fifo_is_open(proc->fifo_out[1])) {
+			process_disable(proc);
+			continue;
+		}
+
 		if (proc->wait_for_in0 && !proc->fifo_in[0]->is_open
 		    && fifo_is_empty(proc->fifo_in[0])) {
 			if (proc->wait_for_in0_end) {
@@ -240,11 +253,24 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 			++run_count;
 			continue;
 		}
+
+		/* TODO: represent this logic better!!! */
+		if (proc_node == plan->op_true
+		    && (proc->action__ == fql_orderby || proc->wait_for_in0)
+		    && proc->max_recs_iter
+		               > (plan->top_count - plan->rows_affected)) {
+			proc->max_recs_iter =
+			        plan->top_count - plan->rows_affected;
+		}
+
 		int ret = try_(proc->action__(proc_graph, proc));
 
 		if (proc_node == plan->op_true
 		    && (proc->action__ == fql_orderby || proc->wait_for_in0)) {
 			plan->rows_affected += ret;
+			if (plan->rows_affected >= plan->top_count) {
+				process_disable(proc);
+			}
 		}
 		run_count += ret;
 	}
@@ -257,12 +283,13 @@ int process_step(plan* plan)
 	dgraph* proc_graph = plan->processes;
 	int ret = 0;
 
-	plan->rows_affected = 0;
+	size_t org_rows_affected = plan->rows_affected;
 
 	do {
 		dgraph_traverse_reset(proc_graph);
 		ret = _exec_one_pass(plan, proc_graph);
-	} while (!plan->rows_affected && ret && ret != FQL_FAIL);
+	} while (ret && ret != FQL_FAIL
+	         && plan->rows_affected == org_rows_affected);
 
 	return (ret > 0) ? 1 : ret;
 }

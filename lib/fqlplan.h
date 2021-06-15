@@ -14,6 +14,7 @@ struct fql_plan {
 	struct dnode* current; /* temp */
 	struct vec* recycle_groups;
 	size_t rows_affected;
+	size_t top_count;
 	int source_count;
 	int plan_id;
 	_Bool has_stepped;

@@ -33,7 +33,7 @@ query* query_construct(query* self, int id)
 	        NULL,                /* op */
 	        new_t_(vec, query*), /* subquery_const_vec */
 	        NULL,                /* top_expr */
-	        0,                   /* top_count */
+	        -1,                  /* top_count */
 	        id,                  /* query_id */
 	        0,                   /* query_total */
 	        0,                   /* expect_where */
@@ -243,6 +243,8 @@ int query_set_top_count(query* self, const char* count_str)
 {
 	long top_count;
 	fail_if_(str2long(&top_count, count_str));
+	fail_if_(top_count < 0);
+	self->top_count = top_count;
 	return FQL_GOOD;
 }
 
