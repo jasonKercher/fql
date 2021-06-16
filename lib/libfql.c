@@ -51,9 +51,9 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 
 void fql_free(struct fql_handle* fql)
 {
-	delete_(vec, fql->api_vec);
-	free_(fql->query_str);
-	free_(fql);
+	delete_if_exists_(vec, fql->api_vec);
+	free_if_exists_(fql->query_str);
+	free_if_exists_(fql);
 }
 
 int _api_connect(struct fql_handle* fql, query* query)

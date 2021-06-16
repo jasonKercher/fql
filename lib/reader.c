@@ -32,9 +32,6 @@ reader* reader_construct(reader* self)
 
 void reader_destroy(reader* self)
 {
-	//if (self == NULL) {
-	//	return;
-	//}
 	string_destroy(&self->file_name);
 	if (self->free__) {
 		self->free__(self->reader_data);

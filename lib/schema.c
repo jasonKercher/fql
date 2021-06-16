@@ -42,9 +42,7 @@ void schema_destroy(void* generic_schema)
 	}
 
 	delete_(vec, self->columns);
-	if (self->col_map != NULL) {
-		delete_(multimap, self->col_map);
-	}
+	delete_if_exists_(multimap, self->col_map);
 }
 
 void schema_add_column(schema* self, column* col)
@@ -227,11 +225,11 @@ void schema_assign_header(table* table, record* rec, int src_idx)
 
 int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 {
-	if (!vec_empty(table->schema->columns)) {
+	if (table->schema && !vec_empty(table->schema->columns)) {
 		return FQL_GOOD; /* self already set */
 	}
 
-	if (table->schema->name[0]) {
+	if (table->schema && table->schema->name[0]) {
 		fputs("not loading schema by name yet\n", stderr);
 		return FQL_FAIL; /* TODO: load self by name */
 	}

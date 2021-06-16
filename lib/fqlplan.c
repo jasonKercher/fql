@@ -117,9 +117,6 @@ void _check_all_for_subquery_expression(process* proc, vec* columns)
 int _subquery_inlist(plan* self, process* logic_proc, logicgroup* lg)
 {
 	query* subquery = lg->condition->in_data->subquery;
-	//plan* subplan = plan_build(subquery, NULL);
-	//fail_if_(subplan == NULL);
-	//dgraph_consume(self->processes, subquery->plan->processes);
 	/* We can assume select because subquery */
 	try_(fqlselect_set_as_inlist(subquery->op, lg->condition->in_data));
 	lg->condition->comp_type = COMP_SUBIN;
@@ -273,6 +270,7 @@ int _from(plan* self, query* query)
 		fail_if_(subquery_plan == NULL);
 		from_proc->subquery_plan_id = subquery_plan->plan_id;
 		dgraph_consume(self->processes, subquery_plan->processes);
+		subquery_plan->processes = NULL;
 	}
 	table_iter->read_proc = from_proc;
 	from_proc->proc_data = table_iter;
@@ -324,6 +322,7 @@ int _from(plan* self, query* query)
 			//	fail_if_ (subquery_plan == NULL);
 			//	read_proc->subquery_plan_id = subquery_plan->plan_id;
 			//	dgraph_consume(self->processes, subquery_plan->processes);
+			//	subquery_plan->processes = NULL;
 			//}
 			table_iter->read_proc = read_proc;
 			read_proc->proc_data = table_iter;
@@ -641,6 +640,7 @@ plan* plan_build(query* aquery, dnode* entry)
 	it = vec_begin(aquery->subquery_const_vec);
 	for (; it != vec_end(aquery->subquery_const_vec); ++it) {
 		dgraph_consume(aquery->plan->processes, (*it)->plan->processes);
+		(*it)->plan->processes = NULL;
 	}
 	dgraph_get_roots(self->processes);
 

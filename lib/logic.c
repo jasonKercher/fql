@@ -39,8 +39,9 @@ void logic_destroy(logic* self)
 	if (self == NULL) {
 		return;
 	}
-	delete_(column, self->col[0]);
-	delete_(column, self->col[1]);
+	delete_if_exists_(column, self->col[0]);
+	delete_if_exists_(column, self->col[1]);
+	delete_if_exists_(inlist, self->in_data);
 }
 
 int _precompile_like(logic* self)
@@ -179,14 +180,12 @@ void logicgroup_destroy(logicgroup* lg)
 	unsigned i = 0;
 	for (; i < lg->items.size; ++i) {
 		logicgroup** lg_item = vec_at(&lg->items, i);
-		delete_(logic, (*lg_item)->condition);
+		delete_if_exists_(logic, (*lg_item)->condition);
 		delete_(logicgroup, *lg_item);
 	}
-	if (lg->joinable) {
-		delete_(vec, lg->joinable);
-	}
+	delete_if_exists_(vec, lg->joinable);
 	vec_destroy(&lg->items);
-	delete_(vec, lg->columns);
+	delete_if_exists_(vec, lg->columns);
 }
 
 void _get_condition_count(logicgroup* lg, unsigned* count)

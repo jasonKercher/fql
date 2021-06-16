@@ -15,13 +15,8 @@ inlist* inlist_construct(inlist* self)
 
 void inlist_destroy(inlist* self)
 {
-	if (self->columns != NULL) {
-		delete_(vec, self->columns);
-	}
-
-	if (self->list_data != NULL) {
-		delete_(set, self->list_data);
-	}
+	delete_if_exists_(vec, self->columns);
+	delete_if_exists_(set, self->list_data);
 }
 
 void inlist_add_column(inlist* self, column* col)

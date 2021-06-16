@@ -1,0 +1,1746 @@
+==17299== Memcheck, a memory error detector
+==17299== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==17299== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==17299== Command: check_hashmap
+==17299== 
+==17299== 
+==17299== HEAP SUMMARY:
+==17299==     in use at exit: 0 bytes in 0 blocks
+==17299==   total heap usage: 1,006 allocs, 1,006 frees, 181,666 bytes allocated
+==17299== 
+==17299== All heap blocks were freed -- no leaks are possible
+==17299== 
+==17299== For counts of detected and suppressed errors, rerun with: -v
+==17299== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+
+CHECK_HASHMAP
+
+==17301== Memcheck, a memory error detector
+==17301== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==17301== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==17301== Command: .libs/check_constants
+==17301== 
+==17301== 
+==17301== HEAP SUMMARY:
+==17301==     in use at exit: 0 bytes in 0 blocks
+==17301==   total heap usage: 1,972,728 allocs, 1,972,728 frees, 148,002,959 bytes allocated
+==17301== 
+==17301== All heap blocks were freed -- no leaks are possible
+==17301== 
+==17301== For counts of detected and suppressed errors, rerun with: -v
+==17301== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+
+CHECK_CONSTANTS
+
+==17306== Memcheck, a memory error detector
+==17306== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==17306== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==17306== Command: .libs/check_read
+==17306== 
+==17306== 
+==17306== HEAP SUMMARY:
+==17306==     in use at exit: 0 bytes in 0 blocks
+==17306==   total heap usage: 1,978,871 allocs, 1,978,871 frees, 155,230,643 bytes allocated
+==17306== 
+==17306== All heap blocks were freed -- no leaks are possible
+==17306== 
+==17306== For counts of detected and suppressed errors, rerun with: -v
+==17306== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+
+CHECK_READ
+
+==17307== Memcheck, a memory error detector
+==17307== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==17307== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==17307== Command: .libs/check_logic
+==17307== 
+==17307== 
+==17307== HEAP SUMMARY:
+==17307==     in use at exit: 0 bytes in 0 blocks
+==17307==   total heap usage: 8,811,238 allocs, 8,811,238 frees, 704,685,946 bytes allocated
+==17307== 
+==17307== All heap blocks were freed -- no leaks are possible
+==17307== 
+==17307== For counts of detected and suppressed errors, rerun with: -v
+==17307== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+
+
+CHECK_LOGIC
+
+==17335== Memcheck, a memory error detector
+==17335== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==17335== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==17335== Command: .libs/check_join
+==17335== 
+==17335== 
+==17335== HEAP SUMMARY:
+==17335==     in use at exit: 2,384 bytes in 3 blocks
+==17335==   total heap usage: 3,749,036 allocs, 3,749,033 frees, 293,426,658 bytes allocated
+==17335== 
+==17335== 2,384 (296 direct, 2,088 indirect) bytes in 1 blocks are definitely lost in loss record 3 of 3
+==17335==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17335==    by 0x4C2F80E: process_activate (process.c:88)
+==17335==    by 0x4C2F34B: _activate_procs (fqlplan.c:781)
+==17335==    by 0x4C2EDCE: plan_build (fqlplan.c:654)
+==17335==    by 0x4C2EE2F: build_plans (fqlplan.c:671)
+==17335==    by 0x4C2CEB4: fql_make_plans (libfql.c:224)
+==17335==    by 0x403961: test_join_multiple_fn (check_join.c:167)
+==17335==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17335==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17335==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17335==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17335==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17335==    by 0x40456D: main (check_join.c:223)
+==17335== 
+==17335== LEAK SUMMARY:
+==17335==    definitely lost: 296 bytes in 1 blocks
+==17335==    indirectly lost: 2,088 bytes in 2 blocks
+==17335==      possibly lost: 0 bytes in 0 blocks
+==17335==    still reachable: 0 bytes in 0 blocks
+==17335==         suppressed: 0 bytes in 0 blocks
+==17335== 
+==17335== For counts of detected and suppressed errors, rerun with: -v
+==17335== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
+
+
+CHECK_JOIN
+
+==17400== Memcheck, a memory error detector
+==17400== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==17400== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==17400== Command: .libs/check_subquery
+==17400== 
+==17400== 
+==17400== HEAP SUMMARY:
+==17400==     in use at exit: 37,578 bytes in 745 blocks
+==17400==   total heap usage: 8,521,826 allocs, 8,521,081 frees, 664,020,874 bytes allocated
+==17400== 
+==17400== 34 (32 direct, 2 indirect) bytes in 1 blocks are definitely lost in loss record 278 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C3E9EA: field_to_stringview (field.c:94)
+==17400==    by 0x4C36445: column_get_stringview (column.c:290)
+==17400==    by 0x4C3C989: fqlselect_subquery_record (fqlselect.c:532)
+==17400==    by 0x4C30846: fql_read_subquery (fqlprocesses.c:96)
+==17400==    by 0x4C3001B: _exec_one_pass (process.c:257)
+==17400==    by 0x4C300EF: process_step (process.c:283)
+==17400==    by 0x4C2D037: fql_step (libfql.c:269)
+==17400==    by 0x404DB1: test_subquery_source_const_fn (check_subquery.c:296)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 34 (32 direct, 2 indirect) bytes in 1 blocks are definitely lost in loss record 279 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C3E9EA: field_to_stringview (field.c:94)
+==17400==    by 0x4C36445: column_get_stringview (column.c:290)
+==17400==    by 0x4C3C989: fqlselect_subquery_record (fqlselect.c:532)
+==17400==    by 0x4C30846: fql_read_subquery (fqlprocesses.c:96)
+==17400==    by 0x4C3001B: _exec_one_pass (process.c:257)
+==17400==    by 0x4C300EF: process_step (process.c:283)
+==17400==    by 0x4C2D037: fql_step (libfql.c:269)
+==17400==    by 0x405136: test_subquery_source_const_fn (check_subquery.c:311)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 1,258 (16 direct, 1,242 indirect) bytes in 1 blocks are definitely lost in loss record 515 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4D621F8: vec_construct (vec.c:19)
+==17400==    by 0x4D61304: multimap_nset (hashmap.c:193)
+==17400==    by 0x4C33AD1: schema_preflight (schema.c:75)
+==17400==    by 0x4C34076: schema_assign_header (schema.c:223)
+==17400==    by 0x4C3427E: schema_resolve_source (schema.c:266)
+==17400==    by 0x4C35418: schema_resolve_query (schema.c:726)
+==17400==    by 0x4C3521D: schema_resolve_query (schema.c:683)
+==17400==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17400==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17400==    by 0x40321A: test_subquery_const_asterisk_fn (check_subquery.c:175)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400== 
+==17400== 1,446 (72 direct, 1,374 indirect) bytes in 1 blocks are definitely lost in loss record 516 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C2EBE7: plan_build (fqlplan.c:607)
+==17400==    by 0x4C2EBC2: plan_build (fqlplan.c:604)
+==17400==    by 0x4C2EE2F: build_plans (fqlplan.c:671)
+==17400==    by 0x4C2CEB4: fql_make_plans (libfql.c:224)
+==17400==    by 0x4039E8: test_subquery_where_in_fn (check_subquery.c:218)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 1,694 (72 direct, 1,622 indirect) bytes in 1 blocks are definitely lost in loss record 517 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C2EBE7: plan_build (fqlplan.c:607)
+==17400==    by 0x4C2EBC2: plan_build (fqlplan.c:604)
+==17400==    by 0x4C2EE2F: build_plans (fqlplan.c:671)
+==17400==    by 0x4C2CEB4: fql_make_plans (libfql.c:224)
+==17400==    by 0x4012B4: test_subquery_const_select_fn (check_subquery.c:23)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 1,694 (152 direct, 1,542 indirect) bytes in 1 blocks are definitely lost in loss record 518 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C31748: query_new (query.c:20)
+==17400==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17400==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17400==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17400==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17400==    by 0x4019C5: test_subquery_const_select_fn (check_subquery.c:53)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 1,694 (152 direct, 1,542 indirect) bytes in 1 blocks are definitely lost in loss record 519 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C31748: query_new (query.c:20)
+==17400==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17400==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17400==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17400==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17400==    by 0x40267E: test_subquery_const_where_fn (check_subquery.c:109)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 1,695 (152 direct, 1,543 indirect) bytes in 1 blocks are definitely lost in loss record 520 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C31748: query_new (query.c:20)
+==17400==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17400==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17400==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17400==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17400==    by 0x401D8E: test_subquery_const_select_fn (check_subquery.c:68)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 1,702 (152 direct, 1,550 indirect) bytes in 1 blocks are definitely lost in loss record 521 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C31748: query_new (query.c:20)
+==17400==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17400==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17400==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17400==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17400==    by 0x403620: test_subquery_where_in_fn (check_subquery.c:201)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 1,986 (128 direct, 1,858 indirect) bytes in 1 blocks are definitely lost in loss record 522 of 530
+==17400==    at 0x402DB99: realloc (vg_replace_malloc.c:826)
+==17400==    by 0x4D6234A: vec_reserve (vec.c:64)
+==17400==    by 0x4D60F9C: hashmap_construct (hashmap.c:116)
+==17400==    by 0x4D611E3: multimap_construct (hashmap.c:165)
+==17400==    by 0x4C33A2A: schema_preflight (schema.c:66)
+==17400==    by 0x4C34076: schema_assign_header (schema.c:223)
+==17400==    by 0x4C3427E: schema_resolve_source (schema.c:266)
+==17400==    by 0x4C35418: schema_resolve_query (schema.c:726)
+==17400==    by 0x4C3521D: schema_resolve_query (schema.c:683)
+==17400==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17400==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17400==    by 0x402D6B: test_subquery_const_where_fn (check_subquery.c:144)
+==17400== 
+==17400== 1,986 (128 direct, 1,858 indirect) bytes in 1 blocks are definitely lost in loss record 523 of 530
+==17400==    at 0x402DB99: realloc (vg_replace_malloc.c:826)
+==17400==    by 0x4D6234A: vec_reserve (vec.c:64)
+==17400==    by 0x4D60F9C: hashmap_construct (hashmap.c:116)
+==17400==    by 0x4D611E3: multimap_construct (hashmap.c:165)
+==17400==    by 0x4C33A2A: schema_preflight (schema.c:66)
+==17400==    by 0x4C34076: schema_assign_header (schema.c:223)
+==17400==    by 0x4C3427E: schema_resolve_source (schema.c:266)
+==17400==    by 0x4C35418: schema_resolve_query (schema.c:726)
+==17400==    by 0x4C3521D: schema_resolve_query (schema.c:683)
+==17400==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17400==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17400==    by 0x4039E8: test_subquery_where_in_fn (check_subquery.c:218)
+==17400== 
+==17400== 1,986 (128 direct, 1,858 indirect) bytes in 1 blocks are definitely lost in loss record 524 of 530
+==17400==    at 0x402DB99: realloc (vg_replace_malloc.c:826)
+==17400==    by 0x4D6234A: vec_reserve (vec.c:64)
+==17400==    by 0x4D60F9C: hashmap_construct (hashmap.c:116)
+==17400==    by 0x4D611E3: multimap_construct (hashmap.c:165)
+==17400==    by 0x4C33A2A: schema_preflight (schema.c:66)
+==17400==    by 0x4C34076: schema_assign_header (schema.c:223)
+==17400==    by 0x4C3427E: schema_resolve_source (schema.c:266)
+==17400==    by 0x4C35418: schema_resolve_query (schema.c:726)
+==17400==    by 0x4C3521D: schema_resolve_query (schema.c:683)
+==17400==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17400==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17400==    by 0x403EA0: test_subquery_const_with_source_fn (check_subquery.c:244)
+==17400== 
+==17400== 2,257 (152 direct, 2,105 indirect) bytes in 1 blocks are definitely lost in loss record 525 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C31748: query_new (query.c:20)
+==17400==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17400==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17400==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17400==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17400==    by 0x402D6B: test_subquery_const_where_fn (check_subquery.c:144)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 2,258 (152 direct, 2,106 indirect) bytes in 1 blocks are definitely lost in loss record 526 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C31748: query_new (query.c:20)
+==17400==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17400==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17400==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17400==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17400==    by 0x403EA0: test_subquery_const_with_source_fn (check_subquery.c:244)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 2,272 (152 direct, 2,120 indirect) bytes in 1 blocks are definitely lost in loss record 527 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C31748: query_new (query.c:20)
+==17400==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17400==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17400==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17400==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17400==    by 0x40321A: test_subquery_const_asterisk_fn (check_subquery.c:175)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 4,250 (152 direct, 4,098 indirect) bytes in 1 blocks are definitely lost in loss record 528 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C31748: query_new (query.c:20)
+==17400==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17400==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17400==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17400==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17400==    by 0x4021CF: test_subquery_const_select_fn (check_subquery.c:83)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 4,250 (72 direct, 4,178 indirect) bytes in 1 blocks are definitely lost in loss record 529 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C2EBE7: plan_build (fqlplan.c:607)
+==17400==    by 0x4C2EBC2: plan_build (fqlplan.c:604)
+==17400==    by 0x4C2EE2F: build_plans (fqlplan.c:671)
+==17400==    by 0x4C2CEB4: fql_make_plans (libfql.c:224)
+==17400==    by 0x4029A2: test_subquery_const_where_fn (check_subquery.c:124)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== 5,082 (152 direct, 4,930 indirect) bytes in 1 blocks are definitely lost in loss record 530 of 530
+==17400==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17400==    by 0x4C31748: query_new (query.c:20)
+==17400==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17400==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17400==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17400==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17400==    by 0x4015FC: test_subquery_const_select_fn (check_subquery.c:38)
+==17400==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17400==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17400==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17400==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17400==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17400==    by 0x407D81: main (check_subquery.c:480)
+==17400== 
+==17400== LEAK SUMMARY:
+==17400==    definitely lost: 2,048 bytes in 18 blocks
+==17400==    indirectly lost: 35,530 bytes in 727 blocks
+==17400==      possibly lost: 0 bytes in 0 blocks
+==17400==    still reachable: 0 bytes in 0 blocks
+==17400==         suppressed: 0 bytes in 0 blocks
+==17400== 
+==17400== For counts of detected and suppressed errors, rerun with: -v
+==17400== ERROR SUMMARY: 18 errors from 18 contexts (suppressed: 0 from 0)
+
+
+CHECK_SUBQUERY
+
+==17403== Memcheck, a memory error detector
+==17403== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==17403== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==17403== Command: .libs/check_group
+==17403== 
+==17403== 
+==17403== HEAP SUMMARY:
+==17403==     in use at exit: 3,159 bytes in 76 blocks
+==17403==   total heap usage: 2,236,276 allocs, 2,236,200 frees, 169,450,724 bytes allocated
+==17403== 
+==17403== 16 bytes in 1 blocks are definitely lost in loss record 34 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4D621F8: vec_construct (vec.c:19)
+==17403==    by 0x4C36547: group_construct (group.c:20)
+==17403==    by 0x4C3270A: query_init_groupby (query.c:312)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x4012B4: test_group_const_fn (check_group.c:27)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 16 bytes in 1 blocks are definitely lost in loss record 35 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4D621F8: vec_construct (vec.c:19)
+==17403==    by 0x4C36547: group_construct (group.c:20)
+==17403==    by 0x4C323B5: query_add_aggregate (query.c:266)
+==17403==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x4015B6: test_group_const_fn (check_group.c:43)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 16 bytes in 1 blocks are definitely lost in loss record 36 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4D621F8: vec_construct (vec.c:19)
+==17403==    by 0x4C36547: group_construct (group.c:20)
+==17403==    by 0x4C323B5: query_add_aggregate (query.c:266)
+==17403==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x401979: test_group_const_fn (check_group.c:59)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 16 bytes in 1 blocks are definitely lost in loss record 37 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4D621F8: vec_construct (vec.c:19)
+==17403==    by 0x4C36547: group_construct (group.c:20)
+==17403==    by 0x4C32280: query_set_distinct (query.c:240)
+==17403==    by 0x4C40091: ListenerInterface::enterQuery_specification(TSqlParser::Query_specificationContext*) (listenerinterface.cpp:567)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x401DB9: test_group_distinct_fn (check_group.c:83)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 16 bytes in 1 blocks are definitely lost in loss record 38 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4D621F8: vec_construct (vec.c:19)
+==17403==    by 0x4C36547: group_construct (group.c:20)
+==17403==    by 0x4C3270A: query_init_groupby (query.c:312)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x402530: test_group_distinct_fn (check_group.c:105)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 16 bytes in 1 blocks are definitely lost in loss record 39 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4D621F8: vec_construct (vec.c:19)
+==17403==    by 0x4C36547: group_construct (group.c:20)
+==17403==    by 0x4C3270A: query_init_groupby (query.c:312)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x402E00: test_group_complex_groups_fn (check_group.c:135)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 16 bytes in 1 blocks are definitely lost in loss record 40 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4D621F8: vec_construct (vec.c:19)
+==17403==    by 0x4C36547: group_construct (group.c:20)
+==17403==    by 0x4C3270A: query_init_groupby (query.c:312)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x4032D1: test_group_complex_groups_fn (check_group.c:160)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 16 bytes in 1 blocks are definitely lost in loss record 41 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4D621F8: vec_construct (vec.c:19)
+==17403==    by 0x4C36547: group_construct (group.c:20)
+==17403==    by 0x4C323B5: query_add_aggregate (query.c:266)
+==17403==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x403BE9: test_group_aggregate_fn (check_group.c:203)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 16 bytes in 1 blocks are definitely lost in loss record 42 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4D621F8: vec_construct (vec.c:19)
+==17403==    by 0x4C36547: group_construct (group.c:20)
+==17403==    by 0x4C323B5: query_add_aggregate (query.c:266)
+==17403==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x403F87: test_group_aggregate_fn (check_group.c:218)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 51 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4C31EFA: query_add_constant (query.c:161)
+==17403==    by 0x4C40B89: ListenerInterface::enterConstant(TSqlParser::ConstantContext*) (listenerinterface.cpp:250)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x4012B4: test_group_const_fn (check_group.c:27)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 52 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4C32432: query_add_aggregate (query.c:271)
+==17403==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x4015B6: test_group_const_fn (check_group.c:43)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 53 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4C31EFA: query_add_constant (query.c:161)
+==17403==    by 0x4C40B89: ListenerInterface::enterConstant(TSqlParser::ConstantContext*) (listenerinterface.cpp:250)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x4015B6: test_group_const_fn (check_group.c:43)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 54 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4C32432: query_add_aggregate (query.c:271)
+==17403==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x401979: test_group_const_fn (check_group.c:59)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 55 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4C32432: query_add_aggregate (query.c:271)
+==17403==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x403BE9: test_group_aggregate_fn (check_group.c:203)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 56 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4C32432: query_add_aggregate (query.c:271)
+==17403==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x403F87: test_group_aggregate_fn (check_group.c:218)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 204 (192 direct, 12 indirect) bytes in 1 blocks are definitely lost in loss record 57 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4C31D9E: query_add_column (query.c:139)
+==17403==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x402530: test_group_distinct_fn (check_group.c:105)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 204 (192 direct, 12 indirect) bytes in 1 blocks are definitely lost in loss record 58 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4C31D9E: query_add_column (query.c:139)
+==17403==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x402E00: test_group_complex_groups_fn (check_group.c:135)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 204 (192 direct, 12 indirect) bytes in 1 blocks are definitely lost in loss record 59 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4C31D9E: query_add_column (query.c:139)
+==17403==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x403F87: test_group_aggregate_fn (check_group.c:218)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 506 (32 direct, 474 indirect) bytes in 1 blocks are definitely lost in loss record 61 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4C32AD1: query_enter_operator (query.c:384)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x4032D1: test_group_complex_groups_fn (check_group.c:160)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== 709 (192 direct, 517 indirect) bytes in 1 blocks are definitely lost in loss record 62 of 62
+==17403==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17403==    by 0x4C32553: _add_function (query.c:284)
+==17403==    by 0x4C32B32: query_enter_operator (query.c:385)
+==17403==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17403==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17403==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17403==    by 0x4032D1: test_group_complex_groups_fn (check_group.c:160)
+==17403==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17403==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17403==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17403==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17403==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17403==    by 0x404B31: main (check_group.c:271)
+==17403== 
+==17403== LEAK SUMMARY:
+==17403==    definitely lost: 2,096 bytes in 20 blocks
+==17403==    indirectly lost: 1,063 bytes in 56 blocks
+==17403==      possibly lost: 0 bytes in 0 blocks
+==17403==    still reachable: 0 bytes in 0 blocks
+==17403==         suppressed: 0 bytes in 0 blocks
+==17403== 
+==17403== For counts of detected and suppressed errors, rerun with: -v
+==17403== ERROR SUMMARY: 20 errors from 20 contexts (suppressed: 0 from 0)
+
+
+CHECK_GROUP
+
+==17404== Memcheck, a memory error detector
+==17404== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==17404== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==17404== Command: .libs/check_having
+==17404== 
+==17404== 
+==17404== HEAP SUMMARY:
+==17404==     in use at exit: 1,880 bytes in 44 blocks
+==17404==   total heap usage: 2,263,998 allocs, 2,263,954 frees, 178,111,631 bytes allocated
+==17404== 
+==17404== 16 bytes in 1 blocks are definitely lost in loss record 25 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4D621F8: vec_construct (vec.c:19)
+==17404==    by 0x4C36547: group_construct (group.c:20)
+==17404==    by 0x4C3270A: query_init_groupby (query.c:312)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x4012B4: test_having_const_fn (check_having.c:23)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== 16 bytes in 1 blocks are definitely lost in loss record 26 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4D621F8: vec_construct (vec.c:19)
+==17404==    by 0x4C36547: group_construct (group.c:20)
+==17404==    by 0x4C3270A: query_init_groupby (query.c:312)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x4015B6: test_having_const_fn (check_having.c:38)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== 16 bytes in 1 blocks are definitely lost in loss record 27 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4D621F8: vec_construct (vec.c:19)
+==17404==    by 0x4C36547: group_construct (group.c:20)
+==17404==    by 0x4C323B5: query_add_aggregate (query.c:266)
+==17404==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x4017E5: test_having_const_fn (check_having.c:49)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== 16 bytes in 1 blocks are definitely lost in loss record 28 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4D621F8: vec_construct (vec.c:19)
+==17404==    by 0x4C36547: group_construct (group.c:20)
+==17404==    by 0x4C3270A: query_init_groupby (query.c:312)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x401A91: test_having_aggregate_fn (check_having.c:68)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== 16 bytes in 1 blocks are definitely lost in loss record 29 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4D621F8: vec_construct (vec.c:19)
+==17404==    by 0x4C36547: group_construct (group.c:20)
+==17404==    by 0x4C3270A: query_init_groupby (query.c:312)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x4020E9: test_having_aggregate_fn (check_having.c:91)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 30 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4C31EFA: query_add_constant (query.c:161)
+==17404==    by 0x4C40B89: ListenerInterface::enterConstant(TSqlParser::ConstantContext*) (listenerinterface.cpp:250)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x4012B4: test_having_const_fn (check_having.c:23)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 31 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4C31EFA: query_add_constant (query.c:161)
+==17404==    by 0x4C40B89: ListenerInterface::enterConstant(TSqlParser::ConstantContext*) (listenerinterface.cpp:250)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x4015B6: test_having_const_fn (check_having.c:38)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 32 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4C32432: query_add_aggregate (query.c:271)
+==17404==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x4017E5: test_having_const_fn (check_having.c:49)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 33 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4C31EFA: query_add_constant (query.c:161)
+==17404==    by 0x4C40B89: ListenerInterface::enterConstant(TSqlParser::ConstantContext*) (listenerinterface.cpp:250)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x4017E5: test_having_const_fn (check_having.c:49)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 34 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4C32432: query_add_aggregate (query.c:271)
+==17404==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x401A91: test_having_aggregate_fn (check_having.c:68)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 35 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4C32432: query_add_aggregate (query.c:271)
+==17404==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x4020E9: test_having_aggregate_fn (check_having.c:91)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== 204 (192 direct, 12 indirect) bytes in 1 blocks are definitely lost in loss record 36 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4C31D9E: query_add_column (query.c:139)
+==17404==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x401A91: test_having_aggregate_fn (check_having.c:68)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== 408 (384 direct, 24 indirect) bytes in 2 blocks are definitely lost in loss record 37 of 37
+==17404==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17404==    by 0x4C31D9E: query_add_column (query.c:139)
+==17404==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17404==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17404==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17404==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17404==    by 0x4020E9: test_having_aggregate_fn (check_having.c:91)
+==17404==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17404==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17404==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17404==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17404==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17404==    by 0x402657: main (check_having.c:133)
+==17404== 
+==17404== LEAK SUMMARY:
+==17404==    definitely lost: 1,808 bytes in 14 blocks
+==17404==    indirectly lost: 72 bytes in 30 blocks
+==17404==      possibly lost: 0 bytes in 0 blocks
+==17404==    still reachable: 0 bytes in 0 blocks
+==17404==         suppressed: 0 bytes in 0 blocks
+==17404== 
+==17404== For counts of detected and suppressed errors, rerun with: -v
+==17404== ERROR SUMMARY: 13 errors from 13 contexts (suppressed: 0 from 0)
+
+
+CHECK_HAVING
+
+==17405== Memcheck, a memory error detector
+==17405== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==17405== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==17405== Command: .libs/check_order
+==17405== 
+==17405== 
+==17405== HEAP SUMMARY:
+==17405==     in use at exit: 5,455 bytes in 123 blocks
+==17405==   total heap usage: 2,032,569 allocs, 2,032,446 frees, 150,431,166 bytes allocated
+==17405== 
+==17405== 16 bytes in 1 blocks are definitely lost in loss record 48 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4D621F8: vec_construct (vec.c:19)
+==17405==    by 0x4C36547: group_construct (group.c:20)
+==17405==    by 0x4C32280: query_set_distinct (query.c:240)
+==17405==    by 0x4C40091: ListenerInterface::enterQuery_specification(TSqlParser::Query_specificationContext*) (listenerinterface.cpp:567)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x4019F0: test_order_distinct_fn (check_order.c:63)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 16 bytes in 1 blocks are definitely lost in loss record 49 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4D621F8: vec_construct (vec.c:19)
+==17405==    by 0x4C36547: group_construct (group.c:20)
+==17405==    by 0x4C323B5: query_add_aggregate (query.c:266)
+==17405==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x404745: test_order_aggregate_fn (check_order.c:211)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 16 bytes in 1 blocks are definitely lost in loss record 50 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4D621F8: vec_construct (vec.c:19)
+==17405==    by 0x4C36547: group_construct (group.c:20)
+==17405==    by 0x4C323B5: query_add_aggregate (query.c:266)
+==17405==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x404C16: test_order_aggregate_fn (check_order.c:236)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 80 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C31EFA: query_add_constant (query.c:161)
+==17405==    by 0x4C40B89: ListenerInterface::enterConstant(TSqlParser::ConstantContext*) (listenerinterface.cpp:250)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x4015B6: test_order_const_fn (check_order.c:39)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 198 (192 direct, 6 indirect) bytes in 1 blocks are definitely lost in loss record 81 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C32432: query_add_aggregate (query.c:271)
+==17405==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x404745: test_order_aggregate_fn (check_order.c:211)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 204 (192 direct, 12 indirect) bytes in 1 blocks are definitely lost in loss record 83 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C31D9E: query_add_column (query.c:139)
+==17405==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x4012B4: test_order_const_fn (check_order.c:23)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 204 (192 direct, 12 indirect) bytes in 1 blocks are definitely lost in loss record 84 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C31D9E: query_add_column (query.c:139)
+==17405==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x4019F0: test_order_distinct_fn (check_order.c:63)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 204 (192 direct, 12 indirect) bytes in 1 blocks are definitely lost in loss record 85 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C31D9E: query_add_column (query.c:139)
+==17405==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x404745: test_order_aggregate_fn (check_order.c:211)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 204 (192 direct, 12 indirect) bytes in 1 blocks are definitely lost in loss record 86 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C31D9E: query_add_column (query.c:139)
+==17405==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x404C16: test_order_aggregate_fn (check_order.c:236)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 258 (80 direct, 178 indirect) bytes in 1 blocks are definitely lost in loss record 87 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C339DC: schema_preflight (schema.c:66)
+==17405==    by 0x4C379DE: order_preresolve_columns (order.c:87)
+==17405==    by 0x4C3565B: schema_resolve_query (schema.c:772)
+==17405==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17405==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17405==    by 0x403EFF: test_order_numeric_fn (check_order.c:168)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 258 (80 direct, 178 indirect) bytes in 1 blocks are definitely lost in loss record 88 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C339DC: schema_preflight (schema.c:66)
+==17405==    by 0x4C379DE: order_preresolve_columns (order.c:87)
+==17405==    by 0x4C3565B: schema_resolve_query (schema.c:772)
+==17405==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17405==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17405==    by 0x404745: test_order_aggregate_fn (check_order.c:211)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 258 (80 direct, 178 indirect) bytes in 1 blocks are definitely lost in loss record 89 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C339DC: schema_preflight (schema.c:66)
+==17405==    by 0x4C379DE: order_preresolve_columns (order.c:87)
+==17405==    by 0x4C3565B: schema_resolve_query (schema.c:772)
+==17405==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17405==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17405==    by 0x404C16: test_order_aggregate_fn (check_order.c:236)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 264 (80 direct, 184 indirect) bytes in 1 blocks are definitely lost in loss record 90 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C339DC: schema_preflight (schema.c:66)
+==17405==    by 0x4C379DE: order_preresolve_columns (order.c:87)
+==17405==    by 0x4C3565B: schema_resolve_query (schema.c:772)
+==17405==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17405==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17405==    by 0x4019F0: test_order_distinct_fn (check_order.c:63)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 264 (80 direct, 184 indirect) bytes in 1 blocks are definitely lost in loss record 91 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C339DC: schema_preflight (schema.c:66)
+==17405==    by 0x4C379DE: order_preresolve_columns (order.c:87)
+==17405==    by 0x4C3565B: schema_resolve_query (schema.c:772)
+==17405==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17405==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17405==    by 0x4021DE: test_order_mutiple_fn (check_order.c:94)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 264 (80 direct, 184 indirect) bytes in 1 blocks are definitely lost in loss record 92 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C339DC: schema_preflight (schema.c:66)
+==17405==    by 0x4C379DE: order_preresolve_columns (order.c:87)
+==17405==    by 0x4C3565B: schema_resolve_query (schema.c:772)
+==17405==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17405==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17405==    by 0x402FC2: test_order_mutiple_fn (check_order.c:127)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 396 (192 direct, 204 indirect) bytes in 1 blocks are definitely lost in loss record 93 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C31EFA: query_add_constant (query.c:161)
+==17405==    by 0x4C40B89: ListenerInterface::enterConstant(TSqlParser::ConstantContext*) (listenerinterface.cpp:250)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x404C16: test_order_aggregate_fn (check_order.c:236)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 408 (384 direct, 24 indirect) bytes in 2 blocks are definitely lost in loss record 94 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C31D9E: query_add_column (query.c:139)
+==17405==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x4021DE: test_order_mutiple_fn (check_order.c:94)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 408 (384 direct, 24 indirect) bytes in 2 blocks are definitely lost in loss record 95 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C31D9E: query_add_column (query.c:139)
+==17405==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x402FC2: test_order_mutiple_fn (check_order.c:127)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 708 (64 direct, 644 indirect) bytes in 1 blocks are definitely lost in loss record 96 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C323CB: query_add_aggregate (query.c:268)
+==17405==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x404745: test_order_aggregate_fn (check_order.c:211)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== 709 (192 direct, 517 indirect) bytes in 1 blocks are definitely lost in loss record 97 of 97
+==17405==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17405==    by 0x4C32553: _add_function (query.c:284)
+==17405==    by 0x4C32B32: query_enter_operator (query.c:385)
+==17405==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17405==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17405==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17405==    by 0x403EFF: test_order_numeric_fn (check_order.c:168)
+==17405==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17405==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17405==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17405==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17405==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17405==    by 0x40533C: main (check_order.c:290)
+==17405== 
+==17405== LEAK SUMMARY:
+==17405==    definitely lost: 2,896 bytes in 22 blocks
+==17405==    indirectly lost: 2,559 bytes in 101 blocks
+==17405==      possibly lost: 0 bytes in 0 blocks
+==17405==    still reachable: 0 bytes in 0 blocks
+==17405==         suppressed: 0 bytes in 0 blocks
+==17405== 
+==17405== For counts of detected and suppressed errors, rerun with: -v
+==17405== ERROR SUMMARY: 20 errors from 20 contexts (suppressed: 0 from 0)
+
+
+CHECK_ORDER
+
+==17406== Memcheck, a memory error detector
+==17406== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==17406== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==17406== Command: .libs/check_top
+==17406== 
+==17406== 
+==17406== HEAP SUMMARY:
+==17406==     in use at exit: 3,900 bytes in 79 blocks
+==17406==   total heap usage: 1,217,620 allocs, 1,217,541 frees, 92,923,093 bytes allocated
+==17406== 
+==17406== 204 (192 direct, 12 indirect) bytes in 1 blocks are definitely lost in loss record 60 of 65
+==17406==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17406==    by 0x4C31D9E: query_add_column (query.c:139)
+==17406==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17406==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17406==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17406==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17406==    by 0x401FD6: test_top_order_fn (check_top.c:78)
+==17406==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17406==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17406==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17406==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17406==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17406==    by 0x402E8B: main (check_top.c:173)
+==17406== 
+==17406== 264 (80 direct, 184 indirect) bytes in 1 blocks are definitely lost in loss record 63 of 65
+==17406==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17406==    by 0x4C339DC: schema_preflight (schema.c:66)
+==17406==    by 0x4C379DE: order_preresolve_columns (order.c:87)
+==17406==    by 0x4C3565B: schema_resolve_query (schema.c:772)
+==17406==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17406==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17406==    by 0x401FD6: test_top_order_fn (check_top.c:78)
+==17406==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17406==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17406==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17406==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17406==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17406==    by 0x402E8B: main (check_top.c:173)
+==17406== 
+==17406== 3,432 (152 direct, 3,280 indirect) bytes in 1 blocks are definitely lost in loss record 65 of 65
+==17406==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17406==    by 0x4C31748: query_new (query.c:20)
+==17406==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17406==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17406==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17406==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17406==    by 0x4024B3: test_top1_subquery_fn (check_top.c:105)
+==17406==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17406==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17406==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17406==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17406==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17406==    by 0x402E8B: main (check_top.c:173)
+==17406== 
+==17406== LEAK SUMMARY:
+==17406==    definitely lost: 424 bytes in 3 blocks
+==17406==    indirectly lost: 3,476 bytes in 76 blocks
+==17406==      possibly lost: 0 bytes in 0 blocks
+==17406==    still reachable: 0 bytes in 0 blocks
+==17406==         suppressed: 0 bytes in 0 blocks
+==17406== 
+==17406== For counts of detected and suppressed errors, rerun with: -v
+==17406== ERROR SUMMARY: 3 errors from 3 contexts (suppressed: 0 from 0)
+
+
+CHECK_TOP
+
+==17407== Memcheck, a memory error detector
+==17407== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==17407== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==17407== Command: .libs/check_difficult
+==17407== 
+==17407== 
+==17407== HEAP SUMMARY:
+==17407==     in use at exit: 9,470 bytes in 148 blocks
+==17407==   total heap usage: 5,747,197 allocs, 5,747,049 frees, 441,214,611 bytes allocated
+==17407== 
+==17407== 32 bytes in 2 blocks are definitely lost in loss record 53 of 89
+==17407==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17407==    by 0x4D621F8: vec_construct (vec.c:19)
+==17407==    by 0x4C36547: group_construct (group.c:20)
+==17407==    by 0x4C323B5: query_add_aggregate (query.c:266)
+==17407==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17407==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17407==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17407==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17407==    by 0x40262F: test_difficult_everything_fn (check_difficult.c:99)
+==17407==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17407==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17407==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17407==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17407==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17407==    by 0x403218: main (check_difficult.c:169)
+==17407== 
+==17407== 396 (384 direct, 12 indirect) bytes in 2 blocks are definitely lost in loss record 80 of 89
+==17407==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17407==    by 0x4C32432: query_add_aggregate (query.c:271)
+==17407==    by 0x4C400E6: ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext*) (listenerinterface.cpp:598)
+==17407==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17407==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17407==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17407==    by 0x40262F: test_difficult_everything_fn (check_difficult.c:99)
+==17407==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17407==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17407==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17407==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17407==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17407==    by 0x403218: main (check_difficult.c:169)
+==17407== 
+==17407== 400 (192 direct, 208 indirect) bytes in 1 blocks are definitely lost in loss record 81 of 89
+==17407==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17407==    by 0x4C31EFA: query_add_constant (query.c:161)
+==17407==    by 0x4C40B89: ListenerInterface::enterConstant(TSqlParser::ConstantContext*) (listenerinterface.cpp:250)
+==17407==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17407==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17407==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17407==    by 0x40262F: test_difficult_everything_fn (check_difficult.c:99)
+==17407==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17407==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17407==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17407==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17407==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17407==    by 0x403218: main (check_difficult.c:169)
+==17407== 
+==17407== 592 (80 direct, 512 indirect) bytes in 1 blocks are definitely lost in loss record 83 of 89
+==17407==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17407==    by 0x4C339DC: schema_preflight (schema.c:66)
+==17407==    by 0x4C379DE: order_preresolve_columns (order.c:87)
+==17407==    by 0x4C3565B: schema_resolve_query (schema.c:772)
+==17407==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17407==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17407==    by 0x40262F: test_difficult_everything_fn (check_difficult.c:99)
+==17407==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17407==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17407==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17407==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17407==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17407==    by 0x403218: main (check_difficult.c:169)
+==17407== 
+==17407== 816 (576 direct, 240 indirect) bytes in 3 blocks are definitely lost in loss record 85 of 89
+==17407==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17407==    by 0x4C31D9E: query_add_column (query.c:139)
+==17407==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17407==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17407==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17407==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17407==    by 0x40262F: test_difficult_everything_fn (check_difficult.c:99)
+==17407==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17407==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17407==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17407==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17407==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17407==    by 0x403218: main (check_difficult.c:169)
+==17407== 
+==17407== 1,418 (384 direct, 1,034 indirect) bytes in 2 blocks are definitely lost in loss record 86 of 89
+==17407==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17407==    by 0x4C32553: _add_function (query.c:284)
+==17407==    by 0x4C32B32: query_enter_operator (query.c:385)
+==17407==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17407==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17407==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17407==    by 0x40262F: test_difficult_everything_fn (check_difficult.c:99)
+==17407==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17407==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17407==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17407==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17407==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17407==    by 0x403218: main (check_difficult.c:169)
+==17407== 
+==17407== 2,384 (296 direct, 2,088 indirect) bytes in 1 blocks are definitely lost in loss record 88 of 89
+==17407==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17407==    by 0x4C2F80E: process_activate (process.c:88)
+==17407==    by 0x4C2F34B: _activate_procs (fqlplan.c:781)
+==17407==    by 0x4C2EDCE: plan_build (fqlplan.c:654)
+==17407==    by 0x4C2EE2F: build_plans (fqlplan.c:671)
+==17407==    by 0x4C2CEB4: fql_make_plans (libfql.c:224)
+==17407==    by 0x40262F: test_difficult_everything_fn (check_difficult.c:99)
+==17407==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17407==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17407==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17407==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17407==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17407==    by 0x403218: main (check_difficult.c:169)
+==17407== 
+==17407== 3,432 (152 direct, 3,280 indirect) bytes in 1 blocks are definitely lost in loss record 89 of 89
+==17407==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17407==    by 0x4C31748: query_new (query.c:20)
+==17407==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17407==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17407==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17407==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17407==    by 0x40262F: test_difficult_everything_fn (check_difficult.c:99)
+==17407==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17407==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17407==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17407==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17407==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17407==    by 0x403218: main (check_difficult.c:169)
+==17407== 
+==17407== LEAK SUMMARY:
+==17407==    definitely lost: 2,096 bytes in 13 blocks
+==17407==    indirectly lost: 7,374 bytes in 135 blocks
+==17407==      possibly lost: 0 bytes in 0 blocks
+==17407==    still reachable: 0 bytes in 0 blocks
+==17407==         suppressed: 0 bytes in 0 blocks
+==17407== 
+==17407== For counts of detected and suppressed errors, rerun with: -v
+==17407== ERROR SUMMARY: 8 errors from 8 contexts (suppressed: 0 from 0)
+
+
+CHECK_DIFFICULT
+
+==17465== Memcheck, a memory error detector
+==17465== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==17465== Using Valgrind-3.14.0 and LibVEX; rerun with -h for copyright info
+==17465== Command: .libs/check_failure
+==17465== 
+The following keyword is currently not supported:
+fgkc ( execute_body )
+Terminated: Use -O to Override at your own risk.
+Parser syntax error near <EOF>. Line: 1. Position: 13.
+Lexer/Listener error
+Parser syntax error near <EOF>. Line: 1. Position: 26.
+Lexer/Listener error
+Parser syntax error near <EOF>. Line: 1. Position: 21.
+Lexer/Listener error
+Only one column can be supplied if subquery is an expression
+nope: cannot find column
+foo: ambiguous column
+bar: ambiguous column
+foo: cannot find column
+column `foo' does not match a grouping
+column `foo' does not match a grouping
+foo: ambiguous column
+t1: unable to find matching file
+s: could not convert to integer
+division by zero
+function `LEFT' expected 2 argument(s)... found 1
+arithmetic overflow detected
+arithmetic overflow detected
+arithmetic overflow detected
+arithmetic overflow detected
+cb: could not convert to integer
+arithmetic overflow detected
+division by zero
+invalid UTF-8 sequence
+subquery returned more than 1 value as expression
+subquery returned more than 1 value as expression
+==17465== 
+==17465== HEAP SUMMARY:
+==17465==     in use at exit: 13,968 bytes in 383 blocks
+==17465==   total heap usage: 5,421,954 allocs, 5,421,571 frees, 409,607,165 bytes allocated
+==17465== 
+==17465== 2 bytes in 1 blocks are definitely lost in loss record 12 of 140
+==17465==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17465==    by 0x4D621F8: vec_construct (vec.c:19)
+==17465==    by 0x4D62FB6: string_construct (stringy.c:11)
+==17465==    by 0x4C33B69: schema_resolve_file (schema.c:95)
+==17465==    by 0x4C3416F: schema_resolve_source (schema.c:248)
+==17465==    by 0x4C35418: schema_resolve_query (schema.c:726)
+==17465==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17465==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17465==    by 0x401850: test_failure_strict_mode_fn (check_failure.c:104)
+==17465==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17465==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17465==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17465==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17465==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17465==    by 0x402443: main (check_failure.c:231)
+==17465== 
+==17465== 3 bytes in 1 blocks are definitely lost in loss record 15 of 140
+==17465==    at 0x402DB99: realloc (vg_replace_malloc.c:826)
+==17465==    by 0x4D6234A: vec_reserve (vec.c:64)
+==17465==    by 0x4D623CE: vec_resize (vec.c:81)
+==17465==    by 0x4D6375F: string_copy (stringy.c:185)
+==17465==    by 0x4C33B7F: schema_resolve_file (schema.c:97)
+==17465==    by 0x4C3416F: schema_resolve_source (schema.c:248)
+==17465==    by 0x4C35418: schema_resolve_query (schema.c:726)
+==17465==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17465==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17465==    by 0x401850: test_failure_strict_mode_fn (check_failure.c:104)
+==17465==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17465==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17465==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17465==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17465==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17465== 
+==17465== 3 bytes in 1 blocks are definitely lost in loss record 16 of 140
+==17465==    at 0x402DB99: realloc (vg_replace_malloc.c:826)
+==17465==    by 0x4D6234A: vec_reserve (vec.c:64)
+==17465==    by 0x4D623CE: vec_resize (vec.c:81)
+==17465==    by 0x4D6375F: string_copy (stringy.c:185)
+==17465==    by 0x4C33B95: schema_resolve_file (schema.c:98)
+==17465==    by 0x4C3416F: schema_resolve_source (schema.c:248)
+==17465==    by 0x4C35418: schema_resolve_query (schema.c:726)
+==17465==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17465==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17465==    by 0x401850: test_failure_strict_mode_fn (check_failure.c:104)
+==17465==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17465==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17465==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17465==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17465==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17465== 
+==17465== 16 bytes in 1 blocks are definitely lost in loss record 53 of 140
+==17465==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17465==    by 0x4D621F8: vec_construct (vec.c:19)
+==17465==    by 0x4C36547: group_construct (group.c:20)
+==17465==    by 0x4C3270A: query_init_groupby (query.c:312)
+==17465==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17465==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17465==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17465==    by 0x4016BA: test_failure_columns_fn (check_failure.c:79)
+==17465==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17465==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17465==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17465==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17465==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17465==    by 0x402443: main (check_failure.c:231)
+==17465== 
+==17465== 16 bytes in 1 blocks are definitely lost in loss record 54 of 140
+==17465==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17465==    by 0x4D621F8: vec_construct (vec.c:19)
+==17465==    by 0x4C36547: group_construct (group.c:20)
+==17465==    by 0x4C3270A: query_init_groupby (query.c:312)
+==17465==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17465==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17465==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17465==    by 0x401734: test_failure_columns_fn (check_failure.c:84)
+==17465==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17465==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17465==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17465==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17465==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17465==    by 0x402443: main (check_failure.c:231)
+==17465== 
+==17465== 204 (192 direct, 12 indirect) bytes in 1 blocks are definitely lost in loss record 123 of 140
+==17465==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17465==    by 0x4C31D9E: query_add_column (query.c:139)
+==17465==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17465==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17465==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17465==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17465==    by 0x4016BA: test_failure_columns_fn (check_failure.c:79)
+==17465==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17465==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17465==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17465==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17465==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17465==    by 0x402443: main (check_failure.c:231)
+==17465== 
+==17465== 408 (384 direct, 24 indirect) bytes in 2 blocks are definitely lost in loss record 130 of 140
+==17465==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17465==    by 0x4C31D9E: query_add_column (query.c:139)
+==17465==    by 0x4C40E0F: ListenerInterface::enterId(TSqlParser::IdContext*) (listenerinterface.cpp:296)
+==17465==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17465==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17465==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17465==    by 0x401734: test_failure_columns_fn (check_failure.c:84)
+==17465==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17465==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17465==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17465==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17465==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17465==    by 0x402443: main (check_failure.c:231)
+==17465== 
+==17465== 1,446 (152 direct, 1,294 indirect) bytes in 1 blocks are definitely lost in loss record 134 of 140
+==17465==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17465==    by 0x4C31748: query_new (query.c:20)
+==17465==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17465==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17465==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17465==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17465==    by 0x402190: test_failure_runtime_fn (check_failure.c:196)
+==17465==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17465==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17465==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17465==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17465==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17465==    by 0x402443: main (check_failure.c:231)
+==17465== 
+==17465== 1,986 (128 direct, 1,858 indirect) bytes in 1 blocks are definitely lost in loss record 136 of 140
+==17465==    at 0x402DB99: realloc (vg_replace_malloc.c:826)
+==17465==    by 0x4D6234A: vec_reserve (vec.c:64)
+==17465==    by 0x4D60F9C: hashmap_construct (hashmap.c:116)
+==17465==    by 0x4D611E3: multimap_construct (hashmap.c:165)
+==17465==    by 0x4C33A2A: schema_preflight (schema.c:66)
+==17465==    by 0x4C34076: schema_assign_header (schema.c:223)
+==17465==    by 0x4C3427E: schema_resolve_source (schema.c:266)
+==17465==    by 0x4C35418: schema_resolve_query (schema.c:726)
+==17465==    by 0x4C3521D: schema_resolve_query (schema.c:683)
+==17465==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17465==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17465==    by 0x402190: test_failure_runtime_fn (check_failure.c:196)
+==17465== 
+==17465== 2,000 (152 direct, 1,848 indirect) bytes in 1 blocks are definitely lost in loss record 137 of 140
+==17465==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17465==    by 0x4C31748: query_new (query.c:20)
+==17465==    by 0x4C4045C: ListenerInterface::enterSubquery(TSqlParser::SubqueryContext*) (listenerinterface.cpp:460)
+==17465==    by 0x4C4E09E: TreeWalker::walk(antlr4::tree::ParseTreeListener*, antlr4::tree::ParseTree*) const (treewalker.cpp:33)
+==17465==    by 0x4C3EDE4: analyze_query (antlr.cpp:42)
+==17465==    by 0x4C2CE91: fql_make_plans (libfql.c:216)
+==17465==    by 0x40143C: test_failure_syntax_fn (check_failure.c:52)
+==17465==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17465==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17465==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17465==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17465==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17465==    by 0x402443: main (check_failure.c:231)
+==17465== 
+==17465== 3,432 (72 direct, 3,360 indirect) bytes in 1 blocks are definitely lost in loss record 139 of 140
+==17465==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17465==    by 0x4C2EBE7: plan_build (fqlplan.c:607)
+==17465==    by 0x4C2EBC2: plan_build (fqlplan.c:604)
+==17465==    by 0x4C2EE2F: build_plans (fqlplan.c:671)
+==17465==    by 0x4C2CEB4: fql_make_plans (libfql.c:224)
+==17465==    by 0x402070: test_failure_runtime_fn (check_failure.c:188)
+==17465==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17465==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17465==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17465==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17465==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17465==    by 0x402443: main (check_failure.c:231)
+==17465== 
+==17465== 3,900 (24 direct, 3,876 indirect) bytes in 1 blocks are definitely lost in loss record 140 of 140
+==17465==    at 0x402B753: malloc (vg_replace_malloc.c:299)
+==17465==    by 0x4D60861: queue_enqueue (queue.c:6)
+==17465==    by 0x4D6051A: dir_list_files (util.c:201)
+==17465==    by 0x4C33BC1: schema_resolve_file (schema.c:103)
+==17465==    by 0x4C3416F: schema_resolve_source (schema.c:248)
+==17465==    by 0x4C35418: schema_resolve_query (schema.c:726)
+==17465==    by 0x4C357D9: schema_resolve (schema.c:815)
+==17465==    by 0x4C2CEA1: fql_make_plans (libfql.c:220)
+==17465==    by 0x401850: test_failure_strict_mode_fn (check_failure.c:104)
+==17465==    by 0x40ED918: tcase_run_tfun_nofork.isra.0 (check_run.c:423)
+==17465==    by 0x40EDE79: srunner_iterate_tcase_tfuns (check_run.c:263)
+==17465==    by 0x40EDE79: srunner_run_tcase (check_run.c:405)
+==17465==    by 0x40EDE79: srunner_iterate_suites (check_run.c:222)
+==17465==    by 0x40EDE79: srunner_run_tagged (check_run.c:817)
+==17465==    by 0x402443: main (check_failure.c:231)
+==17465== 
+==17465== LEAK SUMMARY:
+==17465==    definitely lost: 1,144 bytes in 13 blocks
+==17465==    indirectly lost: 12,272 bytes in 369 blocks
+==17465==      possibly lost: 0 bytes in 0 blocks
+==17465==    still reachable: 552 bytes in 1 blocks
+==17465==         suppressed: 0 bytes in 0 blocks
+==17465== Reachable blocks (those to which a pointer was found) are not shown.
+==17465== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==17465== 
+==17465== For counts of detected and suppressed errors, rerun with: -v
+==17465== ERROR SUMMARY: 12 errors from 12 contexts (suppressed: 0 from 0)
+
+
+CHECK_FAILURE
+

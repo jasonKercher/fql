@@ -66,12 +66,9 @@ void process_destroy(process* proc, _Bool is_root)
 		}
 		delete_(vec, proc->records);
 	}
-	if (proc->fifo_in[0] != NULL) {
-		delete_(fifo, proc->fifo_in[0]);
-	}
-	if (proc->fifo_in[1] != NULL) {
-		delete_(fifo, proc->fifo_in[1]);
-	}
+	delete_if_exists_(fifo, proc->fifo_in[0]);
+	delete_if_exists_(fifo, proc->fifo_in[1]);
+	delete_if_exists_(vec, proc->wait_list);
 	delete_(string, proc->action_msg);
 }
 

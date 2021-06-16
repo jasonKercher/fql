@@ -46,17 +46,17 @@ table* table_construct_subquery(table* self,
                                 enum join_type join_type)
 {
 	*self = (table) {
-	        {0},                  /* name */
-	        {0},                  /* alias */
-	        subquery,             /* subquery */
-	        new_(reader),         /* reader */
-	        new_(schema),         /* schema */
-	        NULL,                 /* condition */
-	        NULL,                 /* read_proc */
-	        NULL,                 /* join_data */
-	        idx,                  /* idx */
-	        SOURCE_SUBQUERY,      /* source_type */
-	        join_type             /* join_type */
+	        {0},             /* name */
+	        {0},             /* alias */
+	        subquery,        /* subquery */
+	        new_(reader),    /* reader */
+	        NULL,            /* schema */
+	        NULL,            /* condition */
+	        NULL,            /* read_proc */
+	        NULL,            /* join_data */
+	        idx,             /* idx */
+	        SOURCE_SUBQUERY, /* source_type */
+	        join_type        /* join_type */
 	};
 
 	string_construct(&self->name);
@@ -74,10 +74,13 @@ void table_destroy(table* self)
 {
 	string_destroy(&self->name);
 	delete_(reader, self->reader);
-	delete_(schema, self->schema);
-	delete_(logicgroup, self->condition);
+	delete_if_exists_(logicgroup, self->condition);
 	string_destroy(&self->alias);
-	delete_(hashjoin, self->join_data);
+	delete_if_exists_(hashjoin, self->join_data);
+	if (self->subquery == NULL) {
+		delete_(schema, self->schema);
+	}
+	delete_if_exists_(query, self->subquery);
 }
 
 const char* table_get_delim(table* self)
@@ -110,7 +113,7 @@ hashjoin* hashjoin_construct(hashjoin* join)
 
 void hashjoin_destroy(struct hashjoin* join)
 {
-	delete_(multimap, join->hash_data);
+	delete_if_exists_(multimap, join->hash_data);
 }
 
 size_t _guess_row_count(table* self)

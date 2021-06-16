@@ -121,7 +121,7 @@ hashmap* hashmap_construct(hashmap* m,
 void hashmap_destroy(hashmap* m)
 {
 	set_destroy(m);
-	vec_destroy(m->values);
+	delete_(vec, m->values);
 }
 
 void hashmap_nset(hashmap* m, const char* key, void* data, unsigned n)
@@ -222,6 +222,7 @@ void compositemap_free(compositemap* m)
 void compositemap_destroy(compositemap* m)
 {
 	delete_(vec, m->_keys);
+	delete_if_exists_(vec, m->_key_temp);
 	hashmap_destroy(m);
 }
 

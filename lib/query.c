@@ -56,24 +56,25 @@ query* query_construct(query* self, int id)
 
 void query_destroy(query* self)
 {
-	delete_(plan, self->plan);
+	delete_if_exists_(plan, self->plan);
 	table* it = vec_begin(self->sources);
 	for (; it != vec_end(self->sources); ++it) {
 		table_destroy(it);
 	}
-	delete_(op, self->op);
 	delete_(vec, self->sources);
-	delete_(logicgroup, self->where);
-	delete_(group, self->groupby);
-	delete_(group, self->distinct);
-	delete_(logicgroup, self->having);
-	delete_(order, self->orderby);
+	delete_if_exists_(op, self->op);
+	delete_if_exists_(logicgroup, self->where);
+	delete_if_exists_(group, self->groupby);
+	delete_if_exists_(group, self->distinct);
+	delete_if_exists_(logicgroup, self->having);
+	delete_if_exists_(order, self->orderby);
+	delete_(vec, self->subquery_const_vec);
 }
 
 /* only here for address */
 void query_free(void* data)
 {
-	delete_(query, data);
+	delete_if_exists_(query, data);
 }
 
 int _add_logic_column(query* self, column* col)

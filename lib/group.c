@@ -25,14 +25,21 @@ group* group_construct(group* self)
 
 void group_destroy(group* self)
 {
-	if (self->expr_map != NULL) {
-		delete_(compositemap, self->expr_map);
-	}
+	delete_if_exists_(compositemap, self->expr_map);
 	compositemap_destroy(&self->val_map);
-	vec_destroy(&self->columns);
 	vec_destroy(&self->aggregates);
 	vec_destroy(&self->_composite);
 	flex_destroy(&self->group_data);
+
+	//column** it = vec_begin(&self->columns);
+	//for (; it != vec_end(&self->columns); ++it) {
+	//	delete_(column, *it);
+	//}
+	vec_destroy(&self->columns);
+
+	//vec* root_vec = vec_begin(&self->_root_group);
+	//vec_destroy(root_vec);
+	vec_destroy(&self->_root_group);
 }
 
 void group_add_column(group* self, column* col)

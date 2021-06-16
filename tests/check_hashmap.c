@@ -86,6 +86,8 @@ void compositemap_sets()
 	_build_composite(it, "one", "two", "something");
 	vec_resize(key, 2);
 	compositemap_set(m, key, &varible_size_key);
+
+	delete_(vec, key);
 }
 
 START_TEST(test_hashmap_basic)
