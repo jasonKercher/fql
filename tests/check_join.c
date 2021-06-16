@@ -164,12 +164,13 @@ START_TEST(test_join_multiple)
 	int rows = 0;
 
 	fql_set_force_cartesian(fql, 0);
-	plan_count = fql_make_plans(fql, "select t1.bar, t2.bar, x.bar"
-			                 " from t1"
-					 " join t2"
-					 "    on t1.baz = t2.baz"
-					 " join t2 X"
-					 "    on left(t1.foo, 2) = right(x.foo, 2)");
+	plan_count = fql_make_plans(fql,
+	                            "select t1.bar, t2.bar, x.bar             "
+	                            "from t1                                  "
+	                            "join t2                                  "
+	                            "    on t1.baz = t2.baz                   "
+	                            "join t2 X                                "
+	                            "    on left(t1.foo, 2) = right(x.foo, 2) ");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);

@@ -15,9 +15,7 @@ group* group_construct(group* self)
 	vec_construct_(&self->columns, column*);
 	vec_construct_(&self->aggregates, aggregate*);
 	vec_construct_(&self->_composite, stringview);
-	vec_construct_(&self->_root_group, vec);
-	vec* root_vec = vec_begin(&self->_root_group);
-	vec_construct_(root_vec, dnode*);
+	vec_construct_(&self->_roots, dnode*);
 	flex_construct(&self->group_data);
 
 	return self;
@@ -36,10 +34,7 @@ void group_destroy(group* self)
 	//	delete_(column, *it);
 	//}
 	vec_destroy(&self->columns);
-
-	//vec* root_vec = vec_begin(&self->_root_group);
-	//vec_destroy(root_vec);
-	vec_destroy(&self->_root_group);
+	vec_destroy(&self->_roots);
 }
 
 void group_add_column(group* self, column* col)

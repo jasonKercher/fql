@@ -17,7 +17,7 @@ struct group {
 	struct vec aggregates;
 	struct flex group_data;
 	struct vec _composite; /* temporary */
-	struct vec _root_group;
+	struct vec _roots;
 	size_t _dump_idx;
 };
 typedef struct group group;

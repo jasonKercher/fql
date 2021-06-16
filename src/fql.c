@@ -36,6 +36,9 @@ int main(int argc, char** argv)
 	int c = 0;
 
 	struct fql_handle* handle = fql_new();
+	if (handle == NULL) {
+		exit(EXIT_FAILURE);
+	}
 
 	static struct option long_options[] = {
 	        /* long option, (no) arg, 0, short option */
@@ -91,7 +94,10 @@ int main(int argc, char** argv)
 	int ret = 0;
 
 	if (!use_api) {
-		return fql_exec(handle, query);
+		if (fql_exec(handle, query) == FQL_FAIL) {
+			goto err_exit;
+		}
+		goto success_exit;
 	}
 
 	/* Using API will only execute first query.
@@ -100,7 +106,7 @@ int main(int argc, char** argv)
 	 */
 	int plan_count = fql_make_plans(handle, query);
 	if (plan_count == FQL_FAIL) {
-		exit(EXIT_FAILURE);
+		goto err_exit;
 	}
 
 	struct fql_field* fields = NULL;
@@ -119,9 +125,17 @@ int main(int argc, char** argv)
 		}
 
 		if (rows == FQL_FAIL) {
-			exit(EXIT_FAILURE);
+			goto err_exit;
 		}
 	}
+
+success_exit:
+	fql_free(handle);
+	return EXIT_SUCCESS;
+
+err_exit:
+	fql_free(handle);
+	return EXIT_FAILURE;
 }
 
 void _parse_args(struct fql_handle* handle, char c)

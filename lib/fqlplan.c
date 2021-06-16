@@ -20,8 +20,6 @@
 #define PLAN_COLUMN_SEP " | "
 
 /**
- * Implementation for Plan
- *
  * Plan is basically a decision graph
  * where each node represents a process
  */
@@ -172,7 +170,7 @@ int _logicgroup_process(plan* self,
 {
 	process* logic_proc = new_(process, "", self);
 	if (is_from_having) {
-		logic_proc->root_group = &self->query->groupby->_root_group;
+		logic_proc->root_group = &self->query->groupby->_roots;
 	}
 	logic_proc->action__ = &fql_logic;
 	logic_proc->proc_data = lg;
@@ -385,7 +383,7 @@ void _group(plan* self, query* query)
 		group_proc->root_fifo = 1;
 		group_cat_description(query->groupby, group_proc);
 		dnode* group_node = dgraph_add_data(self->processes, group_proc);
-		vec_push_back(&query->groupby->_root_group, &group_node);
+		vec_push_back(&query->groupby->_roots, &group_node);
 		group_node->is_root = true;
 		self->current->out[0] = group_node;
 		self->current = group_node;
@@ -394,14 +392,8 @@ void _group(plan* self, query* query)
 	if (query->distinct) {
 		process* group_proc = new_(process, "DISTINCT ", self);
 		if (query->groupby) {
-			group_proc->root_group = &query->groupby->_root_group;
+			group_proc->root_group = &query->groupby->_roots;
 		}
-		//self->source_count = 1;
-		//group_proc->out_src_count = 1;
-		//process* true_proc = self->op_true->data;
-		//true_proc->in_src_count = 1;
-		//true_proc->out_src_count = 1;
-
 		group_proc->action__ = &fql_distinct;
 		group_proc->proc_data = query->distinct;
 		group_cat_description(query->distinct, group_proc);
@@ -426,7 +418,7 @@ void _operation(plan* self, query* query, dnode* entry)
 	self->current = self->op_true;
 	process* true_proc = self->op_true->data;
 	if (query->groupby) {
-		true_proc->root_group = &query->groupby->_root_group;
+		true_proc->root_group = &query->groupby->_roots;
 	}
 	_check_all_for_subquery_expression(self->op_true->data,
 	                                   op_get_validation_list(query->op));
@@ -457,7 +449,7 @@ void _order(plan* self, query* query)
 	}
 	process* order_proc = new_(process, "ORDER BY ", self);
 	if (query->groupby) {
-		order_proc->root_group = &query->groupby->_root_group;
+		order_proc->root_group = &query->groupby->_roots;
 	}
 	_check_all_for_subquery_expression(order_proc, &query->orderby->columns);
 	order_proc->action__ = &fql_orderby;
@@ -780,7 +772,7 @@ void _activate_procs(plan* self)
 		return;
 	process_activate(*nodes, self);
 
-	for (; nodes != vec_end(node_vec); ++nodes) {
+	for (++nodes; nodes != vec_end(node_vec); ++nodes) {
 		process_activate(*nodes, self);
 	}
 }

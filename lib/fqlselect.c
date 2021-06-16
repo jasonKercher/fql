@@ -317,8 +317,8 @@ void fqlselect_preop(fqlselect* self, query* query)
 			continue;
 		}
 		column* field_col = new_(column, EXPR_CONST, NULL, "");
-		string* field_str = string_from_string(&(*it)->alias);
-		field_col->field.s = field_str;
+		string_copy(&field_col->buf, &(*it)->alias);
+		field_col->field.s = &field_col->buf;
 		field_col->field_type = FIELD_STRING;
 		vec_push_back(&header, &field_col);
 	}

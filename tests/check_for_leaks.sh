@@ -1,22 +1,42 @@
 #!/bin/bash
 
+we_leaky=N
+
+vgrun()
+{
+    local test_bin="$1"
+    local test_name="$2"
+        # --track-origins=yes \
+    valgrind \
+        --leak-check=full \
+        "$test_bin" 2> ${test_name}.vgreport
+
+    if grep -q 'definitely lost:' ${test_name}.vgreport; then
+        we_leaky=Y
+    elif grep -q '0 errors from 0 contexts' ${test_name}.vgreport; then
+        rm ${test_name}.vgreport
+    fi
+}
+
 while read -r test_name; do
-  if [ -f ".libs/${test_name}" ]; then
-    test_bin=".libs/${test_name}"
-  elif [ -f "$test_name" ]; then
-    test_bin=$test_name
-  else
-    echo "Test $test_name does not exist, run 'make check' to rebuild it"
-    continue
-  fi
+    if [ -f ".libs/${test_name}" ]; then
+        test_bin=".libs/${test_name}"
+    elif [ -f "$test_name" ]; then
+        test_bin="./${test_name}"
+    else
+        echo "Test $test_name does not exist, run 'make check'"
+        continue
+    fi
 
-  if ! valgrind --leak-check=full --track-origins=yes "$test_bin"; then
-    echo "Test $test_name FAILED!"
-  fi
+    # spawn background process
+    vgrun "$test_bin" "$test_name" &
 
-  >&2 printf '\n\n%s\n\n' "${test_name^^}"
-done < <(make -n check | head -1 | awk '{for (i=2; i <= NF; i++) print $i; exit}') 2> leak_report.txt
+done < <(make -n check | \
+         awk '{if(NR==1){for (i=2; i <= NF; i++) print $i}}')
 
-if grep -q 'definitely lost:' leak_report.txt; then
-  printf '\n\nLeaks found. See leak_report.txt\n\n'
+# wait for said background processes
+wait
+
+if [ $we_leaky = Y ]; then
+  printf '\n\nLeaks found. See reports.\n\n'
 fi

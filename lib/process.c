@@ -78,8 +78,7 @@ void process_activate(dnode* proc_node, plan* plan)
 	unsigned graph_size = plan->processes->nodes->size;
 	_Bool is_subquery = proc->subquery_plan_id > 0;
 	if (proc->root_group == NULL && is_subquery) {
-		proc->root_group =
-		        vec_at(plan->recycle_groups, proc->subquery_plan_id);
+		proc->root_group = vec_at(plan->recycle_groups, proc->subquery_plan_id);
 	} else if (proc->root_group == NULL) {
 		proc->root_group = vec_at(plan->recycle_groups, proc->plan_id);
 	}
@@ -107,8 +106,7 @@ void process_activate(dnode* proc_node, plan* plan)
 		}
 	}
 
-	proc->fifo_in[proc->root_fifo] =
-	        new_t_(fifo, vec*, FIFO_SIZE * graph_size);
+	proc->fifo_in[proc->root_fifo] = new_t_(fifo, vec*, FIFO_SIZE * graph_size);
 
 	int field_count = 1;
 
@@ -206,7 +204,6 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 			continue;
 		}
 
-
 		/* Check if the process in front is closed */
 		if (proc->fifo_out[0] && !fifo_is_open(proc->fifo_out[0])) {
 			process_disable(proc);
@@ -246,10 +243,8 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		 * as well as a place for it to go.
 		 */
 		if ((proc->wait_for_in0 && fifo_is_empty(proc->fifo_in[0]))
-		    || (proc->fifo_out[0]
-		        && !fifo_receivable(proc->fifo_out[0]))
-		    || (proc->fifo_out[1]
-		        && !fifo_receivable(proc->fifo_out[1]))) {
+		    || (proc->fifo_out[0] && !fifo_receivable(proc->fifo_out[0]))
+		    || (proc->fifo_out[1] && !fifo_receivable(proc->fifo_out[1]))) {
 			++run_count;
 			continue;
 		}
@@ -281,8 +276,7 @@ int process_step(plan* plan)
 	do {
 		dgraph_traverse_reset(proc_graph);
 		ret = _exec_one_pass(plan, proc_graph);
-	} while (ret && ret != FQL_FAIL
-	         && plan->rows_affected == org_rows_affected);
+	} while (ret && ret != FQL_FAIL && plan->rows_affected == org_rows_affected);
 
 	return (ret > 0) ? 1 : ret;
 }
@@ -382,10 +376,7 @@ int process_exec_plan_thread(plan* plan)
 		tdata->proc_node = *proc_node;
 		tdata->proc_graph = proc_graph;
 		process* proc = (*proc_node)->data;
-		fail_if_(pthread_create(&proc->thread,
-		                        &attr,
-		                        _thread_exec,
-		                        tdata));
+		fail_if_(pthread_create(&proc->thread, &attr, _thread_exec, tdata));
 	}
 
 	pthread_attr_destroy(&attr);
