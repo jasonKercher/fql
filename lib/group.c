@@ -29,12 +29,22 @@ void group_destroy(group* self)
 	vec_destroy(&self->_composite);
 	flex_destroy(&self->group_data);
 
-	//column** it = vec_begin(&self->columns);
-	//for (; it != vec_end(&self->columns); ++it) {
-	//	delete_(column, *it);
-	//}
+	column** it = vec_begin(&self->columns);
+	for (; it != vec_end(&self->columns); ++it) {
+		/* Avoid double free on aggregate */
+		if ((*it)->expr == EXPR_AGGREGATE) {
+			(*it)->expr = EXPR_UNDEFINED;
+		}
+		delete_(column, *it);
+	}
 	vec_destroy(&self->columns);
 	vec_destroy(&self->_roots);
+}
+
+void distinct_destroy(group* self)
+{
+	vec_clear(&self->columns);
+	group_destroy(self);
 }
 
 void group_add_column(group* self, column* col)

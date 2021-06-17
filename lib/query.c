@@ -57,17 +57,23 @@ query* query_construct(query* self, int id)
 void query_destroy(query* self)
 {
 	delete_if_exists_(plan, self->plan);
-	table* it = vec_begin(self->sources);
-	for (; it != vec_end(self->sources); ++it) {
-		table_destroy(it);
+	table* t_it = vec_begin(self->sources);
+	for (; t_it != vec_end(self->sources); ++t_it) {
+		table_destroy(t_it);
 	}
 	delete_(vec, self->sources);
 	delete_if_exists_(op, self->op);
 	delete_if_exists_(logicgroup, self->where);
 	delete_if_exists_(group, self->groupby);
-	delete_if_exists_(group, self->distinct);
+	delete_if_exists_(distinct, self->distinct);
 	delete_if_exists_(logicgroup, self->having);
 	delete_if_exists_(order, self->orderby);
+	delete_if_exists_(column, self->top_expr);
+
+	query** q_it = vec_begin(self->subquery_const_vec);
+	for (; q_it != vec_end(self->subquery_const_vec); ++q_it) {
+		delete_(query, *q_it);
+	}
 	delete_(vec, self->subquery_const_vec);
 }
 
@@ -134,26 +140,28 @@ int _distribute_column(query* self, column* col)
 	return FQL_GOOD;
 }
 
-void query_add_column(query* self, char* col_name, const char* table_id)
+int query_add_column(query* self, char* col_name, const char* table_id)
 {
 	column* col = new_(column, EXPR_COLUMN_NAME, col_name, table_id);
 
 	/* TODO: remove when this is impossible */
 	if (_distribute_column(self, col)) {
 		fprintf(stderr, "unhandled COLUMN_NAME: %s\n", col_name);
-		exit(EXIT_FAILURE);
+		return FQL_FAIL;
 	}
+	return FQL_GOOD;
 }
 
-void query_add_asterisk(query* self, const char* table_id)
+int query_add_asterisk(query* self, const char* table_id)
 {
 	column* col = new_(column, EXPR_ASTERISK, NULL, table_id);
 
 	/* TODO: remove when this is impossible */
 	if (_distribute_column(self, col)) {
 		fprintf(stderr, "unhandled asterisk\n");
-		exit(EXIT_FAILURE);
+		return FQL_FAIL;
 	}
+	return FQL_GOOD;
 }
 
 int query_add_constant(query* self, const char* s, int len)
@@ -182,7 +190,7 @@ int query_add_constant(query* self, const char* s, int len)
 		fprintf(stderr,
 		        "unhandled constant expression: %d\n",
 		        self->mode);
-		exit(EXIT_FAILURE);
+		return FQL_FAIL;
 	}
 
 	return FQL_GOOD;
@@ -279,7 +287,7 @@ int query_add_aggregate(query* self, enum aggregate_function agg_type)
 	return FQL_GOOD;
 }
 
-void _add_function(query* self, function* func, enum field_type type)
+int _add_function(query* self, function* func, enum field_type type)
 {
 	column* col = new_(column, EXPR_FUNCTION, func, "");
 	col->field_type = type;
@@ -288,9 +296,10 @@ void _add_function(query* self, function* func, enum field_type type)
 		fprintf(stderr,
 		        "unhandled function: %s\n",
 		        function_get_name(func));
-		exit(EXIT_FAILURE);
+		return FQL_FAIL;
 	}
 	stack_push(&self->function_stack, col);
+	return FQL_GOOD;
 }
 
 int query_init_op(query* self)
@@ -373,16 +382,17 @@ int query_enter_function(query* self,
 	enum field_type type = FIELD_UNDEFINED;
 	function* func = new_(function, scalar_type, &type, char_as_byte);
 	fail_if_(func->call__ == NULL);
-	_add_function(self, func, type);
+	try_(_add_function(self, func, type));
 
 	return FQL_GOOD;
 }
 
-void query_enter_operator(query* self, enum scalar_function op)
+int query_enter_operator(query* self, enum scalar_function op)
 {
 	enum field_type type = FIELD_UNDEFINED;
 	function* func = new_(function, op, &type, true);
-	_add_function(self, func, FIELD_UNDEFINED);
+	try_(_add_function(self, func, FIELD_UNDEFINED));
+	return FQL_GOOD;
 }
 
 void query_exit_function(query* self)

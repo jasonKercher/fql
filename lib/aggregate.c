@@ -36,6 +36,10 @@ aggregate* aggregate_construct(aggregate* self,
 
 void aggregate_destroy(aggregate* self)
 {
+	column** it = vec_begin(self->args);
+	for (; it != vec_end(self->args); ++it) {
+		delete_(column, *it);
+	}
 	delete_(vec, self->args);
 	if (self->data_type == FIELD_STRING) {
 		struct aggresult* it = vec_begin(&self->results);

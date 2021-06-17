@@ -55,6 +55,10 @@ order* order_construct(order* self, const char* in_name, char* out_name)
 
 void order_destroy(order* self)
 {
+	column** it = vec_begin(&self->columns);
+	for (; it != vec_end(&self->columns); ++it) {
+		delete_(column, *it);
+	}
 	vec_destroy(&self->columns);
 	vec_destroy(&self->entries);
 	flex_destroy(&self->order_data);
@@ -149,6 +153,7 @@ void order_connect_api(query* query, vec* api_vec)
 int order_add_column(order* self, column* col)
 {
 	if (self == NULL) {
+		delete_(column, col);
 		return FQL_GOOD;
 	}
 	vec_push_back(&self->columns, &col);

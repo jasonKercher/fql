@@ -151,8 +151,8 @@ void query_destroy(struct query*);
 void query_free(void*);
 
 int query_add_constant(struct query*, const char*, int);
-void query_add_column(struct query*, char*, const char* table);
-void query_add_asterisk(struct query*, const char* table);
+int query_add_column(struct query*, char*, const char* table);
+int query_add_asterisk(struct query*, const char* table);
 void query_add_source(struct query*, struct stack**, const char*);
 void query_add_subquery_source(struct query*, struct query*, const char*);
 void query_apply_table_alias(struct query*, const char*);
@@ -171,7 +171,7 @@ void query_set_order_desc(struct query*);
 
 int query_enter_function(struct query*, enum scalar_function, int);
 void query_exit_function(struct query*);
-void query_enter_operator(struct query*, enum scalar_function op);
+int query_enter_operator(struct query*, enum scalar_function op);
 
 /* search building functions */
 void query_set_logic_comparison(struct query*, const char*, int negation);

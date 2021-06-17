@@ -89,7 +89,10 @@ void ListenerInterface::enterSelect_list_elem(TSqlParser::Select_list_elemContex
 void ListenerInterface::exitSelect_list_elem(TSqlParser::Select_list_elemContext * ctx)
 {
 	if (_on_asterisk) {
-		query_add_asterisk(_query, _table_name);
+		if (query_add_asterisk(_query, _table_name)) {
+			_return_code = FQL_FAIL;
+			_walker->set_walking(false);
+		}
 		_on_asterisk = false;
 	}
 	_table_name[0] = '\0';
@@ -260,12 +263,18 @@ void ListenerInterface::exitSign(TSqlParser::SignContext * ctx) { }
 void ListenerInterface::enterUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx)
 {
 	if (ctx->MINUS()) {
-		query_enter_operator(_query, SCALAR_OP_UNARY_MINUS);
+		if (query_enter_operator(_query, SCALAR_OP_UNARY_MINUS)) {
+			_return_code = FQL_FAIL;
+			_walker->set_walking(false);
+		}
 		return;
 	}
 
 	if (ctx->BIT_NOT()) {
-		query_enter_operator(_query, SCALAR_OP_UNARY_BIT_NOT);
+		if (query_enter_operator(_query, SCALAR_OP_UNARY_BIT_NOT)) {
+			_return_code = FQL_FAIL;
+			_walker->set_walking(false);
+		}
 	}
 }
 void ListenerInterface::exitUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * ctx)
@@ -293,7 +302,10 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 
 	switch (_tok_type) {
 	case TOK_COLUMN_NAME:
-		query_add_column(_query, token, _table_name);
+		if (query_add_column(_query, token, _table_name)) {
+			_walker->set_walking(false);
+			_return_code = FQL_FAIL;
+		}
 		/* consume table designation */
 		_table_name[0] = '\0';
 		free_(token);

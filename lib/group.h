@@ -24,6 +24,7 @@ typedef struct group group;
 
 struct group* group_construct(struct group*);
 void group_destroy(struct group*);
+void distinct_destroy(struct group*);
 
 void group_add_column(struct group*, struct column*);
 void group_cat_description(struct group*, struct process*);
