@@ -69,10 +69,7 @@ void _resize_raw_rec(vec* raw_rec, unsigned size)
 }
 
 /* this should be in schema.c */
-int _expand_asterisk(vec* col_vec,
-                     table* table,
-                     unsigned src_idx,
-                     unsigned* col_idx)
+int _expand_asterisk(vec* col_vec, table* table, unsigned src_idx, unsigned* col_idx)
 {
 	vec* src_col_vec = table->schema->columns;
 
@@ -81,8 +78,7 @@ int _expand_asterisk(vec* col_vec,
 	column** it = vec_begin(src_col_vec);
 	for (; it != vec_end(src_col_vec); ++it) {
 		//string* col_name = string_from_string(&(*it)->alias);
-		column* new_col =
-		        new_(column, EXPR_COLUMN_NAME, (*it)->alias.data, "");
+		column* new_col = new_(column, EXPR_COLUMN_NAME, (*it)->alias.data, "");
 		new_col->data_source = *it;
 		new_col->src_idx = src_idx;
 		new_col->field_type = (*it)->field_type;
@@ -108,10 +104,8 @@ void _expand_asterisks(query* query, _Bool force_expansion)
 		table* table = vec_at(query->sources, (*col)->src_idx);
 
 		if (table->subquery == NULL /* is not a subquery source */
-		    && !force_expansion
-		    && query->query_id == 0 /* is in main query */
-		    && string_eq(table->schema->delimiter,
-		                 self->schema->delimiter)) {
+		    && !force_expansion && query->query_id == 0 /* is in main query */
+		    && string_eq(table->schema->delimiter, self->schema->delimiter)) {
 			continue;
 		}
 
@@ -232,12 +226,10 @@ int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 		}
 	}
 	if (self->schema->columns->size != 1) {
-		fputs("Only one expression can be specified in subquery\n",
-		      stderr);
+		fputs("Only one expression can be specified in subquery\n", stderr);
 		return FQL_FAIL;
 	}
-	inlist->list_data =
-	        new_(set, 16, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
+	inlist->list_data = new_(set, 16, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 	self->list_data = inlist->list_data;
 	self->select__ = &_select_record_to_list;
 	return FQL_GOOD;
@@ -301,16 +293,13 @@ void fqlselect_preop(fqlselect* self, query* query)
 	column** it = vec_begin(self->schema->columns);
 	for (; it != vec_end(self->schema->columns); ++it) {
 		if ((*it)->expr == EXPR_ASTERISK) {
-			table* aster_src =
-			        vec_at(query->sources, (*it)->src_idx);
+			table* aster_src = vec_at(query->sources, (*it)->src_idx);
 			vec* aster_cols = aster_src->schema->columns;
 			column** it2 = vec_begin(aster_cols);
 			for (; it2 != vec_end(aster_cols); ++it2) {
-				column* field_col =
-				        new_(column, EXPR_CONST, NULL, "");
-				string* field_str =
-				        string_from_string(&(*it2)->alias);
-				field_col->field.s = field_str;
+				column* field_col = new_(column, EXPR_CONST, NULL, "");
+				string_copy(&field_col->buf, &(*it2)->alias);
+				field_col->field.s = &field_col->buf;
 				field_col->field_type = FIELD_STRING;
 				vec_push_back(&header, &field_col);
 			}
@@ -330,10 +319,7 @@ void fqlselect_preop(fqlselect* self, query* query)
 		                       NULL,
 		                       query->orderby->out_file);
 	} else {
-		writer->write_record__(writer->writer_data,
-		                       &header,
-		                       NULL,
-		                       NULL);
+		writer->write_record__(writer->writer_data, &header, NULL, NULL);
 	}
 
 	it = vec_begin(&header);
@@ -348,10 +334,7 @@ int _select_record(fqlselect* self, vec* recs)
 	writer* writer = self->writer;
 	vec* col_vec = self->schema->columns;
 
-	int ret = writer->write_record__(writer->writer_data,
-	                                 col_vec,
-	                                 recs,
-	                                 NULL);
+	int ret = writer->write_record__(writer->writer_data, col_vec, recs, NULL);
 
 	if (ret == FQL_FAIL || recs == NULL) {
 		return ret;
@@ -477,8 +460,7 @@ int _select_record_to_const(fqlselect* self, vec* recs)
 {
 	//_Bool fail_if_on_result = (self->const_dest->expr == EXPR_CONST) {
 	if (self->const_dest->expr == EXPR_CONST) {
-		fputs("subquery returned more than 1 value as expression\n",
-		      stderr);
+		fputs("subquery returned more than 1 value as expression\n", stderr);
 		return FQL_FAIL;
 	}
 

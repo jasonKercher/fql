@@ -103,28 +103,79 @@ int main(int argc, char** argv)
 	       != -1)
 		_parse_args(handle, c);
 
-	char query[1024] = "";
+	size_t max_size = 1024;
+	size_t running_size = 0;
+	FILE* query_file = stdin;
+	char* query = NULL;
 	char* line = NULL;
 
-	/* Get input from readline if we are interactive */
-	if (isatty(STDIN_FILENO)) {
+	/* Query is the contents of the file */
+	if (optind != argc) {
+		query_file = fopen(argv[optind], "r");
+		if (query_file == NULL) {
+			return EXIT_FAILURE;
+		}
+	}
+	if (optind != argc || !isatty(STDIN_FILENO)) {
+		/* Found this neat trick on stack overflow for reading entire
+		 * contents of file into a buffer...
+		 */
+		ssize_t bytes = getdelim(&query, &max_size, '\0', query_file);
+		if (bytes == -1) {
+			return EXIT_FAILURE;
+		}
+	} else {
+		/* Get input from readline if we are interactive */
+		query = malloc(max_size);
+		if (query == NULL) {
+			perror("malloc");
+			return EXIT_FAILURE;
+		}
+		query[0] = '\0';
+
 		/* Send readline output to /dev/tty */
 		FILE* devtty = fopen("/dev/tty", "w");
 		rl_outstream = devtty;
 		do {
 			line = readline("");
-			if (line)
-				sprintf(query, "%s\n%s", query, line);
-			else
+			if (!line) {
 				break;
+			}
+			size_t n = snprintf(NULL, 0, "%s\n%s", query, line);
+			running_size += n;
+			if (running_size >= max_size) {
+				max_size *= 2;
+				query = realloc(query, max_size);
+				if (!query) {
+					perror("realloc");
+					return EXIT_FAILURE;
+				}
+			}
+			sprintf(query, "%s\n%s", query, line);
 		} while (1);
-	} else {
-		size_t n = 0;
-		while (getline(&line, &n, stdin) != -1)
-			strcat(query, line);
-	}
+		//} else {
+		//	query = malloc(max_size);
+		//	if (query == NULL) {
+		//		perror("malloc");
+		//		return EXIT_FAILURE;
+		//	}
+		//	query[0] = '\0';
 
-	free(line);
+		//	size_t n = 0;
+		//	while (getline(&line, &n, stdin) != -1) {
+		//		running_size += n;
+		//		if (running_size >= max_size) {
+		//			max_size *= 2;
+		//			query = realloc(query, max_size);
+		//			if (!query) {
+		//				perror("realloc");
+		//				return EXIT_FAILURE;
+		//			}
+		//		}
+		//		strcat(query, line);
+		//	}
+		//}
+	}
 
 	int ret = 0;
 
@@ -165,10 +216,18 @@ int main(int argc, char** argv)
 	}
 
 success_exit:
+	if (line != NULL) {
+		free(line);
+	}
+	free(query);
 	fql_free(handle);
 	return EXIT_SUCCESS;
 
 err_exit:
+	if (line != NULL) {
+		free(line);
+	}
+	free(query);
 	fql_free(handle);
 	return EXIT_FAILURE;
 }
