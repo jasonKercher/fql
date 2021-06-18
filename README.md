@@ -1,5 +1,5 @@
 ```
-  __       _ 
+  __       _
  / _| __ _| |
 | |_ / _` | |
 |  _| (_| | |
@@ -46,12 +46,13 @@ foo,bar,foo
 a,b,c
 ```
 ### Installation
-Bear with me because I'm new to autotools.  There is a configure script, but it is not checking everything it should.  
+Bear with me because I'm new to autotools.  There is a configure script, but it is not checking everything it should.
 
 **Requirements**
- - [libcsv](https://github.com/jasonKercher/libcsv) 
+ - [libcsv](https://github.com/jasonKercher/libcsv): for reading and writing correct csv files based on [RFC 4180](https://www.ietf.org/rfc/rfc4180.txt)
  - [antlr4 C++ runtime library](https://github.com/antlr/antlr4/tree/master/runtime/Cpp): This is available though pacman (`pacman -S antlr4-runtime`) if you have an Arch Linux based distribution.  I struggled getting this installed on Ubuntu and just wound up compiling it.
- - [libcheck](https://github.com/libcheck/check): this is only for `make check`
+ - [libpcre2](https://www.pcre.org/): for LIKE statement implementation
+ - [libcheck](https://github.com/libcheck/check): This is only for `make check`.
 
 Once, antlr4 runtime is installed, you need determine the location of the antlr4-runtime headers since my shit autotools skills won't do it for you.  The parent directory must be set to `ANTLR4_CPATH`.  For me, this is `/usr/include`
 ```
@@ -61,4 +62,9 @@ make check #optional
 make install
 ```
 
+Installed program: fql
+Installed header: fql.h
+Installed library: libfql.so
+
+For information on how to use the library API see the lib/include/fql.h.
 

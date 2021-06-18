@@ -234,6 +234,6 @@ void string_find_replace(string* s, const char* oldstr, const char* newstr)
 	for (; i < s->size; ++i) {
 		const char* next =
 		        string_find_replace_one(s, oldstr, newstr, i);
-		i += next - (const char*)vec_begin(s) - 1;
+		i += next - (const char*)vec_begin(s);
 	}
 }

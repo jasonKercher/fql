@@ -110,8 +110,11 @@ void _extract_character_ranges(vec* ranges, string* likebuf)
 
 int like_to_regex(like* self, const stringview sql_like)
 {
+	//fprintf(stderr, "LIKE: %.*s\n", sql_like.len, sql_like.data);
+
 	string* likebuf = &self->like_buffer;
 	string_copy_from_stringview(likebuf, &sql_like);
+	string_find_replace(likebuf, "\\", "\\\\");
 	string_find_replace(likebuf, ".", "\\.");
 	string_find_replace(likebuf, "^", "\\^");
 	string_find_replace(likebuf, "$", "\\$");
@@ -121,9 +124,7 @@ int like_to_regex(like* self, const stringview sql_like)
 	string_find_replace(likebuf, ")", "\\)");
 	string_find_replace(likebuf, "{", "\\{");
 	string_find_replace(likebuf, "}", "\\}");
-	string_find_replace(likebuf, "\\", "\\\\");
 	string_find_replace(likebuf, "|", "\\|");
-	string_find_replace(likebuf, ".", "\\.");
 	string_find_replace(likebuf, "*", "\\*");
 	_extract_character_ranges(&self->ranges, likebuf);
 	string_find_replace(likebuf, "%", ".*");
@@ -158,6 +159,7 @@ int like_to_regex(like* self, const stringview sql_like)
 	}
 
 	self->match = pcre2_match_data_create_from_pattern(self->regex, NULL);
+	//fprintf(stderr, "REGEX: %s\n", string_c_str(&self->regex_buffer));
 
 	return FQL_GOOD;
 }
