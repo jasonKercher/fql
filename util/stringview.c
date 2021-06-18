@@ -8,12 +8,6 @@ stringview* stringview_construct(stringview* sv, char* s, unsigned len)
 	return sv;
 }
 
-stringview* stringview_construct_from_string(stringview* sv, string* s)
-{
-	stringview_set_string(sv, s);
-	return sv;
-}
-
 void stringview_set(stringview* sv, const char* s)
 {
 	*sv = (stringview) {s, strlen(s)};

@@ -283,11 +283,11 @@ int column_get_stringview(stringview* ret, column* col, vec* recs)
 			string_clear(new_field.s);
 		}
 		try_(func->call__(func, &new_field, recs));
-		try_(field_to_stringview(ret, &new_field, &new_field_type));
+		try_(field_to_stringview(ret, &col->buf, &new_field, &new_field_type));
 		break;
 	}
 	case EXPR_CONST:
-		try_(field_to_stringview(ret, &col->field, &col->field_type));
+		try_(field_to_stringview(ret, &col->buf, &col->field, &col->field_type));
 		break;
 	default:
 		fprintf(stderr, "col_get_stringview: Unexpected expression\n");

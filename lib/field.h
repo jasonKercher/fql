@@ -29,6 +29,6 @@ const char* field_description(enum field_type);
 enum field_type field_determine_type(enum field_type, enum field_type);
 int field_to_int(long*, union field*, enum field_type*);
 int field_to_float(double*, union field*, enum field_type*);
-int field_to_stringview(struct stringview*, union field*, enum field_type*);
+int field_to_stringview(struct stringview*, string* dest, union field*, enum field_type*);
 
 #endif /* FIELD_H */
