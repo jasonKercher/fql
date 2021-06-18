@@ -10,10 +10,45 @@
 
 #include "fql.h"
 
+const char* _help =
+        "\nUsage fql -[bCdhHOpv] [-sS delim] [--strict] [file.sql]\n\n"
+
+        "This is a text processing program using SQL (Transact-SQL specifically).\n\n"
+
+        "If no file argument is provided, queries are read from stdin. Files are\n"
+        "referenced as tables in the query via a priority list. For example, given\n"
+        "the following query: 'select * from t1', we match files on these rules:\n\n"
+
+        "    RULE                   EXAMPLE MATCHES\n"
+        "    exact match            t1\n"
+        "    exact ignoring case    T1,t1\n"
+        "    ignore extension       t1.txt,t1.csv\n"
+        "    ignore extension/case  t1.txt,T1.csv\n\n"
+
+        "To match t1.txt exactly (or match any filename with dots in them), use \n"
+        "'select * from [t1.txt]'. Without the [], the parser is going to assume\n"
+        "t1 is the schema for a table txt. Do the same for a filename with\n"
+        "white space as the parser will treat this as '[TABLE] [ALIAS]'.\n\n"
+
+        "Optional arguments:\n"
+        " -b, --char-as-byte   scalar functions assume single-byte encoding\n"
+        " -C, --cartesian      use cartesian join algorithm (less memory use)\n"
+        " -d, --dry-run        validate and build a plan, but do not execute\n"
+        " -h, --no-header      for default schema, do not print a header\n"
+        " -O, --override       allow processing of unsupported language features\n"
+        " -p, --print          print the processing plan\n"
+        " -s, --in-delim arg   for default schema, specify an input seperator\n"
+        " -S, --out-delim arg  for default schema, speficy seperator for SELECT\n"
+        " -v, --verbose        print additional information to stderr\n"
+        " --strict             see strict rules below...\n\n"
+
+        "Strict mode will only allow exact matches to files to be used as tables.\n"
+        "It will also throw errors if you try to select foo from a file with 2:\n"
+        "foo,bar,foo\n"
+        "a,b,c\n";
+
 void _parse_args(struct fql_handle* handle, char c);
 void _print_field(struct fql_field* field);
-
-static const char* help_string = "\n No Help here !\n\n";
 
 static int use_api = 0;
 
@@ -45,14 +80,14 @@ int main(int argc, char** argv)
 	        //{"verbose", no_argument, 0, 'v'},
 	        {"api", no_argument, 0, 'A'},
 	        {"char-as-byte", no_argument, 0, 'b'},
-	        {"force-cartesian", no_argument, 0, 'C'},
+	        {"cartesian", no_argument, 0, 'C'},
 	        {"dry-run", no_argument, 0, 'd'},
 	        {"no-header", no_argument, 0, 'h'},
 	        {"help", no_argument, 0, 'H'},
-	        {"override-warnings", no_argument, 0, 'O'},
-	        {"print-plan", no_argument, 0, 'p'},
-	        {"in-delimiter", required_argument, 0, 's'},
-	        {"out-delimiter", required_argument, 0, 'S'},
+	        {"override", no_argument, 0, 'O'},
+	        {"print", no_argument, 0, 'p'},
+	        {"in-delim", required_argument, 0, 's'},
+	        {"out-delim", required_argument, 0, 'S'},
 	        {"threading", no_argument, 0, 't'},
 	        {"verbose", no_argument, 0, 'v'},
 	        {"strict", no_argument, 0, 'X'},
@@ -154,7 +189,7 @@ void _parse_args(struct fql_handle* handle, char c)
 		fql_set_dry_run(handle, 1);
 		break;
 	case 'H':
-		puts(help_string);
+		puts(_help);
 		exit(0);
 	case 'h':
 		fql_set_print_header(handle, 0);
