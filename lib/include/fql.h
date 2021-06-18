@@ -27,7 +27,7 @@ struct fql_field {
 
 struct fql_handle;
 
-/** 
+/**
  * constructor to make a new fql handle
  */
 struct fql_handle* fql_new();
@@ -82,7 +82,7 @@ void fql_set_print_plan(struct fql_handle*, int);
  */
 void fql_set_in_delim(struct fql_handle*, const char*);
 
-/** 
+/**
  * Set an output delimiter to override whatever the
  * default schema chooses.
  */
@@ -105,7 +105,7 @@ void fql_set_char_as_byte(struct fql_handle*, int);
 
 /**
  * More for testing purposes, we can instruct fql to
- * use a brute force cartesian join over something 
+ * use a brute force cartesian join over something
  * more efficient like a hash join.
  */
 void fql_set_force_cartesian(struct fql_handle*, int);

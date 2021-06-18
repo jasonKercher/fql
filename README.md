@@ -68,5 +68,53 @@ Installed header: fql.h
 
 Installed library: libfql.so
 
-For information on how to use the library API see the lib/include/fql.h.
+### Library
+
+Here is a quick example of how to use the library API:
+
+```c
+#include <stdlib.h>
+#include "fql.h"
+
+int main(int argc, char** argv)
+{
+	struct fql_handle* handle = fql_new();
+	int ret = fql_make_plans(handle,
+	                         "select t1.foo "
+	                         "from t1 "
+	                         "join t2 "
+	                         "    on t1.foo = t2.foo");
+
+	if (ret == FQL_FAIL) {
+		return EXIT_FAILURE;
+	}
+
+	// In case we don't know. We know
+	// it is 1 based on the query...
+	int field_count = fql_field_count(handle);
+
+	// fql_step will initialize this for us
+	struct fql_field* fields = NULL;
+
+	// fql_step returns:
+	// 0 at EOF
+	// FQL_FAIL on runtime error
+	while ((ret = fql_step(handle, &fields)) == 1) {
+		// Since we are pulling from a file, we
+		// can assume this is of type FQL_STRING
+		if (fields[0].type == FQL_STRING) {
+			const char* foo = fields[0].data.s;
+			// Do something with foo
+		}
+	}
+	if (ret == FQL_FAIL) {
+		return EXIT_FAILURE;
+	}
+
+	fql_free(handle);
+}
+```
+
+
+
 
