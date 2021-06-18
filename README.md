@@ -54,7 +54,7 @@ Bear with me because I'm new to autotools.  There is a configure script, but it 
  - [libpcre2](https://www.pcre.org/): for LIKE statement implementation
  - [libcheck](https://github.com/libcheck/check): This is only for `make check`.
 
-Once, antlr4 runtime is installed, you need determine the location of the antlr4-runtime headers since my shit autotools skills won't do it for you.  The parent directory must be set to `ANTLR4_CPATH`.  For me, this is `/usr/include`
+Once antlr4 runtime is installed, you need determine the location of the antlr4-runtime headers since my shit autotools skills won't do it for you.  The parent directory must be set to `ANTLR4_CPATH`.  For me, this is `/usr/include`
 ```
 ANTLR4_CPATH=/usr/include ./configure
 make
@@ -63,7 +63,9 @@ make install
 ```
 
 Installed program: fql
+
 Installed header: fql.h
+
 Installed library: libfql.so
 
 For information on how to use the library API see the lib/include/fql.h.

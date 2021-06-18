@@ -1,3 +1,4 @@
+#include "check.h"
 #include "check_common.h"
 
 // #include <limits.h>
@@ -135,6 +136,20 @@ START_TEST(test_logic_const)
 }
 END_TEST
 
+START_TEST(test_logic_like)
+{
+	assert_select1(fql_make_plans(fql, "select 1 where 'sh.nt' like '%.%'"));
+	assert_nothing(fql_make_plans(fql, "select 1 where 'sh.nt' not like '%.%'"));
+}
+
+START_TEST(test_logic_in)
+{
+	assert_select1(fql_make_plans(fql, "select 1 where 's' in ('qcn', 's')"));
+	assert_select1(fql_make_plans(fql, "select 1 where 1 in (1, 78)"));
+	assert_nothing(fql_make_plans(fql, "select 1 where '' in (' n', '565')"));
+	assert_select1(fql_make_plans(fql, "select 1 where '' in (' n', '      ')"));
+}
+
 START_TEST(test_logic_function)
 {
 	assert_select1(fql_make_plans(fql, "select 1 where left('hello', 2) = 'he    '"));
@@ -164,6 +179,7 @@ Suite* fql_logic_suite(void)
 	tcase_add_checked_fixture(tc_logic, fql_setup, fql_teardown);
 
 	tcase_add_test(tc_logic, test_logic_const);
+	tcase_add_test(tc_logic, test_logic_like);
 	tcase_add_test(tc_logic, test_logic_function);
 	tcase_add_test(tc_logic, test_logic_complex);
 

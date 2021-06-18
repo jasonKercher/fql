@@ -55,10 +55,6 @@ int _precompile_like(logic* self)
 	try_(like_to_regex(self->like_data, sv));
 
 	pcre2_jit_compile(self->like_data->regex, PCRE2_JIT_COMPLETE);
-	//int ret = pcre2_jit_compile(self->like_data->regex, PCRE2_JIT_COMPLETE);
-	//if (ret) {
-	//	fprintf(stderr, "pcre2_jit_compile failed (%d)\n", ret);
-	//}
 
 	return FQL_GOOD;
 }
