@@ -40,6 +40,7 @@ const char* _help =
         " -s, --in-delim arg   for default schema, specify an input seperator\n"
         " -S, --out-delim arg  for default schema, speficy seperator for SELECT\n"
         " -v, --verbose        print additional information to stderr\n"
+        " --schema-path arg    Takes precedence over FQL_SCHEMA_PATH\n"
         " --strict             see strict rules below...\n\n"
 
         "Strict mode will only allow exact matches to files to be used as tables.\n"
@@ -90,7 +91,8 @@ int main(int argc, char** argv)
 	        {"out-delim", required_argument, 0, 'S'},
 	        {"threading", no_argument, 0, 't'},
 	        {"verbose", no_argument, 0, 'v'},
-	        {"strict", no_argument, 0, 'X'},
+	        {"schema-path", no_argument, 0, 'X'},
+	        {"strict", no_argument, 0, 'x'},
 	        {0, 0, 0, 0}};
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
@@ -272,6 +274,9 @@ void _parse_args(struct fql_handle* handle, char c)
 		fql_set_verbose(handle, 1);
 		break;
 	case 'X':
+		fql_set_schema_path(handle, optarg);
+		break;
+	case 'x':
 		fql_set_strict_mode(handle, 1);
 		break;
 	default:

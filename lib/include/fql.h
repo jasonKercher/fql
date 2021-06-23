@@ -111,6 +111,13 @@ void fql_set_char_as_byte(struct fql_handle*, int);
 void fql_set_force_cartesian(struct fql_handle*, int);
 
 /**
+ * This setting takes precedence over the 
+ * FQL_SCHEMA_PATHenvironment variable and 
+ * "$HOME/.config/fql/"
+ */
+void fql_set_schema_path(struct fql_handle* fql, const char* schema_path);
+
+/**
  * set strict to make the validation pickier
  * (and safer) at the expense of verbosity
  */

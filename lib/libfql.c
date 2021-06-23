@@ -155,7 +155,7 @@ void fql_set_strict_mode(struct fql_handle* fql, int strictness)
 	fql->props.strictness = strictness;
 }
 
-void fql_set_schema_path(struct fql_handle* fql, char* schema_path)
+void fql_set_schema_path(struct fql_handle* fql, const char* schema_path)
 {
 	string_strcpy(fql->props.schema_path, schema_path);
 }
