@@ -33,24 +33,26 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	        new_t_(vec, struct fql_field), /* api_vec */
 	        NULL,                          /* query_str */
 	        {
-	                "",    /* in_delim */
-	                "",    /* out_delim */
-	                false, /* force_cartesian */
-	                false, /* dry_run */
-	                false, /* override_warnings */
-	                true,  /* print_header */
-	                false, /* print_plan */
-	                false, /* threading */
-	                false, /* verbose */
-	                false, /* char_as_byte */
-	                false  /* strictness */
-	        }              /* props */
+	                new_(string), /* schema_path */
+	                "",           /* in_delim */
+	                "",           /* out_delim */
+	                false,        /* force_cartesian */
+	                false,        /* dry_run */
+	                false,        /* override_warnings */
+	                true,         /* print_header */
+	                false,        /* print_plan */
+	                false,        /* threading */
+	                false,        /* verbose */
+	                false,        /* char_as_byte */
+	                false         /* strictness */
+	        }                     /* props */
 	};
 	return fql;
 }
 
 void fql_free(struct fql_handle* fql)
 {
+	delete_(string, fql->props.schema_path);
 	delete_if_exists_(vec, fql->api_vec);
 	free_if_exists_(fql->query_str);
 	free_if_exists_(fql);
@@ -151,6 +153,11 @@ void fql_set_force_cartesian(struct fql_handle* fql, int force_cartesian)
 void fql_set_strict_mode(struct fql_handle* fql, int strictness)
 {
 	fql->props.strictness = strictness;
+}
+
+void fql_set_schema_path(struct fql_handle* fql, char* schema_path)
+{
+	string_strcpy(fql->props.schema_path, schema_path);
 }
 
 /**

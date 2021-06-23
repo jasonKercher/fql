@@ -10,6 +10,7 @@ struct fql_handle {
 	struct vec* api_vec;
 	char* query_str;
 	struct {
+		struct vec* schema_path; /* actually string but extern "C" so... */
 		char in_delim[32];
 		char out_delim[32];
 		int dry_run;

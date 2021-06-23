@@ -6,11 +6,13 @@
 #include "util/queue.h"
 #include "util/hashmap.h"
 #include "util/vec.h"
+#include "util/stringy.h"
 
 struct schema {
 	struct vec* columns;
 	multimap* col_map;
-	char name[TABLE_NAME_MAX];
+	string* schema_path;
+	string* name;
 	char delimiter[DELIM_LEN_MAX];
 	int strictness;
 };

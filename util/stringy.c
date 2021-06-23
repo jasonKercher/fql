@@ -162,7 +162,7 @@ size_t string_sprintf(string* s, const char* fmt, ...)
 	return len;
 }
 
-const char* string_c_str(string* s)
+const char* string_c_str(const string* s)
 {
 	return (const char*) s->data;
 }
@@ -180,7 +180,7 @@ void string_clear(string* s)
 	_null_terminate_(s);
 }
 
-void string_copy(string* dest, string* src)
+void string_copy(string* dest, const string* src)
 {
 	vec_resize(dest, src->size);
 	memcpy(dest->data, src->data, src->size);

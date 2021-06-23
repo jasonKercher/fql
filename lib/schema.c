@@ -24,7 +24,8 @@ schema* schema_construct(schema* self)
 	*self = (schema) {
 	        new_t_(vec, column*), /* columns */
 	        NULL,                 /* col_map */
-	        "",                   /* name */
+	        NULL,                 /* schema_path */
+	        NULL,                 /* name */
 	        "",                   /* delimiter */
 	        0,                    /* strictness */
 	};
@@ -42,6 +43,8 @@ void schema_destroy(void* generic_schema)
 	}
 
 	delete_(vec, self->columns);
+	delete_if_exists_(string, self->name);
+	delete_if_exists_(string, self->schema_path);
 	delete_if_exists_(multimap, self->col_map);
 }
 
@@ -84,24 +87,21 @@ void schema_preflight(schema* self)
 	}
 }
 
-int schema_resolve_file(table* table, int strictness)
+int _fuzzy_resolve_file(string* dest, const string* input, int strictness)
 {
-	if (table->source_type == SOURCE_SUBQUERY) {
-		return FQL_GOOD;
-	}
-	string table_name_base;
-	string table_name_dir;
+	string basedata;
+	string dirdata;
 	string file_noext;
 
-	string_construct(&table_name_base);
-	string_construct(&table_name_dir);
+	string_construct(&basedata);
+	string_construct(&dirdata);
 	string_construct(&file_noext);
 
-	string_copy(&table_name_base, &table->name);
-	string_copy(&table_name_dir, &table->name);
+	string_copy(&basedata, input);
+	string_copy(&dirdata, input);
 
-	char* dir = dirname(table_name_dir.data);
-	char* base = basename(table_name_base.data);
+	char* dir = dirname(dirdata.data);
+	char* base = basename(basedata.data);
 
 	queue* files = dir_list_files(dir);
 	queue* node = files;
@@ -111,15 +111,9 @@ int schema_resolve_file(table* table, int strictness)
 	for (; node; node = node->next) {
 		if (string_eq(node->data, base)) {
 			++matches;
-			string_sprintf(&table->reader->file_name,
-			               "%s/%s",
-			               dir,
-			               node->data);
+			string_sprintf(dest, "%s/%s", dir, node->data);
+			goto success_return;
 		}
-	}
-
-	if (matches) {
-		goto success_return;
 	}
 
 	if (strictness) {
@@ -130,15 +124,12 @@ int schema_resolve_file(table* table, int strictness)
 	for (node = files; node; node = node->next) {
 		if (istring_eq(node->data, base)) {
 			++matches;
-			string_sprintf(&table->reader->file_name,
-			               "%s/%s",
-			               dir,
-			               node->data);
+			string_sprintf(dest, "%s/%s", dir, node->data);
 		}
 	}
 
 	if (matches > 1) {
-		fprintf(stderr, "%s: ambiguous file name\n", (char*)table->name.data);
+		fprintf(stderr, "%s: ambiguous file name\n", string_c_str(input));
 		return FQL_FAIL;
 	} else if (matches) {
 		goto success_return;
@@ -150,15 +141,12 @@ int schema_resolve_file(table* table, int strictness)
 		getnoext(file_noext.data, node->data);
 		if (string_eq(file_noext.data, base)) {
 			++matches;
-			string_sprintf(&table->reader->file_name,
-			               "%s/%s",
-			               dir,
-			               node->data);
+			string_sprintf(dest, "%s/%s", dir, node->data);
 		}
 	}
 
 	if (matches > 1) {
-		fprintf(stderr, "%s: ambiguous file name\n", (char*)table->name.data);
+		fprintf(stderr, "%s.*: ambiguous file\n", base);
 		return FQL_FAIL;
 	} else if (matches) {
 		goto success_return;
@@ -170,15 +158,12 @@ int schema_resolve_file(table* table, int strictness)
 		getnoext(file_noext.data, node->data);
 		if (istring_eq(file_noext.data, base)) {
 			++matches;
-			string_sprintf(&table->reader->file_name,
-			               "%s/%s",
-			               dir,
-			               node->data);
+			string_sprintf(dest, "%s/%s", dir, node->data);
 		}
 	}
 
 	if (matches > 1) {
-		fprintf(stderr, "%s: ambiguous file name\n", (char*)table->name.data);
+		fprintf(stderr, "%s.*: ambiguous file\n", base);
 		return FQL_FAIL;
 	} else if (matches) {
 		goto success_return;
@@ -186,18 +171,31 @@ int schema_resolve_file(table* table, int strictness)
 
 fail_return:
 	queue_free_data(&files);
-	string_destroy(&table_name_base);
-	string_destroy(&table_name_dir);
+
+	fprintf(stderr,
+	        "%s: unable to find matching file (directory: `%s')\n",
+	        base,
+	        dir);
 	string_destroy(&file_noext);
-	fprintf(stderr, "%s: unable to find matching file\n", (char*)table->name.data);
+	string_destroy(&basedata);
+	string_destroy(&dirdata);
 	return FQL_FAIL;
 
 success_return:
 	queue_free_data(&files);
-	string_destroy(&table_name_base);
-	string_destroy(&table_name_dir);
+	string_destroy(&basedata);
+	string_destroy(&dirdata);
 	string_destroy(&file_noext);
 	return FQL_GOOD;
+}
+
+int schema_resolve_file(table* table, int strictness)
+{
+	if (table->source_type == SOURCE_SUBQUERY) {
+		return FQL_GOOD;
+	}
+
+	return _fuzzy_resolve_file(&table->reader->file_name, &table->name, strictness);
 }
 
 void schema_assign_header(table* table, record* rec, int src_idx)
@@ -221,15 +219,175 @@ void schema_assign_header(table* table, record* rec, int src_idx)
 	schema_preflight(table->schema);
 }
 
+/* Schema path is determined by the following hierarchy:
+ *  1. fql->props.schema_path
+ *  2. FQL_SCHEMA_PATH environment variable
+ *  3. $HOME/.config/fql
+ *  4. ./ OR should probably just throw error here...
+ */
+int _resolve_directory(schema* self, struct fql_handle* fql)
+{
+	self->schema_path = new_(string);
+	DIR* schema_dir = NULL;
+
+	if (!string_empty(fql->props.schema_path)) {
+		string_copy(self->schema_path, fql->props.schema_path);
+		goto dir_check;
+	}
+
+	const char* path_from_env = getenv("FQL_SCHEMA_PATH");
+	if (path_from_env != NULL) {
+		string_strcpy(self->schema_path, path_from_env);
+		goto dir_check;
+	}
+
+	const char* home_path = getenv("HOME");
+	if (home_path != NULL) {
+		string_sprintf(self->schema_path, "%s/.config/fql", home_path);
+		goto dir_check;
+	}
+
+dir_check:
+	schema_dir = opendir(string_c_str(self->schema_path));
+	if (schema_dir) {
+		closedir(schema_dir);
+		return FQL_GOOD;
+	}
+
+	/* Optionally, we could default to CWD */
+	fprintf(stderr,
+	        "Schema path `%s' could not be accessed. Consider creating it.\n",
+	        string_c_str(self->schema_path));
+	return FQL_FAIL;
+}
+
+int _set_variable(schema* self, struct csv_record* rec)
+{
+	if (rec->size != 2) {
+		fprintf(stderr,
+		        "Invalid schema record: `%.*s'\n",
+		        (int)rec->reclen,
+		        rec->rec);
+		return FQL_FAIL;
+	}
+	fprintf(stderr,
+	        "IGNORED: %.*s = %.*s\n",
+	        rec->fields[0].len,
+	        rec->fields[0].data,
+	        rec->fields[1].len,
+	        rec->fields[1].data);
+	return FQL_GOOD;
+}
+
+int _add_column_from_rec(schema* self, struct csv_record* rec, size_t* running_offset)
+{
+	switch (rec->size) {
+	case 1: /* <field>, assume char */
+		fprintf(stderr, "%.*s char\n", rec->fields[0].len, rec->fields[0].data);
+		break;
+	case 2: /* <field>, <type> */
+		fprintf(stderr,
+		        "%.*s %.*s\n",
+		        rec->fields[0].len,
+		        rec->fields[0].data,
+		        rec->fields[1].len,
+		        rec->fields[1].data);
+		break;
+	case 3: { /* <field>, <offset>, <type> */
+		long offset = 0;
+		stringview sv = {rec->fields[1].data, rec->fields[1].len};
+		string* dup = string_from_stringview(&sv);
+
+		fail_if_(str2long(&offset, string_c_str(dup)));
+		fprintf(stderr,
+		        "%.*s [%lu:%ld) %.*s\n",
+		        rec->fields[0].len,
+		        rec->fields[0].data,
+		        *running_offset,
+		        offset,
+		        rec->fields[2].len,
+		        rec->fields[2].data);
+
+		*running_offset += offset;
+	} break;
+	default:
+		return FQL_GOOD;
+	}
+	return FQL_GOOD;
+}
+
+int _parse_schema_file(schema* self, struct fql_handle* fql)
+{
+	struct csv_reader* schema_csv = csv_reader_new();
+	schema_csv->trim = 1;
+	csv_reader_set_delim(schema_csv, ",");
+
+	struct csv_reader* assignment_csv = csv_reader_new();
+	assignment_csv->trim = 1;
+	csv_reader_set_delim(assignment_csv, "=");
+
+	struct csv_record* column_rec = csv_record_new();
+	struct csv_record* assignment_rec = csv_record_new();
+
+	fail_if_(csv_reader_open(schema_csv, string_c_str(self->schema_path)));
+
+	int ret = 0;
+	size_t running_offset = 0;
+
+	/* Schema file parsing */
+	while ((ret = csv_get_record(schema_csv, column_rec)) == CSV_GOOD) {
+
+		/* Is this an assignment? */
+		csv_nparse(assignment_csv,
+		           assignment_rec,
+		           column_rec->rec,
+		           column_rec->reclen);
+		if (assignment_rec->size > 1) {
+			try_(_set_variable(self, assignment_rec));
+			continue;
+		}
+
+		try_(_add_column_from_rec(self, column_rec, &running_offset));
+	}
+
+	csv_record_free(assignment_rec);
+	csv_record_free(column_rec);
+	csv_reader_free(assignment_csv);
+	csv_reader_free(schema_csv);
+	return FQL_GOOD;
+}
+
+int _load_by_name(schema* self, struct fql_handle* fql)
+{
+	try_(_resolve_directory(self, fql));
+
+	string* full_path_temp = new_(string);
+	string_sprintf(full_path_temp,
+	               "%s/%s",
+	               string_c_str(self->schema_path),
+	               string_c_str(self->name));
+
+	if (_fuzzy_resolve_file(self->schema_path,
+	                        full_path_temp,
+	                        fql->props.strictness)) {
+		delete_(string, full_path_temp);
+		return FQL_FAIL;
+	}
+	delete_(string, full_path_temp);
+
+	try_(_parse_schema_file(self, fql));
+
+	return FQL_GOOD;
+}
+
 int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 {
 	if (table->schema && !vec_empty(table->schema->columns)) {
 		return FQL_GOOD; /* self already set */
 	}
 
-	if (table->schema && table->schema->name[0]) {
-		fputs("not loading schema by name yet\n", stderr);
-		return FQL_FAIL; /* TODO: load self by name */
+	if (table->schema && table->schema->name) {
+		return _load_by_name(table->schema, fql);
 	}
 
 	if (table->source_type == SOURCE_SUBQUERY) {
@@ -241,7 +399,8 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		/* if we've made it this far, we want to try
 		 * and determine schema by reading the top
 		 * row of the file and assume a delimited
-		 * list of field names.
+		 * list of field names. 
+		 * This is the "default schema".
 		 */
 		try_(schema_resolve_file(table, fql->props.strictness));
 		table->reader->type = READ_LIBCSV;

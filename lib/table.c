@@ -6,6 +6,12 @@
 #include "antlr/antlr.h"
 #include "util/util.h"
 
+/**
+ * When building a hash table for a file, we can
+ * get a size estimate from the file and avoid 
+ * resizing the hashmap.  If it is a subquery, we
+ * have no such information.
+ */
 #define SUBQUERY_HASH_TABLE_INITIAL_SIZE 512
 
 table* table_construct(table* self,

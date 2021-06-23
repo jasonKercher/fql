@@ -47,13 +47,13 @@ size_t string_strncat(string*, const char*, size_t);
 size_t string_strcpy(string*, const char*);
 size_t string_strncpy(string*, const char*, size_t);
 size_t string_sprintf(string* s, const char* fmt, ...);
-const char* string_c_str(string* s);
+const char* string_c_str(const string* s);
 
 /* string iterface */
 char* string_export(string*);
 void string_clear(string*);
 void string_resize(string*, size_t);
-void string_copy(string* dest, string* src);
+void string_copy(string* dest, const string* src);
 void string_find_replace(string*, const char* from, const char* to);
 const char*
 string_find_replace_one(string*, const char* from, const char* to, size_t);

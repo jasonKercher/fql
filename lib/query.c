@@ -217,8 +217,7 @@ void query_add_source(query* self, stack** source_stack, const char* alias)
 	                self->join);
 
 	if (schema_name != NULL) {
-		strncpy_(new_table->schema->name, schema_name, TABLE_NAME_MAX);
-		free_(schema_name);
+		new_table->schema->name = string_take(schema_name);
 	}
 }
 
