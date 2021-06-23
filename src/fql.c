@@ -91,7 +91,7 @@ int main(int argc, char** argv)
 	        {"out-delim", required_argument, 0, 'S'},
 	        {"threading", no_argument, 0, 't'},
 	        {"verbose", no_argument, 0, 'v'},
-	        {"schema-path", no_argument, 0, 'X'},
+	        {"schema-path", required_argument, 0, 'X'},
 	        {"strict", no_argument, 0, 'x'},
 	        {0, 0, 0, 0}};
 	/* getopt_long stores the option index here. */
