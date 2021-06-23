@@ -55,7 +55,7 @@ void fqlselect_set_delim(fqlselect* self, const char* delim)
 
 void fqlselect_add_column(fqlselect* self, column* col)
 {
-	schema_add_column(self->schema, col);
+	schema_add_column(self->schema, col, 0);
 }
 
 void _resize_raw_rec(vec* raw_rec, unsigned size)

@@ -34,7 +34,7 @@ void schema_destroy(void*);
 int schema_resolve_query(struct fql_handle*, struct query*);
 int schema_resolve(struct fql_handle*);
 
-void schema_add_column(struct schema*, struct column*);
+void schema_add_column(struct schema*, struct column*, int src_idx);
 void schema_apply_column_alias(struct schema* schema, const char* alias);
 void schema_preflight(struct schema*);
 

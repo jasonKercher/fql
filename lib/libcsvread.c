@@ -71,7 +71,16 @@ int libcsv_reset(reader* self)
 
 	/* skip header */
 	struct csv_record* libcsv_rec = csv_record_new();
-	int ret = csv_get_record(csv, libcsv_rec);
+	int ret = 0;
+	unsigned i = 0;
+	for (; i < self->skip_rows; ++i) {
+		ret = csv_get_record(csv, libcsv_rec);
+		if (ret == CSV_FAIL) {
+			return FQL_FAIL;
+		} else if (ret != CSV_GOOD) {
+			break;
+		}
+	}
 	csv_record_free(libcsv_rec);
 
 	return ret;

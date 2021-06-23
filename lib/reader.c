@@ -22,6 +22,7 @@ reader* reader_construct(reader* self)
 	        NULL,           /* reset__ */
 	        {0},            /* file_name */
 	        0,              /* max_col_idx */
+	        1,              /* skip_rows */
 	        false           /* eof */
 	};
 
@@ -50,8 +51,11 @@ void reader_assign(reader* self, table* table)
 		self->get_record_at__ = &libcsv_get_record_at;
 		self->reset__ = &libcsv_reset;
 		ret = csv_reader_open_mmap(csv, self->file_name.data);
+	} break;
+	case READ_FIXED_BYTE:
+		fputs("not supporting FIXED BYTE tables quite yet\n", stderr);
+		exit(EXIT_FAILURE);
 		break;
-	}
 	case READ_SUBQUERY:
 		//self->free__ = &query_free;
 		self->get_record__ = &fqlselect_subquery_record;

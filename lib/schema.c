@@ -48,8 +48,9 @@ void schema_destroy(void* generic_schema)
 	delete_if_exists_(multimap, self->col_map);
 }
 
-void schema_add_column(schema* self, column* col)
+void schema_add_column(schema* self, column* col, int src_idx)
 {
+	col->src_idx = src_idx;
 	vec_push_back(self->columns, &col);
 }
 
@@ -112,12 +113,12 @@ int _fuzzy_resolve_file(string* dest, const string* input, int strictness)
 		if (string_eq(node->data, base)) {
 			++matches;
 			string_sprintf(dest, "%s/%s", dir, node->data);
-			goto success_return;
+			goto fuzzy_file_match_success;
 		}
 	}
 
 	if (strictness) {
-		goto fail_return;
+		goto fuzzy_file_match_fail;
 	}
 
 	/* match exact ignoring case */
@@ -130,9 +131,9 @@ int _fuzzy_resolve_file(string* dest, const string* input, int strictness)
 
 	if (matches > 1) {
 		fprintf(stderr, "%s: ambiguous file name\n", string_c_str(input));
-		return FQL_FAIL;
+		goto fuzzy_file_match_fail;
 	} else if (matches) {
-		goto success_return;
+		goto fuzzy_file_match_success;
 	}
 
 	/* match file without extension */
@@ -147,9 +148,9 @@ int _fuzzy_resolve_file(string* dest, const string* input, int strictness)
 
 	if (matches > 1) {
 		fprintf(stderr, "%s.*: ambiguous file\n", base);
-		return FQL_FAIL;
+		goto fuzzy_file_match_fail;
 	} else if (matches) {
-		goto success_return;
+		goto fuzzy_file_match_success;
 	}
 
 	/* match file without extension ignoring case */
@@ -164,24 +165,24 @@ int _fuzzy_resolve_file(string* dest, const string* input, int strictness)
 
 	if (matches > 1) {
 		fprintf(stderr, "%s.*: ambiguous file\n", base);
-		return FQL_FAIL;
+		goto fuzzy_file_match_fail;
 	} else if (matches) {
-		goto success_return;
+		goto fuzzy_file_match_success;
 	}
-
-fail_return:
-	queue_free_data(&files);
 
 	fprintf(stderr,
 	        "%s: unable to find matching file (directory: `%s')\n",
 	        base,
 	        dir);
+
+fuzzy_file_match_fail:
+	queue_free_data(&files);
 	string_destroy(&file_noext);
 	string_destroy(&basedata);
 	string_destroy(&dirdata);
 	return FQL_FAIL;
 
-success_return:
+fuzzy_file_match_success:
 	queue_free_data(&files);
 	string_destroy(&basedata);
 	string_destroy(&dirdata);
@@ -206,9 +207,8 @@ void schema_assign_header(table* table, record* rec, int src_idx)
 		string col_str;
 		string_construct_from_stringview(&col_str, it);
 		column* new_col = new_(column, EXPR_COLUMN_NAME, col_str.data, "");
-		schema_add_column(table->schema, new_col);
+		schema_add_column(table->schema, new_col, src_idx);
 
-		new_col->src_idx = src_idx;
 		new_col->location = i++;
 		new_col->table = table;
 		new_col->field_type = FIELD_STRING;
@@ -261,17 +261,17 @@ dir_check:
 	return FQL_FAIL;
 }
 
-int _set_variable(schema* self, struct csv_record* rec)
+int _set_variable_from_rec(schema* self, struct csv_record* rec)
 {
 	if (rec->size != 2) {
 		fprintf(stderr,
-		        "Invalid schema record: `%.*s'\n",
+		        "invalid schema record: `%.*s'\n",
 		        (int)rec->reclen,
 		        rec->rec);
 		return FQL_FAIL;
 	}
 	fprintf(stderr,
-	        "IGNORED: %.*s = %.*s\n",
+	        "%.*s = %.*s: ignored schema assignment\n",
 	        rec->fields[0].len,
 	        rec->fields[0].data,
 	        rec->fields[1].len,
@@ -279,45 +279,65 @@ int _set_variable(schema* self, struct csv_record* rec)
 	return FQL_GOOD;
 }
 
-int _add_column_from_rec(schema* self, struct csv_record* rec, size_t* running_offset)
+int _add_column_from_rec(table* table,
+                         struct csv_record* rec,
+                         size_t* running_offset,
+                         int src_idx)
 {
+	schema* self = table->schema;
+	if (rec->size == 0 || rec->size > 3) {
+		fprintf(stderr,
+		        "Invalid schema record `%.*s'\n",
+		        (int)rec->reclen,
+		        rec->rec);
+		return FQL_FAIL;
+	}
+	stringview field_name = {rec->fields[0].data, rec->fields[0].len};
+	string col_str;
+	string_construct_from_stringview(&col_str, &field_name);
+	column* new_col = new_(column, EXPR_COLUMN_NAME, col_str.data, "");
+	string_destroy(&col_str);
 	switch (rec->size) {
 	case 1: /* <field>, assume char */
-		fprintf(stderr, "%.*s char\n", rec->fields[0].len, rec->fields[0].data);
+		table->reader->type = READ_LIBCSV;
+		new_col->location = self->columns->size;
+		new_col->field_type = FIELD_STRING;
 		break;
 	case 2: /* <field>, <type> */
-		fprintf(stderr,
-		        "%.*s %.*s\n",
-		        rec->fields[0].len,
-		        rec->fields[0].data,
-		        rec->fields[1].len,
-		        rec->fields[1].data);
+		table->reader->type = READ_LIBCSV;
+		new_col->location = self->columns->size;
+		/* TODO type parsing */
+		new_col->field_type = FIELD_STRING;
 		break;
 	case 3: { /* <field>, <offset>, <type> */
-		long offset = 0;
+		table->reader->type = READ_FIXED_BYTE;
+		long width = 0;
 		stringview sv = {rec->fields[1].data, rec->fields[1].len};
 		string* dup = string_from_stringview(&sv);
+		if (str2long(&width, string_c_str(dup)) || width <= 0) {
+			fprintf(stderr,
+			        "Could not parse column offset `%s'\n",
+			        string_c_str(dup));
+			delete_(string, dup);
+			delete_(column, new_col);
+			return FQL_FAIL;
+		}
 
-		fail_if_(str2long(&offset, string_c_str(dup)));
-		fprintf(stderr,
-		        "%.*s [%lu:%ld) %.*s\n",
-		        rec->fields[0].len,
-		        rec->fields[0].data,
-		        *running_offset,
-		        offset,
-		        rec->fields[2].len,
-		        rec->fields[2].data);
+		delete_(string, dup);
 
-		*running_offset += offset;
-	} break;
-	default:
-		return FQL_GOOD;
+		new_col->location = *running_offset;
+		new_col->width = width;
+
+		*running_offset += width;
 	}
-	return FQL_GOOD;
+	}
+	schema_add_column(self, new_col, src_idx);
+	return rec->size;
 }
 
-int _parse_schema_file(schema* self, struct fql_handle* fql)
+int _parse_schema_file(table* table, struct fql_handle* fql, int src_idx)
 {
+	schema* self = table->schema;
 	struct csv_reader* schema_csv = csv_reader_new();
 	schema_csv->trim = 1;
 	csv_reader_set_delim(schema_csv, ",");
@@ -329,36 +349,65 @@ int _parse_schema_file(schema* self, struct fql_handle* fql)
 	struct csv_record* column_rec = csv_record_new();
 	struct csv_record* assignment_rec = csv_record_new();
 
-	fail_if_(csv_reader_open(schema_csv, string_c_str(self->schema_path)));
-
 	int ret = 0;
+	if (csv_reader_open(schema_csv, string_c_str(self->schema_path))) {
+		ret = FQL_FAIL;
+		goto parse_schema_return;
+	}
+
 	size_t running_offset = 0;
+	int first_count = 0;
 
 	/* Schema file parsing */
 	while ((ret = csv_get_record(schema_csv, column_rec)) == CSV_GOOD) {
 
-		/* Is this an assignment? */
+		/* Is this a variable assignment? */
 		csv_nparse(assignment_csv,
 		           assignment_rec,
 		           column_rec->rec,
 		           column_rec->reclen);
 		if (assignment_rec->size > 1) {
-			try_(_set_variable(self, assignment_rec));
+			if (_set_variable_from_rec(self, assignment_rec) == FQL_FAIL) {
+				ret = FQL_FAIL;
+				break;
+			}
 			continue;
 		}
 
-		try_(_add_column_from_rec(self, column_rec, &running_offset));
+		/* we ARE defining a column */
+		int count =
+		        _add_column_from_rec(table, column_rec, &running_offset, src_idx);
+		if (count == FQL_FAIL) {
+			ret = FQL_FAIL;
+			break;
+		}
+		if (!first_count) {
+			first_count = count;
+		} else if (first_count != count) {
+			fprintf(stderr,
+			        "mis-matched schema record at `%.*s'\n",
+			        (int)column_rec->reclen,
+			        column_rec->rec);
+			ret = FQL_FAIL;
+			break;
+		}
 	}
 
+parse_schema_return:
 	csv_record_free(assignment_rec);
 	csv_record_free(column_rec);
 	csv_reader_free(assignment_csv);
 	csv_reader_free(schema_csv);
+
+	if (ret == FQL_FAIL) {
+		return FQL_FAIL;
+	}
 	return FQL_GOOD;
 }
 
-int _load_by_name(schema* self, struct fql_handle* fql)
+int _load_by_name(table* table, struct fql_handle* fql, int src_idx)
 {
+	schema* self = table->schema;
 	try_(_resolve_directory(self, fql));
 
 	string* full_path_temp = new_(string);
@@ -375,7 +424,7 @@ int _load_by_name(schema* self, struct fql_handle* fql)
 	}
 	delete_(string, full_path_temp);
 
-	try_(_parse_schema_file(self, fql));
+	try_(_parse_schema_file(table, fql, src_idx));
 
 	return FQL_GOOD;
 }
@@ -387,7 +436,12 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	}
 
 	if (table->schema && table->schema->name) {
-		return _load_by_name(table->schema, fql);
+		/* If we are loading the schema by name, we assume
+		 * data begins on the first row. The default schema
+		 * assumes that the first row is headers
+		 */
+		table->reader->skip_rows = 0;
+		try_(_load_by_name(table, fql, src_idx));
 	}
 
 	if (table->source_type == SOURCE_SUBQUERY) {
@@ -399,11 +453,13 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		/* if we've made it this far, we want to try
 		 * and determine schema by reading the top
 		 * row of the file and assume a delimited
-		 * list of field names. 
+		 * list of field names.
 		 * This is the "default schema".
 		 */
 		try_(schema_resolve_file(table, fql->props.strictness));
-		table->reader->type = READ_LIBCSV;
+		if (vec_empty(table->schema->columns)) {
+			table->reader->type = READ_LIBCSV;
+		}
 	}
 	reader_assign(table->reader, table);
 

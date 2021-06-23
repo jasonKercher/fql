@@ -22,6 +22,7 @@ typedef int (*reset_fn)(struct reader*);
 enum read_type {
 	READ_UNDEFINED,
 	READ_LIBCSV,
+	READ_FIXED_BYTE,
 	READ_SUBQUERY,
 };
 
@@ -35,6 +36,7 @@ struct reader {
 	reset_fn reset__;
 	string file_name;
 	size_t max_col_idx;
+	unsigned skip_rows;
 	_Bool eof;
 };
 typedef struct reader reader;
