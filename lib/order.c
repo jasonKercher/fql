@@ -114,9 +114,7 @@ int order_preresolve_columns(order* self, fqlselect* select)
 			try_(column_get_int(&ordinal, *it, NULL));
 
 			if (ordinal <= 0 || ordinal > (int)select_cols->size) {
-				fprintf(stderr,
-				        "Ordinal `%ld' out of range\n",
-				        ordinal);
+				fprintf(stderr, "Ordinal `%ld' out of range\n", ordinal);
 				return FQL_FAIL;
 			}
 			result = vec_at(select_cols, ordinal - 1);
@@ -201,9 +199,7 @@ int order_add_record(order* self, vec* recs)
 		case FIELD_STRING: {
 			stringview sv;
 			try_(column_get_stringview(&sv, cols[i], recs));
-			flex_push_back(&self->order_data,
-			               (void*)sv.data,
-			               sv.len);
+			flex_push_back(&self->order_data, (void*)sv.data, sv.len);
 			break;
 		}
 		default:
@@ -243,10 +239,8 @@ int _compare(const void* a, const void* b, void* data)
 			break;
 		}
 		case FIELD_STRING: {
-			stringview sv0 =
-			        flex_pair_at(&orderby->order_data, idx0);
-			stringview sv1 =
-			        flex_pair_at(&orderby->order_data, idx1);
+			stringview sv0 = flex_pair_at(&orderby->order_data, idx0);
+			stringview sv1 = flex_pair_at(&orderby->order_data, idx1);
 			ret = stringview_compare_nocase_rtrim(&sv0, &sv1);
 		}
 		default:;
@@ -301,13 +295,9 @@ int _order_select_api(order* self, process* proc)
 int _order_select(order* self, process* proc)
 {
 	struct _entry* it = vec_begin(&self->entries);
-	for (; it != vec_end(&self->entries)
-	       && proc->rows_affected < proc->top_count;
+	for (; it != vec_end(&self->entries) && proc->rows_affected < proc->top_count;
 	     ++it) {
-		fprintf(self->out_file,
-		        "%.*s",
-		        it->len,
-		        &self->mmap[it->offset]);
+		fprintf(self->out_file, "%.*s", it->len, &self->mmap[it->offset]);
 		++proc->rows_affected;
 	}
 
@@ -337,8 +327,7 @@ int order_sort(order* self)
 
 	self->file_size = sb.st_size;
 
-	self->mmap =
-	        mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, self->fd, 0);
+	self->mmap = mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, self->fd, 0);
 
 	if (self->mmap == MAP_FAILED) {
 		perror(self->in_filename);

@@ -3,7 +3,7 @@
 #include "fql.h"
 #include "misc.h"
 
-void libcsv_reader_free(void* csv)
+void libcsv_free(void* csv)
 {
 	csv_reader_close(csv);
 	csv_reader_free(csv);
@@ -14,11 +14,11 @@ int libcsv_get_record(reader* self, record* rec)
 	struct csv_reader* csv = self->reader_data;
 
 	if (self->eof) {
-		return csv_reader_reset(csv);
+		//return csv_reader_reset(csv);
+		return FQL_FAIL;
 	}
 
-	int ret =
-	        csv_get_record_to(csv, rec->libcsv_rec, self->max_col_idx + 1);
+	int ret = csv_get_record_to(csv, rec->libcsv_rec, self->max_col_idx + 1);
 	switch (ret) {
 	case CSV_GOOD:
 		break;
@@ -29,8 +29,10 @@ int libcsv_get_record(reader* self, record* rec)
 		return EOF;
 	}
 
-	/* this should really never change...
-	 * _guess_row_count relies on this
+	/* redundant:
+	 * this should really never change...
+	 * _guess_row_count relies on this...
+	 * but it probably shouldn't...
 	 */
 	vec_resize(rec->fields, rec->libcsv_rec->size);
 

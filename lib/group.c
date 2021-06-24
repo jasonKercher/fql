@@ -49,7 +49,7 @@ void distinct_destroy(group* self)
 
 void group_add_column(group* self, column* col)
 {
-	col->location = self->columns.size;
+	col->index = self->columns.size;
 	vec_push_back(&self->columns, &col);
 	if (col->expr != EXPR_AGGREGATE) {
 		vec_add_one(&self->_composite);

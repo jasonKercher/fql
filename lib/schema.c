@@ -78,7 +78,7 @@ void schema_preflight(schema* self)
 	unsigned i = 0;
 	column** col = vec_begin(self->columns);
 	for (; i < self->columns->size; ++i) {
-		col[i]->location = i;
+		col[i]->index = i; /* this is occasionally redundant */
 		multimap_set(self->col_map, col[i]->alias.data, &col[i]);
 	}
 
@@ -209,7 +209,7 @@ void schema_assign_header(table* table, record* rec, int src_idx)
 		column* new_col = new_(column, EXPR_COLUMN_NAME, col_str.data, "");
 		schema_add_column(table->schema, new_col, src_idx);
 
-		new_col->location = i++;
+		new_col->index = i++;
 		new_col->table = table;
 		new_col->field_type = FIELD_STRING;
 
@@ -296,21 +296,22 @@ int _add_column_from_rec(table* table,
 	string col_str;
 	string_construct_from_stringview(&col_str, &field_name);
 	column* new_col = new_(column, EXPR_COLUMN_NAME, col_str.data, "");
+	new_col->table = table;
 	string_destroy(&col_str);
 	switch (rec->size) {
 	case 1: /* <field>, assume char */
 		table->reader->type = READ_LIBCSV;
-		new_col->location = self->columns->size;
 		new_col->field_type = FIELD_STRING;
 		break;
 	case 2: /* <field>, <type> */
 		table->reader->type = READ_LIBCSV;
-		new_col->location = self->columns->size;
 		/* TODO type parsing */
 		new_col->field_type = FIELD_STRING;
 		break;
 	case 3: { /* <field>, <offset>, <type> */
 		table->reader->type = READ_FIXED_BYTE;
+		/* TODO type parsing */
+		new_col->field_type = FIELD_STRING;
 		long width = 0;
 		stringview sv = {rec->fields[1].data, rec->fields[1].len};
 		string* dup = string_from_stringview(&sv);
@@ -331,6 +332,7 @@ int _add_column_from_rec(table* table,
 		*running_offset += width;
 	}
 	}
+	new_col->index = self->columns->size;
 	schema_add_column(self, new_col, src_idx);
 	return rec->size;
 }
@@ -392,6 +394,7 @@ int _parse_schema_file(table* table, struct fql_handle* fql, int src_idx)
 			break;
 		}
 	}
+	table->reader->reclen = running_offset;
 
 parse_schema_return:
 	csv_record_free(assignment_rec);
@@ -431,11 +434,12 @@ int _load_by_name(table* table, struct fql_handle* fql, int src_idx)
 
 int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 {
-	if (table->schema && !vec_empty(table->schema->columns)) {
+	schema* self = table->schema;
+	if (self && !vec_empty(self->columns)) {
 		return FQL_GOOD; /* self already set */
 	}
 
-	if (table->schema && table->schema->name) {
+	if (self && self->name) {
 		/* If we are loading the schema by name, we assume
 		 * data begins on the first row. The default schema
 		 * assumes that the first row is headers
@@ -448,6 +452,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		schema_resolve_query(fql, table->subquery);
 		fqlselect* select = table->subquery->op;
 		table->schema = select->schema;
+		self = table->schema;
 		table->reader->type = READ_SUBQUERY;
 	} else {
 		/* if we've made it this far, we want to try
@@ -457,15 +462,19 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		 * This is the "default schema".
 		 */
 		try_(schema_resolve_file(table, fql->props.strictness));
-		if (vec_empty(table->schema->columns)) {
+		if (vec_empty(self->columns)) {
 			table->reader->type = READ_LIBCSV;
 		}
 	}
-	reader_assign(table->reader, table);
+	try_(reader_assign(table->reader, table));
 
-	/* skip here if we *now* know self */
-	if (!vec_empty(table->schema->columns)) {
+	switch (table->reader->type) {
+	case READ_FIXED_BYTE:
+		schema_preflight(self);
+	case READ_SUBQUERY:
 		return FQL_GOOD;
+	case READ_LIBCSV:
+	default:;
 	}
 
 	record rec;
@@ -473,10 +482,23 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	table->reader->max_col_idx = INT_MAX;
 	table->reader->get_record__(table->reader, &rec);
 	const char* delim = table_get_delim(table);
-	strncpy_(table->schema->delimiter, delim, DELIM_LEN_MAX);
+	strncpy_(self->delimiter, delim, DELIM_LEN_MAX);
 	table->reader->max_col_idx = 0;
 
-	schema_assign_header(table, &rec, src_idx);
+	/* redundant if default schema */
+	table->reader->reset__(table->reader);
+
+	if (vec_empty(self->columns)) {
+		schema_assign_header(table, &rec, src_idx);
+	} else {
+		/* TODO: in the future, maybe just set these SQL NULL */
+		column** it = vec_at(self->columns, rec.fields->size);
+		for (; it != vec_end(self->columns); ++it) {
+			delete_(column, *it);
+		}
+		vec_resize(self->columns, rec.fields->size);
+		schema_preflight(self);
+	}
 	record_destroy(&rec);
 
 	return FQL_GOOD;

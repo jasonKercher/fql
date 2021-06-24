@@ -25,6 +25,7 @@ column* column_construct(column* col,
 	        {0},             /* buf */
 	        FIELD_UNDEFINED, /* field_type */
 	        {0},             /* field */
+	        0,               /* index */
 	        0,               /* location */
 	        0,               /* width */
 	        0,               /* src_idx */
@@ -93,8 +94,8 @@ void column_link(struct column* dest, struct column* src)
 	if (src_table == NULL) {
 		return;
 	}
-	if (src->location > src_table->reader->max_col_idx) {
-		src_table->reader->max_col_idx = src->location;
+	if (src->index > src_table->reader->max_col_idx) {
+		src_table->reader->max_col_idx = src->index;
 	}
 }
 
@@ -183,12 +184,12 @@ int column_get_int(long* ret, column* col, vec* recs)
 	case EXPR_COLUMN_NAME: {
 		column* src_col = col->data_source;
 		record** rec = vec_at(recs, src_col->src_idx);
-		if ((*rec)->fields->size <= src_col->location) {
+		if ((*rec)->fields->size <= src_col->index) {
 			string_clear(&col->buf);
 			*ret = 0;
 			return FQL_GOOD;
 		}
-		stringview* sv = vec_at((*rec)->fields, src_col->location);
+		stringview* sv = vec_at((*rec)->fields, src_col->index);
 		string_copy_from_stringview(&col->buf, sv);
 		fail_if_(str2long(ret, col->buf.data));
 		return FQL_GOOD;
@@ -223,12 +224,12 @@ int column_get_float(double* ret, column* col, vec* recs)
 	case EXPR_COLUMN_NAME: {
 		column* src_col = col->data_source;
 		record** rec = vec_at(recs, src_col->src_idx);
-		if ((*rec)->fields->size <= src_col->location) {
+		if ((*rec)->fields->size <= src_col->index) {
 			string_clear(&col->buf);
 			*ret = 0;
 			return FQL_GOOD;
 		}
-		stringview* sv = vec_at((*rec)->fields, src_col->location);
+		stringview* sv = vec_at((*rec)->fields, src_col->index);
 		string_copy_from_stringview(&col->buf, sv);
 		fail_if_(str2double(ret, col->buf.data));
 		return FQL_GOOD;
@@ -263,13 +264,13 @@ int column_get_stringview(stringview* ret, column* col, vec* recs)
 	case EXPR_COLUMN_NAME: {
 		column* src_col = col->data_source;
 		record** rec = vec_at(recs, src_col->src_idx);
-		if ((*rec)->fields->size <= src_col->location) {
+		if ((*rec)->fields->size <= src_col->index) {
 			string_clear(&col->buf);
 			ret->data = col->buf.data;
 			ret->len = 0;
 			return FQL_GOOD;
 		}
-		stringview* sv = vec_at((*rec)->fields, src_col->location);
+		stringview* sv = vec_at((*rec)->fields, src_col->index);
 		ret->data = sv->data;
 		ret->len = sv->len;
 		return FQL_GOOD;

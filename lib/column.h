@@ -31,6 +31,7 @@ struct column {
 	string buf;
 	enum field_type field_type;
 	union field field;
+	unsigned index;
 	unsigned location;
 	unsigned width;
 	int src_idx;

@@ -1,10 +1,6 @@
 #ifndef TABLE_H
 #define TABLE_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "util/stack.h"
 #include "util/hashmap.h"
 #include "util/stringy.h"
@@ -60,9 +56,5 @@ typedef struct hashjoin hashjoin;
 struct hashjoin* hashjoin_construct(struct hashjoin*);
 void hashjoin_destroy(struct hashjoin*);
 void table_hash_join_init(struct table*);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* TABLE_H */
