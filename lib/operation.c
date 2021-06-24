@@ -33,16 +33,6 @@ void op_preop(struct fql_handle* fql)
 	}
 }
 
-_Bool op_has_delim(enum op* op)
-{
-	switch (*op) {
-	case OP_SELECT:
-		return fqlselect_has_delim((fqlselect*)op);
-	default:
-		return true;
-	}
-}
-
 void op_set_delim(enum op* op, const char* delim)
 {
 	switch (*op) {
@@ -53,15 +43,15 @@ void op_set_delim(enum op* op, const char* delim)
 	}
 }
 
-//int op_finish(enum op* op)
-//{
-//	switch(*op) {
-//	case OP_SELECT:
-//		return fqlselect_finish((fqlselect*)op);
-//	default:
-//		return FQL_FAIL;
-//	}
-//}
+void op_set_schema(enum op* op, const schema* src_schema)
+{
+	switch (*op) {
+	case OP_SELECT:
+		fqlselect_set_schema((fqlselect*)op, src_schema);
+		break;
+	default:;
+	}
+}
 
 void op_preflight(query* query)
 {

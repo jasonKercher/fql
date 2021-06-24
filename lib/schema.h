@@ -15,6 +15,7 @@ struct schema {
 	string* name;
 	char delimiter[DELIM_LEN_MAX];
 	int strictness;
+	bool is_default;
 };
 typedef struct schema schema;
 

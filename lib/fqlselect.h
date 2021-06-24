@@ -27,8 +27,8 @@ typedef struct fqlselect fqlselect;
 struct fqlselect* fqlselect_construct(struct fqlselect*);
 void fqlselect_destroy(struct fqlselect*);
 
-_Bool fqlselect_has_delim(struct fqlselect*);
-void fqlselect_set_delim(struct fqlselect*, const char*);
+void fqlselect_set_delim(struct fqlselect*, const char* delim);
+void fqlselect_set_schema(struct fqlselect*, const struct schema*);
 void fqlselect_add_column(struct fqlselect*, struct column*);
 int fqlselect_connect_api(struct query*, struct vec*);
 void fqlselect_apply_process(struct query*, struct fql_plan*);

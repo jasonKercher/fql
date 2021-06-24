@@ -1,10 +1,11 @@
 #ifndef OPERATION_H
 #define OPERATION_H
 
-#include <stdbool.h>
 #include "fqlhandle.h"
 #include "fqlplan.h"
 #include "util/queue.h"
+
+struct schema;
 
 /** operation **/
 enum op {
@@ -16,8 +17,8 @@ enum op {
 
 struct vec* op_get_validation_list(void* op);
 void op_preop(struct fql_handle*);
-_Bool op_has_delim(enum op*);
-void op_set_delim(enum op*, const char*);
+void op_set_schema(enum op*, const struct schema*);
+void op_set_delim(enum op*, const char* delim);
 void op_apply_process(struct query*, struct fql_plan*);
 void op_preflight(struct query*);
 void op_destroy(enum op*);

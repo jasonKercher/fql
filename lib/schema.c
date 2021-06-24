@@ -6,6 +6,7 @@
 #include "fql.h"
 #include "misc.h"
 #include "query.h"
+#include "stringview.h"
 #include "table.h"
 #include "group.h"
 #include "order.h"
@@ -28,6 +29,7 @@ schema* schema_construct(schema* self)
 	        NULL,                 /* name */
 	        "",                   /* delimiter */
 	        0,                    /* strictness */
+	        true,                 /* is_default */
 	};
 
 	return self;
@@ -440,12 +442,19 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	}
 
 	if (self && self->name) {
-		/* If we are loading the schema by name, we assume
-		 * data begins on the first row. The default schema
-		 * assumes that the first row is headers
-		 */
-		table->reader->skip_rows = 0;
-		try_(_load_by_name(table, fql, src_idx));
+		/* If the name of the schema is default, do nothing */
+		const char* DEFAULT = "default";
+		stringview default_sv = {DEFAULT, 7};
+		stringview schema_name_sv = {self->name->data, self->name->size};
+		if (stringview_compare_nocase_rtrim(&default_sv, &schema_name_sv)) {
+			/* If we are loading the schema by name, we assume
+			 * data begins on the first row. The default schema
+			 * assumes that the first row is headers
+			 */
+			self->is_default = false;
+			table->reader->skip_rows = 0;
+			try_(_load_by_name(table, fql, src_idx));
+		}
 	}
 
 	if (table->source_type == SOURCE_SUBQUERY) {
@@ -462,7 +471,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		 * This is the "default schema".
 		 */
 		try_(schema_resolve_file(table, fql->props.strictness));
-		if (vec_empty(self->columns)) {
+		if (self->is_default) {
 			table->reader->type = READ_LIBCSV;
 		}
 	}
@@ -488,7 +497,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	/* redundant if default schema */
 	table->reader->reset__(table->reader);
 
-	if (vec_empty(self->columns)) {
+	if (self->is_default) {
 		schema_assign_header(table, &rec, src_idx);
 	} else {
 		/* TODO: in the future, maybe just set these SQL NULL */
@@ -937,8 +946,8 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 		table* table = vec_at(aquery->sources, i);
 		try_(schema_resolve_source(fql, table, i));
 
-		if (i == 0 && !op_has_delim(aquery->op)) {
-			op_set_delim(aquery->op, table->schema->delimiter);
+		if (i == 0) {
+			op_set_schema(aquery->op, table->schema);
 		}
 
 		/* Validate columns used in JOIN clauses */

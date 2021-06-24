@@ -43,14 +43,17 @@ void fqlselect_destroy(fqlselect* self)
 	delete_(schema, self->schema);
 }
 
-_Bool fqlselect_has_delim(fqlselect* self)
-{
-	return self->schema->delimiter[0];
-}
-
 void fqlselect_set_delim(fqlselect* self, const char* delim)
 {
 	strncpy_(self->schema->delimiter, delim, DELIM_LEN_MAX);
+}
+
+void fqlselect_set_schema(fqlselect* self, const schema* src_schema)
+{
+	if (!self->schema->delimiter[0]) {
+		fqlselect_set_delim(self, src_schema->delimiter);
+	}
+	self->schema->is_default = src_schema->is_default;
 }
 
 void fqlselect_add_column(fqlselect* self, column* col)
@@ -89,7 +92,7 @@ int _expand_asterisk(vec* col_vec, table* table, unsigned src_idx, unsigned* col
 	return table->schema->columns->size;
 }
 
-void _expand_asterisks(query* query, _Bool force_expansion)
+void _expand_asterisks(query* query, bool force_expansion)
 {
 	fqlselect* self = query->op;
 	vec* col_vec = self->schema->columns;
@@ -286,6 +289,10 @@ void fqlselect_preflight(fqlselect* self, query* query)
 
 void fqlselect_preop(fqlselect* self, query* query)
 {
+	if (!self->schema->is_default) {
+		return;
+	}
+
 	vec header;
 	vec_construct_(&header, column*);
 
@@ -373,7 +380,6 @@ int _select_record_api(fqlselect* self, struct vec* recs)
 			string* s = field->_in;
 			string_copy_from_stringview(s, &sv);
 			field->data.s = s->data;
-
 			break;
 		}
 		default:;
@@ -458,7 +464,7 @@ int _select_record_to_list(fqlselect* self, vec* recs)
 
 int _select_record_to_const(fqlselect* self, vec* recs)
 {
-	//_Bool fail_if_on_result = (self->const_dest->expr == EXPR_CONST) {
+	//bool fail_if_on_result = (self->const_dest->expr == EXPR_CONST) {
 	if (self->const_dest->expr == EXPR_CONST) {
 		fputs("subquery returned more than 1 value as expression\n", stderr);
 		return FQL_FAIL;
