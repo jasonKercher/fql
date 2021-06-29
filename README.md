@@ -6,45 +6,101 @@
 |_|  \__, |_|
         |_|
 ```
-This is an [ANTLR](https://www.antlr.org/) powered text processing language for Linux.  Similar in spirit to awk which uses a C-like syntax, fql uses SQL (T-SQL specifically).  From `fql --help`:
+This is an [ANTLR](https://www.antlr.org/) powered text processing language for Linux.  Similar in spirit to awk which uses a C-like syntax, fql uses SQL (T-SQL specifically).
 
+
+### What can it do?
+
+fql gives you the power of SQL for your delimited or fixed-width data files without the need to import them into a database.  fql aims to be fast as well as memory efficient.  Most queries should use relatively a low amount of memory. Keep in mind that memory consumption increases for things like GROUP BY, ORDER BY and JOIN. Queries are case insensitive so `SELECT * FROM T1 WHERE FOO = 'BAR'` is the same as `select * from t1 where foo = 'bar'`. Currently, fql can only do SELECT statements though it should be able to handle any amount of complexity with a handful of exceptions.
+
+### What can it *not* do?
+
+There is not yet any concept of NULL.  Because of this LEFT, RIGHT and FULL JOIN are not available.  However, there is a workaround for single key joins.  This will not (currently) work:
+
+```sql
+select t1.*
+from t1
+left join t2
+	on t1.foo = t2.foo
+where t2.foo is NULL
 ```
-Usage fql -[bCdhHOpv] [-sS delim] [--strict] [file.sql]
 
-This is a text processing program using SQL (Transact-SQL specifically).
+To get around this, just use an IN statement with a subquery:
 
-If no file argument is provided, queries are read from stdin. Files are
-referenced as tables in the query via a priority list. For example, given
-the following query: 'SELECT * FROM t1', we match files on these rules:
-
-    RULE                   EXAMPLE MATCHES
-    exact match            t1
-    exact ignoring case    T1,t1
-    ignore extension       t1.txt,t1.csv
-    ignore extension/case  t1.txt,T1.csv
-
-To match t1.txt exactly (or match any filename with dots in them), use
-'select * from [t1.txt]'. Without the [], the parser is going to assume
-t1 is the schema for a table txt. Do the same for a filename with
-white space as the parser will treat this as '[TABLE] [ALIAS]'.
-
-Optional arguments:
- -b, --char-as-byte   scalar functions assume single-byte encoding
- -C, --cartesian      use cartesian join algorithm (less memory use)
- -d, --dry-run        validate and build a plan, but do not execute
- -h, --no-header      for default schema, do not print a header
- -O, --override       allow processing of unsupported language features
- -p, --print          print the processing plan
- -s, --in-delim arg   for default schema, specify an input seperator
- -S, --out-delim arg  for default schema, speficy seperator for SELECT
- -v, --verbose        print additional information to stderr
- --strict             see strict rules below...
-
-Strict mode will only allow exact matches to files to be used as tables.
-It will also throw errors if you try to select foo from a file with 2:
-foo,bar,foo
-a,b,c
+```sql
+select *
+from t1
+where foo not in (select foo from t2)
 ```
+
+There is an interface built to scalar and aggregate functions, but many functions are not implemented yet. 
+
+Other missing features:
+ - windowed-functions
+ - temp tables not so temp
+ - TOP PERCENT
+ - WITH
+ - UNION
+ - COUNT(DISTINCT [col])
+
+### Is it fast?
+
+Here is a naive benchmark vs other similar projects:
+ - [textql](https://github.com/dinedal/textql)
+ - [q](http://harelba.github.io/q)
+ - [csvsql](https://csvkit.readthedocs.io/en/latest/scripts/csvsql.html)
+
+Benchmarks are performed on 2 tables of generic random data of 2 000 000 records (including header):
+```sh
+:) wc -l t2.temp
+2000000 t2.temp
+:) head -10 t2.temp
+foo     bar     baz
+f493263f        5b      7791
+c79cfff4        e0      19075
+3157f48c        8e      83146
+7f34ca2e        82      19950
+a464be18        97      95934
+bb193135        6c      38038
+c6c04cf4        57      185937
+a36ab33b        5b      45490
+a05c7214        b1      143027
+```
+
+**Tests**
+1. JOIN t1 to t2 on foo
+2. `COUNT(*)` GROUP BY bar
+3. SELECT with LIKE
+4. ORDER BY
+
+**textql**
+
+1. `textql -output-dlm tab -dlm tab -header -sql "select * from t1 join t2 on t1.foo = t2.foo" t1.temp t2.temp`
+2. `textql -output-dlm tab -dlm tab -header -sql "select bar,count(*) from t1 group by bar" t1.temp`
+3. `textql -output-dlm tab -dlm tab -header -sql "select foo from t1 where foo like '%aa[0-9]aa%'" t1.temp`
+4. `textql -output-dlm tab -dlm tab -header -sql "select * from t1 order by foo, baz desc" t1.temp`
+
+**q**
+
+1. `q -Ht "select * from t1.temp t1 join ./t2.temp t2 on t1.foo = t2.foo"`
+2. `q -Ht "select bar,count(*) from t1.temp group by bar"`
+3. `q -Ht "select foo from t1.temp where foo like '%aa[0-9]aa%'"`
+4. `q -Ht "select * from t1.temp order by foo, baz desc"`
+
+**csvsql**
+
+1. ``
+2. ``
+3. ``
+4. ``
+
+### Development Priorities
+
+1. UPDATE
+2. DELETE
+3. NULL
+4. Windowed-functions
+
 ### Installation
 Bear with me because I'm new to autotools.  There is a configure script, but it is not checking everything it should.
 
