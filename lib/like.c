@@ -35,7 +35,7 @@ void _extract_character_ranges(vec* ranges, string* likebuf)
 	const char* start = begin;
 	char* end = NULL;
 
-	char key[10];
+	char key[32];
 
 	while ((start = memchr(start, '[', likebuf->size - (start - begin)))
 	       && (end = memchr(start, ']', likebuf->size - (start - begin)))) {
@@ -95,10 +95,7 @@ void _extract_character_ranges(vec* ranges, string* likebuf)
 			if (open <= 0) {
 				end[0] = '\\';
 				char end_bracket = ']';
-				vec_insert(likebuf,
-				           end + 1,
-				           &end_bracket,
-				           &end_bracket);
+				vec_insert(likebuf, end + 1, &end_bracket, &end_bracket);
 				search = end + 3;
 			} else {
 				open--;
@@ -130,26 +127,23 @@ int like_to_regex(like* self, const stringview sql_like)
 	string_find_replace(likebuf, "%", ".*");
 	string_find_replace(likebuf, "_", ".");
 
-	char key[10];
+	char key[32];
 	unsigned i = 0;
 	for (; i < self->ranges.size; ++i) {
 		sprintf(key, "[[%d]]", i);
-		string_find_replace(likebuf,
-		                    key,
-		                    string_c_str(vec_at(&self->ranges, i)));
+		string_find_replace(likebuf, key, string_c_str(vec_at(&self->ranges, i)));
 	}
 
 	string_sprintf(&self->regex_buffer, "^%s$", string_c_str(likebuf));
 
 	int pcre_error = 0;
 	PCRE2_SIZE pcre_error_offset = 0;
-	self->regex =
-	        pcre2_compile((PCRE2_SPTR)string_c_str(&self->regex_buffer),
-	                      self->regex_buffer.size,
-	                      0,
-	                      &pcre_error,
-	                      &pcre_error_offset,
-	                      NULL);
+	self->regex = pcre2_compile((PCRE2_SPTR)string_c_str(&self->regex_buffer),
+	                            self->regex_buffer.size,
+	                            PCRE2_CASELESS,
+	                            &pcre_error,
+	                            &pcre_error_offset,
+	                            NULL);
 	if (self->regex == NULL) {
 		fprintf(stderr,
 		        "Failed to generate regular expression from `%.*s'\n",
