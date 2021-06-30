@@ -78,7 +78,7 @@ a36ab33b        5b      45490
 a05c7214        b1      143027
 ```
 
-**RESULTS:**
+**RESULTS**
 
 1. JOIN t1 to t2 on foo
 
@@ -89,7 +89,7 @@ shell tools|6.133s
 sqlite3|20.275s
 q|53.986s
 csvsql|2m50.405s
-textql|N/A *
+textql|N/A #
 
 2. `COUNT(*)` GROUP BY bar
 
@@ -107,8 +107,8 @@ csvsql|1m57.014s
 
 program|time
 ---|---
-sqlite3|0.206s* *
-shell tools|0.417s
+sqlite3|0.206s *
+hell tools|0.417s
 fql|1.239s
 q|13.737s *
 textql|14.154s
@@ -130,50 +130,62 @@ csvsql|2m6.498s
 
 **fql**
 
-1. `fql <<< "select * from t1 join t2 on t1.foo = t2.foo"`
-2. `fql <<< "select bar, count(*) from t1 group by bar"`
-3. `fql <<< "select foo from t1 where foo like '%aa[0-9]aa%'"`
-4. `fql <<< "select * from t1 order by foo, baz desc"`
+```sh
+fql <<< "select * from t1 join t2 on t1.foo = t2.foo"      # 1
+fql <<< "select bar, count(*) from t1 group by bar"        # 2
+fql <<< "select foo from t1 where foo like '%aa[0-9]aa%'"  # 3
+fql <<< "select * from t1 order by foo, baz desc"          # 4
+```
 
 **textql**
 
-1. `textql -output-dlm tab -dlm tab -header -sql "select * from t1 join t2 on t1.foo = t2.foo" t1.temp t2.temp`
- - could not get this to work.  It kept trying to treat the data as numeric...
-2. `textql -output-dlm tab -dlm tab -header -sql "select bar,count(*) from t1 group by bar" t1.temp`
-3. `textql -output-dlm tab -dlm tab -header -sql "select foo from t1 where foo like '%aa[0-9]aa%'" t1.temp`
-4. `textql -output-dlm tab -dlm tab -header -sql "select * from t1 order by foo, baz desc" t1.temp`
+```sh
+# could not get this to work.  It kept trying to treat the data as numeric...
+textql -output-dlm tab -dlm tab -header -sql "select * from t1 join t2 on t1.foo = t2.foo" t1.temp t2.temp  # 1
+textql -output-dlm tab -dlm tab -header -sql "select bar,count(*) from t1 group by bar" t1.temp             # 2
+textql -output-dlm tab -dlm tab -header -sql "select foo from t1 where foo like '%aa[0-9]aa%'" t1.temp      # 3
+textql -output-dlm tab -dlm tab -header -sql "select * from t1 order by foo, baz desc" t1.temp              # 4
+```
 
 **q**
 
-1. `q -Ht "select * from t1.temp t1 join ./t2.temp t2 on t1.foo = t2.foo"`
-2. `q -Ht "select bar,count(*) from t1.temp group by bar"`
-3. `q -Ht "select foo from t1.temp where foo like '%aa_aa%'"`
- - Couldn't figure out how to do [0-9]...
-4. `q -Ht "select * from t1.temp order by foo, baz desc"`
+```sh
+q -Ht "select * from t1.temp t1 join ./t2.temp t2 on t1.foo = t2.foo" # 1
+q -Ht "select bar,count(*) from t1.temp group by bar"                 # 2
+# Couldn't figure out how to do [0-9]...
+q -Ht "select foo from t1.temp where foo like '%aa_aa%'"              # 3
+q -Ht "select * from t1.temp order by foo, baz desc"                  # 4
+```
 
 **csvsql**
 
-1. `csvsql -t --query "select * from t1 join t2 on t1.foo = t2.foo" t1.temp t2.temp`
-2. `csvsql -t --query "select bar,count(*) from t1 group by bar" t1.temp`
-3. `csvsql -t --query "select foo from t1 where foo like '%aa[0-9]aa%'" t1.temp`
- - Couldn't figure out how to do [0-9]...
-4. `csvsql -t --query "select * from t1 order by foo, baz desc" t1.temp`
+```sh
+csvsql -t --query "select * from t1 join t2 on t1.foo = t2.foo" t1.temp t2.temp  # 1
+csvsql -t --query "select bar,count(*) from t1 group by bar" t1.temp             # 2
+# Couldn't figure out how to do [0-9]...
+csvsql -t --query "select foo from t1 where foo like '%aa[0-9]aa%'" t1.temp      # 3
+csvsql -t --query "select * from t1 order by foo, baz desc" t1.temp              # 4
+```
 
 **sqlite**
 
-1. `sqlite3 MYDB "select * from t1 join t2 on t1.foo = t2.foo"`
-2. `sqlite3 MYDB "select bar,count(*) from t1 group by bar"`
-3. `sqlite3 MYDB "select foo from t1 where foo like '%aa_aa%'"`
- - Couldn't figure out how to do [0-9]...
-4. `sqlite3 MYDB "select * from t1 order by foo, baz desc"`
+```sh
+sqlite3 MYDB "select * from t1 join t2 on t1.foo = t2.foo"    # 1
+sqlite3 MYDB "select bar,count(*) from t1 group by bar"       # 2
+# Couldn't figure out how to do [0-9]...
+sqlite3 MYDB "select foo from t1 where foo like '%aa_aa%'"    # 3
+sqlite3 MYDB "select * from t1 order by foo, baz desc"        # 4
+```
 
 **shell tools**
 
-1. `join -o 1.1 1.2 1.3 2.1 2.2 2.3 <(sort t1.temp) <(sort t2.temp)`
-2. `gawk 'NR>1{arr[$2]++}END{for (a in arr) print a, arr[a]}' t1.temp`
-3. `gawk '{if ($1 ~ /.*aa[0-9]aa.*/) {print $1}}' t1.temp`
-4. `sort -k1 -k2 t1.temp`
- - Actually couldn't figure out how to sort the second key descending
+```sh
+join -o 1.1 1.2 1.3 2.1 2.2 2.3 <(sort t1.temp) <(sort t2.temp)    # 1
+gawk 'NR>1{arr[$2]++}END{for (a in arr) print a, arr[a]}' t1.temp  # 2
+gawk '{if ($1 ~ /.*aa[0-9]aa.*/) {print $1}}' t1.temp              # 3
+# couldn't figure out how to sort the second key descending
+sort -k1 -k2 t1.temp                                               # 4
+```
 
 
 ### Installation
