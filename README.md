@@ -33,7 +33,7 @@ from t1
 where foo not in (select foo from t2)
 ```
 
-There is an interface built to scalar and aggregate functions, but many functions are not implemented yet. Speaking of not implemented functions, I never implemented cast. Until then, you can always implicitly cast:
+There is an interface for scalar and aggregate functions, but many functions are not yet implemented. Speaking of not implemented functions, I never implemented cast. Until then, you can always implicitly cast:
 
 ```sql
 select number_field + 0 from [file.txt] -- int
@@ -48,6 +48,7 @@ Other missing features:
  - WITH
  - UNION
  - COUNT(DISTINCT [col])
+ - CASE statements
 
 ### Is it fast?
 
@@ -55,9 +56,8 @@ Here is a naive benchmark vs other similar projects:
 - [textql](https://github.com/dinedal/textql)
 - [q](http://harelba.github.io/q)
 - [csvsql](https://csvkit.readthedocs.io/en/latest/scripts/csvsql.html)
-- [sqlite](https://www.sqlite.org/index.html)
- - Just for comparison, let's import the tables into sqlite ahead of time.
-- base benchmark doing it manually with shell tools
+- [sqlite](https://www.sqlite.org/index.html): Just for comparison, let's import the tables into sqlite ahead of time.
+- base benchmark with shell tools
 
 
 Benchmarks are performed on 2 tables of generic random data of 2 000 000 records (not including header).  The gencsv.sh script can be used to build these files: `./gencsv.sh 2000001 > t1.temp` and `./gencsv.sh 2000001`:
@@ -77,60 +77,6 @@ c6c04cf4        57      185937
 a36ab33b        5b      45490
 a05c7214        b1      143027
 ```
-
-**Tests**
-1. JOIN t1 to t2 on foo
-2. `COUNT(*)` GROUP BY bar
-3. SELECT with LIKE '%aa[0-9]aa%'
-4. ORDER BY
-
-
-**fql**
-
-1. `fql <<< "select * from t1 join t2 on t1.foo = t2.foo"`
-2. `fql <<< "select bar, count(*) from t1 group by bar"`
-3. `fql <<< "select foo from t1 where foo like '%aa[0-9]aa%'"`
-4. `fql <<< "select * from t1 order by foo, baz desc"`
-
-**textql**
-
-1. `textql -output-dlm tab -dlm tab -header -sql "select * from t1 join t2 on t1.foo = t2.foo" t1.temp t2.temp`
- - could not get this to work.  It kept trying to treat the data as numeric...
-2. `textql -output-dlm tab -dlm tab -header -sql "select bar,count(*) from t1 group by bar" t1.temp`
-3. `textql -output-dlm tab -dlm tab -header -sql "select foo from t1 where foo like '%aa[0-9]aa%'" t1.temp`
-4. `textql -output-dlm tab -dlm tab -header -sql "select * from t1 order by foo, baz desc" t1.temp`
-
-**q**
-
-1. `q -Ht "select * from t1.temp t1 join ./t2.temp t2 on t1.foo = t2.foo"`
-2. `q -Ht "select bar,count(*) from t1.temp group by bar"`
-3. `q -Ht "select foo from t1.temp where foo like '%aa_aa%'"`
- - Couldn't figure out how to do [0-9]...
-4. `q -Ht "select * from t1.temp order by foo, baz desc"`
-
-**csvsql**
-
-1. `csvsql -t --query "select * from t1 join t2 on t1.foo = t2.foo" t1.temp t2.temp`
-2. `csvsql -t --query "select bar,count(*) from t1 group by bar" t1.temp`
-3. `csvsql -t --query "select foo from t1 where foo like '%aa[0-9]aa%'" t1.temp`
- - Couldn't figure out how to do [0-9]...
-4. `csvsql -t --query "select * from t1 order by foo, baz desc" t1.temp`
-
-**sqlite**
-
-1. `sqlite3 MYDB "select * from t1 join t2 on t1.foo = t2.foo"`
-2. `sqlite3 MYDB "select bar,count(*) from t1 group by bar"`
-3. `sqlite3 MYDB "select foo from t1 where foo like '%aa_aa%'"`
- - Couldn't figure out how to do [0-9]...
-4. `sqlite3 MYDB "select * from t1 order by foo, baz desc"`
-
-**shell tools**
-
-1. `join -o 1.1 1.2 1.3 2.1 2.2 2.3 <(sort t1.temp) <(sort t2.temp)`
-2. `gawk 'NR>1{arr[$2]++}END{for (a in arr) print a, arr[a]}' t1.temp`
-3. `gawk '{if ($1 ~ /.*aa[0-9]aa.*/) {print $1}}' t1.temp`
-4. `sort -k1 -k2 t1.temp`
- - Actually couldn't figure out how to sort the second key descending
 
 **RESULTS:**
 
@@ -179,6 +125,55 @@ fql|6.753s
 textql|22.980s
 q|49.119s
 csvsql|2m6.498s
+
+**commands used for benchmarks**
+
+**fql**
+
+1. `fql <<< "select * from t1 join t2 on t1.foo = t2.foo"`
+2. `fql <<< "select bar, count(*) from t1 group by bar"`
+3. `fql <<< "select foo from t1 where foo like '%aa[0-9]aa%'"`
+4. `fql <<< "select * from t1 order by foo, baz desc"`
+
+**textql**
+
+1. `textql -output-dlm tab -dlm tab -header -sql "select * from t1 join t2 on t1.foo = t2.foo" t1.temp t2.temp`
+ - could not get this to work.  It kept trying to treat the data as numeric...
+2. `textql -output-dlm tab -dlm tab -header -sql "select bar,count(*) from t1 group by bar" t1.temp`
+3. `textql -output-dlm tab -dlm tab -header -sql "select foo from t1 where foo like '%aa[0-9]aa%'" t1.temp`
+4. `textql -output-dlm tab -dlm tab -header -sql "select * from t1 order by foo, baz desc" t1.temp`
+
+**q**
+
+1. `q -Ht "select * from t1.temp t1 join ./t2.temp t2 on t1.foo = t2.foo"`
+2. `q -Ht "select bar,count(*) from t1.temp group by bar"`
+3. `q -Ht "select foo from t1.temp where foo like '%aa_aa%'"`
+ - Couldn't figure out how to do [0-9]...
+4. `q -Ht "select * from t1.temp order by foo, baz desc"`
+
+**csvsql**
+
+1. `csvsql -t --query "select * from t1 join t2 on t1.foo = t2.foo" t1.temp t2.temp`
+2. `csvsql -t --query "select bar,count(*) from t1 group by bar" t1.temp`
+3. `csvsql -t --query "select foo from t1 where foo like '%aa[0-9]aa%'" t1.temp`
+ - Couldn't figure out how to do [0-9]...
+4. `csvsql -t --query "select * from t1 order by foo, baz desc" t1.temp`
+
+**sqlite**
+
+1. `sqlite3 MYDB "select * from t1 join t2 on t1.foo = t2.foo"`
+2. `sqlite3 MYDB "select bar,count(*) from t1 group by bar"`
+3. `sqlite3 MYDB "select foo from t1 where foo like '%aa_aa%'"`
+ - Couldn't figure out how to do [0-9]...
+4. `sqlite3 MYDB "select * from t1 order by foo, baz desc"`
+
+**shell tools**
+
+1. `join -o 1.1 1.2 1.3 2.1 2.2 2.3 <(sort t1.temp) <(sort t2.temp)`
+2. `gawk 'NR>1{arr[$2]++}END{for (a in arr) print a, arr[a]}' t1.temp`
+3. `gawk '{if ($1 ~ /.*aa[0-9]aa.*/) {print $1}}' t1.temp`
+4. `sort -k1 -k2 t1.temp`
+ - Actually couldn't figure out how to sort the second key descending
 
 
 ### Installation
