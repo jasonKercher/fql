@@ -126,67 +126,7 @@ textql|22.980s
 q|49.119s
 csvsql|2m6.498s
 
-**commands used for benchmarks**
-
-**fql**
-
-```sh
-fql <<< "select * from t1 join t2 on t1.foo = t2.foo"      # 1
-fql <<< "select bar, count(*) from t1 group by bar"        # 2
-fql <<< "select foo from t1 where foo like '%aa[0-9]aa%'"  # 3
-fql <<< "select * from t1 order by foo, baz desc"          # 4
-```
-
-**textql**
-
-```sh
-# could not get this to work.  It kept trying to treat the data as numeric...
-textql -output-dlm tab -dlm tab -header -sql "select * from t1 join t2 on t1.foo = t2.foo" t1.temp t2.temp  # 1
-textql -output-dlm tab -dlm tab -header -sql "select bar,count(*) from t1 group by bar" t1.temp             # 2
-textql -output-dlm tab -dlm tab -header -sql "select foo from t1 where foo like '%aa[0-9]aa%'" t1.temp      # 3
-textql -output-dlm tab -dlm tab -header -sql "select * from t1 order by foo, baz desc" t1.temp              # 4
-```
-
-**q**
-
-```sh
-q -Ht "select * from t1.temp t1 join ./t2.temp t2 on t1.foo = t2.foo" # 1
-q -Ht "select bar,count(*) from t1.temp group by bar"                 # 2
-# Couldn't figure out how to do [0-9]...
-q -Ht "select foo from t1.temp where foo like '%aa_aa%'"              # 3
-q -Ht "select * from t1.temp order by foo, baz desc"                  # 4
-```
-
-**csvsql**
-
-```sh
-csvsql -t --query "select * from t1 join t2 on t1.foo = t2.foo" t1.temp t2.temp  # 1
-csvsql -t --query "select bar,count(*) from t1 group by bar" t1.temp             # 2
-# Couldn't figure out how to do [0-9]...
-csvsql -t --query "select foo from t1 where foo like '%aa[0-9]aa%'" t1.temp      # 3
-csvsql -t --query "select * from t1 order by foo, baz desc" t1.temp              # 4
-```
-
-**sqlite**
-
-```sh
-sqlite3 MYDB "select * from t1 join t2 on t1.foo = t2.foo"    # 1
-sqlite3 MYDB "select bar,count(*) from t1 group by bar"       # 2
-# Couldn't figure out how to do [0-9]...
-sqlite3 MYDB "select foo from t1 where foo like '%aa_aa%'"    # 3
-sqlite3 MYDB "select * from t1 order by foo, baz desc"        # 4
-```
-
-**shell tools**
-
-```sh
-join -o 1.1 1.2 1.3 2.1 2.2 2.3 <(sort t1.temp) <(sort t2.temp)    # 1
-gawk 'NR>1{arr[$2]++}END{for (a in arr) print a, arr[a]}' t1.temp  # 2
-gawk '{if ($1 ~ /.*aa[0-9]aa.*/) {print $1}}' t1.temp              # 3
-# couldn't figure out how to sort the second key descending
-sort -k1 -k2 t1.temp                                               # 4
-```
-
+\* See benchmark.sh for additional notes
 
 ### Installation
 Bear with me because I'm new to autotools.  There is a configure script, but it is not checking everything it should.
