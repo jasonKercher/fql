@@ -139,11 +139,12 @@ am_libfql_la_OBJECTS = libfql_la-libfql.lo libfql_la-fqlplan.lo \
 	libfql_la-column.lo libfql_la-group.lo libfql_la-aggregate.lo \
 	libfql_la-aggregatefn.lo libfql_la-order.lo \
 	libfql_la-operation.lo libfql_la-reader.lo \
-	libfql_la-libcsvread.lo libfql_la-fixedbyte.lo \
-	libfql_la-writer.lo libfql_la-logic.lo libfql_la-fqllogic.lo \
-	libfql_la-like.lo libfql_la-inlist.lo libfql_la-fqlselect.lo \
-	libfql_la-function.lo libfql_la-scalarfn.lo \
-	libfql_la-record.lo libfql_la-field.lo
+	libfql_la-libcsvread.lo libfql_la-fixedread.lo \
+	libfql_la-writer.lo libfql_la-libcsvwrite.lo \
+	libfql_la-fixedwrite.lo libfql_la-logic.lo \
+	libfql_la-fqllogic.lo libfql_la-like.lo libfql_la-inlist.lo \
+	libfql_la-fqlselect.lo libfql_la-function.lo \
+	libfql_la-scalarfn.lo libfql_la-record.lo libfql_la-field.lo
 libfql_la_OBJECTS = $(am_libfql_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -171,7 +172,8 @@ am__depfiles_remade = ./$(DEPDIR)/libfql_la-aggregate.Plo \
 	./$(DEPDIR)/libfql_la-aggregatefn.Plo \
 	./$(DEPDIR)/libfql_la-column.Plo \
 	./$(DEPDIR)/libfql_la-field.Plo \
-	./$(DEPDIR)/libfql_la-fixedbyte.Plo \
+	./$(DEPDIR)/libfql_la-fixedread.Plo \
+	./$(DEPDIR)/libfql_la-fixedwrite.Plo \
 	./$(DEPDIR)/libfql_la-fqllogic.Plo \
 	./$(DEPDIR)/libfql_la-fqlplan.Plo \
 	./$(DEPDIR)/libfql_la-fqlprocesses.Plo \
@@ -180,6 +182,7 @@ am__depfiles_remade = ./$(DEPDIR)/libfql_la-aggregate.Plo \
 	./$(DEPDIR)/libfql_la-group.Plo \
 	./$(DEPDIR)/libfql_la-inlist.Plo \
 	./$(DEPDIR)/libfql_la-libcsvread.Plo \
+	./$(DEPDIR)/libfql_la-libcsvwrite.Plo \
 	./$(DEPDIR)/libfql_la-libfql.Plo \
 	./$(DEPDIR)/libfql_la-like.Plo ./$(DEPDIR)/libfql_la-logic.Plo \
 	./$(DEPDIR)/libfql_la-operation.Plo \
@@ -296,6 +299,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHECK_CFLAGS = @CHECK_CFLAGS@
 CHECK_LIBS = @CHECK_LIBS@
+CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -400,7 +404,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -424,8 +427,8 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					aggregate.h aggregate.c aggregatefn.c \
 					order.h order.c \
 					operation.h operation.c \
-					reader.h reader.c libcsvread.c fixedbyte.c \
-					writer.h writer.c \
+					reader.h reader.c libcsvread.c fixedread.c \
+					writer.h writer.c libcsvwrite.c fixedwrite.c \
 					logic.h logic.c fqllogic.c like.c inlist.c\
 					fqlselect.h fqlselect.c \
 					function.h function.c scalarfn.c \
@@ -518,7 +521,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-aggregatefn.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-column.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-field.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fixedbyte.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fixedread.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fixedwrite.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fqllogic.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fqlplan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fqlprocesses.Plo@am__quote@ # am--include-marker
@@ -527,6 +531,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-group.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-inlist.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-libcsvread.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-libcsvwrite.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-libfql.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-like.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-logic.Plo@am__quote@ # am--include-marker
@@ -673,12 +678,12 @@ libfql_la-libcsvread.lo: libcsvread.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-libcsvread.lo `test -f 'libcsvread.c' || echo '$(srcdir)/'`libcsvread.c
 
-libfql_la-fixedbyte.lo: fixedbyte.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-fixedbyte.lo -MD -MP -MF $(DEPDIR)/libfql_la-fixedbyte.Tpo -c -o libfql_la-fixedbyte.lo `test -f 'fixedbyte.c' || echo '$(srcdir)/'`fixedbyte.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libfql_la-fixedbyte.Tpo $(DEPDIR)/libfql_la-fixedbyte.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fixedbyte.c' object='libfql_la-fixedbyte.lo' libtool=yes @AMDEPBACKSLASH@
+libfql_la-fixedread.lo: fixedread.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-fixedread.lo -MD -MP -MF $(DEPDIR)/libfql_la-fixedread.Tpo -c -o libfql_la-fixedread.lo `test -f 'fixedread.c' || echo '$(srcdir)/'`fixedread.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libfql_la-fixedread.Tpo $(DEPDIR)/libfql_la-fixedread.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fixedread.c' object='libfql_la-fixedread.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-fixedbyte.lo `test -f 'fixedbyte.c' || echo '$(srcdir)/'`fixedbyte.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-fixedread.lo `test -f 'fixedread.c' || echo '$(srcdir)/'`fixedread.c
 
 libfql_la-writer.lo: writer.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-writer.lo -MD -MP -MF $(DEPDIR)/libfql_la-writer.Tpo -c -o libfql_la-writer.lo `test -f 'writer.c' || echo '$(srcdir)/'`writer.c
@@ -686,6 +691,20 @@ libfql_la-writer.lo: writer.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='writer.c' object='libfql_la-writer.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-writer.lo `test -f 'writer.c' || echo '$(srcdir)/'`writer.c
+
+libfql_la-libcsvwrite.lo: libcsvwrite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-libcsvwrite.lo -MD -MP -MF $(DEPDIR)/libfql_la-libcsvwrite.Tpo -c -o libfql_la-libcsvwrite.lo `test -f 'libcsvwrite.c' || echo '$(srcdir)/'`libcsvwrite.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libfql_la-libcsvwrite.Tpo $(DEPDIR)/libfql_la-libcsvwrite.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='libcsvwrite.c' object='libfql_la-libcsvwrite.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-libcsvwrite.lo `test -f 'libcsvwrite.c' || echo '$(srcdir)/'`libcsvwrite.c
+
+libfql_la-fixedwrite.lo: fixedwrite.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-fixedwrite.lo -MD -MP -MF $(DEPDIR)/libfql_la-fixedwrite.Tpo -c -o libfql_la-fixedwrite.lo `test -f 'fixedwrite.c' || echo '$(srcdir)/'`fixedwrite.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libfql_la-fixedwrite.Tpo $(DEPDIR)/libfql_la-fixedwrite.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fixedwrite.c' object='libfql_la-fixedwrite.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-fixedwrite.lo `test -f 'fixedwrite.c' || echo '$(srcdir)/'`fixedwrite.c
 
 libfql_la-logic.lo: logic.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-logic.lo -MD -MP -MF $(DEPDIR)/libfql_la-logic.Tpo -c -o libfql_la-logic.lo `test -f 'logic.c' || echo '$(srcdir)/'`logic.c
@@ -982,7 +1001,8 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/libfql_la-aggregatefn.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-column.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-field.Plo
-	-rm -f ./$(DEPDIR)/libfql_la-fixedbyte.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-fixedread.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-fixedwrite.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqllogic.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlplan.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlprocesses.Plo
@@ -991,6 +1011,7 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/libfql_la-group.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-inlist.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-libcsvread.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-libcsvwrite.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-libfql.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-like.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-logic.Plo
@@ -1053,7 +1074,8 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/libfql_la-aggregatefn.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-column.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-field.Plo
-	-rm -f ./$(DEPDIR)/libfql_la-fixedbyte.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-fixedread.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-fixedwrite.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqllogic.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlplan.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlprocesses.Plo
@@ -1062,6 +1084,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/libfql_la-group.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-inlist.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-libcsvread.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-libcsvwrite.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-libfql.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-like.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-logic.Plo

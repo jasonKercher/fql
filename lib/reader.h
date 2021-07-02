@@ -53,20 +53,20 @@ int libcsv_get_record(struct reader*, struct record*);
 int libcsv_get_record_at(struct reader*, struct record*, const char*);
 int libcsv_reset(struct reader*);
 
-struct fixedbyte {
+struct fixedreader {
 	char* mmap;
 	char* iter;
 	struct vec* columns;
 	size_t file_size;
 	int fd;
 };
-typedef struct fixedbyte fixedbyte;
+typedef struct fixedreader fixedreader;
 
-struct fixedbyte* fixedbyte_construct(struct fixedbyte*, struct vec* columns);
-void fixedbyte_free(void*);
-int fixedbyte_open(struct reader*, const char* file_name);
-int fixedbyte_get_record(struct reader*, struct record*);
-int fixedbyte_get_record_at(struct reader*, struct record*, const char*);
-int fixedbyte_reset(struct reader*);
+struct fixedreader* fixedreader_construct(struct fixedreader*, struct vec* columns);
+void fixedreader_free(void*);
+int fixedreader_open(struct reader*, const char* file_name);
+int fixedreader_get_record(struct reader*, struct record*);
+int fixedreader_get_record_at(struct reader*, struct record*, const char*);
+int fixedreader_reset(struct reader*);
 
 #endif /* READER_H */

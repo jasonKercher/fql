@@ -384,8 +384,9 @@ int fql_distinct(dgraph* proc_graph, process* proc)
 
 int fql_select(dgraph* proc_graph, process* proc)
 {
+	fqlselect* select = proc->proc_data;
 	if (!proc->wait_for_in0) {
-		fqlselect_close(proc->proc_data);
+		writer_close(select->writer);
 		process_disable(proc);
 		return 0;
 	}
@@ -400,7 +401,6 @@ int fql_select(dgraph* proc_graph, process* proc)
 	       && (!out || fifo_receivable(out))
 	       && proc->rows_affected < proc->top_count;
 	     it = fifo_iter(in)) {
-		fqlselect* select = proc->proc_data;
 		ret = try_(select->select__(select, *it));
 
 		if (out) {

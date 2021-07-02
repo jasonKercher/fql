@@ -269,7 +269,8 @@ int query_set_into_table(query* self, const char* table_name)
 		        table_name);
 		return FQL_FAIL;
 	}
-	return fqlselect_writer_open(self->op, table_name);
+	fqlselect* select = self->op;
+	return writer_open(select->writer, table_name);
 }
 
 int query_add_aggregate(query* self, enum aggregate_function agg_type)
@@ -337,8 +338,10 @@ int query_init_orderby(query* self)
 	}
 
 	/* orderby allows us to assume SELECT */
-	char* out_name = fqlselect_take_filename(self->op);
-	const char* in_name = fqlselect_get_tempname(self->op);
+	fqlselect* select = self->op;
+
+	char* out_name = writer_take_filename(select->writer);
+	const char* in_name = writer_get_tempname(select->writer);
 	self->orderby = new_(order, in_name, out_name);
 	/* take_filename takes ownership, must free */
 	if (out_name) {

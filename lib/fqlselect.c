@@ -238,49 +238,6 @@ int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 	return FQL_GOOD;
 }
 
-int fqlselect_writer_open(fqlselect* self, const char* file_name)
-{
-	/* TODO: move to writer.c */
-	int ret = csv_writer_open(self->writer->writer_data, file_name);
-	if (ret == CSV_FAIL) {
-		return FQL_FAIL;
-	}
-	return FQL_GOOD;
-}
-
-FILE* fqlselect_get_file(fqlselect* self)
-{
-	/* TODO: move to writer.c */
-	return csv_writer_get_file(self->writer->writer_data);
-}
-
-char* fqlselect_take_filename(fqlselect* self)
-{
-	/* TODO: move to writer.c */
-	return csv_writer_detach_filename(self->writer->writer_data);
-}
-
-const char* fqlselect_get_tempname(fqlselect* self)
-{
-	/* TODO: move to writer.c */
-	csv_writer* csv = self->writer->writer_data;
-	if (!csv_writer_isopen(csv)) {
-		if (csv_writer_mktmp(csv) == CSV_FAIL) {
-			return NULL;
-		}
-	}
-
-	return csv_writer_get_filename(csv);
-}
-
-int fqlselect_close(fqlselect* self)
-{
-	/* TODO: move to writer.c */
-	int ret = csv_writer_close(self->writer->writer_data);
-	fail_if_(ret == CSV_FAIL);
-	return FQL_GOOD;
-}
-
 void fqlselect_preflight(fqlselect* self, query* query)
 {
 	_expand_asterisks(query, false);
@@ -391,7 +348,7 @@ int _select_record_api(fqlselect* self, struct vec* recs)
 
 int _select_record_order_api(fqlselect* self, struct vec* recs)
 {
-	FILE* order_input = fqlselect_get_file(self);
+	FILE* order_input = writer_get_file(self->writer);
 
 	vec* col_vec = self->schema->columns;
 	column** cols = vec_begin(col_vec);

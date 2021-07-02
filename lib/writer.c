@@ -1,69 +1,7 @@
 #include "writer.h"
 #include <csv.h>
 #include "fql.h"
-#include "column.h"
-#include "record.h"
 #include "misc.h"
-#include "util/stringview.h"
-
-void libcsv_writer_free(void* writer_data)
-{
-	csv_writer_free(writer_data);
-}
-
-int libcsv_write_record(void* writer_data,
-                        vec* col_vec,
-                        vec* recs,
-                        FILE* outstream)
-{
-	csv_writer* handle = writer_data;
-
-	FILE* store_stream = NULL;
-	if (outstream == NULL) {
-		outstream = csv_writer_get_file(handle);
-	} else {
-		store_stream = csv_writer_get_file(handle);
-		csv_writer_set_file(handle, outstream);
-	}
-
-	const struct csv_field delim = csv_writer_get_delim_field(handle);
-	const struct csv_field terminator =
-	        csv_writer_get_terminator_field(handle);
-	int len = 0;
-
-	column** cols = vec_begin(col_vec);
-	unsigned i = 0;
-	for (; i < col_vec->size; ++i) {
-		stringview sv;
-		if (i > 0) {
-			fputs(delim.data, outstream);
-			len += delim.len;
-		}
-
-		if (cols[i]->expr == EXPR_ASTERISK) {
-			int quote_store = handle->quotes;
-			handle->quotes = QUOTE_NONE;
-			record** rec = vec_at(recs, cols[i]->src_idx);
-			struct csv_field field = {(*rec)->rec_raw.data,
-			                          (*rec)->rec_raw.len};
-			len += csv_write_field(handle, &field);
-			handle->quotes = quote_store;
-		} else {
-			try_(column_get_stringview(&sv, cols[i], recs));
-			struct csv_field field = {sv.data, sv.len};
-			len += csv_write_field(handle, &field);
-		}
-	}
-
-	fputs(terminator.data, outstream);
-	len += terminator.len;
-
-	if (store_stream) {
-		csv_writer_set_file(handle, store_stream);
-	}
-
-	return len;
-}
 
 writer* writer_construct(writer* self)
 {
@@ -71,7 +9,6 @@ writer* writer_construct(writer* self)
 	        WRITE_UNDEFINED,     /* type */
 	        NULL,                /* writer_data */
 	        NULL,                /* write_record__ */
-	        NULL,                /* free__ */
 	        new_t_(vec, string), /* raw_rec */
 	        {0}                  /* file_name */
 	};
@@ -89,8 +26,14 @@ writer* writer_construct(writer* self)
 
 void writer_destroy(writer* self)
 {
-	if (self->free__) {
-		self->free__(self->writer_data);
+	switch (self->type) {
+	case WRITE_LIBCSV:
+		csv_writer_free(self->writer_data);
+		break;
+	case WRITE_FIXED:
+		delete_(fixedwriter, self->writer_data);
+		break;
+	default:;
 	}
 	string_destroy(&self->file_name);
 	string* s = vec_begin(self->raw_rec);
@@ -98,6 +41,83 @@ void writer_destroy(writer* self)
 		string_destroy(s);
 	}
 	delete_(vec, self->raw_rec);
+}
+
+int writer_open(writer* self, const char* file_name)
+{
+	switch (self->type) {
+	case WRITE_LIBCSV:
+		if (csv_writer_open(self->writer_data, file_name) == CSV_FAIL) {
+			return FQL_FAIL;
+		}
+		return FQL_GOOD;
+	case WRITE_FIXED:
+		try_(fixedwriter_open(self->writer_data, file_name));
+		return FQL_GOOD;
+	default:
+		return FQL_GOOD;
+	}
+}
+
+int writer_close(writer* self)
+{
+	switch (self->type) {
+	case WRITE_LIBCSV:
+		if (csv_writer_close(self->writer_data) == CSV_FAIL) {
+			return FQL_FAIL;
+		}
+		return FQL_GOOD;
+	case WRITE_FIXED:
+		try_(fixedwriter_close(self->writer_data));
+		return FQL_GOOD;
+	default:
+		return FQL_FAIL;
+	}
+}
+
+FILE* writer_get_file(writer* self)
+{
+	switch (self->type) {
+	case WRITE_LIBCSV:
+		return csv_writer_get_file(self->writer_data);
+	case WRITE_FIXED:
+		return fixedwriter_get_file(self->writer_data);
+	default:
+		return NULL;
+	}
+}
+
+char* writer_take_filename(writer* self)
+{
+	switch (self->type) {
+	case WRITE_LIBCSV:
+		return csv_writer_detach_filename(self->writer_data);
+	case WRITE_FIXED:
+		return fixedwriter_take_filename(self->writer_data);
+	default:
+		return NULL;
+	}
+}
+
+const char* writer_get_tempname(writer* self)
+{
+	switch (self->type) {
+	case WRITE_LIBCSV:
+		break;
+	case WRITE_FIXED:
+		return fixedwriter_get_tempname(self->writer_data);
+	default:
+		return NULL;
+	}
+
+	csv_writer* csv = self->writer_data;
+	if (!csv_writer_isopen(csv)) {
+		if (csv_writer_mktmp(csv) == CSV_FAIL) {
+			return NULL;
+		}
+	}
+
+	return csv_writer_get_filename(csv);
 }
 
 void writer_set_delimiter(writer* self, const char* delim)
@@ -108,6 +128,8 @@ void writer_set_delimiter(writer* self, const char* delim)
 		csv_writer_set_delim(csv, delim);
 		break;
 	}
+	case WRITE_FIXED: /* no delimiter for this */
+		break;
 	default:
 		fprintf(stderr, "%d: unknown write_type\n", self->type);
 	}
@@ -120,7 +142,12 @@ void writer_assign(writer* self)
 		csv_writer* data = csv_writer_new();
 		self->writer_data = data;
 		self->write_record__ = &libcsv_write_record;
-		self->free__ = &libcsv_writer_free;
+		break;
+	}
+	case WRITE_FIXED: {
+		fixedwriter* data = new_(fixedwriter);
+		self->writer_data = data;
+		self->write_record__ = &fixedwriter_write_record;
 		break;
 	}
 	default:

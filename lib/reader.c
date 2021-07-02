@@ -57,12 +57,12 @@ int reader_assign(reader* self, table* table)
 		}
 		return FQL_GOOD;
 	case READ_FIXED_BYTE:
-		self->reader_data = new_(fixedbyte, table->schema->columns);
-		self->free__ = &fixedbyte_free;
-		self->get_record__ = &fixedbyte_get_record;
-		self->get_record_at__ = &fixedbyte_get_record_at;
-		self->reset__ = &fixedbyte_reset;
-		fail_if_(fixedbyte_open(self, string_c_str(&self->file_name)));
+		self->reader_data = new_(fixedreader, table->schema->columns);
+		self->free__ = &fixedreader_free;
+		self->get_record__ = &fixedreader_get_record;
+		self->get_record_at__ = &fixedreader_get_record_at;
+		self->reset__ = &fixedreader_reset;
+		fail_if_(fixedreader_open(self, string_c_str(&self->file_name)));
 		return FQL_GOOD;
 	case READ_SUBQUERY:
 		//self->free__ = &query_free;
