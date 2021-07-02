@@ -80,17 +80,17 @@ int fql_len(function* fn, union field* ret, vec* recs)
 
 	try_(column_get_stringview(&sv, *arg, recs));
 
-	unsigned i = 0;
+	unsigned idx = 0;
 	int bytes = 1;
 	int len = 0;
 	int len_nospace = 0;
-	for (; i < sv.len; i += bytes) {
+	for (; idx < sv.len; idx += bytes) {
 		bytes = 1;
 		if (!fn->char_as_byte) {
-			bytes = try_(_get_byte_count(sv.data[i], sv.len - i));
+			bytes = try_(_get_byte_count(sv.data[idx], sv.len - idx));
 		}
 		++len;
-		if (!isspace(sv.data[i])) {
+		if (!isspace(sv.data[idx])) {
 			len_nospace = len;
 		}
 	}
@@ -142,11 +142,12 @@ int fql_left(function* fn, union field* ret, vec* recs)
 		return FQL_GOOD;
 	}
 
-	unsigned i = 0;
+	unsigned idx = 0;
 	int bytes = 0;
+	unsigned char_count = 0;
 	unsigned byte_count = 0;
-	for (; i < n && i < sv.len; i += bytes) {
-		bytes = try_(_get_byte_count(sv.data[i], sv.len - i));
+	for (; char_count++ < n && idx < sv.len; idx += bytes) {
+		bytes = try_(_get_byte_count(sv.data[idx], sv.len - idx));
 		byte_count += bytes;
 	}
 
@@ -169,21 +170,21 @@ int fql_right(function* fn, union field* ret, vec* recs)
 	}
 
 	if (fn->char_as_byte) {
-		int i = sv.len - n;
-		string_strncpy(ret->s, &sv.data[i], n);
+		int idx = sv.len - n;
+		string_strncpy(ret->s, &sv.data[idx], n);
 		return FQL_GOOD;
 	}
 
-	int i = sv.len - 1;
+	int idx = sv.len - 1;
 	unsigned char_count = 0;
 	unsigned byte_count = 0;
-	for (; i >= 0 && char_count < n; ++char_count) {
-		int bytes = try_(_get_rev_byte_count(&sv.data[i], i + 1));
+	for (; idx >= 0 && char_count < n; ++char_count) {
+		int bytes = try_(_get_rev_byte_count(&sv.data[idx], idx + 1));
 		byte_count += bytes;
-		i -= bytes;
+		idx -= bytes;
 	}
 
-	string_strncpy(ret->s, &sv.data[i + 1], byte_count);
+	string_strncpy(ret->s, &sv.data[idx + 1], byte_count);
 
 	return FQL_GOOD;
 }
@@ -195,18 +196,19 @@ int fql_substring(function* fn, union field* ret, vec* recs)
 	try_(column_get_stringview(&sv, args[0], recs));
 	long start = 0;
 	try_(column_get_int(&start, args[1], recs));
+	--start;
 	long n = 0;
 	try_(column_get_int(&n, args[2], recs));
 
-	unsigned i = 0;
+	unsigned idx = 0;
 	int bytes = 0;
 	unsigned byte_count = 0;
-
-	for (; i < n && i < start && i < sv.len; i += bytes) {
+	unsigned char_count = 0;
+	for (; char_count++ < start && idx < sv.len; idx += bytes) {
 		if (fn->char_as_byte) {
 			bytes = 1;
 		} else {
-			bytes = try_(_get_byte_count(sv.data[i], sv.len - i));
+			bytes = try_(_get_byte_count(sv.data[idx], sv.len - idx));
 		}
 	}
 
@@ -214,23 +216,23 @@ int fql_substring(function* fn, union field* ret, vec* recs)
 		n += start;
 	}
 
-	// a b c
-	if (n > sv.len) {
-		string_strncpy(ret->s, &sv.data[i], sv.len - i);
+	if (idx + n > sv.len) {
+		string_strncpy(ret->s, &sv.data[idx], sv.len - idx);
 		return FQL_GOOD;
 	}
 
 	if (fn->char_as_byte) {
-		string_strncpy(ret->s, &sv.data[i], n - i);
+		string_strncpy(ret->s, &sv.data[idx], n);
 		return FQL_GOOD;
 	}
 
-	for (; i < n && i < sv.len; i += bytes) {
-		bytes = try_(_get_byte_count(sv.data[i], sv.len - i));
+	unsigned start_idx = idx;
+	for (char_count = 0; char_count++ < n && idx < sv.len; idx += bytes) {
+		bytes = try_(_get_byte_count(sv.data[idx], sv.len - idx));
 		byte_count += bytes;
 	}
 
-	string_strncpy(ret->s, sv.data, byte_count);
+	string_strncpy(ret->s, &sv.data[start_idx], byte_count);
 
 	return FQL_GOOD;
 }
