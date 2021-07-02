@@ -38,6 +38,7 @@ int fql_len(struct function*, union field* ret, struct vec* rec);
 int fql_datalength(struct function*, union field* ret, struct vec* rec);
 int fql_left(struct function*, union field* ret, struct vec* rec);
 int fql_right(struct function*, union field* ret, struct vec* rec);
+int fql_substring(struct function*, union field* ret, struct vec* rec);
 
 /* scalar operators */
 int fql_op_plus_i(struct function*, union field* ret, struct vec* rec);

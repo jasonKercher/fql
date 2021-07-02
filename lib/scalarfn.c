@@ -188,6 +188,53 @@ int fql_right(function* fn, union field* ret, vec* recs)
 	return FQL_GOOD;
 }
 
+int fql_substring(function* fn, union field* ret, vec* recs)
+{
+	column** args = vec_begin(fn->args);
+	stringview sv;
+	try_(column_get_stringview(&sv, args[0], recs));
+	long start = 0;
+	try_(column_get_int(&start, args[1], recs));
+	long n = 0;
+	try_(column_get_int(&n, args[2], recs));
+
+	unsigned i = 0;
+	int bytes = 0;
+	unsigned byte_count = 0;
+
+	for (; i < n && i < start && i < sv.len; i += bytes) {
+		if (fn->char_as_byte) {
+			bytes = 1;
+		} else {
+			bytes = try_(_get_byte_count(sv.data[i], sv.len - i));
+		}
+	}
+
+	if (start < 0) {
+		n += start;
+	}
+
+	// a b c
+	if (n > sv.len) {
+		string_strncpy(ret->s, &sv.data[i], sv.len - i);
+		return FQL_GOOD;
+	}
+
+	if (fn->char_as_byte) {
+		string_strncpy(ret->s, &sv.data[i], n - i);
+		return FQL_GOOD;
+	}
+
+	for (; i < n && i < sv.len; i += bytes) {
+		bytes = try_(_get_byte_count(sv.data[i], sv.len - i));
+		byte_count += bytes;
+	}
+
+	string_strncpy(ret->s, sv.data, byte_count);
+
+	return FQL_GOOD;
+}
+
 /* opertor functions */
 int fql_op_plus_i(function* fn, union field* ret, vec* recs)
 {

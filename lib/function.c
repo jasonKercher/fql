@@ -176,6 +176,8 @@ function* function_construct(function* func,
 	case SCALAR_REPLACE:
 		return func;
 	case SCALAR_SUBSTRING:
+		func->call__ = &fql_substring;
+		*type = FIELD_STRING;
 		return func;
 	default:;
 	}
