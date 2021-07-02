@@ -37,6 +37,7 @@ column* column_construct(column* col,
 	string_construct_from_char_ptr(&col->table_name, table_name);
 
 	switch (expr) {
+	case EXPR_FULL_RECORD:
 	case EXPR_COLUMN_NAME:
 		string_construct_from_char_ptr(&col->alias, data);
 		string_construct_from_char_ptr(&col->name, data);
@@ -102,6 +103,7 @@ void column_link(struct column* dest, struct column* src)
 void column_cat_description(column* col, string* msg)
 {
 	switch (col->expr) {
+	case EXPR_FULL_RECORD:
 	case EXPR_COLUMN_NAME:
 		string_append(msg, &col->alias);
 		break;
@@ -162,6 +164,10 @@ void column_cat_description(column* col, string* msg)
 
 int column_try_assign_source(column* col, table* table)
 {
+	if (col->expr == EXPR_FULL_RECORD) {
+		col->src_idx = table->idx;
+		return 1;
+	}
 	vec* cols = multimap_get(table->schema->col_map, col->name.data);
 	if (cols == NULL) {
 		return 0;
@@ -180,6 +186,13 @@ int column_try_assign_source(column* col, table* table)
 int column_get_int(long* ret, column* col, vec* recs)
 {
 	switch (col->expr) {
+	case EXPR_FULL_RECORD: {
+		record** rec = vec_at(recs, col->src_idx);
+		stringview* sv = &(*rec)->rec_raw;
+		string_copy_from_stringview(&col->buf, sv);
+		fail_if_(str2long(ret, col->buf.data));
+		return FQL_GOOD;
+	}
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		column* src_col = col->data_source;
@@ -220,6 +233,13 @@ int column_get_int(long* ret, column* col, vec* recs)
 int column_get_float(double* ret, column* col, vec* recs)
 {
 	switch (col->expr) {
+	case EXPR_FULL_RECORD: {
+		record** rec = vec_at(recs, col->src_idx);
+		stringview* sv = &(*rec)->rec_raw;
+		string_copy_from_stringview(&col->buf, sv);
+		fail_if_(str2double(ret, col->buf.data));
+		return FQL_GOOD;
+	}
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		column* src_col = col->data_source;
@@ -260,6 +280,11 @@ int column_get_float(double* ret, column* col, vec* recs)
 int column_get_stringview(stringview* ret, column* col, vec* recs)
 {
 	switch (col->expr) {
+	case EXPR_FULL_RECORD: {
+		record** rec = vec_at(recs, col->src_idx);
+		*ret = (*rec)->rec_raw;
+		return FQL_GOOD;
+	}
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		column* src_col = col->data_source;

@@ -557,6 +557,7 @@ int _assign_columns_limited(vec* columns, vec* sources, int limit, int strictnes
 		case EXPR_SUBQUERY:
 			try_(fqlselect_resolve_type_from_subquery(*it));
 			break;
+		case EXPR_FULL_RECORD:
 		case EXPR_COLUMN_NAME: {
 			if ((*it)->data_source != NULL) {
 				continue;
@@ -648,6 +649,7 @@ int _asterisk_resolve(vec* columns, vec* sources)
 enum join_side _get_join_side(column* col, int right_idx)
 {
 	switch (col->expr) {
+	case EXPR_FULL_RECORD:
 	case EXPR_COLUMN_NAME:
 		return (col->data_source->src_idx < right_idx) ? SIDE_LEFT : SIDE_RIGHT;
 	case EXPR_FUNCTION: {
@@ -748,6 +750,7 @@ int _map_expression(vec* key, column* col)
 		}
 
 		break;
+	case EXPR_FULL_RECORD:
 	case EXPR_COLUMN_NAME:
 		map_type = &_col;
 		stringview_nset(&val_sv, (char*)&col->data_source, sizeof(column*));

@@ -142,7 +142,12 @@ int _distribute_column(query* self, column* col)
 
 int query_add_column(query* self, char* col_name, const char* table_id)
 {
-	column* col = new_(column, EXPR_COLUMN_NAME, col_name, table_id);
+	column* col = NULL;
+	if (istring_eq(col_name, "__rec")) {
+		col = new_(column, EXPR_FULL_RECORD, col_name, table_id);
+	} else {
+		col = new_(column, EXPR_COLUMN_NAME, col_name, table_id);
+	}
 
 	/* TODO: remove when this is impossible */
 	if (_distribute_column(self, col)) {

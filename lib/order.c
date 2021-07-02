@@ -95,6 +95,7 @@ int order_preresolve_columns(order* self, fqlselect* select)
 	for (; it != vec_end(&self->columns); ++it) {
 		column** result = NULL;
 		switch ((*it)->expr) {
+		case EXPR_FULL_RECORD:
 		case EXPR_COLUMN_NAME: {
 			vec* cols = multimap_get(select_map, (*it)->alias.data);
 			if (cols == NULL) {

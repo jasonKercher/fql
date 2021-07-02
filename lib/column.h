@@ -10,6 +10,7 @@
 /** expression **/
 enum expr_type {
 	EXPR_UNDEFINED,
+	EXPR_FULL_RECORD, /* This is for keyword __REC */
 	EXPR_COLUMN_NAME,
 	EXPR_CONST,
 	EXPR_ASTERISK,
