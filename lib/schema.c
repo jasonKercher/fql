@@ -302,16 +302,16 @@ int _add_column_from_rec(table* table,
 	string_destroy(&col_str);
 	switch (rec->size) {
 	case 1: /* <field>, assume char */
-		table->reader->type = READ_LIBCSV;
+		table->reader->type = IO_LIBCSV;
 		new_col->field_type = FIELD_STRING;
 		break;
 	case 2: /* <field>, <type> */
-		table->reader->type = READ_LIBCSV;
+		table->reader->type = IO_LIBCSV;
 		/* TODO type parsing */
 		new_col->field_type = FIELD_STRING;
 		break;
 	case 3: { /* <field>, <offset>, <type> */
-		table->reader->type = READ_FIXED_BYTE;
+		table->reader->type = IO_FIXED;
 		/* TODO type parsing */
 		new_col->field_type = FIELD_STRING;
 		long width = 0;
@@ -462,7 +462,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		fqlselect* select = table->subquery->op;
 		table->schema = select->schema;
 		self = table->schema;
-		table->reader->type = READ_SUBQUERY;
+		table->reader->type = IO_SUBQUERY;
 	} else {
 		/* if we've made it this far, we want to try
 		 * and determine schema by reading the top
@@ -472,17 +472,17 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		 */
 		try_(schema_resolve_file(table, fql->props.strictness));
 		if (self->is_default) {
-			table->reader->type = READ_LIBCSV;
+			table->reader->type = IO_LIBCSV;
 		}
 	}
 	try_(reader_assign(table->reader, table));
 
 	switch (table->reader->type) {
-	case READ_FIXED_BYTE:
+	case IO_FIXED:
 		schema_preflight(self);
-	case READ_SUBQUERY:
+	case IO_SUBQUERY:
 		return FQL_GOOD;
-	case READ_LIBCSV:
+	case IO_LIBCSV:
 	default:;
 	}
 

@@ -46,7 +46,7 @@ int _mktmp(fixedwriter* self)
 	char* filename_cp = NULL;
 	if (!string_empty(&self->filename)) {
 		filename_cp = strdup(string_c_str(&self->filename));
-		char* targetdir = dirname(filename_cp);
+		targetdir = dirname(filename_cp);
 	}
 	string_strcpy(&self->tempname, targetdir);
 	string_strcat(&self->tempname, "/fixed_XXXXXX");

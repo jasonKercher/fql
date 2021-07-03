@@ -1,6 +1,7 @@
 #ifndef READER_H
 #define READER_H
 
+#include "io.h"
 #include "record.h"
 #include "util/vec.h"
 //#include "util/pmap.h"
@@ -15,15 +16,8 @@ typedef int (*read_fn)(struct reader*, struct record*);
 typedef int (*read_at_fn)(struct reader*, struct record*, const char*);
 typedef int (*reset_fn)(struct reader*);
 
-enum read_type {
-	READ_UNDEFINED,
-	READ_LIBCSV,
-	READ_FIXED_BYTE,
-	READ_SUBQUERY,
-};
-
 struct reader {
-	enum read_type type;
+	enum io type;
 	void* reader_data;
 	struct vec* subquery_recs;
 	read_fn get_record__;

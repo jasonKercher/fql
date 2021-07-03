@@ -14,18 +14,18 @@
 reader* reader_construct(reader* self)
 {
 	*self = (reader) {
-	        READ_UNDEFINED, /* type */
-	        NULL,           /* reader_data */
-	        NULL,           /* subquery_recs */
-	        NULL,           /* get_record__ */
-	        NULL,           /* get_record_at__ */
-	        NULL,           /* free__ */
-	        NULL,           /* reset__ */
-	        {0},            /* file_name */
-	        0,              /* max_col_idx */
-	        0,              /* reclen */
-	        1,              /* skip_rows */
-	        false           /* eof */
+	        IO_UNDEFINED, /* type */
+	        NULL,         /* reader_data */
+	        NULL,         /* subquery_recs */
+	        NULL,         /* get_record__ */
+	        NULL,         /* get_record_at__ */
+	        NULL,         /* free__ */
+	        NULL,         /* reset__ */
+	        {0},          /* file_name */
+	        0,            /* max_col_idx */
+	        0,            /* reclen */
+	        1,            /* skip_rows */
+	        false         /* eof */
 	};
 
 	string_construct(&self->file_name);
@@ -44,7 +44,7 @@ void reader_destroy(reader* self)
 int reader_assign(reader* self, table* table)
 {
 	switch (self->type) {
-	case READ_LIBCSV:
+	case IO_LIBCSV:
 		self->reader_data = csv_reader_new();
 		self->free__ = &libcsv_free;
 		self->get_record__ = &libcsv_get_record;
@@ -56,7 +56,7 @@ int reader_assign(reader* self, table* table)
 			return FQL_FAIL;
 		}
 		return FQL_GOOD;
-	case READ_FIXED_BYTE:
+	case IO_FIXED:
 		self->reader_data = new_(fixedreader, table->schema->columns);
 		self->free__ = &fixedreader_free;
 		self->get_record__ = &fixedreader_get_record;
@@ -64,7 +64,7 @@ int reader_assign(reader* self, table* table)
 		self->reset__ = &fixedreader_reset;
 		fail_if_(fixedreader_open(self, string_c_str(&self->file_name)));
 		return FQL_GOOD;
-	case READ_SUBQUERY:
+	case IO_SUBQUERY:
 		//self->free__ = &query_free;
 		self->get_record__ = &fqlselect_subquery_record;
 		self->get_record_at__ = NULL; /* TODO */

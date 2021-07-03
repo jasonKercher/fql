@@ -179,6 +179,7 @@ Suite* fql_logic_suite(void)
 	tcase_add_checked_fixture(tc_logic, fql_setup, fql_teardown);
 
 	tcase_add_test(tc_logic, test_logic_const);
+	tcase_add_test(tc_logic, test_logic_in);
 	tcase_add_test(tc_logic, test_logic_like);
 	tcase_add_test(tc_logic, test_logic_function);
 	tcase_add_test(tc_logic, test_logic_complex);

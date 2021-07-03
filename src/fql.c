@@ -153,7 +153,8 @@ int main(int argc, char** argv)
 					return EXIT_FAILURE;
 				}
 			}
-			sprintf(query, "%s\n%s", query, line);
+			strcat(query, "\n");
+			strcat(query, line);
 		} while (1);
 		//} else {
 		//	query = malloc(max_size);
@@ -178,8 +179,6 @@ int main(int argc, char** argv)
 		//	}
 		//}
 	}
-
-	int ret = 0;
 
 	if (!use_api) {
 		if (fql_exec(handle, query) == FQL_FAIL) {

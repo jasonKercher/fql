@@ -93,10 +93,12 @@ const char* table_get_delim(table* self)
 {
 	reader* reader = self->reader;
 	switch (reader->type) {
-	case READ_LIBCSV:
+	case IO_LIBCSV:
 		return csv_reader_get_delim(reader->reader_data);
-	case READ_SUBQUERY:
+	case IO_SUBQUERY:
 		return table_get_delim(vec_begin(self->subquery->sources));
+	case IO_FIXED:
+		return NULL;
 	default:
 		fprintf(stderr, "%d: unknown read_type\n", reader->type);
 		return NULL;

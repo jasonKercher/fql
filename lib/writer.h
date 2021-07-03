@@ -1,6 +1,7 @@
 #ifndef WRITER_H
 #define WRITER_H
 
+#include "io.h"
 #include "util/vec.h"
 #include "util/stringy.h"
 #include "util/util.h"
@@ -30,14 +31,8 @@ int fixedwriter_write_record(void*, struct vec*, struct vec*, FILE*);
 
 typedef int (*write_fn)(void*, struct vec*, struct vec*, FILE*);
 
-enum write_type {
-	WRITE_UNDEFINED,
-	WRITE_LIBCSV,
-	WRITE_FIXED,
-};
-
 struct writer {
-	enum write_type type;
+	enum io type;
 	void* writer_data;
 	write_fn write_record__;
 	struct vec* raw_rec;

@@ -1,12 +1,13 @@
 #include "writer.h"
 #include <csv.h>
+#include "io.h"
 #include "fql.h"
 #include "misc.h"
 
 writer* writer_construct(writer* self)
 {
 	*self = (writer) {
-	        WRITE_UNDEFINED,     /* type */
+	        IO_UNDEFINED,        /* type */
 	        NULL,                /* writer_data */
 	        NULL,                /* write_record__ */
 	        new_t_(vec, string), /* raw_rec */
@@ -18,7 +19,7 @@ writer* writer_construct(writer* self)
 	/* TODO: this should not be here. this should
 	 *       be dependant on output schema
 	 */
-	self->type = WRITE_LIBCSV;
+	self->type = IO_LIBCSV;
 	writer_assign(self);
 
 	return self;
@@ -27,10 +28,10 @@ writer* writer_construct(writer* self)
 void writer_destroy(writer* self)
 {
 	switch (self->type) {
-	case WRITE_LIBCSV:
+	case IO_LIBCSV:
 		csv_writer_free(self->writer_data);
 		break;
-	case WRITE_FIXED:
+	case IO_FIXED:
 		delete_(fixedwriter, self->writer_data);
 		break;
 	default:;
@@ -46,12 +47,12 @@ void writer_destroy(writer* self)
 int writer_open(writer* self, const char* file_name)
 {
 	switch (self->type) {
-	case WRITE_LIBCSV:
+	case IO_LIBCSV:
 		if (csv_writer_open(self->writer_data, file_name) == CSV_FAIL) {
 			return FQL_FAIL;
 		}
 		return FQL_GOOD;
-	case WRITE_FIXED:
+	case IO_FIXED:
 		try_(fixedwriter_open(self->writer_data, file_name));
 		return FQL_GOOD;
 	default:
@@ -62,12 +63,12 @@ int writer_open(writer* self, const char* file_name)
 int writer_close(writer* self)
 {
 	switch (self->type) {
-	case WRITE_LIBCSV:
+	case IO_LIBCSV:
 		if (csv_writer_close(self->writer_data) == CSV_FAIL) {
 			return FQL_FAIL;
 		}
 		return FQL_GOOD;
-	case WRITE_FIXED:
+	case IO_FIXED:
 		try_(fixedwriter_close(self->writer_data));
 		return FQL_GOOD;
 	default:
@@ -78,9 +79,9 @@ int writer_close(writer* self)
 FILE* writer_get_file(writer* self)
 {
 	switch (self->type) {
-	case WRITE_LIBCSV:
+	case IO_LIBCSV:
 		return csv_writer_get_file(self->writer_data);
-	case WRITE_FIXED:
+	case IO_FIXED:
 		return fixedwriter_get_file(self->writer_data);
 	default:
 		return NULL;
@@ -90,9 +91,9 @@ FILE* writer_get_file(writer* self)
 char* writer_take_filename(writer* self)
 {
 	switch (self->type) {
-	case WRITE_LIBCSV:
+	case IO_LIBCSV:
 		return csv_writer_detach_filename(self->writer_data);
-	case WRITE_FIXED:
+	case IO_FIXED:
 		return fixedwriter_take_filename(self->writer_data);
 	default:
 		return NULL;
@@ -102,9 +103,9 @@ char* writer_take_filename(writer* self)
 const char* writer_get_tempname(writer* self)
 {
 	switch (self->type) {
-	case WRITE_LIBCSV:
+	case IO_LIBCSV:
 		break;
-	case WRITE_FIXED:
+	case IO_FIXED:
 		return fixedwriter_get_tempname(self->writer_data);
 	default:
 		return NULL;
@@ -123,12 +124,12 @@ const char* writer_get_tempname(writer* self)
 void writer_set_delimiter(writer* self, const char* delim)
 {
 	switch (self->type) {
-	case WRITE_LIBCSV: {
+	case IO_LIBCSV: {
 		csv_writer* csv = self->writer_data;
 		csv_writer_set_delim(csv, delim);
 		break;
 	}
-	case WRITE_FIXED: /* no delimiter for this */
+	case IO_FIXED: /* no delimiter for this */
 		break;
 	default:
 		fprintf(stderr, "%d: unknown write_type\n", self->type);
@@ -138,13 +139,13 @@ void writer_set_delimiter(writer* self, const char* delim)
 void writer_assign(writer* self)
 {
 	switch (self->type) {
-	case WRITE_LIBCSV: {
+	case IO_LIBCSV: {
 		csv_writer* data = csv_writer_new();
 		self->writer_data = data;
 		self->write_record__ = &libcsv_write_record;
 		break;
 	}
-	case WRITE_FIXED: {
+	case IO_FIXED: {
 		fixedwriter* data = new_(fixedwriter);
 		self->writer_data = data;
 		self->write_record__ = &fixedwriter_write_record;

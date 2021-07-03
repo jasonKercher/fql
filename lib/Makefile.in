@@ -299,7 +299,6 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHECK_CFLAGS = @CHECK_CFLAGS@
 CHECK_LIBS = @CHECK_LIBS@
-CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -404,6 +403,7 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -427,6 +427,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					aggregate.h aggregate.c aggregatefn.c \
 					order.h order.c \
 					operation.h operation.c \
+					io.h \
 					reader.h reader.c libcsvread.c fixedread.c \
 					writer.h writer.c libcsvwrite.c fixedwrite.c \
 					logic.h logic.c fqllogic.c like.c inlist.c\
