@@ -22,7 +22,7 @@ struct _entry {
 int _order_select_api(order* self, process*);
 int _order_select(order* self, process*);
 
-order* order_construct(order* self, const char* in_name, char* out_name)
+order* order_construct(order* self)
 {
 	*self = (order) {
 	        {0},           /* columns */
@@ -30,7 +30,7 @@ order* order_construct(order* self, const char* in_name, char* out_name)
 	        {0},           /* order_data */
 	        _order_select, /* select__ */
 	        NULL,          /* api */
-	        in_name,       /* in_filename */
+	        NULL,          /* in_filename */
 	        stdout,        /* out_file */
 	        NULL,          /* entry_iter */
 	        NULL,          /* mmap */
@@ -43,12 +43,13 @@ order* order_construct(order* self, const char* in_name, char* out_name)
 	vec_construct_(&self->entries, struct _entry);
 	flex_construct(&self->order_data);
 
-	if (out_name != NULL) {
-		self->out_file = fopen(out_name, "w");
-		if (self->out_file == NULL) {
-			perror(out_name);
-		}
-	}
+	/* Moved to order_init_io */
+	//if (out_name != NULL) {
+	//	self->out_file = fopen(out_name, "w");
+	//	if (self->out_file == NULL) {
+	//		perror(out_name);
+	//	}
+	//}
 
 	return self;
 }
@@ -70,6 +71,19 @@ void order_destroy(order* self)
 	    && self->out_file != stderr) {
 		fclose(self->out_file);
 	}
+}
+
+int order_init_io(order* self, const char* in_name, const char* out_name)
+{
+	self->in_filename = in_name;
+	if (out_name != NULL) {
+		self->out_file = fopen(out_name, "w");
+		if (self->out_file == NULL) {
+			perror(out_name);
+			return FQL_FAIL;
+		}
+	}
+	return FQL_GOOD;
 }
 
 int order_preresolve_columns(order* self, fqlselect* select)

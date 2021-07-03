@@ -4,13 +4,13 @@
 #include "fqlselect.h"
 #include "util/util.h"
 
-vec* op_get_validation_list(void* op)
+vec* op_get_validation_list(void* self)
 {
-	enum op* type = op;
+	enum op* type = self;
 
 	switch (*type) {
 	case OP_SELECT:
-		return ((fqlselect*)op)->schema->columns;
+		return ((fqlselect*)self)->schema->columns;
 	default:
 		return NULL;
 	}
@@ -33,43 +33,55 @@ void op_preop(struct fql_handle* fql)
 	}
 }
 
-void op_set_delim(enum op* op, const char* delim)
+schema* op_get_schema(enum op* self)
 {
-	switch (*op) {
+	switch (*self) {
+	case OP_SELECT: {
+		fqlselect* select = (fqlselect*)self;
+		return select->schema;
+	}
+	default:
+		return NULL;
+	}
+}
+
+void op_set_delim(enum op* self, const char* delim)
+{
+	switch (*self) {
 	case OP_SELECT:
-		fqlselect_set_delim((fqlselect*)op, delim);
+		fqlselect_set_delim((fqlselect*)self, delim);
 		break;
 	default:;
 	}
 }
 
-void op_set_schema(enum op* op, const schema* src_schema)
+void op_set_schema(enum op* self, const schema* src_schema)
 {
-	switch (*op) {
+	switch (*self) {
 	case OP_SELECT:
-		fqlselect_set_schema((fqlselect*)op, src_schema);
+		fqlselect_set_schema((fqlselect*)self, src_schema);
 		break;
 	default:;
 	}
 }
 
-void op_preflight(query* query)
+int op_writer_init(query* query)
 {
-	enum op* type = query->op;
+	enum op* self = query->op;
 
-	switch (*type) {
+	switch (*self) {
 	case OP_SELECT:
-		fqlselect_preflight(query->op, query);
-		break;
-	default:;
+		return fqlselect_writer_init(query->op, query);
+	default:
+		return FQL_FAIL;
 	}
 }
 
 void op_apply_process(query* query, plan* plan)
 {
-	enum op* type = query->op;
+	enum op* self = query->op;
 
-	switch (*type) {
+	switch (*self) {
 	case OP_SELECT:
 		fqlselect_apply_process(query, plan);
 		break;
@@ -77,11 +89,11 @@ void op_apply_process(query* query, plan* plan)
 	}
 }
 
-void op_destroy(enum op* op)
+void op_destroy(enum op* self)
 {
-	switch (*op) {
+	switch (*self) {
 	case OP_SELECT:
-		fqlselect_destroy((fqlselect*)op);
+		fqlselect_destroy((fqlselect*)self);
 		break;
 	default:;
 	}

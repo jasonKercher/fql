@@ -30,10 +30,11 @@ struct order {
 };
 typedef struct order order;
 
-struct order* order_construct(struct order*, const char* in, char* out);
+struct order* order_construct(struct order*);
 void order_destroy(struct order*);
 
 int order_add_column(struct order*, struct column*);
+int order_init_io(struct order*, const char* in, const char* out);
 void order_cat_description(struct order*, struct process*);
 void order_connect_api(struct query*, struct vec*);
 int order_preresolve_columns(struct order*, struct fqlselect*);

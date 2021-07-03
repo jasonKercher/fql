@@ -1,6 +1,7 @@
 #ifndef SCHEMA_H
 #define SCHEMA_H
 
+#include "io.h"
 #include "fqlhandle.h"
 #include "fqlimits.h"
 #include "util/queue.h"
@@ -15,6 +16,8 @@ struct schema {
 	string* name;
 	char delimiter[DELIM_LEN_MAX];
 	int strictness;
+	enum io io_type;
+	enum io write_io_type;
 	bool is_default;
 };
 typedef struct schema schema;
@@ -31,6 +34,10 @@ struct query;
 
 struct schema* schema_construct(struct schema*);
 void schema_destroy(void*);
+
+bool schema_eq(const struct schema*, const struct schema*);
+
+void schema_set_io_type(struct schema*, enum io);
 
 int schema_resolve_query(struct fql_handle*, struct query*);
 int schema_resolve(struct fql_handle*);

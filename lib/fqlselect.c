@@ -24,7 +24,7 @@ fqlselect* fqlselect_construct(fqlselect* self)
 	        OP_SELECT,       /* oper_type */
 	        NULL,            /* api */
 	        new_(schema),    /* schema */
-	        new_(writer),    /* writer */
+	        NULL,            /* writer */
 	        NULL,            /* list_data */
 	        NULL,            /* const_dest */
 	        &_select_record, /* select__ */
@@ -39,7 +39,7 @@ void fqlselect_destroy(fqlselect* self)
 	if (self == NULL) {
 		return;
 	}
-	delete_(writer, self->writer);
+	delete_if_exists_(writer, self->writer);
 	delete_(schema, self->schema);
 }
 
@@ -53,6 +53,8 @@ void fqlselect_set_schema(fqlselect* self, const schema* src_schema)
 	if (!self->schema->delimiter[0]) {
 		fqlselect_set_delim(self, src_schema->delimiter);
 	}
+	self->schema->io_type = src_schema->io_type;
+	self->schema->write_io_type = src_schema->write_io_type;
 	self->schema->is_default = src_schema->is_default;
 }
 
@@ -108,7 +110,7 @@ void _expand_asterisks(query* query, bool force_expansion)
 
 		if (table->subquery == NULL /* is not a subquery source */
 		    && !force_expansion && query->query_id == 0 /* is in main query */
-		    && string_eq(table->schema->delimiter, self->schema->delimiter)) {
+		    && schema_eq(table->schema, self->schema)) {
 			continue;
 		}
 
@@ -238,10 +240,33 @@ int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 	return FQL_GOOD;
 }
 
-void fqlselect_preflight(fqlselect* self, query* query)
+int fqlselect_writer_init(fqlselect* self, query* query)
 {
+	self->writer = new_(writer, self->schema->write_io_type);
+
+	if (query->into_table_name != NULL) {
+		if (access(query->into_table_name, F_OK) == 0) {
+			fprintf(stderr,
+			        "Cannot SELECT INTO: file `%s' already exists\n",
+			        query->into_table_name);
+			return FQL_FAIL;
+		}
+		try_(writer_open(self->writer, query->into_table_name));
+	}
+
+	if (query->orderby != NULL) {
+		char* out_name = writer_take_filename(self->writer);
+		const char* in_name = writer_get_tempname(self->writer);
+
+		try_(order_init_io(query->orderby, in_name, out_name));
+		/* take_filename takes ownership, must free */
+		free_(out_name);
+	}
+
 	_expand_asterisks(query, false);
 	schema_preflight(self->schema);
+
+	return FQL_GOOD;
 }
 
 void fqlselect_preop(fqlselect* self, query* query)

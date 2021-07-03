@@ -1,13 +1,12 @@
 #include "writer.h"
 #include <csv.h>
-#include "io.h"
 #include "fql.h"
 #include "misc.h"
 
-writer* writer_construct(writer* self)
+writer* writer_construct(writer* self, enum io io)
 {
 	*self = (writer) {
-	        IO_UNDEFINED,        /* type */
+	        io,                  /* type */
 	        NULL,                /* writer_data */
 	        NULL,                /* write_record__ */
 	        new_t_(vec, string), /* raw_rec */
@@ -19,7 +18,6 @@ writer* writer_construct(writer* self)
 	/* TODO: this should not be here. this should
 	 *       be dependant on output schema
 	 */
-	self->type = IO_LIBCSV;
 	writer_assign(self);
 
 	return self;

@@ -4,6 +4,7 @@
 #include <csv.h>
 
 #include "fql.h"
+#include "io.h"
 #include "misc.h"
 #include "query.h"
 #include "stringview.h"
@@ -29,6 +30,8 @@ schema* schema_construct(schema* self)
 	        NULL,                 /* name */
 	        "",                   /* delimiter */
 	        0,                    /* strictness */
+	        IO_UNDEFINED,         /* io_type */
+	        IO_UNDEFINED,         /* write_io_type */
 	        true,                 /* is_default */
 	};
 
@@ -48,6 +51,27 @@ void schema_destroy(void* generic_schema)
 	delete_if_exists_(string, self->name);
 	delete_if_exists_(string, self->schema_path);
 	delete_if_exists_(multimap, self->col_map);
+}
+
+bool schema_eq(const schema* s1, const schema* s2)
+{
+	if (s1->io_type != s2->io_type) {
+		return false;
+	}
+	if (s1->io_type == IO_LIBCSV) {
+		return string_eq(s1->delimiter, s2->delimiter);
+	}
+	return true;
+}
+
+void schema_set_io_type(schema* self, enum io type)
+{
+	self->io_type = type;
+	if (type == IO_SUBQUERY) {
+		self->write_io_type = IO_UNDEFINED;
+	} else {
+		self->write_io_type = type;
+	}
 }
 
 void schema_add_column(schema* self, column* col, int src_idx)
@@ -476,6 +500,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		}
 	}
 	try_(reader_assign(table->reader, table));
+	schema_set_io_type(table->schema, table->reader->type);
 
 	switch (table->reader->type) {
 	case IO_FIXED:
@@ -949,7 +974,7 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 		table* table = vec_at(aquery->sources, i);
 		try_(schema_resolve_source(fql, table, i));
 
-		if (i == 0) {
+		if (op_get_schema(aquery->op)->write_io_type == IO_UNDEFINED) {
 			op_set_schema(aquery->op, table->schema);
 		}
 
@@ -1019,7 +1044,7 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 		}
 	}
 
-	op_preflight(aquery);
+	try_(op_writer_init(aquery));
 
 	return FQL_GOOD;
 }

@@ -40,7 +40,7 @@ struct writer {
 };
 typedef struct writer writer;
 
-struct writer* writer_construct(struct writer*);
+struct writer* writer_construct(struct writer*, enum io);
 void writer_destroy(struct writer*);
 
 int writer_open(struct writer* self, const char* file_name);

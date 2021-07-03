@@ -121,6 +121,7 @@ struct query {
 	void* op; /* operation structure */
 	struct vec* subquery_const_vec;
 	struct column* top_expr;
+	char* into_table_name;
 	size_t top_count;
 	int query_id;
 	int query_total;

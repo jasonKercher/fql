@@ -33,6 +33,7 @@ query* query_construct(query* self, int id)
 	        NULL,                /* op */
 	        new_t_(vec, query*), /* subquery_const_vec */
 	        NULL,                /* top_expr */
+	        NULL,                /* into_table_name */
 	        -1,                  /* top_count */
 	        id,                  /* query_id */
 	        0,                   /* query_total */
@@ -263,14 +264,17 @@ int query_set_top_count(query* self, const char* count_str)
 
 int query_set_into_table(query* self, const char* table_name)
 {
-	if (access(table_name, F_OK) == 0) {
-		fprintf(stderr,
-		        "Cannot SELECT INTO: file `%s' already exists\n",
-		        table_name);
-		return FQL_FAIL;
-	}
-	fqlselect* select = self->op;
-	return writer_open(select->writer, table_name);
+	self->into_table_name = strdup(table_name);
+	return FQL_GOOD;
+	/* Moved to fqlselect_writer_init */
+	//if (access(table_name, F_OK) == 0) {
+	//	fprintf(stderr,
+	//	        "Cannot SELECT INTO: file `%s' already exists\n",
+	//	        table_name);
+	//	return FQL_FAIL;
+	//}
+	//fqlselect* select = self->op;
+	//return writer_open(select->writer, table_name);
 }
 
 int query_add_aggregate(query* self, enum aggregate_function agg_type)
@@ -337,17 +341,19 @@ int query_init_orderby(query* self)
 		return FQL_GOOD;
 	}
 
-	/* orderby allows us to assume SELECT */
-	fqlselect* select = self->op;
+	self->orderby = new_(order);
+	/* Moved to fqlselect_writer_init */
+	///* orderby allows us to assume SELECT */
+	//fqlselect* select = self->op;
 
-	char* out_name = writer_take_filename(select->writer);
-	const char* in_name = writer_get_tempname(select->writer);
-	self->orderby = new_(order, in_name, out_name);
-	/* take_filename takes ownership, must free */
-	if (out_name) {
-		free_(out_name);
-	}
-	return (self->orderby->out_file) ? FQL_GOOD : FQL_FAIL;
+	//char* out_name = writer_take_filename(select->writer);
+	//const char* in_name = writer_get_tempname(select->writer);
+	//self->orderby = new_(order, in_name, out_name);
+	///* take_filename takes ownership, must free */
+	//if (out_name) {
+	//	free_(out_name);
+	//}
+	//return (self->orderby->out_file) ? FQL_GOOD : FQL_FAIL;
 }
 
 void query_init_in_statement(query* self)
