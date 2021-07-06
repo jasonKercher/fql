@@ -417,7 +417,7 @@ uint64_t _hash_nocase_rtrim(const hashmap* m, const char* key, unsigned* n)
 struct hm_entry*
 _get_entry(hashmap* m, const char* key, unsigned* key_len, uint64_t* hash)
 {
-	if (m->_keybuf_head + *key_len > m->_keybuf_len) {
+	while (m->_keybuf_head + *key_len > m->_keybuf_len) {
 		m->_keybuf_len *= 2;
 		realloc_(m->_keybuf, m->_keybuf_len);
 	}
