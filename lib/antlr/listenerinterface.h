@@ -76,9 +76,6 @@ class ListenerInterface : public TSqlParserBaseListener {
 	void enterDdl_clause(TSqlParser::Ddl_clauseContext * /*ctx*/) override;
 	void exitDdl_clause(TSqlParser::Ddl_clauseContext * /*ctx*/) override;
 
-	void enterBackup_statement(TSqlParser::Backup_statementContext * /*ctx*/) override;
-	void exitBackup_statement(TSqlParser::Backup_statementContext * /*ctx*/) override;
-
 	void enterCfl_statement(TSqlParser::Cfl_statementContext * /*ctx*/) override;
 	void exitCfl_statement(TSqlParser::Cfl_statementContext * /*ctx*/) override;
 
@@ -133,131 +130,8 @@ class ListenerInterface : public TSqlParserBaseListener {
 	void enterAnother_statement(TSqlParser::Another_statementContext * /*ctx*/) override;
 	void exitAnother_statement(TSqlParser::Another_statementContext * /*ctx*/) override;
 
-	void enterAlter_application_role(TSqlParser::Alter_application_roleContext * /*ctx*/) override;
-	void exitAlter_application_role(TSqlParser::Alter_application_roleContext * /*ctx*/) override;
-
-	void enterCreate_application_role(TSqlParser::Create_application_roleContext * /*ctx*/) override;
-	void exitCreate_application_role(TSqlParser::Create_application_roleContext * /*ctx*/) override;
-
 	void enterDrop_aggregate(TSqlParser::Drop_aggregateContext * /*ctx*/) override;
 	void exitDrop_aggregate(TSqlParser::Drop_aggregateContext * /*ctx*/) override;
-
-	void enterDrop_application_role(TSqlParser::Drop_application_roleContext * /*ctx*/) override;
-	void exitDrop_application_role(TSqlParser::Drop_application_roleContext * /*ctx*/) override;
-
-	void enterAlter_assembly(TSqlParser::Alter_assemblyContext * /*ctx*/) override;
-	void exitAlter_assembly(TSqlParser::Alter_assemblyContext * /*ctx*/) override;
-
-	void enterAlter_assembly_start(TSqlParser::Alter_assembly_startContext * /*ctx*/) override;
-	void exitAlter_assembly_start(TSqlParser::Alter_assembly_startContext * /*ctx*/) override;
-
-	void enterAlter_assembly_clause(TSqlParser::Alter_assembly_clauseContext * /*ctx*/) override;
-	void exitAlter_assembly_clause(TSqlParser::Alter_assembly_clauseContext * /*ctx*/) override;
-
-	void enterAlter_assembly_from_clause(TSqlParser::Alter_assembly_from_clauseContext * /*ctx*/) override;
-	void exitAlter_assembly_from_clause(TSqlParser::Alter_assembly_from_clauseContext * /*ctx*/) override;
-
-	void enterAlter_assembly_from_clause_start(TSqlParser::Alter_assembly_from_clause_startContext * /*ctx*/) override;
-	void exitAlter_assembly_from_clause_start(TSqlParser::Alter_assembly_from_clause_startContext * /*ctx*/) override;
-
-	void enterAlter_assembly_drop_clause(TSqlParser::Alter_assembly_drop_clauseContext * /*ctx*/) override;
-	void exitAlter_assembly_drop_clause(TSqlParser::Alter_assembly_drop_clauseContext * /*ctx*/) override;
-
-	void enterAlter_assembly_drop_multiple_files(TSqlParser::Alter_assembly_drop_multiple_filesContext * /*ctx*/) override;
-	void exitAlter_assembly_drop_multiple_files(TSqlParser::Alter_assembly_drop_multiple_filesContext * /*ctx*/) override;
-
-	void enterAlter_assembly_drop(TSqlParser::Alter_assembly_dropContext * /*ctx*/) override;
-	void exitAlter_assembly_drop(TSqlParser::Alter_assembly_dropContext * /*ctx*/) override;
-
-	void enterAlter_assembly_add_clause(TSqlParser::Alter_assembly_add_clauseContext * /*ctx*/) override;
-	void exitAlter_assembly_add_clause(TSqlParser::Alter_assembly_add_clauseContext * /*ctx*/) override;
-
-	void enterAlter_asssembly_add_clause_start(TSqlParser::Alter_asssembly_add_clause_startContext * /*ctx*/) override;
-	void exitAlter_asssembly_add_clause_start(TSqlParser::Alter_asssembly_add_clause_startContext * /*ctx*/) override;
-
-	void enterAlter_assembly_client_file_clause(TSqlParser::Alter_assembly_client_file_clauseContext * /*ctx*/) override;
-	void exitAlter_assembly_client_file_clause(TSqlParser::Alter_assembly_client_file_clauseContext * /*ctx*/) override;
-
-	void enterAlter_assembly_file_name(TSqlParser::Alter_assembly_file_nameContext * /*ctx*/) override;
-	void exitAlter_assembly_file_name(TSqlParser::Alter_assembly_file_nameContext * /*ctx*/) override;
-
-	void enterAlter_assembly_file_bits(TSqlParser::Alter_assembly_file_bitsContext * /*ctx*/) override;
-	void exitAlter_assembly_file_bits(TSqlParser::Alter_assembly_file_bitsContext * /*ctx*/) override;
-
-	void enterAlter_assembly_as(TSqlParser::Alter_assembly_asContext * /*ctx*/) override;
-	void exitAlter_assembly_as(TSqlParser::Alter_assembly_asContext * /*ctx*/) override;
-
-	void enterAlter_assembly_with_clause(TSqlParser::Alter_assembly_with_clauseContext * /*ctx*/) override;
-	void exitAlter_assembly_with_clause(TSqlParser::Alter_assembly_with_clauseContext * /*ctx*/) override;
-
-	void enterAlter_assembly_with(TSqlParser::Alter_assembly_withContext * /*ctx*/) override;
-	void exitAlter_assembly_with(TSqlParser::Alter_assembly_withContext * /*ctx*/) override;
-
-	void enterClient_assembly_specifier(TSqlParser::Client_assembly_specifierContext * /*ctx*/) override;
-	void exitClient_assembly_specifier(TSqlParser::Client_assembly_specifierContext * /*ctx*/) override;
-
-	void enterAssembly_option(TSqlParser::Assembly_optionContext * /*ctx*/) override;
-	void exitAssembly_option(TSqlParser::Assembly_optionContext * /*ctx*/) override;
-
-	void enterNetwork_file_share(TSqlParser::Network_file_shareContext * /*ctx*/) override;
-	void exitNetwork_file_share(TSqlParser::Network_file_shareContext * /*ctx*/) override;
-
-	void enterNetwork_computer(TSqlParser::Network_computerContext * /*ctx*/) override;
-	void exitNetwork_computer(TSqlParser::Network_computerContext * /*ctx*/) override;
-
-	void enterNetwork_file_start(TSqlParser::Network_file_startContext * /*ctx*/) override;
-	void exitNetwork_file_start(TSqlParser::Network_file_startContext * /*ctx*/) override;
-
-	void enterFile_path(TSqlParser::File_pathContext * /*ctx*/) override;
-	void exitFile_path(TSqlParser::File_pathContext * /*ctx*/) override;
-
-	void enterFile_directory_path_separator(TSqlParser::File_directory_path_separatorContext * /*ctx*/) override;
-	void exitFile_directory_path_separator(TSqlParser::File_directory_path_separatorContext * /*ctx*/) override;
-
-	void enterLocal_file(TSqlParser::Local_fileContext * /*ctx*/) override;
-	void exitLocal_file(TSqlParser::Local_fileContext * /*ctx*/) override;
-
-	void enterLocal_drive(TSqlParser::Local_driveContext * /*ctx*/) override;
-	void exitLocal_drive(TSqlParser::Local_driveContext * /*ctx*/) override;
-
-	void enterMultiple_local_files(TSqlParser::Multiple_local_filesContext * /*ctx*/) override;
-	void exitMultiple_local_files(TSqlParser::Multiple_local_filesContext * /*ctx*/) override;
-
-	void enterMultiple_local_file_start(TSqlParser::Multiple_local_file_startContext * /*ctx*/) override;
-	void exitMultiple_local_file_start(TSqlParser::Multiple_local_file_startContext * /*ctx*/) override;
-
-	void enterCreate_assembly(TSqlParser::Create_assemblyContext * /*ctx*/) override;
-	void exitCreate_assembly(TSqlParser::Create_assemblyContext * /*ctx*/) override;
-
-	void enterDrop_assembly(TSqlParser::Drop_assemblyContext * /*ctx*/) override;
-	void exitDrop_assembly(TSqlParser::Drop_assemblyContext * /*ctx*/) override;
-
-	void enterAlter_asymmetric_key(TSqlParser::Alter_asymmetric_keyContext * /*ctx*/) override;
-	void exitAlter_asymmetric_key(TSqlParser::Alter_asymmetric_keyContext * /*ctx*/) override;
-
-	void enterAlter_asymmetric_key_start(TSqlParser::Alter_asymmetric_key_startContext * /*ctx*/) override;
-	void exitAlter_asymmetric_key_start(TSqlParser::Alter_asymmetric_key_startContext * /*ctx*/) override;
-
-	void enterAsymmetric_key_option(TSqlParser::Asymmetric_key_optionContext * /*ctx*/) override;
-	void exitAsymmetric_key_option(TSqlParser::Asymmetric_key_optionContext * /*ctx*/) override;
-
-	void enterAsymmetric_key_option_start(TSqlParser::Asymmetric_key_option_startContext * /*ctx*/) override;
-	void exitAsymmetric_key_option_start(TSqlParser::Asymmetric_key_option_startContext * /*ctx*/) override;
-
-	void enterAsymmetric_key_password_change_option(TSqlParser::Asymmetric_key_password_change_optionContext * /*ctx*/) override;
-	void exitAsymmetric_key_password_change_option(TSqlParser::Asymmetric_key_password_change_optionContext * /*ctx*/) override;
-
-	void enterCreate_asymmetric_key(TSqlParser::Create_asymmetric_keyContext * /*ctx*/) override;
-	void exitCreate_asymmetric_key(TSqlParser::Create_asymmetric_keyContext * /*ctx*/) override;
-
-	void enterDrop_asymmetric_key(TSqlParser::Drop_asymmetric_keyContext * /*ctx*/) override;
-	void exitDrop_asymmetric_key(TSqlParser::Drop_asymmetric_keyContext * /*ctx*/) override;
-
-	void enterAlter_authorization(TSqlParser::Alter_authorizationContext * /*ctx*/) override;
-	void exitAlter_authorization(TSqlParser::Alter_authorizationContext * /*ctx*/) override;
-
-	void enterAuthorization_grantee(TSqlParser::Authorization_granteeContext * /*ctx*/) override;
-	void exitAuthorization_grantee(TSqlParser::Authorization_granteeContext * /*ctx*/) override;
 
 	void enterEntity_to(TSqlParser::Entity_toContext * /*ctx*/) override;
 	void exitEntity_to(TSqlParser::Entity_toContext * /*ctx*/) override;
@@ -265,230 +139,20 @@ class ListenerInterface : public TSqlParserBaseListener {
 	void enterColon_colon(TSqlParser::Colon_colonContext * /*ctx*/) override;
 	void exitColon_colon(TSqlParser::Colon_colonContext * /*ctx*/) override;
 
-	void enterAlter_authorization_start(TSqlParser::Alter_authorization_startContext * /*ctx*/) override;
-	void exitAlter_authorization_start(TSqlParser::Alter_authorization_startContext * /*ctx*/) override;
-
-	void enterAlter_authorization_for_sql_database(TSqlParser::Alter_authorization_for_sql_databaseContext * /*ctx*/) override;
-	void exitAlter_authorization_for_sql_database(TSqlParser::Alter_authorization_for_sql_databaseContext * /*ctx*/) override;
-
-	void enterAlter_authorization_for_azure_dw(TSqlParser::Alter_authorization_for_azure_dwContext * /*ctx*/) override;
-	void exitAlter_authorization_for_azure_dw(TSqlParser::Alter_authorization_for_azure_dwContext * /*ctx*/) override;
-
-	void enterAlter_authorization_for_parallel_dw(TSqlParser::Alter_authorization_for_parallel_dwContext * /*ctx*/) override;
-	void exitAlter_authorization_for_parallel_dw(TSqlParser::Alter_authorization_for_parallel_dwContext * /*ctx*/) override;
-
 	void enterClass_type(TSqlParser::Class_typeContext * /*ctx*/) override;
 	void exitClass_type(TSqlParser::Class_typeContext * /*ctx*/) override;
 
 	void enterClass_type_for_sql_database(TSqlParser::Class_type_for_sql_databaseContext * /*ctx*/) override;
 	void exitClass_type_for_sql_database(TSqlParser::Class_type_for_sql_databaseContext * /*ctx*/) override;
 
-	void enterClass_type_for_azure_dw(TSqlParser::Class_type_for_azure_dwContext * /*ctx*/) override;
-	void exitClass_type_for_azure_dw(TSqlParser::Class_type_for_azure_dwContext * /*ctx*/) override;
-
 	void enterClass_type_for_parallel_dw(TSqlParser::Class_type_for_parallel_dwContext * /*ctx*/) override;
 	void exitClass_type_for_parallel_dw(TSqlParser::Class_type_for_parallel_dwContext * /*ctx*/) override;
-
-	void enterDrop_availability_group(TSqlParser::Drop_availability_groupContext * /*ctx*/) override;
-	void exitDrop_availability_group(TSqlParser::Drop_availability_groupContext * /*ctx*/) override;
-
-	void enterAlter_availability_group(TSqlParser::Alter_availability_groupContext * /*ctx*/) override;
-	void exitAlter_availability_group(TSqlParser::Alter_availability_groupContext * /*ctx*/) override;
-
-	void enterAlter_availability_group_start(TSqlParser::Alter_availability_group_startContext * /*ctx*/) override;
-	void exitAlter_availability_group_start(TSqlParser::Alter_availability_group_startContext * /*ctx*/) override;
-
-	void enterAlter_availability_group_options(TSqlParser::Alter_availability_group_optionsContext * /*ctx*/) override;
-	void exitAlter_availability_group_options(TSqlParser::Alter_availability_group_optionsContext * /*ctx*/) override;
-
-	void enterCreate_or_alter_broker_priority(TSqlParser::Create_or_alter_broker_priorityContext * /*ctx*/) override;
-	void exitCreate_or_alter_broker_priority(TSqlParser::Create_or_alter_broker_priorityContext * /*ctx*/) override;
-
-	void enterDrop_broker_priority(TSqlParser::Drop_broker_priorityContext * /*ctx*/) override;
-	void exitDrop_broker_priority(TSqlParser::Drop_broker_priorityContext * /*ctx*/) override;
-
-	void enterAlter_certificate(TSqlParser::Alter_certificateContext * /*ctx*/) override;
-	void exitAlter_certificate(TSqlParser::Alter_certificateContext * /*ctx*/) override;
-
-	void enterAlter_column_encryption_key(TSqlParser::Alter_column_encryption_keyContext * /*ctx*/) override;
-	void exitAlter_column_encryption_key(TSqlParser::Alter_column_encryption_keyContext * /*ctx*/) override;
-
-	void enterCreate_column_encryption_key(TSqlParser::Create_column_encryption_keyContext * /*ctx*/) override;
-	void exitCreate_column_encryption_key(TSqlParser::Create_column_encryption_keyContext * /*ctx*/) override;
-
-	void enterDrop_certificate(TSqlParser::Drop_certificateContext * /*ctx*/) override;
-	void exitDrop_certificate(TSqlParser::Drop_certificateContext * /*ctx*/) override;
-
-	void enterDrop_column_encryption_key(TSqlParser::Drop_column_encryption_keyContext * /*ctx*/) override;
-	void exitDrop_column_encryption_key(TSqlParser::Drop_column_encryption_keyContext * /*ctx*/) override;
-
-	void enterDrop_column_master_key(TSqlParser::Drop_column_master_keyContext * /*ctx*/) override;
-	void exitDrop_column_master_key(TSqlParser::Drop_column_master_keyContext * /*ctx*/) override;
-
-	void enterDrop_contract(TSqlParser::Drop_contractContext * /*ctx*/) override;
-	void exitDrop_contract(TSqlParser::Drop_contractContext * /*ctx*/) override;
-
-	void enterDrop_credential(TSqlParser::Drop_credentialContext * /*ctx*/) override;
-	void exitDrop_credential(TSqlParser::Drop_credentialContext * /*ctx*/) override;
-
-	void enterDrop_cryptograhic_provider(TSqlParser::Drop_cryptograhic_providerContext * /*ctx*/) override;
-	void exitDrop_cryptograhic_provider(TSqlParser::Drop_cryptograhic_providerContext * /*ctx*/) override;
-
-	void enterDrop_database(TSqlParser::Drop_databaseContext * /*ctx*/) override;
-	void exitDrop_database(TSqlParser::Drop_databaseContext * /*ctx*/) override;
-
-	void enterDrop_database_audit_specification(TSqlParser::Drop_database_audit_specificationContext * /*ctx*/) override;
-	void exitDrop_database_audit_specification(TSqlParser::Drop_database_audit_specificationContext * /*ctx*/) override;
-
-	void enterDrop_database_scoped_credential(TSqlParser::Drop_database_scoped_credentialContext * /*ctx*/) override;
-	void exitDrop_database_scoped_credential(TSqlParser::Drop_database_scoped_credentialContext * /*ctx*/) override;
-
-	void enterDrop_default(TSqlParser::Drop_defaultContext * /*ctx*/) override;
-	void exitDrop_default(TSqlParser::Drop_defaultContext * /*ctx*/) override;
-
-	void enterDrop_endpoint(TSqlParser::Drop_endpointContext * /*ctx*/) override;
-	void exitDrop_endpoint(TSqlParser::Drop_endpointContext * /*ctx*/) override;
-
-	void enterDrop_external_data_source(TSqlParser::Drop_external_data_sourceContext * /*ctx*/) override;
-	void exitDrop_external_data_source(TSqlParser::Drop_external_data_sourceContext * /*ctx*/) override;
-
-	void enterDrop_external_file_format(TSqlParser::Drop_external_file_formatContext * /*ctx*/) override;
-	void exitDrop_external_file_format(TSqlParser::Drop_external_file_formatContext * /*ctx*/) override;
-
-	void enterDrop_external_library(TSqlParser::Drop_external_libraryContext * /*ctx*/) override;
-	void exitDrop_external_library(TSqlParser::Drop_external_libraryContext * /*ctx*/) override;
-
-	void enterDrop_external_resource_pool(TSqlParser::Drop_external_resource_poolContext * /*ctx*/) override;
-	void exitDrop_external_resource_pool(TSqlParser::Drop_external_resource_poolContext * /*ctx*/) override;
-
-	void enterDrop_external_table(TSqlParser::Drop_external_tableContext * /*ctx*/) override;
-	void exitDrop_external_table(TSqlParser::Drop_external_tableContext * /*ctx*/) override;
-
-	void enterDrop_event_notifications(TSqlParser::Drop_event_notificationsContext * /*ctx*/) override;
-	void exitDrop_event_notifications(TSqlParser::Drop_event_notificationsContext * /*ctx*/) override;
-
-	void enterDrop_event_session(TSqlParser::Drop_event_sessionContext * /*ctx*/) override;
-	void exitDrop_event_session(TSqlParser::Drop_event_sessionContext * /*ctx*/) override;
-
-	void enterDrop_fulltext_catalog(TSqlParser::Drop_fulltext_catalogContext * /*ctx*/) override;
-	void exitDrop_fulltext_catalog(TSqlParser::Drop_fulltext_catalogContext * /*ctx*/) override;
-
-	void enterDrop_fulltext_index(TSqlParser::Drop_fulltext_indexContext * /*ctx*/) override;
-	void exitDrop_fulltext_index(TSqlParser::Drop_fulltext_indexContext * /*ctx*/) override;
-
-	void enterDrop_fulltext_stoplist(TSqlParser::Drop_fulltext_stoplistContext * /*ctx*/) override;
-	void exitDrop_fulltext_stoplist(TSqlParser::Drop_fulltext_stoplistContext * /*ctx*/) override;
-
-	void enterDrop_login(TSqlParser::Drop_loginContext * /*ctx*/) override;
-	void exitDrop_login(TSqlParser::Drop_loginContext * /*ctx*/) override;
-
-	void enterDrop_master_key(TSqlParser::Drop_master_keyContext * /*ctx*/) override;
-	void exitDrop_master_key(TSqlParser::Drop_master_keyContext * /*ctx*/) override;
-
-	void enterDrop_message_type(TSqlParser::Drop_message_typeContext * /*ctx*/) override;
-	void exitDrop_message_type(TSqlParser::Drop_message_typeContext * /*ctx*/) override;
-
-	void enterDrop_partition_function(TSqlParser::Drop_partition_functionContext * /*ctx*/) override;
-	void exitDrop_partition_function(TSqlParser::Drop_partition_functionContext * /*ctx*/) override;
-
-	void enterDrop_partition_scheme(TSqlParser::Drop_partition_schemeContext * /*ctx*/) override;
-	void exitDrop_partition_scheme(TSqlParser::Drop_partition_schemeContext * /*ctx*/) override;
-
-	void enterDrop_queue(TSqlParser::Drop_queueContext * /*ctx*/) override;
-	void exitDrop_queue(TSqlParser::Drop_queueContext * /*ctx*/) override;
-
-	void enterDrop_remote_service_binding(TSqlParser::Drop_remote_service_bindingContext * /*ctx*/) override;
-	void exitDrop_remote_service_binding(TSqlParser::Drop_remote_service_bindingContext * /*ctx*/) override;
-
-	void enterDrop_resource_pool(TSqlParser::Drop_resource_poolContext * /*ctx*/) override;
-	void exitDrop_resource_pool(TSqlParser::Drop_resource_poolContext * /*ctx*/) override;
-
-	void enterDrop_db_role(TSqlParser::Drop_db_roleContext * /*ctx*/) override;
-	void exitDrop_db_role(TSqlParser::Drop_db_roleContext * /*ctx*/) override;
-
-	void enterDrop_route(TSqlParser::Drop_routeContext * /*ctx*/) override;
-	void exitDrop_route(TSqlParser::Drop_routeContext * /*ctx*/) override;
-
-	void enterDrop_rule(TSqlParser::Drop_ruleContext * /*ctx*/) override;
-	void exitDrop_rule(TSqlParser::Drop_ruleContext * /*ctx*/) override;
-
-	void enterDrop_schema(TSqlParser::Drop_schemaContext * /*ctx*/) override;
-	void exitDrop_schema(TSqlParser::Drop_schemaContext * /*ctx*/) override;
-
-	void enterDrop_search_property_list(TSqlParser::Drop_search_property_listContext * /*ctx*/) override;
-	void exitDrop_search_property_list(TSqlParser::Drop_search_property_listContext * /*ctx*/) override;
-
-	void enterDrop_security_policy(TSqlParser::Drop_security_policyContext * /*ctx*/) override;
-	void exitDrop_security_policy(TSqlParser::Drop_security_policyContext * /*ctx*/) override;
-
-	void enterDrop_sequence(TSqlParser::Drop_sequenceContext * /*ctx*/) override;
-	void exitDrop_sequence(TSqlParser::Drop_sequenceContext * /*ctx*/) override;
-
-	void enterDrop_server_audit(TSqlParser::Drop_server_auditContext * /*ctx*/) override;
-	void exitDrop_server_audit(TSqlParser::Drop_server_auditContext * /*ctx*/) override;
-
-	void enterDrop_server_audit_specification(TSqlParser::Drop_server_audit_specificationContext * /*ctx*/) override;
-	void exitDrop_server_audit_specification(TSqlParser::Drop_server_audit_specificationContext * /*ctx*/) override;
-
-	void enterDrop_server_role(TSqlParser::Drop_server_roleContext * /*ctx*/) override;
-	void exitDrop_server_role(TSqlParser::Drop_server_roleContext * /*ctx*/) override;
-
-	void enterDrop_service(TSqlParser::Drop_serviceContext * /*ctx*/) override;
-	void exitDrop_service(TSqlParser::Drop_serviceContext * /*ctx*/) override;
-
-	void enterDrop_signature(TSqlParser::Drop_signatureContext * /*ctx*/) override;
-	void exitDrop_signature(TSqlParser::Drop_signatureContext * /*ctx*/) override;
-
-	void enterDrop_statistics_name_azure_dw_and_pdw(TSqlParser::Drop_statistics_name_azure_dw_and_pdwContext * /*ctx*/) override;
-	void exitDrop_statistics_name_azure_dw_and_pdw(TSqlParser::Drop_statistics_name_azure_dw_and_pdwContext * /*ctx*/) override;
-
-	void enterDrop_symmetric_key(TSqlParser::Drop_symmetric_keyContext * /*ctx*/) override;
-	void exitDrop_symmetric_key(TSqlParser::Drop_symmetric_keyContext * /*ctx*/) override;
-
-	void enterDrop_synonym(TSqlParser::Drop_synonymContext * /*ctx*/) override;
-	void exitDrop_synonym(TSqlParser::Drop_synonymContext * /*ctx*/) override;
-
-	void enterDrop_user(TSqlParser::Drop_userContext * /*ctx*/) override;
-	void exitDrop_user(TSqlParser::Drop_userContext * /*ctx*/) override;
-
-	void enterDrop_workload_group(TSqlParser::Drop_workload_groupContext * /*ctx*/) override;
-	void exitDrop_workload_group(TSqlParser::Drop_workload_groupContext * /*ctx*/) override;
-
-	void enterDrop_xml_schema_collection(TSqlParser::Drop_xml_schema_collectionContext * /*ctx*/) override;
-	void exitDrop_xml_schema_collection(TSqlParser::Drop_xml_schema_collectionContext * /*ctx*/) override;
-
-	void enterDisable_trigger(TSqlParser::Disable_triggerContext * /*ctx*/) override;
-	void exitDisable_trigger(TSqlParser::Disable_triggerContext * /*ctx*/) override;
-
-	void enterEnable_trigger(TSqlParser::Enable_triggerContext * /*ctx*/) override;
-	void exitEnable_trigger(TSqlParser::Enable_triggerContext * /*ctx*/) override;
 
 	void enterLock_table(TSqlParser::Lock_tableContext * /*ctx*/) override;
 	void exitLock_table(TSqlParser::Lock_tableContext * /*ctx*/) override;
 
 	void enterTruncate_table(TSqlParser::Truncate_tableContext * /*ctx*/) override;
 	void exitTruncate_table(TSqlParser::Truncate_tableContext * /*ctx*/) override;
-
-	void enterCreate_column_master_key(TSqlParser::Create_column_master_keyContext * /*ctx*/) override;
-	void exitCreate_column_master_key(TSqlParser::Create_column_master_keyContext * /*ctx*/) override;
-
-	void enterAlter_credential(TSqlParser::Alter_credentialContext * /*ctx*/) override;
-	void exitAlter_credential(TSqlParser::Alter_credentialContext * /*ctx*/) override;
-
-	void enterCreate_credential(TSqlParser::Create_credentialContext * /*ctx*/) override;
-	void exitCreate_credential(TSqlParser::Create_credentialContext * /*ctx*/) override;
-
-	void enterAlter_cryptographic_provider(TSqlParser::Alter_cryptographic_providerContext * /*ctx*/) override;
-	void exitAlter_cryptographic_provider(TSqlParser::Alter_cryptographic_providerContext * /*ctx*/) override;
-
-	void enterCreate_cryptographic_provider(TSqlParser::Create_cryptographic_providerContext * /*ctx*/) override;
-	void exitCreate_cryptographic_provider(TSqlParser::Create_cryptographic_providerContext * /*ctx*/) override;
-
-	void enterCreate_event_notification(TSqlParser::Create_event_notificationContext * /*ctx*/) override;
-	void exitCreate_event_notification(TSqlParser::Create_event_notificationContext * /*ctx*/) override;
-
-	void enterCreate_or_alter_event_session(TSqlParser::Create_or_alter_event_sessionContext * /*ctx*/) override;
-	void exitCreate_or_alter_event_session(TSqlParser::Create_or_alter_event_sessionContext * /*ctx*/) override;
 
 	void enterEvent_session_predicate_expression(TSqlParser::Event_session_predicate_expressionContext * /*ctx*/) override;
 	void exitEvent_session_predicate_expression(TSqlParser::Event_session_predicate_expressionContext * /*ctx*/) override;
@@ -499,179 +163,11 @@ class ListenerInterface : public TSqlParserBaseListener {
 	void enterEvent_session_predicate_leaf(TSqlParser::Event_session_predicate_leafContext * /*ctx*/) override;
 	void exitEvent_session_predicate_leaf(TSqlParser::Event_session_predicate_leafContext * /*ctx*/) override;
 
-	void enterAlter_external_data_source(TSqlParser::Alter_external_data_sourceContext * /*ctx*/) override;
-	void exitAlter_external_data_source(TSqlParser::Alter_external_data_sourceContext * /*ctx*/) override;
-
-	void enterAlter_external_library(TSqlParser::Alter_external_libraryContext * /*ctx*/) override;
-	void exitAlter_external_library(TSqlParser::Alter_external_libraryContext * /*ctx*/) override;
-
-	void enterCreate_external_library(TSqlParser::Create_external_libraryContext * /*ctx*/) override;
-	void exitCreate_external_library(TSqlParser::Create_external_libraryContext * /*ctx*/) override;
-
-	void enterAlter_external_resource_pool(TSqlParser::Alter_external_resource_poolContext * /*ctx*/) override;
-	void exitAlter_external_resource_pool(TSqlParser::Alter_external_resource_poolContext * /*ctx*/) override;
-
-	void enterCreate_external_resource_pool(TSqlParser::Create_external_resource_poolContext * /*ctx*/) override;
-	void exitCreate_external_resource_pool(TSqlParser::Create_external_resource_poolContext * /*ctx*/) override;
-
-	void enterAlter_fulltext_catalog(TSqlParser::Alter_fulltext_catalogContext * /*ctx*/) override;
-	void exitAlter_fulltext_catalog(TSqlParser::Alter_fulltext_catalogContext * /*ctx*/) override;
-
-	void enterCreate_fulltext_catalog(TSqlParser::Create_fulltext_catalogContext * /*ctx*/) override;
-	void exitCreate_fulltext_catalog(TSqlParser::Create_fulltext_catalogContext * /*ctx*/) override;
-
-	void enterAlter_fulltext_stoplist(TSqlParser::Alter_fulltext_stoplistContext * /*ctx*/) override;
-	void exitAlter_fulltext_stoplist(TSqlParser::Alter_fulltext_stoplistContext * /*ctx*/) override;
-
-	void enterCreate_fulltext_stoplist(TSqlParser::Create_fulltext_stoplistContext * /*ctx*/) override;
-	void exitCreate_fulltext_stoplist(TSqlParser::Create_fulltext_stoplistContext * /*ctx*/) override;
-
-	void enterAlter_login_sql_server(TSqlParser::Alter_login_sql_serverContext * /*ctx*/) override;
-	void exitAlter_login_sql_server(TSqlParser::Alter_login_sql_serverContext * /*ctx*/) override;
-
-	void enterCreate_login_sql_server(TSqlParser::Create_login_sql_serverContext * /*ctx*/) override;
-	void exitCreate_login_sql_server(TSqlParser::Create_login_sql_serverContext * /*ctx*/) override;
-
-	void enterAlter_login_azure_sql(TSqlParser::Alter_login_azure_sqlContext * /*ctx*/) override;
-	void exitAlter_login_azure_sql(TSqlParser::Alter_login_azure_sqlContext * /*ctx*/) override;
-
-	void enterCreate_login_azure_sql(TSqlParser::Create_login_azure_sqlContext * /*ctx*/) override;
-	void exitCreate_login_azure_sql(TSqlParser::Create_login_azure_sqlContext * /*ctx*/) override;
-
-	void enterAlter_login_azure_sql_dw_and_pdw(TSqlParser::Alter_login_azure_sql_dw_and_pdwContext * /*ctx*/) override;
-	void exitAlter_login_azure_sql_dw_and_pdw(TSqlParser::Alter_login_azure_sql_dw_and_pdwContext * /*ctx*/) override;
-
-	void enterCreate_login_pdw(TSqlParser::Create_login_pdwContext * /*ctx*/) override;
-	void exitCreate_login_pdw(TSqlParser::Create_login_pdwContext * /*ctx*/) override;
-
-	void enterAlter_master_key_sql_server(TSqlParser::Alter_master_key_sql_serverContext * /*ctx*/) override;
-	void exitAlter_master_key_sql_server(TSqlParser::Alter_master_key_sql_serverContext * /*ctx*/) override;
-
-	void enterCreate_master_key_sql_server(TSqlParser::Create_master_key_sql_serverContext * /*ctx*/) override;
-	void exitCreate_master_key_sql_server(TSqlParser::Create_master_key_sql_serverContext * /*ctx*/) override;
-
-	void enterAlter_master_key_azure_sql(TSqlParser::Alter_master_key_azure_sqlContext * /*ctx*/) override;
-	void exitAlter_master_key_azure_sql(TSqlParser::Alter_master_key_azure_sqlContext * /*ctx*/) override;
-
-	void enterCreate_master_key_azure_sql(TSqlParser::Create_master_key_azure_sqlContext * /*ctx*/) override;
-	void exitCreate_master_key_azure_sql(TSqlParser::Create_master_key_azure_sqlContext * /*ctx*/) override;
-
-	void enterAlter_message_type(TSqlParser::Alter_message_typeContext * /*ctx*/) override;
-	void exitAlter_message_type(TSqlParser::Alter_message_typeContext * /*ctx*/) override;
-
-	void enterAlter_partition_function(TSqlParser::Alter_partition_functionContext * /*ctx*/) override;
-	void exitAlter_partition_function(TSqlParser::Alter_partition_functionContext * /*ctx*/) override;
-
-	void enterAlter_partition_scheme(TSqlParser::Alter_partition_schemeContext * /*ctx*/) override;
-	void exitAlter_partition_scheme(TSqlParser::Alter_partition_schemeContext * /*ctx*/) override;
-
-	void enterAlter_remote_service_binding(TSqlParser::Alter_remote_service_bindingContext * /*ctx*/) override;
-	void exitAlter_remote_service_binding(TSqlParser::Alter_remote_service_bindingContext * /*ctx*/) override;
-
-	void enterCreate_remote_service_binding(TSqlParser::Create_remote_service_bindingContext * /*ctx*/) override;
-	void exitCreate_remote_service_binding(TSqlParser::Create_remote_service_bindingContext * /*ctx*/) override;
-
-	void enterCreate_resource_pool(TSqlParser::Create_resource_poolContext * /*ctx*/) override;
-	void exitCreate_resource_pool(TSqlParser::Create_resource_poolContext * /*ctx*/) override;
-
-	void enterAlter_resource_governor(TSqlParser::Alter_resource_governorContext * /*ctx*/) override;
-	void exitAlter_resource_governor(TSqlParser::Alter_resource_governorContext * /*ctx*/) override;
-
-	void enterAlter_db_role(TSqlParser::Alter_db_roleContext * /*ctx*/) override;
-	void exitAlter_db_role(TSqlParser::Alter_db_roleContext * /*ctx*/) override;
-
-	void enterCreate_db_role(TSqlParser::Create_db_roleContext * /*ctx*/) override;
-	void exitCreate_db_role(TSqlParser::Create_db_roleContext * /*ctx*/) override;
-
-	void enterCreate_route(TSqlParser::Create_routeContext * /*ctx*/) override;
-	void exitCreate_route(TSqlParser::Create_routeContext * /*ctx*/) override;
-
-	void enterCreate_rule(TSqlParser::Create_ruleContext * /*ctx*/) override;
-	void exitCreate_rule(TSqlParser::Create_ruleContext * /*ctx*/) override;
-
 	void enterAlter_schema_sql(TSqlParser::Alter_schema_sqlContext * /*ctx*/) override;
 	void exitAlter_schema_sql(TSqlParser::Alter_schema_sqlContext * /*ctx*/) override;
 
 	void enterCreate_schema(TSqlParser::Create_schemaContext * /*ctx*/) override;
 	void exitCreate_schema(TSqlParser::Create_schemaContext * /*ctx*/) override;
-
-	void enterCreate_schema_azure_sql_dw_and_pdw(TSqlParser::Create_schema_azure_sql_dw_and_pdwContext * /*ctx*/) override;
-	void exitCreate_schema_azure_sql_dw_and_pdw(TSqlParser::Create_schema_azure_sql_dw_and_pdwContext * /*ctx*/) override;
-
-	void enterAlter_schema_azure_sql_dw_and_pdw(TSqlParser::Alter_schema_azure_sql_dw_and_pdwContext * /*ctx*/) override;
-	void exitAlter_schema_azure_sql_dw_and_pdw(TSqlParser::Alter_schema_azure_sql_dw_and_pdwContext * /*ctx*/) override;
-
-	void enterCreate_search_property_list(TSqlParser::Create_search_property_listContext * /*ctx*/) override;
-	void exitCreate_search_property_list(TSqlParser::Create_search_property_listContext * /*ctx*/) override;
-
-	void enterCreate_security_policy(TSqlParser::Create_security_policyContext * /*ctx*/) override;
-	void exitCreate_security_policy(TSqlParser::Create_security_policyContext * /*ctx*/) override;
-
-	void enterAlter_sequence(TSqlParser::Alter_sequenceContext * /*ctx*/) override;
-	void exitAlter_sequence(TSqlParser::Alter_sequenceContext * /*ctx*/) override;
-
-	void enterCreate_sequence(TSqlParser::Create_sequenceContext * /*ctx*/) override;
-	void exitCreate_sequence(TSqlParser::Create_sequenceContext * /*ctx*/) override;
-
-	void enterAlter_server_audit(TSqlParser::Alter_server_auditContext * /*ctx*/) override;
-	void exitAlter_server_audit(TSqlParser::Alter_server_auditContext * /*ctx*/) override;
-
-	void enterCreate_server_audit(TSqlParser::Create_server_auditContext * /*ctx*/) override;
-	void exitCreate_server_audit(TSqlParser::Create_server_auditContext * /*ctx*/) override;
-
-	void enterAlter_server_audit_specification(TSqlParser::Alter_server_audit_specificationContext * /*ctx*/) override;
-	void exitAlter_server_audit_specification(TSqlParser::Alter_server_audit_specificationContext * /*ctx*/) override;
-
-	void enterCreate_server_audit_specification(TSqlParser::Create_server_audit_specificationContext * /*ctx*/) override;
-	void exitCreate_server_audit_specification(TSqlParser::Create_server_audit_specificationContext * /*ctx*/) override;
-
-	void enterAlter_server_configuration(TSqlParser::Alter_server_configurationContext * /*ctx*/) override;
-	void exitAlter_server_configuration(TSqlParser::Alter_server_configurationContext * /*ctx*/) override;
-
-	void enterAlter_server_role(TSqlParser::Alter_server_roleContext * /*ctx*/) override;
-	void exitAlter_server_role(TSqlParser::Alter_server_roleContext * /*ctx*/) override;
-
-	void enterCreate_server_role(TSqlParser::Create_server_roleContext * /*ctx*/) override;
-	void exitCreate_server_role(TSqlParser::Create_server_roleContext * /*ctx*/) override;
-
-	void enterAlter_server_role_pdw(TSqlParser::Alter_server_role_pdwContext * /*ctx*/) override;
-	void exitAlter_server_role_pdw(TSqlParser::Alter_server_role_pdwContext * /*ctx*/) override;
-
-	void enterAlter_service(TSqlParser::Alter_serviceContext * /*ctx*/) override;
-	void exitAlter_service(TSqlParser::Alter_serviceContext * /*ctx*/) override;
-
-	void enterCreate_service(TSqlParser::Create_serviceContext * /*ctx*/) override;
-	void exitCreate_service(TSqlParser::Create_serviceContext * /*ctx*/) override;
-
-	void enterAlter_service_master_key(TSqlParser::Alter_service_master_keyContext * /*ctx*/) override;
-	void exitAlter_service_master_key(TSqlParser::Alter_service_master_keyContext * /*ctx*/) override;
-
-	void enterAlter_symmetric_key(TSqlParser::Alter_symmetric_keyContext * /*ctx*/) override;
-	void exitAlter_symmetric_key(TSqlParser::Alter_symmetric_keyContext * /*ctx*/) override;
-
-	void enterCreate_symmetric_key(TSqlParser::Create_symmetric_keyContext * /*ctx*/) override;
-	void exitCreate_symmetric_key(TSqlParser::Create_symmetric_keyContext * /*ctx*/) override;
-
-	void enterCreate_synonym(TSqlParser::Create_synonymContext * /*ctx*/) override;
-	void exitCreate_synonym(TSqlParser::Create_synonymContext * /*ctx*/) override;
-
-	void enterAlter_user(TSqlParser::Alter_userContext * /*ctx*/) override;
-	void exitAlter_user(TSqlParser::Alter_userContext * /*ctx*/) override;
-
-	void enterCreate_user(TSqlParser::Create_userContext * /*ctx*/) override;
-	void exitCreate_user(TSqlParser::Create_userContext * /*ctx*/) override;
-
-	void enterCreate_user_azure_sql_dw(TSqlParser::Create_user_azure_sql_dwContext * /*ctx*/) override;
-	void exitCreate_user_azure_sql_dw(TSqlParser::Create_user_azure_sql_dwContext * /*ctx*/) override;
-
-	void enterAlter_user_azure_sql(TSqlParser::Alter_user_azure_sqlContext * /*ctx*/) override;
-	void exitAlter_user_azure_sql(TSqlParser::Alter_user_azure_sqlContext * /*ctx*/) override;
-
-	void enterAlter_workload_group(TSqlParser::Alter_workload_groupContext * /*ctx*/) override;
-	void exitAlter_workload_group(TSqlParser::Alter_workload_groupContext * /*ctx*/) override;
-
-	void enterCreate_workload_group(TSqlParser::Create_workload_groupContext * /*ctx*/) override;
-	void exitCreate_workload_group(TSqlParser::Create_workload_groupContext * /*ctx*/) override;
 
 	void enterCreate_xml_schema_collection(TSqlParser::Create_xml_schema_collectionContext * /*ctx*/) override;
 	void exitCreate_xml_schema_collection(TSqlParser::Create_xml_schema_collectionContext * /*ctx*/) override;
@@ -690,9 +186,6 @@ class ListenerInterface : public TSqlParserBaseListener {
 
 	void enterQueue_rebuild_options(TSqlParser::Queue_rebuild_optionsContext * /*ctx*/) override;
 	void exitQueue_rebuild_options(TSqlParser::Queue_rebuild_optionsContext * /*ctx*/) override;
-
-	void enterCreate_contract(TSqlParser::Create_contractContext * /*ctx*/) override;
-	void exitCreate_contract(TSqlParser::Create_contractContext * /*ctx*/) override;
 
 	void enterConversation_statement(TSqlParser::Conversation_statementContext * /*ctx*/) override;
 	void exitConversation_statement(TSqlParser::Conversation_statementContext * /*ctx*/) override;
@@ -751,24 +244,6 @@ class ListenerInterface : public TSqlParserBaseListener {
 	void enterCreate_or_alter_procedure(TSqlParser::Create_or_alter_procedureContext * /*ctx*/) override;
 	void exitCreate_or_alter_procedure(TSqlParser::Create_or_alter_procedureContext * /*ctx*/) override;
 
-	void enterCreate_or_alter_trigger(TSqlParser::Create_or_alter_triggerContext * /*ctx*/) override;
-	void exitCreate_or_alter_trigger(TSqlParser::Create_or_alter_triggerContext * /*ctx*/) override;
-
-	void enterCreate_or_alter_dml_trigger(TSqlParser::Create_or_alter_dml_triggerContext * /*ctx*/) override;
-	void exitCreate_or_alter_dml_trigger(TSqlParser::Create_or_alter_dml_triggerContext * /*ctx*/) override;
-
-	void enterDml_trigger_option(TSqlParser::Dml_trigger_optionContext * /*ctx*/) override;
-	void exitDml_trigger_option(TSqlParser::Dml_trigger_optionContext * /*ctx*/) override;
-
-	void enterDml_trigger_operation(TSqlParser::Dml_trigger_operationContext * /*ctx*/) override;
-	void exitDml_trigger_operation(TSqlParser::Dml_trigger_operationContext * /*ctx*/) override;
-
-	void enterCreate_or_alter_ddl_trigger(TSqlParser::Create_or_alter_ddl_triggerContext * /*ctx*/) override;
-	void exitCreate_or_alter_ddl_trigger(TSqlParser::Create_or_alter_ddl_triggerContext * /*ctx*/) override;
-
-	void enterDdl_trigger_operation(TSqlParser::Ddl_trigger_operationContext * /*ctx*/) override;
-	void exitDdl_trigger_operation(TSqlParser::Ddl_trigger_operationContext * /*ctx*/) override;
-
 	void enterCreate_or_alter_function(TSqlParser::Create_or_alter_functionContext * /*ctx*/) override;
 	void exitCreate_or_alter_function(TSqlParser::Create_or_alter_functionContext * /*ctx*/) override;
 
@@ -790,12 +265,6 @@ class ListenerInterface : public TSqlParserBaseListener {
 	void enterFunction_option(TSqlParser::Function_optionContext * /*ctx*/) override;
 	void exitFunction_option(TSqlParser::Function_optionContext * /*ctx*/) override;
 
-	void enterCreate_statistics(TSqlParser::Create_statisticsContext * /*ctx*/) override;
-	void exitCreate_statistics(TSqlParser::Create_statisticsContext * /*ctx*/) override;
-
-	void enterUpdate_statistics(TSqlParser::Update_statisticsContext * /*ctx*/) override;
-	void exitUpdate_statistics(TSqlParser::Update_statisticsContext * /*ctx*/) override;
-
 	void enterCreate_table(TSqlParser::Create_tableContext * /*ctx*/) override;
 	void exitCreate_table(TSqlParser::Create_tableContext * /*ctx*/) override;
 
@@ -811,110 +280,8 @@ class ListenerInterface : public TSqlParserBaseListener {
 	void enterAlter_table(TSqlParser::Alter_tableContext * /*ctx*/) override;
 	void exitAlter_table(TSqlParser::Alter_tableContext * /*ctx*/) override;
 
-	void enterAlter_database(TSqlParser::Alter_databaseContext * /*ctx*/) override;
-	void exitAlter_database(TSqlParser::Alter_databaseContext * /*ctx*/) override;
-
-	void enterDatabase_optionspec(TSqlParser::Database_optionspecContext * /*ctx*/) override;
-	void exitDatabase_optionspec(TSqlParser::Database_optionspecContext * /*ctx*/) override;
-
-	void enterAuto_option(TSqlParser::Auto_optionContext * /*ctx*/) override;
-	void exitAuto_option(TSqlParser::Auto_optionContext * /*ctx*/) override;
-
-	void enterChange_tracking_option(TSqlParser::Change_tracking_optionContext * /*ctx*/) override;
-	void exitChange_tracking_option(TSqlParser::Change_tracking_optionContext * /*ctx*/) override;
-
-	void enterChange_tracking_option_list(TSqlParser::Change_tracking_option_listContext * /*ctx*/) override;
-	void exitChange_tracking_option_list(TSqlParser::Change_tracking_option_listContext * /*ctx*/) override;
-
-	void enterContainment_option(TSqlParser::Containment_optionContext * /*ctx*/) override;
-	void exitContainment_option(TSqlParser::Containment_optionContext * /*ctx*/) override;
-
 	void enterCursor_option(TSqlParser::Cursor_optionContext * /*ctx*/) override;
 	void exitCursor_option(TSqlParser::Cursor_optionContext * /*ctx*/) override;
-
-	void enterAlter_endpoint(TSqlParser::Alter_endpointContext * /*ctx*/) override;
-	void exitAlter_endpoint(TSqlParser::Alter_endpointContext * /*ctx*/) override;
-
-	void enterDatabase_mirroring_option(TSqlParser::Database_mirroring_optionContext * /*ctx*/) override;
-	void exitDatabase_mirroring_option(TSqlParser::Database_mirroring_optionContext * /*ctx*/) override;
-
-	void enterMirroring_set_option(TSqlParser::Mirroring_set_optionContext * /*ctx*/) override;
-	void exitMirroring_set_option(TSqlParser::Mirroring_set_optionContext * /*ctx*/) override;
-
-	void enterMirroring_partner(TSqlParser::Mirroring_partnerContext * /*ctx*/) override;
-	void exitMirroring_partner(TSqlParser::Mirroring_partnerContext * /*ctx*/) override;
-
-	void enterMirroring_witness(TSqlParser::Mirroring_witnessContext * /*ctx*/) override;
-	void exitMirroring_witness(TSqlParser::Mirroring_witnessContext * /*ctx*/) override;
-
-	void enterWitness_partner_equal(TSqlParser::Witness_partner_equalContext * /*ctx*/) override;
-	void exitWitness_partner_equal(TSqlParser::Witness_partner_equalContext * /*ctx*/) override;
-
-	void enterPartner_option(TSqlParser::Partner_optionContext * /*ctx*/) override;
-	void exitPartner_option(TSqlParser::Partner_optionContext * /*ctx*/) override;
-
-	void enterWitness_option(TSqlParser::Witness_optionContext * /*ctx*/) override;
-	void exitWitness_option(TSqlParser::Witness_optionContext * /*ctx*/) override;
-
-	void enterWitness_server(TSqlParser::Witness_serverContext * /*ctx*/) override;
-	void exitWitness_server(TSqlParser::Witness_serverContext * /*ctx*/) override;
-
-	void enterPartner_server(TSqlParser::Partner_serverContext * /*ctx*/) override;
-	void exitPartner_server(TSqlParser::Partner_serverContext * /*ctx*/) override;
-
-	void enterMirroring_host_port_seperator(TSqlParser::Mirroring_host_port_seperatorContext * /*ctx*/) override;
-	void exitMirroring_host_port_seperator(TSqlParser::Mirroring_host_port_seperatorContext * /*ctx*/) override;
-
-	void enterPartner_server_tcp_prefix(TSqlParser::Partner_server_tcp_prefixContext * /*ctx*/) override;
-	void exitPartner_server_tcp_prefix(TSqlParser::Partner_server_tcp_prefixContext * /*ctx*/) override;
-
-	void enterPort_number(TSqlParser::Port_numberContext * /*ctx*/) override;
-	void exitPort_number(TSqlParser::Port_numberContext * /*ctx*/) override;
-
-	void enterHost(TSqlParser::HostContext * /*ctx*/) override;
-	void exitHost(TSqlParser::HostContext * /*ctx*/) override;
-
-	void enterDate_correlation_optimization_option(TSqlParser::Date_correlation_optimization_optionContext * /*ctx*/) override;
-	void exitDate_correlation_optimization_option(TSqlParser::Date_correlation_optimization_optionContext * /*ctx*/) override;
-
-	void enterDb_encryption_option(TSqlParser::Db_encryption_optionContext * /*ctx*/) override;
-	void exitDb_encryption_option(TSqlParser::Db_encryption_optionContext * /*ctx*/) override;
-
-	void enterDb_state_option(TSqlParser::Db_state_optionContext * /*ctx*/) override;
-	void exitDb_state_option(TSqlParser::Db_state_optionContext * /*ctx*/) override;
-
-	void enterDb_update_option(TSqlParser::Db_update_optionContext * /*ctx*/) override;
-	void exitDb_update_option(TSqlParser::Db_update_optionContext * /*ctx*/) override;
-
-	void enterDb_user_access_option(TSqlParser::Db_user_access_optionContext * /*ctx*/) override;
-	void exitDb_user_access_option(TSqlParser::Db_user_access_optionContext * /*ctx*/) override;
-
-	void enterDelayed_durability_option(TSqlParser::Delayed_durability_optionContext * /*ctx*/) override;
-	void exitDelayed_durability_option(TSqlParser::Delayed_durability_optionContext * /*ctx*/) override;
-
-	void enterExternal_access_option(TSqlParser::External_access_optionContext * /*ctx*/) override;
-	void exitExternal_access_option(TSqlParser::External_access_optionContext * /*ctx*/) override;
-
-	void enterHadr_options(TSqlParser::Hadr_optionsContext * /*ctx*/) override;
-	void exitHadr_options(TSqlParser::Hadr_optionsContext * /*ctx*/) override;
-
-	void enterMixed_page_allocation_option(TSqlParser::Mixed_page_allocation_optionContext * /*ctx*/) override;
-	void exitMixed_page_allocation_option(TSqlParser::Mixed_page_allocation_optionContext * /*ctx*/) override;
-
-	void enterParameterization_option(TSqlParser::Parameterization_optionContext * /*ctx*/) override;
-	void exitParameterization_option(TSqlParser::Parameterization_optionContext * /*ctx*/) override;
-
-	void enterRecovery_option(TSqlParser::Recovery_optionContext * /*ctx*/) override;
-	void exitRecovery_option(TSqlParser::Recovery_optionContext * /*ctx*/) override;
-
-	void enterService_broker_option(TSqlParser::Service_broker_optionContext * /*ctx*/) override;
-	void exitService_broker_option(TSqlParser::Service_broker_optionContext * /*ctx*/) override;
-
-	void enterSnapshot_option(TSqlParser::Snapshot_optionContext * /*ctx*/) override;
-	void exitSnapshot_option(TSqlParser::Snapshot_optionContext * /*ctx*/) override;
-
-	void enterSql_option(TSqlParser::Sql_optionContext * /*ctx*/) override;
-	void exitSql_option(TSqlParser::Sql_optionContext * /*ctx*/) override;
 
 	void enterTarget_recovery_time_option(TSqlParser::Target_recovery_time_optionContext * /*ctx*/) override;
 	void exitTarget_recovery_time_option(TSqlParser::Target_recovery_time_optionContext * /*ctx*/) override;
@@ -934,20 +301,8 @@ class ListenerInterface : public TSqlParserBaseListener {
 	void enterDrop_procedure(TSqlParser::Drop_procedureContext * /*ctx*/) override;
 	void exitDrop_procedure(TSqlParser::Drop_procedureContext * /*ctx*/) override;
 
-	void enterDrop_trigger(TSqlParser::Drop_triggerContext * /*ctx*/) override;
-	void exitDrop_trigger(TSqlParser::Drop_triggerContext * /*ctx*/) override;
-
-	void enterDrop_dml_trigger(TSqlParser::Drop_dml_triggerContext * /*ctx*/) override;
-	void exitDrop_dml_trigger(TSqlParser::Drop_dml_triggerContext * /*ctx*/) override;
-
-	void enterDrop_ddl_trigger(TSqlParser::Drop_ddl_triggerContext * /*ctx*/) override;
-	void exitDrop_ddl_trigger(TSqlParser::Drop_ddl_triggerContext * /*ctx*/) override;
-
 	void enterDrop_function(TSqlParser::Drop_functionContext * /*ctx*/) override;
 	void exitDrop_function(TSqlParser::Drop_functionContext * /*ctx*/) override;
-
-	void enterDrop_statistics(TSqlParser::Drop_statisticsContext * /*ctx*/) override;
-	void exitDrop_statistics(TSqlParser::Drop_statisticsContext * /*ctx*/) override;
 
 	void enterDrop_table(TSqlParser::Drop_tableContext * /*ctx*/) override;
 	void exitDrop_table(TSqlParser::Drop_tableContext * /*ctx*/) override;
@@ -976,21 +331,6 @@ class ListenerInterface : public TSqlParserBaseListener {
 	void enterCursor_statement(TSqlParser::Cursor_statementContext * /*ctx*/) override;
 	void exitCursor_statement(TSqlParser::Cursor_statementContext * /*ctx*/) override;
 
-	void enterBackup_database(TSqlParser::Backup_databaseContext * /*ctx*/) override;
-	void exitBackup_database(TSqlParser::Backup_databaseContext * /*ctx*/) override;
-
-	void enterBackup_log(TSqlParser::Backup_logContext * /*ctx*/) override;
-	void exitBackup_log(TSqlParser::Backup_logContext * /*ctx*/) override;
-
-	void enterBackup_certificate(TSqlParser::Backup_certificateContext * /*ctx*/) override;
-	void exitBackup_certificate(TSqlParser::Backup_certificateContext * /*ctx*/) override;
-
-	void enterBackup_master_key(TSqlParser::Backup_master_keyContext * /*ctx*/) override;
-	void exitBackup_master_key(TSqlParser::Backup_master_keyContext * /*ctx*/) override;
-
-	void enterBackup_service_master_key(TSqlParser::Backup_service_master_keyContext * /*ctx*/) override;
-	void exitBackup_service_master_key(TSqlParser::Backup_service_master_keyContext * /*ctx*/) override;
-
 	void enterKill_statement(TSqlParser::Kill_statementContext * /*ctx*/) override;
 	void exitKill_statement(TSqlParser::Kill_statementContext * /*ctx*/) override;
 
@@ -1014,48 +354,6 @@ class ListenerInterface : public TSqlParserBaseListener {
 
 	void enterExecute_var_string(TSqlParser::Execute_var_stringContext * /*ctx*/) override;
 	void exitExecute_var_string(TSqlParser::Execute_var_stringContext * /*ctx*/) override;
-
-	void enterSecurity_statement(TSqlParser::Security_statementContext * /*ctx*/) override;
-	void exitSecurity_statement(TSqlParser::Security_statementContext * /*ctx*/) override;
-
-	void enterCreate_certificate(TSqlParser::Create_certificateContext * /*ctx*/) override;
-	void exitCreate_certificate(TSqlParser::Create_certificateContext * /*ctx*/) override;
-
-	void enterExisting_keys(TSqlParser::Existing_keysContext * /*ctx*/) override;
-	void exitExisting_keys(TSqlParser::Existing_keysContext * /*ctx*/) override;
-
-	void enterPrivate_key_options(TSqlParser::Private_key_optionsContext * /*ctx*/) override;
-	void exitPrivate_key_options(TSqlParser::Private_key_optionsContext * /*ctx*/) override;
-
-	void enterGenerate_new_keys(TSqlParser::Generate_new_keysContext * /*ctx*/) override;
-	void exitGenerate_new_keys(TSqlParser::Generate_new_keysContext * /*ctx*/) override;
-
-	void enterDate_options(TSqlParser::Date_optionsContext * /*ctx*/) override;
-	void exitDate_options(TSqlParser::Date_optionsContext * /*ctx*/) override;
-
-	void enterOpen_key(TSqlParser::Open_keyContext * /*ctx*/) override;
-	void exitOpen_key(TSqlParser::Open_keyContext * /*ctx*/) override;
-
-	void enterClose_key(TSqlParser::Close_keyContext * /*ctx*/) override;
-	void exitClose_key(TSqlParser::Close_keyContext * /*ctx*/) override;
-
-	void enterCreate_key(TSqlParser::Create_keyContext * /*ctx*/) override;
-	void exitCreate_key(TSqlParser::Create_keyContext * /*ctx*/) override;
-
-	void enterKey_options(TSqlParser::Key_optionsContext * /*ctx*/) override;
-	void exitKey_options(TSqlParser::Key_optionsContext * /*ctx*/) override;
-
-	void enterAlgorithm(TSqlParser::AlgorithmContext * /*ctx*/) override;
-	void exitAlgorithm(TSqlParser::AlgorithmContext * /*ctx*/) override;
-
-	void enterEncryption_mechanism(TSqlParser::Encryption_mechanismContext * /*ctx*/) override;
-	void exitEncryption_mechanism(TSqlParser::Encryption_mechanismContext * /*ctx*/) override;
-
-	void enterDecryption_mechanism(TSqlParser::Decryption_mechanismContext * /*ctx*/) override;
-	void exitDecryption_mechanism(TSqlParser::Decryption_mechanismContext * /*ctx*/) override;
-
-	void enterGrant_permission(TSqlParser::Grant_permissionContext * /*ctx*/) override;
-	void exitGrant_permission(TSqlParser::Grant_permissionContext * /*ctx*/) override;
 
 	void enterSet_statement(TSqlParser::Set_statementContext * /*ctx*/) override;
 	void exitSet_statement(TSqlParser::Set_statementContext * /*ctx*/) override;

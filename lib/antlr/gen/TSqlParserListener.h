@@ -1,5 +1,5 @@
 
-// Generated from grammar/TSqlParser.g4 by ANTLR 4.9.1
+// Generated from TSqlParser.g4 by ANTLR 4.9.2
 
 #pragma once
 
@@ -31,9 +31,6 @@ public:
 
   virtual void enterDdl_clause(TSqlParser::Ddl_clauseContext *ctx) = 0;
   virtual void exitDdl_clause(TSqlParser::Ddl_clauseContext *ctx) = 0;
-
-  virtual void enterBackup_statement(TSqlParser::Backup_statementContext *ctx) = 0;
-  virtual void exitBackup_statement(TSqlParser::Backup_statementContext *ctx) = 0;
 
   virtual void enterCfl_statement(TSqlParser::Cfl_statementContext *ctx) = 0;
   virtual void exitCfl_statement(TSqlParser::Cfl_statementContext *ctx) = 0;
@@ -89,131 +86,8 @@ public:
   virtual void enterAnother_statement(TSqlParser::Another_statementContext *ctx) = 0;
   virtual void exitAnother_statement(TSqlParser::Another_statementContext *ctx) = 0;
 
-  virtual void enterAlter_application_role(TSqlParser::Alter_application_roleContext *ctx) = 0;
-  virtual void exitAlter_application_role(TSqlParser::Alter_application_roleContext *ctx) = 0;
-
-  virtual void enterCreate_application_role(TSqlParser::Create_application_roleContext *ctx) = 0;
-  virtual void exitCreate_application_role(TSqlParser::Create_application_roleContext *ctx) = 0;
-
   virtual void enterDrop_aggregate(TSqlParser::Drop_aggregateContext *ctx) = 0;
   virtual void exitDrop_aggregate(TSqlParser::Drop_aggregateContext *ctx) = 0;
-
-  virtual void enterDrop_application_role(TSqlParser::Drop_application_roleContext *ctx) = 0;
-  virtual void exitDrop_application_role(TSqlParser::Drop_application_roleContext *ctx) = 0;
-
-  virtual void enterAlter_assembly(TSqlParser::Alter_assemblyContext *ctx) = 0;
-  virtual void exitAlter_assembly(TSqlParser::Alter_assemblyContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_start(TSqlParser::Alter_assembly_startContext *ctx) = 0;
-  virtual void exitAlter_assembly_start(TSqlParser::Alter_assembly_startContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_clause(TSqlParser::Alter_assembly_clauseContext *ctx) = 0;
-  virtual void exitAlter_assembly_clause(TSqlParser::Alter_assembly_clauseContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_from_clause(TSqlParser::Alter_assembly_from_clauseContext *ctx) = 0;
-  virtual void exitAlter_assembly_from_clause(TSqlParser::Alter_assembly_from_clauseContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_from_clause_start(TSqlParser::Alter_assembly_from_clause_startContext *ctx) = 0;
-  virtual void exitAlter_assembly_from_clause_start(TSqlParser::Alter_assembly_from_clause_startContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_drop_clause(TSqlParser::Alter_assembly_drop_clauseContext *ctx) = 0;
-  virtual void exitAlter_assembly_drop_clause(TSqlParser::Alter_assembly_drop_clauseContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_drop_multiple_files(TSqlParser::Alter_assembly_drop_multiple_filesContext *ctx) = 0;
-  virtual void exitAlter_assembly_drop_multiple_files(TSqlParser::Alter_assembly_drop_multiple_filesContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_drop(TSqlParser::Alter_assembly_dropContext *ctx) = 0;
-  virtual void exitAlter_assembly_drop(TSqlParser::Alter_assembly_dropContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_add_clause(TSqlParser::Alter_assembly_add_clauseContext *ctx) = 0;
-  virtual void exitAlter_assembly_add_clause(TSqlParser::Alter_assembly_add_clauseContext *ctx) = 0;
-
-  virtual void enterAlter_asssembly_add_clause_start(TSqlParser::Alter_asssembly_add_clause_startContext *ctx) = 0;
-  virtual void exitAlter_asssembly_add_clause_start(TSqlParser::Alter_asssembly_add_clause_startContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_client_file_clause(TSqlParser::Alter_assembly_client_file_clauseContext *ctx) = 0;
-  virtual void exitAlter_assembly_client_file_clause(TSqlParser::Alter_assembly_client_file_clauseContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_file_name(TSqlParser::Alter_assembly_file_nameContext *ctx) = 0;
-  virtual void exitAlter_assembly_file_name(TSqlParser::Alter_assembly_file_nameContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_file_bits(TSqlParser::Alter_assembly_file_bitsContext *ctx) = 0;
-  virtual void exitAlter_assembly_file_bits(TSqlParser::Alter_assembly_file_bitsContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_as(TSqlParser::Alter_assembly_asContext *ctx) = 0;
-  virtual void exitAlter_assembly_as(TSqlParser::Alter_assembly_asContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_with_clause(TSqlParser::Alter_assembly_with_clauseContext *ctx) = 0;
-  virtual void exitAlter_assembly_with_clause(TSqlParser::Alter_assembly_with_clauseContext *ctx) = 0;
-
-  virtual void enterAlter_assembly_with(TSqlParser::Alter_assembly_withContext *ctx) = 0;
-  virtual void exitAlter_assembly_with(TSqlParser::Alter_assembly_withContext *ctx) = 0;
-
-  virtual void enterClient_assembly_specifier(TSqlParser::Client_assembly_specifierContext *ctx) = 0;
-  virtual void exitClient_assembly_specifier(TSqlParser::Client_assembly_specifierContext *ctx) = 0;
-
-  virtual void enterAssembly_option(TSqlParser::Assembly_optionContext *ctx) = 0;
-  virtual void exitAssembly_option(TSqlParser::Assembly_optionContext *ctx) = 0;
-
-  virtual void enterNetwork_file_share(TSqlParser::Network_file_shareContext *ctx) = 0;
-  virtual void exitNetwork_file_share(TSqlParser::Network_file_shareContext *ctx) = 0;
-
-  virtual void enterNetwork_computer(TSqlParser::Network_computerContext *ctx) = 0;
-  virtual void exitNetwork_computer(TSqlParser::Network_computerContext *ctx) = 0;
-
-  virtual void enterNetwork_file_start(TSqlParser::Network_file_startContext *ctx) = 0;
-  virtual void exitNetwork_file_start(TSqlParser::Network_file_startContext *ctx) = 0;
-
-  virtual void enterFile_path(TSqlParser::File_pathContext *ctx) = 0;
-  virtual void exitFile_path(TSqlParser::File_pathContext *ctx) = 0;
-
-  virtual void enterFile_directory_path_separator(TSqlParser::File_directory_path_separatorContext *ctx) = 0;
-  virtual void exitFile_directory_path_separator(TSqlParser::File_directory_path_separatorContext *ctx) = 0;
-
-  virtual void enterLocal_file(TSqlParser::Local_fileContext *ctx) = 0;
-  virtual void exitLocal_file(TSqlParser::Local_fileContext *ctx) = 0;
-
-  virtual void enterLocal_drive(TSqlParser::Local_driveContext *ctx) = 0;
-  virtual void exitLocal_drive(TSqlParser::Local_driveContext *ctx) = 0;
-
-  virtual void enterMultiple_local_files(TSqlParser::Multiple_local_filesContext *ctx) = 0;
-  virtual void exitMultiple_local_files(TSqlParser::Multiple_local_filesContext *ctx) = 0;
-
-  virtual void enterMultiple_local_file_start(TSqlParser::Multiple_local_file_startContext *ctx) = 0;
-  virtual void exitMultiple_local_file_start(TSqlParser::Multiple_local_file_startContext *ctx) = 0;
-
-  virtual void enterCreate_assembly(TSqlParser::Create_assemblyContext *ctx) = 0;
-  virtual void exitCreate_assembly(TSqlParser::Create_assemblyContext *ctx) = 0;
-
-  virtual void enterDrop_assembly(TSqlParser::Drop_assemblyContext *ctx) = 0;
-  virtual void exitDrop_assembly(TSqlParser::Drop_assemblyContext *ctx) = 0;
-
-  virtual void enterAlter_asymmetric_key(TSqlParser::Alter_asymmetric_keyContext *ctx) = 0;
-  virtual void exitAlter_asymmetric_key(TSqlParser::Alter_asymmetric_keyContext *ctx) = 0;
-
-  virtual void enterAlter_asymmetric_key_start(TSqlParser::Alter_asymmetric_key_startContext *ctx) = 0;
-  virtual void exitAlter_asymmetric_key_start(TSqlParser::Alter_asymmetric_key_startContext *ctx) = 0;
-
-  virtual void enterAsymmetric_key_option(TSqlParser::Asymmetric_key_optionContext *ctx) = 0;
-  virtual void exitAsymmetric_key_option(TSqlParser::Asymmetric_key_optionContext *ctx) = 0;
-
-  virtual void enterAsymmetric_key_option_start(TSqlParser::Asymmetric_key_option_startContext *ctx) = 0;
-  virtual void exitAsymmetric_key_option_start(TSqlParser::Asymmetric_key_option_startContext *ctx) = 0;
-
-  virtual void enterAsymmetric_key_password_change_option(TSqlParser::Asymmetric_key_password_change_optionContext *ctx) = 0;
-  virtual void exitAsymmetric_key_password_change_option(TSqlParser::Asymmetric_key_password_change_optionContext *ctx) = 0;
-
-  virtual void enterCreate_asymmetric_key(TSqlParser::Create_asymmetric_keyContext *ctx) = 0;
-  virtual void exitCreate_asymmetric_key(TSqlParser::Create_asymmetric_keyContext *ctx) = 0;
-
-  virtual void enterDrop_asymmetric_key(TSqlParser::Drop_asymmetric_keyContext *ctx) = 0;
-  virtual void exitDrop_asymmetric_key(TSqlParser::Drop_asymmetric_keyContext *ctx) = 0;
-
-  virtual void enterAlter_authorization(TSqlParser::Alter_authorizationContext *ctx) = 0;
-  virtual void exitAlter_authorization(TSqlParser::Alter_authorizationContext *ctx) = 0;
-
-  virtual void enterAuthorization_grantee(TSqlParser::Authorization_granteeContext *ctx) = 0;
-  virtual void exitAuthorization_grantee(TSqlParser::Authorization_granteeContext *ctx) = 0;
 
   virtual void enterEntity_to(TSqlParser::Entity_toContext *ctx) = 0;
   virtual void exitEntity_to(TSqlParser::Entity_toContext *ctx) = 0;
@@ -221,230 +95,23 @@ public:
   virtual void enterColon_colon(TSqlParser::Colon_colonContext *ctx) = 0;
   virtual void exitColon_colon(TSqlParser::Colon_colonContext *ctx) = 0;
 
-  virtual void enterAlter_authorization_start(TSqlParser::Alter_authorization_startContext *ctx) = 0;
-  virtual void exitAlter_authorization_start(TSqlParser::Alter_authorization_startContext *ctx) = 0;
-
-  virtual void enterAlter_authorization_for_sql_database(TSqlParser::Alter_authorization_for_sql_databaseContext *ctx) = 0;
-  virtual void exitAlter_authorization_for_sql_database(TSqlParser::Alter_authorization_for_sql_databaseContext *ctx) = 0;
-
-  virtual void enterAlter_authorization_for_azure_dw(TSqlParser::Alter_authorization_for_azure_dwContext *ctx) = 0;
-  virtual void exitAlter_authorization_for_azure_dw(TSqlParser::Alter_authorization_for_azure_dwContext *ctx) = 0;
-
-  virtual void enterAlter_authorization_for_parallel_dw(TSqlParser::Alter_authorization_for_parallel_dwContext *ctx) = 0;
-  virtual void exitAlter_authorization_for_parallel_dw(TSqlParser::Alter_authorization_for_parallel_dwContext *ctx) = 0;
-
   virtual void enterClass_type(TSqlParser::Class_typeContext *ctx) = 0;
   virtual void exitClass_type(TSqlParser::Class_typeContext *ctx) = 0;
 
   virtual void enterClass_type_for_sql_database(TSqlParser::Class_type_for_sql_databaseContext *ctx) = 0;
   virtual void exitClass_type_for_sql_database(TSqlParser::Class_type_for_sql_databaseContext *ctx) = 0;
 
-  virtual void enterClass_type_for_azure_dw(TSqlParser::Class_type_for_azure_dwContext *ctx) = 0;
-  virtual void exitClass_type_for_azure_dw(TSqlParser::Class_type_for_azure_dwContext *ctx) = 0;
-
   virtual void enterClass_type_for_parallel_dw(TSqlParser::Class_type_for_parallel_dwContext *ctx) = 0;
   virtual void exitClass_type_for_parallel_dw(TSqlParser::Class_type_for_parallel_dwContext *ctx) = 0;
 
-  virtual void enterDrop_availability_group(TSqlParser::Drop_availability_groupContext *ctx) = 0;
-  virtual void exitDrop_availability_group(TSqlParser::Drop_availability_groupContext *ctx) = 0;
-
-  virtual void enterAlter_availability_group(TSqlParser::Alter_availability_groupContext *ctx) = 0;
-  virtual void exitAlter_availability_group(TSqlParser::Alter_availability_groupContext *ctx) = 0;
-
-  virtual void enterAlter_availability_group_start(TSqlParser::Alter_availability_group_startContext *ctx) = 0;
-  virtual void exitAlter_availability_group_start(TSqlParser::Alter_availability_group_startContext *ctx) = 0;
-
-  virtual void enterAlter_availability_group_options(TSqlParser::Alter_availability_group_optionsContext *ctx) = 0;
-  virtual void exitAlter_availability_group_options(TSqlParser::Alter_availability_group_optionsContext *ctx) = 0;
-
-  virtual void enterCreate_or_alter_broker_priority(TSqlParser::Create_or_alter_broker_priorityContext *ctx) = 0;
-  virtual void exitCreate_or_alter_broker_priority(TSqlParser::Create_or_alter_broker_priorityContext *ctx) = 0;
-
-  virtual void enterDrop_broker_priority(TSqlParser::Drop_broker_priorityContext *ctx) = 0;
-  virtual void exitDrop_broker_priority(TSqlParser::Drop_broker_priorityContext *ctx) = 0;
-
-  virtual void enterAlter_certificate(TSqlParser::Alter_certificateContext *ctx) = 0;
-  virtual void exitAlter_certificate(TSqlParser::Alter_certificateContext *ctx) = 0;
-
-  virtual void enterAlter_column_encryption_key(TSqlParser::Alter_column_encryption_keyContext *ctx) = 0;
-  virtual void exitAlter_column_encryption_key(TSqlParser::Alter_column_encryption_keyContext *ctx) = 0;
-
-  virtual void enterCreate_column_encryption_key(TSqlParser::Create_column_encryption_keyContext *ctx) = 0;
-  virtual void exitCreate_column_encryption_key(TSqlParser::Create_column_encryption_keyContext *ctx) = 0;
-
-  virtual void enterDrop_certificate(TSqlParser::Drop_certificateContext *ctx) = 0;
-  virtual void exitDrop_certificate(TSqlParser::Drop_certificateContext *ctx) = 0;
-
-  virtual void enterDrop_column_encryption_key(TSqlParser::Drop_column_encryption_keyContext *ctx) = 0;
-  virtual void exitDrop_column_encryption_key(TSqlParser::Drop_column_encryption_keyContext *ctx) = 0;
-
-  virtual void enterDrop_column_master_key(TSqlParser::Drop_column_master_keyContext *ctx) = 0;
-  virtual void exitDrop_column_master_key(TSqlParser::Drop_column_master_keyContext *ctx) = 0;
-
-  virtual void enterDrop_contract(TSqlParser::Drop_contractContext *ctx) = 0;
-  virtual void exitDrop_contract(TSqlParser::Drop_contractContext *ctx) = 0;
-
-  virtual void enterDrop_credential(TSqlParser::Drop_credentialContext *ctx) = 0;
-  virtual void exitDrop_credential(TSqlParser::Drop_credentialContext *ctx) = 0;
-
-  virtual void enterDrop_cryptograhic_provider(TSqlParser::Drop_cryptograhic_providerContext *ctx) = 0;
-  virtual void exitDrop_cryptograhic_provider(TSqlParser::Drop_cryptograhic_providerContext *ctx) = 0;
-
-  virtual void enterDrop_database(TSqlParser::Drop_databaseContext *ctx) = 0;
-  virtual void exitDrop_database(TSqlParser::Drop_databaseContext *ctx) = 0;
-
-  virtual void enterDrop_database_audit_specification(TSqlParser::Drop_database_audit_specificationContext *ctx) = 0;
-  virtual void exitDrop_database_audit_specification(TSqlParser::Drop_database_audit_specificationContext *ctx) = 0;
-
-  virtual void enterDrop_database_scoped_credential(TSqlParser::Drop_database_scoped_credentialContext *ctx) = 0;
-  virtual void exitDrop_database_scoped_credential(TSqlParser::Drop_database_scoped_credentialContext *ctx) = 0;
-
-  virtual void enterDrop_default(TSqlParser::Drop_defaultContext *ctx) = 0;
-  virtual void exitDrop_default(TSqlParser::Drop_defaultContext *ctx) = 0;
-
-  virtual void enterDrop_endpoint(TSqlParser::Drop_endpointContext *ctx) = 0;
-  virtual void exitDrop_endpoint(TSqlParser::Drop_endpointContext *ctx) = 0;
-
-  virtual void enterDrop_external_data_source(TSqlParser::Drop_external_data_sourceContext *ctx) = 0;
-  virtual void exitDrop_external_data_source(TSqlParser::Drop_external_data_sourceContext *ctx) = 0;
-
-  virtual void enterDrop_external_file_format(TSqlParser::Drop_external_file_formatContext *ctx) = 0;
-  virtual void exitDrop_external_file_format(TSqlParser::Drop_external_file_formatContext *ctx) = 0;
-
-  virtual void enterDrop_external_library(TSqlParser::Drop_external_libraryContext *ctx) = 0;
-  virtual void exitDrop_external_library(TSqlParser::Drop_external_libraryContext *ctx) = 0;
-
-  virtual void enterDrop_external_resource_pool(TSqlParser::Drop_external_resource_poolContext *ctx) = 0;
-  virtual void exitDrop_external_resource_pool(TSqlParser::Drop_external_resource_poolContext *ctx) = 0;
-
-  virtual void enterDrop_external_table(TSqlParser::Drop_external_tableContext *ctx) = 0;
-  virtual void exitDrop_external_table(TSqlParser::Drop_external_tableContext *ctx) = 0;
-
-  virtual void enterDrop_event_notifications(TSqlParser::Drop_event_notificationsContext *ctx) = 0;
-  virtual void exitDrop_event_notifications(TSqlParser::Drop_event_notificationsContext *ctx) = 0;
-
-  virtual void enterDrop_event_session(TSqlParser::Drop_event_sessionContext *ctx) = 0;
-  virtual void exitDrop_event_session(TSqlParser::Drop_event_sessionContext *ctx) = 0;
-
-  virtual void enterDrop_fulltext_catalog(TSqlParser::Drop_fulltext_catalogContext *ctx) = 0;
-  virtual void exitDrop_fulltext_catalog(TSqlParser::Drop_fulltext_catalogContext *ctx) = 0;
-
-  virtual void enterDrop_fulltext_index(TSqlParser::Drop_fulltext_indexContext *ctx) = 0;
-  virtual void exitDrop_fulltext_index(TSqlParser::Drop_fulltext_indexContext *ctx) = 0;
-
-  virtual void enterDrop_fulltext_stoplist(TSqlParser::Drop_fulltext_stoplistContext *ctx) = 0;
-  virtual void exitDrop_fulltext_stoplist(TSqlParser::Drop_fulltext_stoplistContext *ctx) = 0;
-
-  virtual void enterDrop_login(TSqlParser::Drop_loginContext *ctx) = 0;
-  virtual void exitDrop_login(TSqlParser::Drop_loginContext *ctx) = 0;
-
-  virtual void enterDrop_master_key(TSqlParser::Drop_master_keyContext *ctx) = 0;
-  virtual void exitDrop_master_key(TSqlParser::Drop_master_keyContext *ctx) = 0;
-
-  virtual void enterDrop_message_type(TSqlParser::Drop_message_typeContext *ctx) = 0;
-  virtual void exitDrop_message_type(TSqlParser::Drop_message_typeContext *ctx) = 0;
-
-  virtual void enterDrop_partition_function(TSqlParser::Drop_partition_functionContext *ctx) = 0;
-  virtual void exitDrop_partition_function(TSqlParser::Drop_partition_functionContext *ctx) = 0;
-
-  virtual void enterDrop_partition_scheme(TSqlParser::Drop_partition_schemeContext *ctx) = 0;
-  virtual void exitDrop_partition_scheme(TSqlParser::Drop_partition_schemeContext *ctx) = 0;
-
-  virtual void enterDrop_queue(TSqlParser::Drop_queueContext *ctx) = 0;
-  virtual void exitDrop_queue(TSqlParser::Drop_queueContext *ctx) = 0;
-
-  virtual void enterDrop_remote_service_binding(TSqlParser::Drop_remote_service_bindingContext *ctx) = 0;
-  virtual void exitDrop_remote_service_binding(TSqlParser::Drop_remote_service_bindingContext *ctx) = 0;
-
-  virtual void enterDrop_resource_pool(TSqlParser::Drop_resource_poolContext *ctx) = 0;
-  virtual void exitDrop_resource_pool(TSqlParser::Drop_resource_poolContext *ctx) = 0;
-
-  virtual void enterDrop_db_role(TSqlParser::Drop_db_roleContext *ctx) = 0;
-  virtual void exitDrop_db_role(TSqlParser::Drop_db_roleContext *ctx) = 0;
-
-  virtual void enterDrop_route(TSqlParser::Drop_routeContext *ctx) = 0;
-  virtual void exitDrop_route(TSqlParser::Drop_routeContext *ctx) = 0;
-
-  virtual void enterDrop_rule(TSqlParser::Drop_ruleContext *ctx) = 0;
-  virtual void exitDrop_rule(TSqlParser::Drop_ruleContext *ctx) = 0;
-
   virtual void enterDrop_schema(TSqlParser::Drop_schemaContext *ctx) = 0;
   virtual void exitDrop_schema(TSqlParser::Drop_schemaContext *ctx) = 0;
-
-  virtual void enterDrop_search_property_list(TSqlParser::Drop_search_property_listContext *ctx) = 0;
-  virtual void exitDrop_search_property_list(TSqlParser::Drop_search_property_listContext *ctx) = 0;
-
-  virtual void enterDrop_security_policy(TSqlParser::Drop_security_policyContext *ctx) = 0;
-  virtual void exitDrop_security_policy(TSqlParser::Drop_security_policyContext *ctx) = 0;
-
-  virtual void enterDrop_sequence(TSqlParser::Drop_sequenceContext *ctx) = 0;
-  virtual void exitDrop_sequence(TSqlParser::Drop_sequenceContext *ctx) = 0;
-
-  virtual void enterDrop_server_audit(TSqlParser::Drop_server_auditContext *ctx) = 0;
-  virtual void exitDrop_server_audit(TSqlParser::Drop_server_auditContext *ctx) = 0;
-
-  virtual void enterDrop_server_audit_specification(TSqlParser::Drop_server_audit_specificationContext *ctx) = 0;
-  virtual void exitDrop_server_audit_specification(TSqlParser::Drop_server_audit_specificationContext *ctx) = 0;
-
-  virtual void enterDrop_server_role(TSqlParser::Drop_server_roleContext *ctx) = 0;
-  virtual void exitDrop_server_role(TSqlParser::Drop_server_roleContext *ctx) = 0;
-
-  virtual void enterDrop_service(TSqlParser::Drop_serviceContext *ctx) = 0;
-  virtual void exitDrop_service(TSqlParser::Drop_serviceContext *ctx) = 0;
-
-  virtual void enterDrop_signature(TSqlParser::Drop_signatureContext *ctx) = 0;
-  virtual void exitDrop_signature(TSqlParser::Drop_signatureContext *ctx) = 0;
-
-  virtual void enterDrop_statistics_name_azure_dw_and_pdw(TSqlParser::Drop_statistics_name_azure_dw_and_pdwContext *ctx) = 0;
-  virtual void exitDrop_statistics_name_azure_dw_and_pdw(TSqlParser::Drop_statistics_name_azure_dw_and_pdwContext *ctx) = 0;
-
-  virtual void enterDrop_symmetric_key(TSqlParser::Drop_symmetric_keyContext *ctx) = 0;
-  virtual void exitDrop_symmetric_key(TSqlParser::Drop_symmetric_keyContext *ctx) = 0;
-
-  virtual void enterDrop_synonym(TSqlParser::Drop_synonymContext *ctx) = 0;
-  virtual void exitDrop_synonym(TSqlParser::Drop_synonymContext *ctx) = 0;
-
-  virtual void enterDrop_user(TSqlParser::Drop_userContext *ctx) = 0;
-  virtual void exitDrop_user(TSqlParser::Drop_userContext *ctx) = 0;
-
-  virtual void enterDrop_workload_group(TSqlParser::Drop_workload_groupContext *ctx) = 0;
-  virtual void exitDrop_workload_group(TSqlParser::Drop_workload_groupContext *ctx) = 0;
-
-  virtual void enterDrop_xml_schema_collection(TSqlParser::Drop_xml_schema_collectionContext *ctx) = 0;
-  virtual void exitDrop_xml_schema_collection(TSqlParser::Drop_xml_schema_collectionContext *ctx) = 0;
-
-  virtual void enterDisable_trigger(TSqlParser::Disable_triggerContext *ctx) = 0;
-  virtual void exitDisable_trigger(TSqlParser::Disable_triggerContext *ctx) = 0;
-
-  virtual void enterEnable_trigger(TSqlParser::Enable_triggerContext *ctx) = 0;
-  virtual void exitEnable_trigger(TSqlParser::Enable_triggerContext *ctx) = 0;
 
   virtual void enterLock_table(TSqlParser::Lock_tableContext *ctx) = 0;
   virtual void exitLock_table(TSqlParser::Lock_tableContext *ctx) = 0;
 
   virtual void enterTruncate_table(TSqlParser::Truncate_tableContext *ctx) = 0;
   virtual void exitTruncate_table(TSqlParser::Truncate_tableContext *ctx) = 0;
-
-  virtual void enterCreate_column_master_key(TSqlParser::Create_column_master_keyContext *ctx) = 0;
-  virtual void exitCreate_column_master_key(TSqlParser::Create_column_master_keyContext *ctx) = 0;
-
-  virtual void enterAlter_credential(TSqlParser::Alter_credentialContext *ctx) = 0;
-  virtual void exitAlter_credential(TSqlParser::Alter_credentialContext *ctx) = 0;
-
-  virtual void enterCreate_credential(TSqlParser::Create_credentialContext *ctx) = 0;
-  virtual void exitCreate_credential(TSqlParser::Create_credentialContext *ctx) = 0;
-
-  virtual void enterAlter_cryptographic_provider(TSqlParser::Alter_cryptographic_providerContext *ctx) = 0;
-  virtual void exitAlter_cryptographic_provider(TSqlParser::Alter_cryptographic_providerContext *ctx) = 0;
-
-  virtual void enterCreate_cryptographic_provider(TSqlParser::Create_cryptographic_providerContext *ctx) = 0;
-  virtual void exitCreate_cryptographic_provider(TSqlParser::Create_cryptographic_providerContext *ctx) = 0;
-
-  virtual void enterCreate_event_notification(TSqlParser::Create_event_notificationContext *ctx) = 0;
-  virtual void exitCreate_event_notification(TSqlParser::Create_event_notificationContext *ctx) = 0;
-
-  virtual void enterCreate_or_alter_event_session(TSqlParser::Create_or_alter_event_sessionContext *ctx) = 0;
-  virtual void exitCreate_or_alter_event_session(TSqlParser::Create_or_alter_event_sessionContext *ctx) = 0;
 
   virtual void enterEvent_session_predicate_expression(TSqlParser::Event_session_predicate_expressionContext *ctx) = 0;
   virtual void exitEvent_session_predicate_expression(TSqlParser::Event_session_predicate_expressionContext *ctx) = 0;
@@ -455,179 +122,11 @@ public:
   virtual void enterEvent_session_predicate_leaf(TSqlParser::Event_session_predicate_leafContext *ctx) = 0;
   virtual void exitEvent_session_predicate_leaf(TSqlParser::Event_session_predicate_leafContext *ctx) = 0;
 
-  virtual void enterAlter_external_data_source(TSqlParser::Alter_external_data_sourceContext *ctx) = 0;
-  virtual void exitAlter_external_data_source(TSqlParser::Alter_external_data_sourceContext *ctx) = 0;
-
-  virtual void enterAlter_external_library(TSqlParser::Alter_external_libraryContext *ctx) = 0;
-  virtual void exitAlter_external_library(TSqlParser::Alter_external_libraryContext *ctx) = 0;
-
-  virtual void enterCreate_external_library(TSqlParser::Create_external_libraryContext *ctx) = 0;
-  virtual void exitCreate_external_library(TSqlParser::Create_external_libraryContext *ctx) = 0;
-
-  virtual void enterAlter_external_resource_pool(TSqlParser::Alter_external_resource_poolContext *ctx) = 0;
-  virtual void exitAlter_external_resource_pool(TSqlParser::Alter_external_resource_poolContext *ctx) = 0;
-
-  virtual void enterCreate_external_resource_pool(TSqlParser::Create_external_resource_poolContext *ctx) = 0;
-  virtual void exitCreate_external_resource_pool(TSqlParser::Create_external_resource_poolContext *ctx) = 0;
-
-  virtual void enterAlter_fulltext_catalog(TSqlParser::Alter_fulltext_catalogContext *ctx) = 0;
-  virtual void exitAlter_fulltext_catalog(TSqlParser::Alter_fulltext_catalogContext *ctx) = 0;
-
-  virtual void enterCreate_fulltext_catalog(TSqlParser::Create_fulltext_catalogContext *ctx) = 0;
-  virtual void exitCreate_fulltext_catalog(TSqlParser::Create_fulltext_catalogContext *ctx) = 0;
-
-  virtual void enterAlter_fulltext_stoplist(TSqlParser::Alter_fulltext_stoplistContext *ctx) = 0;
-  virtual void exitAlter_fulltext_stoplist(TSqlParser::Alter_fulltext_stoplistContext *ctx) = 0;
-
-  virtual void enterCreate_fulltext_stoplist(TSqlParser::Create_fulltext_stoplistContext *ctx) = 0;
-  virtual void exitCreate_fulltext_stoplist(TSqlParser::Create_fulltext_stoplistContext *ctx) = 0;
-
-  virtual void enterAlter_login_sql_server(TSqlParser::Alter_login_sql_serverContext *ctx) = 0;
-  virtual void exitAlter_login_sql_server(TSqlParser::Alter_login_sql_serverContext *ctx) = 0;
-
-  virtual void enterCreate_login_sql_server(TSqlParser::Create_login_sql_serverContext *ctx) = 0;
-  virtual void exitCreate_login_sql_server(TSqlParser::Create_login_sql_serverContext *ctx) = 0;
-
-  virtual void enterAlter_login_azure_sql(TSqlParser::Alter_login_azure_sqlContext *ctx) = 0;
-  virtual void exitAlter_login_azure_sql(TSqlParser::Alter_login_azure_sqlContext *ctx) = 0;
-
-  virtual void enterCreate_login_azure_sql(TSqlParser::Create_login_azure_sqlContext *ctx) = 0;
-  virtual void exitCreate_login_azure_sql(TSqlParser::Create_login_azure_sqlContext *ctx) = 0;
-
-  virtual void enterAlter_login_azure_sql_dw_and_pdw(TSqlParser::Alter_login_azure_sql_dw_and_pdwContext *ctx) = 0;
-  virtual void exitAlter_login_azure_sql_dw_and_pdw(TSqlParser::Alter_login_azure_sql_dw_and_pdwContext *ctx) = 0;
-
-  virtual void enterCreate_login_pdw(TSqlParser::Create_login_pdwContext *ctx) = 0;
-  virtual void exitCreate_login_pdw(TSqlParser::Create_login_pdwContext *ctx) = 0;
-
-  virtual void enterAlter_master_key_sql_server(TSqlParser::Alter_master_key_sql_serverContext *ctx) = 0;
-  virtual void exitAlter_master_key_sql_server(TSqlParser::Alter_master_key_sql_serverContext *ctx) = 0;
-
-  virtual void enterCreate_master_key_sql_server(TSqlParser::Create_master_key_sql_serverContext *ctx) = 0;
-  virtual void exitCreate_master_key_sql_server(TSqlParser::Create_master_key_sql_serverContext *ctx) = 0;
-
-  virtual void enterAlter_master_key_azure_sql(TSqlParser::Alter_master_key_azure_sqlContext *ctx) = 0;
-  virtual void exitAlter_master_key_azure_sql(TSqlParser::Alter_master_key_azure_sqlContext *ctx) = 0;
-
-  virtual void enterCreate_master_key_azure_sql(TSqlParser::Create_master_key_azure_sqlContext *ctx) = 0;
-  virtual void exitCreate_master_key_azure_sql(TSqlParser::Create_master_key_azure_sqlContext *ctx) = 0;
-
-  virtual void enterAlter_message_type(TSqlParser::Alter_message_typeContext *ctx) = 0;
-  virtual void exitAlter_message_type(TSqlParser::Alter_message_typeContext *ctx) = 0;
-
-  virtual void enterAlter_partition_function(TSqlParser::Alter_partition_functionContext *ctx) = 0;
-  virtual void exitAlter_partition_function(TSqlParser::Alter_partition_functionContext *ctx) = 0;
-
-  virtual void enterAlter_partition_scheme(TSqlParser::Alter_partition_schemeContext *ctx) = 0;
-  virtual void exitAlter_partition_scheme(TSqlParser::Alter_partition_schemeContext *ctx) = 0;
-
-  virtual void enterAlter_remote_service_binding(TSqlParser::Alter_remote_service_bindingContext *ctx) = 0;
-  virtual void exitAlter_remote_service_binding(TSqlParser::Alter_remote_service_bindingContext *ctx) = 0;
-
-  virtual void enterCreate_remote_service_binding(TSqlParser::Create_remote_service_bindingContext *ctx) = 0;
-  virtual void exitCreate_remote_service_binding(TSqlParser::Create_remote_service_bindingContext *ctx) = 0;
-
-  virtual void enterCreate_resource_pool(TSqlParser::Create_resource_poolContext *ctx) = 0;
-  virtual void exitCreate_resource_pool(TSqlParser::Create_resource_poolContext *ctx) = 0;
-
-  virtual void enterAlter_resource_governor(TSqlParser::Alter_resource_governorContext *ctx) = 0;
-  virtual void exitAlter_resource_governor(TSqlParser::Alter_resource_governorContext *ctx) = 0;
-
-  virtual void enterAlter_db_role(TSqlParser::Alter_db_roleContext *ctx) = 0;
-  virtual void exitAlter_db_role(TSqlParser::Alter_db_roleContext *ctx) = 0;
-
-  virtual void enterCreate_db_role(TSqlParser::Create_db_roleContext *ctx) = 0;
-  virtual void exitCreate_db_role(TSqlParser::Create_db_roleContext *ctx) = 0;
-
-  virtual void enterCreate_route(TSqlParser::Create_routeContext *ctx) = 0;
-  virtual void exitCreate_route(TSqlParser::Create_routeContext *ctx) = 0;
-
-  virtual void enterCreate_rule(TSqlParser::Create_ruleContext *ctx) = 0;
-  virtual void exitCreate_rule(TSqlParser::Create_ruleContext *ctx) = 0;
-
   virtual void enterAlter_schema_sql(TSqlParser::Alter_schema_sqlContext *ctx) = 0;
   virtual void exitAlter_schema_sql(TSqlParser::Alter_schema_sqlContext *ctx) = 0;
 
   virtual void enterCreate_schema(TSqlParser::Create_schemaContext *ctx) = 0;
   virtual void exitCreate_schema(TSqlParser::Create_schemaContext *ctx) = 0;
-
-  virtual void enterCreate_schema_azure_sql_dw_and_pdw(TSqlParser::Create_schema_azure_sql_dw_and_pdwContext *ctx) = 0;
-  virtual void exitCreate_schema_azure_sql_dw_and_pdw(TSqlParser::Create_schema_azure_sql_dw_and_pdwContext *ctx) = 0;
-
-  virtual void enterAlter_schema_azure_sql_dw_and_pdw(TSqlParser::Alter_schema_azure_sql_dw_and_pdwContext *ctx) = 0;
-  virtual void exitAlter_schema_azure_sql_dw_and_pdw(TSqlParser::Alter_schema_azure_sql_dw_and_pdwContext *ctx) = 0;
-
-  virtual void enterCreate_search_property_list(TSqlParser::Create_search_property_listContext *ctx) = 0;
-  virtual void exitCreate_search_property_list(TSqlParser::Create_search_property_listContext *ctx) = 0;
-
-  virtual void enterCreate_security_policy(TSqlParser::Create_security_policyContext *ctx) = 0;
-  virtual void exitCreate_security_policy(TSqlParser::Create_security_policyContext *ctx) = 0;
-
-  virtual void enterAlter_sequence(TSqlParser::Alter_sequenceContext *ctx) = 0;
-  virtual void exitAlter_sequence(TSqlParser::Alter_sequenceContext *ctx) = 0;
-
-  virtual void enterCreate_sequence(TSqlParser::Create_sequenceContext *ctx) = 0;
-  virtual void exitCreate_sequence(TSqlParser::Create_sequenceContext *ctx) = 0;
-
-  virtual void enterAlter_server_audit(TSqlParser::Alter_server_auditContext *ctx) = 0;
-  virtual void exitAlter_server_audit(TSqlParser::Alter_server_auditContext *ctx) = 0;
-
-  virtual void enterCreate_server_audit(TSqlParser::Create_server_auditContext *ctx) = 0;
-  virtual void exitCreate_server_audit(TSqlParser::Create_server_auditContext *ctx) = 0;
-
-  virtual void enterAlter_server_audit_specification(TSqlParser::Alter_server_audit_specificationContext *ctx) = 0;
-  virtual void exitAlter_server_audit_specification(TSqlParser::Alter_server_audit_specificationContext *ctx) = 0;
-
-  virtual void enterCreate_server_audit_specification(TSqlParser::Create_server_audit_specificationContext *ctx) = 0;
-  virtual void exitCreate_server_audit_specification(TSqlParser::Create_server_audit_specificationContext *ctx) = 0;
-
-  virtual void enterAlter_server_configuration(TSqlParser::Alter_server_configurationContext *ctx) = 0;
-  virtual void exitAlter_server_configuration(TSqlParser::Alter_server_configurationContext *ctx) = 0;
-
-  virtual void enterAlter_server_role(TSqlParser::Alter_server_roleContext *ctx) = 0;
-  virtual void exitAlter_server_role(TSqlParser::Alter_server_roleContext *ctx) = 0;
-
-  virtual void enterCreate_server_role(TSqlParser::Create_server_roleContext *ctx) = 0;
-  virtual void exitCreate_server_role(TSqlParser::Create_server_roleContext *ctx) = 0;
-
-  virtual void enterAlter_server_role_pdw(TSqlParser::Alter_server_role_pdwContext *ctx) = 0;
-  virtual void exitAlter_server_role_pdw(TSqlParser::Alter_server_role_pdwContext *ctx) = 0;
-
-  virtual void enterAlter_service(TSqlParser::Alter_serviceContext *ctx) = 0;
-  virtual void exitAlter_service(TSqlParser::Alter_serviceContext *ctx) = 0;
-
-  virtual void enterCreate_service(TSqlParser::Create_serviceContext *ctx) = 0;
-  virtual void exitCreate_service(TSqlParser::Create_serviceContext *ctx) = 0;
-
-  virtual void enterAlter_service_master_key(TSqlParser::Alter_service_master_keyContext *ctx) = 0;
-  virtual void exitAlter_service_master_key(TSqlParser::Alter_service_master_keyContext *ctx) = 0;
-
-  virtual void enterAlter_symmetric_key(TSqlParser::Alter_symmetric_keyContext *ctx) = 0;
-  virtual void exitAlter_symmetric_key(TSqlParser::Alter_symmetric_keyContext *ctx) = 0;
-
-  virtual void enterCreate_symmetric_key(TSqlParser::Create_symmetric_keyContext *ctx) = 0;
-  virtual void exitCreate_symmetric_key(TSqlParser::Create_symmetric_keyContext *ctx) = 0;
-
-  virtual void enterCreate_synonym(TSqlParser::Create_synonymContext *ctx) = 0;
-  virtual void exitCreate_synonym(TSqlParser::Create_synonymContext *ctx) = 0;
-
-  virtual void enterAlter_user(TSqlParser::Alter_userContext *ctx) = 0;
-  virtual void exitAlter_user(TSqlParser::Alter_userContext *ctx) = 0;
-
-  virtual void enterCreate_user(TSqlParser::Create_userContext *ctx) = 0;
-  virtual void exitCreate_user(TSqlParser::Create_userContext *ctx) = 0;
-
-  virtual void enterCreate_user_azure_sql_dw(TSqlParser::Create_user_azure_sql_dwContext *ctx) = 0;
-  virtual void exitCreate_user_azure_sql_dw(TSqlParser::Create_user_azure_sql_dwContext *ctx) = 0;
-
-  virtual void enterAlter_user_azure_sql(TSqlParser::Alter_user_azure_sqlContext *ctx) = 0;
-  virtual void exitAlter_user_azure_sql(TSqlParser::Alter_user_azure_sqlContext *ctx) = 0;
-
-  virtual void enterAlter_workload_group(TSqlParser::Alter_workload_groupContext *ctx) = 0;
-  virtual void exitAlter_workload_group(TSqlParser::Alter_workload_groupContext *ctx) = 0;
-
-  virtual void enterCreate_workload_group(TSqlParser::Create_workload_groupContext *ctx) = 0;
-  virtual void exitCreate_workload_group(TSqlParser::Create_workload_groupContext *ctx) = 0;
 
   virtual void enterCreate_xml_schema_collection(TSqlParser::Create_xml_schema_collectionContext *ctx) = 0;
   virtual void exitCreate_xml_schema_collection(TSqlParser::Create_xml_schema_collectionContext *ctx) = 0;
@@ -646,9 +145,6 @@ public:
 
   virtual void enterQueue_rebuild_options(TSqlParser::Queue_rebuild_optionsContext *ctx) = 0;
   virtual void exitQueue_rebuild_options(TSqlParser::Queue_rebuild_optionsContext *ctx) = 0;
-
-  virtual void enterCreate_contract(TSqlParser::Create_contractContext *ctx) = 0;
-  virtual void exitCreate_contract(TSqlParser::Create_contractContext *ctx) = 0;
 
   virtual void enterConversation_statement(TSqlParser::Conversation_statementContext *ctx) = 0;
   virtual void exitConversation_statement(TSqlParser::Conversation_statementContext *ctx) = 0;
@@ -707,24 +203,6 @@ public:
   virtual void enterCreate_or_alter_procedure(TSqlParser::Create_or_alter_procedureContext *ctx) = 0;
   virtual void exitCreate_or_alter_procedure(TSqlParser::Create_or_alter_procedureContext *ctx) = 0;
 
-  virtual void enterCreate_or_alter_trigger(TSqlParser::Create_or_alter_triggerContext *ctx) = 0;
-  virtual void exitCreate_or_alter_trigger(TSqlParser::Create_or_alter_triggerContext *ctx) = 0;
-
-  virtual void enterCreate_or_alter_dml_trigger(TSqlParser::Create_or_alter_dml_triggerContext *ctx) = 0;
-  virtual void exitCreate_or_alter_dml_trigger(TSqlParser::Create_or_alter_dml_triggerContext *ctx) = 0;
-
-  virtual void enterDml_trigger_option(TSqlParser::Dml_trigger_optionContext *ctx) = 0;
-  virtual void exitDml_trigger_option(TSqlParser::Dml_trigger_optionContext *ctx) = 0;
-
-  virtual void enterDml_trigger_operation(TSqlParser::Dml_trigger_operationContext *ctx) = 0;
-  virtual void exitDml_trigger_operation(TSqlParser::Dml_trigger_operationContext *ctx) = 0;
-
-  virtual void enterCreate_or_alter_ddl_trigger(TSqlParser::Create_or_alter_ddl_triggerContext *ctx) = 0;
-  virtual void exitCreate_or_alter_ddl_trigger(TSqlParser::Create_or_alter_ddl_triggerContext *ctx) = 0;
-
-  virtual void enterDdl_trigger_operation(TSqlParser::Ddl_trigger_operationContext *ctx) = 0;
-  virtual void exitDdl_trigger_operation(TSqlParser::Ddl_trigger_operationContext *ctx) = 0;
-
   virtual void enterCreate_or_alter_function(TSqlParser::Create_or_alter_functionContext *ctx) = 0;
   virtual void exitCreate_or_alter_function(TSqlParser::Create_or_alter_functionContext *ctx) = 0;
 
@@ -746,12 +224,6 @@ public:
   virtual void enterFunction_option(TSqlParser::Function_optionContext *ctx) = 0;
   virtual void exitFunction_option(TSqlParser::Function_optionContext *ctx) = 0;
 
-  virtual void enterCreate_statistics(TSqlParser::Create_statisticsContext *ctx) = 0;
-  virtual void exitCreate_statistics(TSqlParser::Create_statisticsContext *ctx) = 0;
-
-  virtual void enterUpdate_statistics(TSqlParser::Update_statisticsContext *ctx) = 0;
-  virtual void exitUpdate_statistics(TSqlParser::Update_statisticsContext *ctx) = 0;
-
   virtual void enterCreate_table(TSqlParser::Create_tableContext *ctx) = 0;
   virtual void exitCreate_table(TSqlParser::Create_tableContext *ctx) = 0;
 
@@ -767,110 +239,8 @@ public:
   virtual void enterAlter_table(TSqlParser::Alter_tableContext *ctx) = 0;
   virtual void exitAlter_table(TSqlParser::Alter_tableContext *ctx) = 0;
 
-  virtual void enterAlter_database(TSqlParser::Alter_databaseContext *ctx) = 0;
-  virtual void exitAlter_database(TSqlParser::Alter_databaseContext *ctx) = 0;
-
-  virtual void enterDatabase_optionspec(TSqlParser::Database_optionspecContext *ctx) = 0;
-  virtual void exitDatabase_optionspec(TSqlParser::Database_optionspecContext *ctx) = 0;
-
-  virtual void enterAuto_option(TSqlParser::Auto_optionContext *ctx) = 0;
-  virtual void exitAuto_option(TSqlParser::Auto_optionContext *ctx) = 0;
-
-  virtual void enterChange_tracking_option(TSqlParser::Change_tracking_optionContext *ctx) = 0;
-  virtual void exitChange_tracking_option(TSqlParser::Change_tracking_optionContext *ctx) = 0;
-
-  virtual void enterChange_tracking_option_list(TSqlParser::Change_tracking_option_listContext *ctx) = 0;
-  virtual void exitChange_tracking_option_list(TSqlParser::Change_tracking_option_listContext *ctx) = 0;
-
-  virtual void enterContainment_option(TSqlParser::Containment_optionContext *ctx) = 0;
-  virtual void exitContainment_option(TSqlParser::Containment_optionContext *ctx) = 0;
-
   virtual void enterCursor_option(TSqlParser::Cursor_optionContext *ctx) = 0;
   virtual void exitCursor_option(TSqlParser::Cursor_optionContext *ctx) = 0;
-
-  virtual void enterAlter_endpoint(TSqlParser::Alter_endpointContext *ctx) = 0;
-  virtual void exitAlter_endpoint(TSqlParser::Alter_endpointContext *ctx) = 0;
-
-  virtual void enterDatabase_mirroring_option(TSqlParser::Database_mirroring_optionContext *ctx) = 0;
-  virtual void exitDatabase_mirroring_option(TSqlParser::Database_mirroring_optionContext *ctx) = 0;
-
-  virtual void enterMirroring_set_option(TSqlParser::Mirroring_set_optionContext *ctx) = 0;
-  virtual void exitMirroring_set_option(TSqlParser::Mirroring_set_optionContext *ctx) = 0;
-
-  virtual void enterMirroring_partner(TSqlParser::Mirroring_partnerContext *ctx) = 0;
-  virtual void exitMirroring_partner(TSqlParser::Mirroring_partnerContext *ctx) = 0;
-
-  virtual void enterMirroring_witness(TSqlParser::Mirroring_witnessContext *ctx) = 0;
-  virtual void exitMirroring_witness(TSqlParser::Mirroring_witnessContext *ctx) = 0;
-
-  virtual void enterWitness_partner_equal(TSqlParser::Witness_partner_equalContext *ctx) = 0;
-  virtual void exitWitness_partner_equal(TSqlParser::Witness_partner_equalContext *ctx) = 0;
-
-  virtual void enterPartner_option(TSqlParser::Partner_optionContext *ctx) = 0;
-  virtual void exitPartner_option(TSqlParser::Partner_optionContext *ctx) = 0;
-
-  virtual void enterWitness_option(TSqlParser::Witness_optionContext *ctx) = 0;
-  virtual void exitWitness_option(TSqlParser::Witness_optionContext *ctx) = 0;
-
-  virtual void enterWitness_server(TSqlParser::Witness_serverContext *ctx) = 0;
-  virtual void exitWitness_server(TSqlParser::Witness_serverContext *ctx) = 0;
-
-  virtual void enterPartner_server(TSqlParser::Partner_serverContext *ctx) = 0;
-  virtual void exitPartner_server(TSqlParser::Partner_serverContext *ctx) = 0;
-
-  virtual void enterMirroring_host_port_seperator(TSqlParser::Mirroring_host_port_seperatorContext *ctx) = 0;
-  virtual void exitMirroring_host_port_seperator(TSqlParser::Mirroring_host_port_seperatorContext *ctx) = 0;
-
-  virtual void enterPartner_server_tcp_prefix(TSqlParser::Partner_server_tcp_prefixContext *ctx) = 0;
-  virtual void exitPartner_server_tcp_prefix(TSqlParser::Partner_server_tcp_prefixContext *ctx) = 0;
-
-  virtual void enterPort_number(TSqlParser::Port_numberContext *ctx) = 0;
-  virtual void exitPort_number(TSqlParser::Port_numberContext *ctx) = 0;
-
-  virtual void enterHost(TSqlParser::HostContext *ctx) = 0;
-  virtual void exitHost(TSqlParser::HostContext *ctx) = 0;
-
-  virtual void enterDate_correlation_optimization_option(TSqlParser::Date_correlation_optimization_optionContext *ctx) = 0;
-  virtual void exitDate_correlation_optimization_option(TSqlParser::Date_correlation_optimization_optionContext *ctx) = 0;
-
-  virtual void enterDb_encryption_option(TSqlParser::Db_encryption_optionContext *ctx) = 0;
-  virtual void exitDb_encryption_option(TSqlParser::Db_encryption_optionContext *ctx) = 0;
-
-  virtual void enterDb_state_option(TSqlParser::Db_state_optionContext *ctx) = 0;
-  virtual void exitDb_state_option(TSqlParser::Db_state_optionContext *ctx) = 0;
-
-  virtual void enterDb_update_option(TSqlParser::Db_update_optionContext *ctx) = 0;
-  virtual void exitDb_update_option(TSqlParser::Db_update_optionContext *ctx) = 0;
-
-  virtual void enterDb_user_access_option(TSqlParser::Db_user_access_optionContext *ctx) = 0;
-  virtual void exitDb_user_access_option(TSqlParser::Db_user_access_optionContext *ctx) = 0;
-
-  virtual void enterDelayed_durability_option(TSqlParser::Delayed_durability_optionContext *ctx) = 0;
-  virtual void exitDelayed_durability_option(TSqlParser::Delayed_durability_optionContext *ctx) = 0;
-
-  virtual void enterExternal_access_option(TSqlParser::External_access_optionContext *ctx) = 0;
-  virtual void exitExternal_access_option(TSqlParser::External_access_optionContext *ctx) = 0;
-
-  virtual void enterHadr_options(TSqlParser::Hadr_optionsContext *ctx) = 0;
-  virtual void exitHadr_options(TSqlParser::Hadr_optionsContext *ctx) = 0;
-
-  virtual void enterMixed_page_allocation_option(TSqlParser::Mixed_page_allocation_optionContext *ctx) = 0;
-  virtual void exitMixed_page_allocation_option(TSqlParser::Mixed_page_allocation_optionContext *ctx) = 0;
-
-  virtual void enterParameterization_option(TSqlParser::Parameterization_optionContext *ctx) = 0;
-  virtual void exitParameterization_option(TSqlParser::Parameterization_optionContext *ctx) = 0;
-
-  virtual void enterRecovery_option(TSqlParser::Recovery_optionContext *ctx) = 0;
-  virtual void exitRecovery_option(TSqlParser::Recovery_optionContext *ctx) = 0;
-
-  virtual void enterService_broker_option(TSqlParser::Service_broker_optionContext *ctx) = 0;
-  virtual void exitService_broker_option(TSqlParser::Service_broker_optionContext *ctx) = 0;
-
-  virtual void enterSnapshot_option(TSqlParser::Snapshot_optionContext *ctx) = 0;
-  virtual void exitSnapshot_option(TSqlParser::Snapshot_optionContext *ctx) = 0;
-
-  virtual void enterSql_option(TSqlParser::Sql_optionContext *ctx) = 0;
-  virtual void exitSql_option(TSqlParser::Sql_optionContext *ctx) = 0;
 
   virtual void enterTarget_recovery_time_option(TSqlParser::Target_recovery_time_optionContext *ctx) = 0;
   virtual void exitTarget_recovery_time_option(TSqlParser::Target_recovery_time_optionContext *ctx) = 0;
@@ -890,20 +260,8 @@ public:
   virtual void enterDrop_procedure(TSqlParser::Drop_procedureContext *ctx) = 0;
   virtual void exitDrop_procedure(TSqlParser::Drop_procedureContext *ctx) = 0;
 
-  virtual void enterDrop_trigger(TSqlParser::Drop_triggerContext *ctx) = 0;
-  virtual void exitDrop_trigger(TSqlParser::Drop_triggerContext *ctx) = 0;
-
-  virtual void enterDrop_dml_trigger(TSqlParser::Drop_dml_triggerContext *ctx) = 0;
-  virtual void exitDrop_dml_trigger(TSqlParser::Drop_dml_triggerContext *ctx) = 0;
-
-  virtual void enterDrop_ddl_trigger(TSqlParser::Drop_ddl_triggerContext *ctx) = 0;
-  virtual void exitDrop_ddl_trigger(TSqlParser::Drop_ddl_triggerContext *ctx) = 0;
-
   virtual void enterDrop_function(TSqlParser::Drop_functionContext *ctx) = 0;
   virtual void exitDrop_function(TSqlParser::Drop_functionContext *ctx) = 0;
-
-  virtual void enterDrop_statistics(TSqlParser::Drop_statisticsContext *ctx) = 0;
-  virtual void exitDrop_statistics(TSqlParser::Drop_statisticsContext *ctx) = 0;
 
   virtual void enterDrop_table(TSqlParser::Drop_tableContext *ctx) = 0;
   virtual void exitDrop_table(TSqlParser::Drop_tableContext *ctx) = 0;
@@ -932,21 +290,6 @@ public:
   virtual void enterCursor_statement(TSqlParser::Cursor_statementContext *ctx) = 0;
   virtual void exitCursor_statement(TSqlParser::Cursor_statementContext *ctx) = 0;
 
-  virtual void enterBackup_database(TSqlParser::Backup_databaseContext *ctx) = 0;
-  virtual void exitBackup_database(TSqlParser::Backup_databaseContext *ctx) = 0;
-
-  virtual void enterBackup_log(TSqlParser::Backup_logContext *ctx) = 0;
-  virtual void exitBackup_log(TSqlParser::Backup_logContext *ctx) = 0;
-
-  virtual void enterBackup_certificate(TSqlParser::Backup_certificateContext *ctx) = 0;
-  virtual void exitBackup_certificate(TSqlParser::Backup_certificateContext *ctx) = 0;
-
-  virtual void enterBackup_master_key(TSqlParser::Backup_master_keyContext *ctx) = 0;
-  virtual void exitBackup_master_key(TSqlParser::Backup_master_keyContext *ctx) = 0;
-
-  virtual void enterBackup_service_master_key(TSqlParser::Backup_service_master_keyContext *ctx) = 0;
-  virtual void exitBackup_service_master_key(TSqlParser::Backup_service_master_keyContext *ctx) = 0;
-
   virtual void enterKill_statement(TSqlParser::Kill_statementContext *ctx) = 0;
   virtual void exitKill_statement(TSqlParser::Kill_statementContext *ctx) = 0;
 
@@ -970,48 +313,6 @@ public:
 
   virtual void enterExecute_var_string(TSqlParser::Execute_var_stringContext *ctx) = 0;
   virtual void exitExecute_var_string(TSqlParser::Execute_var_stringContext *ctx) = 0;
-
-  virtual void enterSecurity_statement(TSqlParser::Security_statementContext *ctx) = 0;
-  virtual void exitSecurity_statement(TSqlParser::Security_statementContext *ctx) = 0;
-
-  virtual void enterCreate_certificate(TSqlParser::Create_certificateContext *ctx) = 0;
-  virtual void exitCreate_certificate(TSqlParser::Create_certificateContext *ctx) = 0;
-
-  virtual void enterExisting_keys(TSqlParser::Existing_keysContext *ctx) = 0;
-  virtual void exitExisting_keys(TSqlParser::Existing_keysContext *ctx) = 0;
-
-  virtual void enterPrivate_key_options(TSqlParser::Private_key_optionsContext *ctx) = 0;
-  virtual void exitPrivate_key_options(TSqlParser::Private_key_optionsContext *ctx) = 0;
-
-  virtual void enterGenerate_new_keys(TSqlParser::Generate_new_keysContext *ctx) = 0;
-  virtual void exitGenerate_new_keys(TSqlParser::Generate_new_keysContext *ctx) = 0;
-
-  virtual void enterDate_options(TSqlParser::Date_optionsContext *ctx) = 0;
-  virtual void exitDate_options(TSqlParser::Date_optionsContext *ctx) = 0;
-
-  virtual void enterOpen_key(TSqlParser::Open_keyContext *ctx) = 0;
-  virtual void exitOpen_key(TSqlParser::Open_keyContext *ctx) = 0;
-
-  virtual void enterClose_key(TSqlParser::Close_keyContext *ctx) = 0;
-  virtual void exitClose_key(TSqlParser::Close_keyContext *ctx) = 0;
-
-  virtual void enterCreate_key(TSqlParser::Create_keyContext *ctx) = 0;
-  virtual void exitCreate_key(TSqlParser::Create_keyContext *ctx) = 0;
-
-  virtual void enterKey_options(TSqlParser::Key_optionsContext *ctx) = 0;
-  virtual void exitKey_options(TSqlParser::Key_optionsContext *ctx) = 0;
-
-  virtual void enterAlgorithm(TSqlParser::AlgorithmContext *ctx) = 0;
-  virtual void exitAlgorithm(TSqlParser::AlgorithmContext *ctx) = 0;
-
-  virtual void enterEncryption_mechanism(TSqlParser::Encryption_mechanismContext *ctx) = 0;
-  virtual void exitEncryption_mechanism(TSqlParser::Encryption_mechanismContext *ctx) = 0;
-
-  virtual void enterDecryption_mechanism(TSqlParser::Decryption_mechanismContext *ctx) = 0;
-  virtual void exitDecryption_mechanism(TSqlParser::Decryption_mechanismContext *ctx) = 0;
-
-  virtual void enterGrant_permission(TSqlParser::Grant_permissionContext *ctx) = 0;
-  virtual void exitGrant_permission(TSqlParser::Grant_permissionContext *ctx) = 0;
 
   virtual void enterSet_statement(TSqlParser::Set_statementContext *ctx) = 0;
   virtual void exitSet_statement(TSqlParser::Set_statementContext *ctx) = 0;
