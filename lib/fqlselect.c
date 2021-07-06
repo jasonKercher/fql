@@ -50,6 +50,13 @@ void fqlselect_set_delim(fqlselect* self, const char* delim)
 
 void fqlselect_set_schema(fqlselect* self, const schema* src_schema)
 {
+	if (src_schema == NULL) {
+		fqlselect_set_delim(self, ",");
+		self->schema->io_type = IO_LIBCSV;
+		self->schema->write_io_type = IO_LIBCSV;
+		self->schema->is_default = true;
+		return;
+	}
 	if (!self->schema->delimiter[0]) {
 		fqlselect_set_delim(self, src_schema->delimiter);
 	}

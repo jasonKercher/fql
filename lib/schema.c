@@ -251,7 +251,7 @@ void schema_assign_header(table* table, record* rec, int src_idx)
  *  3. $HOME/.config/fql
  *  4. ./ OR should probably just throw error here...
  */
-int _resolve_directory(schema* self, struct fql_handle* fql)
+int _resolve_schema_path(schema* self, struct fql_handle* fql)
 {
 	self->schema_path = new_(string);
 	DIR* schema_dir = NULL;
@@ -437,7 +437,7 @@ parse_schema_return:
 int _load_by_name(table* table, struct fql_handle* fql, int src_idx)
 {
 	schema* self = table->schema;
-	try_(_resolve_directory(self, fql));
+	try_(_resolve_schema_path(self, fql));
 
 	string* full_path_temp = new_(string);
 	string_sprintf(full_path_temp,
@@ -989,6 +989,10 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 		if (i > 0 && !fql->props.force_cartesian) {
 			_resolve_join_conditions(table, i);
 		}
+	}
+
+	if (op_get_schema(aquery->op)->write_io_type == IO_UNDEFINED) {
+		op_set_schema(aquery->op, NULL);
 	}
 
 	/* Validate WHERE columns */

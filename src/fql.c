@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 
 	while ((c = getopt_long(argc,
 	                        argv,
-	                        "AbCdhHOps:S:tvX",
+	                        "AbCdhHOps:S:tvX:",
 	                        long_options,
 	                        &option_index))
 	       != -1)
