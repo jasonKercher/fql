@@ -76,3 +76,16 @@ int reader_assign(reader* self, table* table)
 		return FQL_FAIL;
 	}
 }
+
+size_t reader_get_file_size(reader* self)
+{
+	switch (self->type) {
+	case IO_LIBCSV:
+		return csv_reader_get_file_size(self->reader_data);
+	case IO_FIXED:
+		return ((fixedreader*)(self->reader_data))->file_size;
+	case IO_SUBQUERY:
+	default:
+		return 0;
+	}
+}

@@ -94,6 +94,7 @@ int fixedreader_get_record_at(reader* reader, record* rec, const char* begin)
 int fixedreader_reset(reader* reader)
 {
 	fixedreader* self = reader->reader_data;
+	reader->eof = false;
 	self->iter = self->mmap + reader->reclen * reader->skip_rows;
 	return FQL_GOOD;
 }

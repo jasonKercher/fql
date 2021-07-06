@@ -165,9 +165,7 @@ size_t _guess_row_count(table* self)
 	if (avg_len < 1)
 		avg_len = 1;
 
-	/* TODO: schema assumed here */
-	struct csv_reader* csv = reader->reader_data;
-	size_t file_size = csv_reader_get_file_size(csv);
+	size_t file_size = reader_get_file_size(reader);
 	reader->reset__(reader);
 
 	guess = file_size / avg_len;

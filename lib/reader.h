@@ -36,6 +36,7 @@ struct reader* reader_construct(struct reader*);
 void reader_destroy(struct reader*);
 
 int reader_assign(struct reader*, struct table*);
+size_t reader_get_file_size(struct reader*);
 
 /**
  * reader types own the data that is passed from
