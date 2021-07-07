@@ -135,7 +135,31 @@ void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemConte
 
 void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx)
 {
-	/* TODO: Convert to use ctx->LEFT(), etc... */
+	std::string error_token = "";
+	if (ctx->APPLY()) {
+		error_token = "APPLY";
+	} else if (ctx->MERGE()) {
+		error_token = "MERGE";
+	} else if (ctx->PIVOT()) {
+		error_token = "PIVOT";
+	} else if (ctx->UNPIVOT()) {
+		error_token = "UNPIVOT";
+	} else if (ctx->LOOP()) {
+		error_token = "LOOP";
+	} else if (ctx->REMOTE()) {
+		error_token = "REMOTE";
+	} else if (!ctx->JOIN()) {
+		std::cerr << "Keyword `JOIN' expected but not found\n";
+		_return_code = FQL_FAIL;
+		_walker->set_walking(false);
+	}
+
+	if (!error_token.empty()) {
+		std::cerr << "Keyword `" << error_token << "' currently not supported\n";
+		_return_code = FQL_FAIL;
+		_walker->set_walking(false);
+	}
+
 	if (ctx->LEFT()) {
 		_query->join = JOIN_LEFT;
 	} else if (ctx->RIGHT()) {
@@ -671,14 +695,22 @@ void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx)
 		_walker->set_walking(false);
 	}
 
-	_query->mode = MODE_SELECT;
-	int ret = query_init_union(_query);
+	query* union_query = query_new(_query_id);
+	int ret = query_init_union(_query, union_query);
 	if (ret) {
 		_return_code = ret;
 		_walker->set_walking(false);
 	}
+
+	_query = union_query;
+	stack_push(&_query_stack, _query);
+	_query->mode = MODE_SELECT;
 }
-void ListenerInterface::exitSql_union(TSqlParser::Sql_unionContext * ctx) { }
+
+void ListenerInterface::exitSql_union(TSqlParser::Sql_unionContext * ctx)
+{
+	_query = (query*)stack_pop(&_query_stack);
+}
 
 /* Every Rule Operations */
 

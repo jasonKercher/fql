@@ -33,6 +33,7 @@ query* query_construct(query* self, int id)
 	        NULL,                /* op */
 	        new_t_(vec, query*), /* subquery_const_vec */
 	        NULL,                /* top_expr */
+	        new_t_(vec, query*), /* unions */
 	        NULL,                /* into_table_name */
 	        -1,                  /* top_count */
 	        id,                  /* query_id */
@@ -73,6 +74,11 @@ void query_destroy(query* self)
 
 	query** q_it = vec_begin(self->subquery_const_vec);
 	for (; q_it != vec_end(self->subquery_const_vec); ++q_it) {
+		delete_(query, *q_it);
+	}
+
+	q_it = vec_begin(self->unions);
+	for (; q_it != vec_end(self->unions); ++q_it) {
 		delete_(query, *q_it);
 	}
 	delete_(vec, self->subquery_const_vec);
@@ -118,9 +124,6 @@ int _distribute_column(query* self, column* col)
 	switch (self->mode) {
 	case MODE_SELECT:
 		fqlselect_add_column(self->op, col);
-		//if (self->distinct) {
-		//	group_add_column(self->distinct, col);
-		//}
 		break;
 	case MODE_TOP:
 		self->top_expr = col;
@@ -168,7 +171,6 @@ int query_add_column(query* self, char* col_name, const char* table_id)
 		col = new_(column, EXPR_COLUMN_NAME, col_name, table_id);
 	}
 
-	/* TODO: remove when this is impossible */
 	if (_distribute_column(self, col)) {
 		fprintf(stderr, "unhandled COLUMN_NAME: %s\n", col_name);
 		return FQL_FAIL;
@@ -180,7 +182,6 @@ int query_add_asterisk(query* self, const char* table_id)
 {
 	column* col = new_(column, EXPR_ASTERISK, NULL, table_id);
 
-	/* TODO: remove when this is impossible */
 	if (_distribute_column(self, col)) {
 		fprintf(stderr, "unhandled asterisk\n");
 		return FQL_FAIL;
@@ -364,10 +365,10 @@ void query_init_in_statement(query* self)
 }
 
 /* TODO */
-int query_init_union(query* self)
+int query_init_union(query* self, query* union_query)
 {
-	fputs("UNION under construction\n", stderr);
-	return FQL_FAIL;
+	vec_push_back(self->unions, &union_query);
+	return FQL_GOOD;
 }
 
 void query_assign_in_subquery(query* self, query* subquery)

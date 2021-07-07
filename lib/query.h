@@ -121,6 +121,7 @@ struct query {
 	void* op; /* operation structure */
 	struct vec* subquery_const_vec;
 	struct column* top_expr;
+	struct vec* unions;
 	char* into_table_name;
 	size_t top_count;
 	int query_id;
@@ -166,7 +167,7 @@ int query_init_op(struct query*);
 void query_init_groupby(struct query*);
 int query_init_orderby(struct query*);
 void query_init_in_statement(struct query*);
-int query_init_union(struct query*);
+int query_init_union(struct query*, struct query*);
 void query_assign_in_subquery(struct query*, struct query*);
 void query_add_subquery_const(struct query*, struct query*);
 void query_set_order_desc(struct query*);
