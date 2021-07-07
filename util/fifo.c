@@ -79,10 +79,10 @@ void fifo_resize(fifo* self, unsigned n)
 	self->tail = 0;
 }
 
-_Bool fifo_is_open(fifo* self)
+bool fifo_is_open(fifo* self)
 {
 	pthread_mutex_lock(&self->open_mutex);
-	_Bool ret = self->is_open;
+	bool ret = self->is_open;
 	pthread_mutex_unlock(&self->open_mutex);
 	return ret;
 }
@@ -96,17 +96,17 @@ unsigned fifo_available(fifo* f)
 	return available;
 }
 
-_Bool fifo_is_empty(const fifo* f)
+bool fifo_is_empty(const fifo* f)
 {
 	return (f->head == f->tail);
 }
 
-_Bool fifo_has_work(fifo* f)
+bool fifo_has_work(fifo* f)
 {
 	return (fifo_available(f) >= (3 * f->buf->size) / 4);
 }
 
-_Bool fifo_is_full(const fifo* f)
+bool fifo_is_full(const fifo* f)
 {
 	return ((f->head + 1) % f->buf->size == f->tail);
 }

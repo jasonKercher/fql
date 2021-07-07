@@ -15,6 +15,7 @@ struct schema {
 	string* schema_path;
 	string* name;
 	char delimiter[DELIM_LEN_MAX];
+	char rec_terminator[DELIM_LEN_MAX];
 	int strictness;
 	enum io io_type;
 	enum io write_io_type;

@@ -37,10 +37,7 @@ struct fql_handle* fql_new();
  */
 void fql_free(struct fql_handle*);
 
-/**
- * Properties
- * All properties are boolean unless specified otherwise.
- */
+/** Properties **/
 
 /**
  * set verbose to receive extra output via stderr
@@ -48,9 +45,24 @@ void fql_free(struct fql_handle*);
 void fql_set_verbose(struct fql_handle*, int);
 
 /**
- * set dry run (0,1) to avoid execution
+ * set dry run to avoid execution. Useful if you
+ * just want to look at the generated plan.
  */
 void fql_set_dry_run(struct fql_handle*, int);
+
+/**
+ * TODO: currently no-op
+ * Like most database engines, the following will
+ * throw an error if table T1 already exists:
+ * ```sql
+ * select *
+ * into T1
+ * from T2
+ * ```
+ * fql also observes this behavior, however,
+ * it can be turned off by setting overwrite.
+ */
+void fql_set_overwrite(struct fql_handle*, int);
 
 /**
  * The grammar for this language is for the
@@ -68,6 +80,13 @@ void fql_set_override_warnings(struct fql_handle*, int);
  * printed (default schema only).
  */
 void fql_set_print_header(struct fql_handle*, int);
+
+/**
+ * TODO: currently no-op
+ * For a schema that does not have a header, one
+ * can be added.
+ */
+void fql_set_add_header(struct fql_handle*, int);
 
 /**
  * Set print plan to print the execution plan to
@@ -89,6 +108,12 @@ void fql_set_in_delim(struct fql_handle*, const char*);
 void fql_set_out_delim(struct fql_handle*, const char*);
 
 /**
+ * Set an output record terminator for delimited
+ * output.  Default is line feed (\n).
+ */
+void fql_set_record_terminator(struct fql_handle*, const char*);
+
+/**
  * Turn on threading for individual queries
  * Currently, this works about 99% of the time.
  * When it works 100% of the time, it will become
@@ -97,7 +122,7 @@ void fql_set_out_delim(struct fql_handle*, const char*);
 void fql_set_threading(struct fql_handle*, int);
 
 /**
- * By default, we are expection UTF-8 input. If
+ * By default, we are expecting UTF-8 input. If
  * you want to treat each byte as a character, set
  * char_as_byte.
  */
@@ -111,17 +136,55 @@ void fql_set_char_as_byte(struct fql_handle*, int);
 void fql_set_force_cartesian(struct fql_handle*, int);
 
 /**
- * This setting takes precedence over the 
- * FQL_SCHEMA_PATHenvironment variable and 
+ * This setting takes precedence over the
+ * FQL_SCHEMA_PATHenvironment variable and
  * "$HOME/.config/fql/"
  */
 void fql_set_schema_path(struct fql_handle* fql, const char* schema_path);
+
+/**
+ * Use this option to set a default schema
+ */
+void fql_set_schema(struct fql_handle* fql, const char* schema);
 
 /**
  * set strict to make the validation pickier
  * (and safer) at the expense of verbosity
  */
 void fql_set_strict_mode(struct fql_handle*, int);
+
+/**
+ * Allow SELECTing of non-grouped data while using
+ * GROUP BY. This will disable aggregates. For
+ * example, the following query becomes legal:
+ * will become legal:
+ *
+ * ```sql
+ * select foo, bar
+ * from t1
+ * group by foo
+ * ```
+ *
+ * Here bar will just be the *first* bar for
+ * each unique foo.
+ */
+void fql_set_loose_groups(struct fql_handle* fql, int);
+
+/**
+ * Preserve the input order of the records.
+ *
+ * TODO: Currently no-op because input order
+ *       cannot be broken (on paper anyway).
+ *       However, This should be implemented
+ *       for UNIONs.
+ */
+void fql_set_stable(struct fql_handle* fql, int);
+
+/**
+ * Use Windows style CR + LF as output line ending instead
+ * of Unix style LF only.
+ */
+void fql_set_crlf_output(struct fql_handle* fql, int);
 
 /** executing **/
 

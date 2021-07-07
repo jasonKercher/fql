@@ -29,6 +29,7 @@ schema* schema_construct(schema* self)
 	        NULL,                 /* schema_path */
 	        NULL,                 /* name */
 	        "",                   /* delimiter */
+	        "",                   /* line_ending */
 	        0,                    /* strictness */
 	        IO_UNDEFINED,         /* io_type */
 	        IO_UNDEFINED,         /* write_io_type */
@@ -111,6 +112,11 @@ void schema_preflight(schema* self)
 	if (self->delimiter[0] == '\0') {
 		self->delimiter[0] = ',';
 		self->delimiter[1] = '\0';
+	}
+
+	if (self->rec_terminator[0] == '\0') {
+		self->rec_terminator[0] = '\n';
+		self->rec_terminator[1] = '\0';
 	}
 }
 
@@ -465,7 +471,11 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		return FQL_GOOD; /* self already set */
 	}
 
-	if (self && self->name) {
+	if (self && (self->name || !string_empty(fql->props.schema))) {
+		if (self->name == NULL) {
+			self->name = string_from_string(fql->props.schema);
+		}
+
 		/* If the name of the schema is default, do nothing */
 		const char* DEFAULT = "default";
 		stringview default_sv = {DEFAULT, 7};
@@ -516,7 +526,9 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	table->reader->max_col_idx = INT_MAX;
 	table->reader->get_record__(table->reader, &rec);
 	const char* delim = table_get_delim(table);
-	strncpy_(self->delimiter, delim, DELIM_LEN_MAX);
+	if (delim != NULL) {
+		strncpy_(self->delimiter, delim, DELIM_LEN_MAX);
+	}
 	table->reader->max_col_idx = 0;
 
 	/* redundant if default schema */
@@ -819,7 +831,7 @@ int _map_expression(vec* key, column* col)
 	return FQL_GOOD;
 }
 
-int _op_find_group(compositemap* expr_map, column* col, vec* key)
+int _op_find_group(compositemap* expr_map, column* col, vec* key, bool loose_groups)
 {
 	if (col->expr == EXPR_CONST || col->expr == EXPR_SUBQUERY) {
 		return FQL_GOOD;
@@ -836,12 +848,15 @@ int _op_find_group(compositemap* expr_map, column* col, vec* key)
 
 	column** result = compositemap_get(expr_map, key);
 	if (result != NULL) {
+		col->is_resolved_to_group = true;
+		if (loose_groups) {
+			return FQL_GOOD;
+		}
 		if (col->expr == EXPR_FUNCTION) {
 			delete_(function, col->field.fn);
 		}
 		col->src_idx = 0;
 		col->data_source = *result;
-		col->is_resolved_to_group = true;
 		/* the operation (select) will not be evaluating
 		 * the expression.  it is simply going to read
 		 * from the grouping as if it were a column.
@@ -850,24 +865,27 @@ int _op_find_group(compositemap* expr_map, column* col, vec* key)
 		return FQL_GOOD;
 	}
 
-	/* TODO: this logic */
+	if (col->expr == EXPR_FUNCTION) {
+		column** it = vec_begin(col->field.fn->args);
+		for (; it != vec_end(col->field.fn->args); ++it) {
+			try_(_op_find_group(expr_map, *it, key, loose_groups));
+		}
+		return FQL_GOOD;
+	}
+
+	if (loose_groups) {
+		return FQL_GOOD;
+	}
+
 	if (col->expr == EXPR_COLUMN_NAME) {
 		fprintf(stderr,
 		        "column `%s' does not match a grouping\n",
 		        (char*)col->alias.data);
 		return FQL_FAIL;
-	} else if (col->expr != EXPR_FUNCTION) {
-		fprintf(stderr,
-		        "column `%s' unexpected expression\n",
-		        (char*)col->alias.data);
-		return FQL_FAIL;
 	}
 
-	column** it = vec_begin(col->field.fn->args);
-	for (; it != vec_end(col->field.fn->args); ++it) {
-		try_(_op_find_group(expr_map, *it, key));
-	}
-	return FQL_GOOD;
+	fprintf(stderr, "column `%s' unexpected expression\n", (char*)col->alias.data);
+	return FQL_FAIL;
 }
 
 int _map_groups(struct fql_handle* fql, query* query)
@@ -906,7 +924,7 @@ int _map_groups(struct fql_handle* fql, query* query)
 	return FQL_GOOD;
 }
 
-int _group_validation(query* query, vec* cols)
+int _group_validation(query* query, vec* cols, bool loose_groups)
 {
 	compositemap* expr_map = query->groupby->expr_map;
 	vec key;
@@ -916,7 +934,7 @@ int _group_validation(query* query, vec* cols)
 		if ((*it)->is_resolved_to_group) {
 			continue;
 		}
-		if (_op_find_group(expr_map, *it, &key)) {
+		if (_op_find_group(expr_map, *it, &key, loose_groups)) {
 			vec_destroy(&key);
 			return FQL_FAIL;
 		}
@@ -1026,6 +1044,8 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 		try_(_assign_columns(order_cols, aquery->sources, fql->props.strictness));
 	}
 
+	try_(op_writer_init(aquery));
+
 	/* Do GROUP BY last. There are less caveats having
 	 * waited until everything else is already resolved
 	 */
@@ -1036,19 +1056,21 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 		 * we must re-resolve each operation,
 		 * HAVING and ORDER BY column to a group.
 		 */
-		try_(_group_validation(aquery, op_cols));
+		try_(_group_validation(aquery, op_cols, fql->props.loose_groups));
 
 		if (having_cols) {
-			try_(_group_validation(aquery, having_cols));
+			try_(_group_validation(aquery,
+			                       having_cols,
+			                       fql->props.loose_groups));
 		}
 
 		/* exceptions: ordinal ordering or matched by alias */
 		if (order_cols) {
-			try_(_group_validation(aquery, order_cols));
+			try_(_group_validation(aquery,
+			                       order_cols,
+			                       fql->props.loose_groups));
 		}
 	}
-
-	try_(op_writer_init(aquery));
 
 	return FQL_GOOD;
 }
@@ -1061,6 +1083,10 @@ int schema_resolve(struct fql_handle* fql)
 
 		if (fql->props.out_delim[0]) {
 			op_set_delim(query->op, fql->props.out_delim);
+		}
+
+		if (fql->props.rec_terminator[0]) {
+			op_set_rec_terminator(query->op, fql->props.rec_terminator);
 		}
 
 		try_(schema_resolve_query(fql, query));

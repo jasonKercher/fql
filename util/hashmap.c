@@ -97,7 +97,7 @@ void set_nadd(set* self, const char* key, unsigned n)
 	}
 }
 
-_Bool set_nhas(set* self, const char* key, unsigned n)
+bool set_nhas(set* self, const char* key, unsigned n)
 {
 	uint64_t hash = 0;
 	struct hm_entry* entry = _get_entry(self, key, &n, &hash);
@@ -281,7 +281,7 @@ void* compositemap_get(compositemap* m, const struct vec* key)
 	return vec_at(m->values, entry->val_idx);
 }
 
-_Bool _composite_eq(compositemap* m, struct hm_entry* ent)
+bool _composite_eq(compositemap* m, struct hm_entry* ent)
 {
 	struct _keyloc* kl0 = vec_at(m->_keys, ent->key_idx);
 	struct _keyloc* kl1 = vec_begin(m->_key_temp);

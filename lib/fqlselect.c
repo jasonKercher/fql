@@ -1,6 +1,8 @@
 #include "fqlselect.h"
 #include "csv.h"
 #include "fql.h"
+#include "misc.h"
+#include "group.h"
 #include "order.h"
 #include "logic.h"
 #include "query.h"
@@ -8,7 +10,6 @@
 #include "column.h"
 #include "schema.h"
 #include "process.h"
-#include "misc.h"
 #include "util/stringy.h"
 #include "util/util.h"
 
@@ -46,6 +47,11 @@ void fqlselect_destroy(fqlselect* self)
 void fqlselect_set_delim(fqlselect* self, const char* delim)
 {
 	strncpy_(self->schema->delimiter, delim, DELIM_LEN_MAX);
+}
+
+void fqlselect_set_rec_terminator(fqlselect* self, const char* term)
+{
+	strncpy_(self->schema->rec_terminator, term, DELIM_LEN_MAX);
 }
 
 void fqlselect_set_schema(fqlselect* self, const schema* src_schema)
@@ -210,6 +216,7 @@ void fqlselect_apply_process(query* query, plan* plan)
 	string_strcpy(proc->action_msg, "SELECT ");
 
 	writer_set_delimiter(self->writer, self->schema->delimiter);
+	writer_set_rec_terminator(self->writer, self->schema->rec_terminator);
 
 	vec* col_vec = self->schema->columns;
 	column** col = vec_begin(col_vec);
@@ -270,7 +277,15 @@ int fqlselect_writer_init(fqlselect* self, query* query)
 		free_(out_name);
 	}
 
-	_expand_asterisks(query, false);
+	_expand_asterisks(query, (!query->groupby || !query->distinct));
+
+	if (query->distinct != NULL) {
+		column** it = vec_begin(self->schema->columns);
+		for (; it != vec_end(self->schema->columns); ++it) {
+			group_add_column(query->distinct, *it);
+		}
+	}
+
 	schema_preflight(self->schema);
 
 	return FQL_GOOD;

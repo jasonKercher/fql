@@ -134,6 +134,21 @@ void writer_set_delimiter(writer* self, const char* delim)
 	}
 }
 
+void writer_set_rec_terminator(writer* self, const char* term)
+{
+	switch (self->type) {
+	case IO_LIBCSV: {
+		csv_writer* csv = self->writer_data;
+		csv_writer_set_line_ending(csv, term);
+		break;
+	}
+	case IO_FIXED: /* no record terminator for this */
+		break;
+	default:
+		fprintf(stderr, "%d: unknown write_type\n", self->type);
+	}
+}
+
 void writer_assign(writer* self)
 {
 	switch (self->type) {

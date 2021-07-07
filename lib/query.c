@@ -118,9 +118,9 @@ int _distribute_column(query* self, column* col)
 	switch (self->mode) {
 	case MODE_SELECT:
 		fqlselect_add_column(self->op, col);
-		if (self->distinct) {
-			group_add_column(self->distinct, col);
-		}
+		//if (self->distinct) {
+		//	group_add_column(self->distinct, col);
+		//}
 		break;
 	case MODE_TOP:
 		self->top_expr = col;
@@ -143,8 +143,26 @@ int _distribute_column(query* self, column* col)
 
 int query_add_column(query* self, char* col_name, const char* table_id)
 {
+	/* TODO: should probably handle built-ins with
+	 *       their own function triggered by "__.*"
+	 */
 	column* col = NULL;
-	if (istring_eq(col_name, "__rec")) {
+	if (istring_eq(col_name, "__lf")) {
+		col = new_(column, EXPR_CONST, NULL, "");
+		string_strcpy(&col->buf, "\n");
+		col->field_type = FIELD_STRING;
+		col->field.s = &col->buf;
+	} else if (istring_eq(col_name, "__crlf")) {
+		col = new_(column, EXPR_CONST, NULL, "");
+		string_strcpy(&col->buf, "\r\n");
+		col->field_type = FIELD_STRING;
+		col->field.s = &col->buf;
+	} else if (istring_eq(col_name, "__cr")) {
+		col = new_(column, EXPR_CONST, NULL, "");
+		string_strcpy(&col->buf, "\r");
+		col->field_type = FIELD_STRING;
+		col->field.s = &col->buf;
+	} else if (istring_eq(col_name, "__rec")) {
 		col = new_(column, EXPR_FULL_RECORD, col_name, table_id);
 	} else {
 		col = new_(column, EXPR_COLUMN_NAME, col_name, table_id);
@@ -343,6 +361,13 @@ void query_init_in_statement(query* self)
 		lg->condition = new_(logic);
 	}
 	lg->condition->in_data = new_(inlist);
+}
+
+/* TODO */
+int query_init_union(query* self)
+{
+	fputs("UNION under construction\n", stderr);
+	return FQL_FAIL;
 }
 
 void query_assign_in_subquery(query* self, query* subquery)

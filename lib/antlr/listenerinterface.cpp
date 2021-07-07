@@ -578,9 +578,6 @@ void ListenerInterface::enterQuery_specification(TSqlParser::Query_specification
 	if (ctx->DISTINCT()) {
 		query_set_distinct(_query);
 	}
-	//if (ctx->HAVING()) {
-	//	query_set_expect_having(_query);
-	//}
 	if (ctx->WHERE()) {
 		_query->expect_where = true;
 	}
@@ -589,6 +586,13 @@ void ListenerInterface::exitQuery_specification(TSqlParser::Query_specificationC
 
 void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx)
 {
+	if (_fql->props.loose_groups) {
+		std::cerr << "Cannot use aggregates with loose groups\n";
+		_return_code = FQL_FAIL;
+		_walker->set_walking(false);
+		return;
+	}
+
 	enum aggregate_function fn = AGG_UNDEFINED;
 	if (ctx->AVG())               fn = AGG_AVG;
 	else if (ctx->CHECKSUM_AGG()) fn = AGG_CHECKSUM_AGG;
@@ -658,6 +662,23 @@ void ListenerInterface::enterTop_count(TSqlParser::Top_countContext * ctx)
 	}
 }
 void ListenerInterface::exitTop_count(TSqlParser::Top_countContext * ctx) { }
+
+void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx)
+{
+	if (!ctx->ALL()) {
+		std::cerr << "UNION without ALL is currently not supported\n";
+		_return_code = FQL_FAIL;
+		_walker->set_walking(false);
+	}
+
+	_query->mode = MODE_SELECT;
+	int ret = query_init_union(_query);
+	if (ret) {
+		_return_code = ret;
+		_walker->set_walking(false);
+	}
+}
+void ListenerInterface::exitSql_union(TSqlParser::Sql_unionContext * ctx) { }
 
 /* Every Rule Operations */
 
@@ -1083,9 +1104,6 @@ void ListenerInterface::exitUpdate_elem(TSqlParser::Update_elemContext * ctx) { 
 
 void ListenerInterface::enterSearch_condition_list(TSqlParser::Search_condition_listContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitSearch_condition_list(TSqlParser::Search_condition_listContext * ctx) { }
-
-void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSql_union(TSqlParser::Sql_unionContext * ctx) { }
 
 void ListenerInterface::enterTop_percent(TSqlParser::Top_percentContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitTop_percent(TSqlParser::Top_percentContext * ctx) { }

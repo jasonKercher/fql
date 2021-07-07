@@ -50,7 +50,7 @@ int _get_rev_byte_count(const char* s, unsigned limit)
 	}
 
 	/* check leading byte */
-	_Bool valid = false;
+	bool valid = false;
 	switch (-i + 1) {
 	case 2:
 		valid = ((s[i] & 0xE0) == 0xC0);

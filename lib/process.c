@@ -55,7 +55,7 @@ void process_node_free(dnode* proc_node)
 	delete_(process, proc_node->data, proc_node->is_root);
 }
 
-void process_destroy(process* proc, _Bool is_root)
+void process_destroy(process* proc, bool is_root)
 {
 	if (is_root && proc->records != NULL) {
 		vec* it = vec_begin(proc->records);
@@ -76,7 +76,7 @@ void process_activate(dnode* proc_node, plan* plan)
 {
 	process* proc = proc_node->data;
 	unsigned graph_size = plan->processes->nodes->size;
-	_Bool is_subquery = proc->subquery_plan_id > 0;
+	bool is_subquery = proc->subquery_plan_id > 0;
 	if (proc->root_group == NULL && is_subquery) {
 		proc->root_group = vec_at(plan->recycle_groups, proc->subquery_plan_id);
 	} else if (proc->root_group == NULL) {
@@ -110,7 +110,7 @@ void process_activate(dnode* proc_node, plan* plan)
 
 	int field_count = 1;
 
-	_Bool owns_data = true;
+	bool owns_data = true;
 	if (proc->action__ == &fql_read) {
 		table* table = proc->proc_data;
 		reader* reader = table->reader;
@@ -225,7 +225,7 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		}
 
 		if (proc->wait_list != NULL) {
-			_Bool enabled = false;
+			bool enabled = false;
 			process** it = vec_begin(proc->wait_list);
 			for (; it != vec_end(proc->wait_list); ++it) {
 				if ((*it)->is_enabled) {

@@ -48,7 +48,7 @@ set* set_construct(set*, size_t limit, const unsigned props);
 void set_destroy(set*);
 void set_nadd(set*, const char* key, unsigned len);
 #define set_add(s_, key_) set_nadd(s_, key_, strlen(key_))
-_Bool set_nhas(set*, const char* key, unsigned len);
+bool set_nhas(set*, const char* key, unsigned len);
 #define set_has(s_, key_) set_nhas(s_, key_, strlen(key_))
 
 struct hashmap* hashmap_construct(struct hashmap*,

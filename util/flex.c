@@ -26,7 +26,7 @@ void flex_destroy(flex* self)
 	vec_destroy(&self->_raw);
 }
 
-_Bool flex_empty(const flex* self)
+bool flex_empty(const flex* self)
 {
 	return vec_empty(&self->_pairs);
 }

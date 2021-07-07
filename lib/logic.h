@@ -92,7 +92,7 @@ struct logicgroup {
 	struct vec* joinable;
 	struct logic* join_logic;
 	struct logic* condition;
-	_Bool negation;
+	bool negation;
 };
 typedef struct logicgroup logicgroup;
 

@@ -50,6 +50,7 @@ char* writer_take_filename(struct writer*);
 const char* writer_get_tempname(struct writer*);
 
 void writer_set_delimiter(struct writer*, const char*);
+void writer_set_rec_terminator(struct writer*, const char*);
 void writer_assign(struct writer*);
 
 #endif /* WRTIER_H */

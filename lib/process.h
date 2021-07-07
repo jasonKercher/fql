@@ -30,12 +30,12 @@ struct process {
 	short root_fifo;        /* signify which fifo_inx is the root */
 	short in_src_count;     /* number of input sources at this step */
 	short out_src_count;    /* number of output sources at this step */
-	_Bool is_secondary;     /* fifo_out should link to a fifo_in1 */
-	_Bool is_passive;       /* denotes process that does nothing */
-	_Bool is_enabled;       /* enabled means it still has data to process */
-	_Bool is_const;         /* should only run 1 time */
-	_Bool wait_for_in0;     /* allow start before in0 populated */
-	_Bool wait_for_in0_end; /* allow more processing after in0 done */
+	bool is_secondary;      /* fifo_out should link to a fifo_in1 */
+	bool is_passive;        /* denotes process that does nothing */
+	bool is_enabled;        /* enabled means it still has data to process */
+	bool is_const;          /* should only run 1 time */
+	bool wait_for_in0;      /* allow start before in0 populated */
+	bool wait_for_in0_end;  /* allow more processing after in0 done */
 };
 typedef struct process process;
 
@@ -46,7 +46,7 @@ struct thread_data {
 
 struct process*
 process_construct(struct process*, const char*, struct fql_plan*);
-void process_destroy(struct process*, _Bool);
+void process_destroy(struct process*, bool);
 void process_node_free(struct dnode* proc_node);
 
 void process_activate(dnode* proc_node, struct fql_plan*);

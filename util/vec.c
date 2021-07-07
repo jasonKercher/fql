@@ -26,7 +26,7 @@ void vec_destroy(vec* self)
 	free_(self->data);
 }
 
-_Bool vec_empty(const vec* self)
+bool vec_empty(const vec* self)
 {
 	return self->size == 0;
 }

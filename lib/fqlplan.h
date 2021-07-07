@@ -17,15 +17,16 @@ struct fql_plan {
 	size_t rows_affected;
 	int source_count;
 	int plan_id;
-	_Bool has_stepped;
+	bool has_stepped;
+	bool loose_groups;
 };
 typedef struct fql_plan plan;
 
-struct fql_plan* plan_construct(struct fql_plan*, struct query*);
+struct fql_plan* plan_construct(struct fql_plan*, struct query*, bool);
 void plan_destroy(void*);
 
-struct fql_plan* plan_build(struct query*, struct dnode* entry);
-int build_plans(struct queue*);
+struct fql_plan* plan_build(struct query*, struct dnode* entry, bool);
+int build_plans(struct queue*, bool);
 void print_plans(struct queue* plans);
 
 #endif /* FQLPLAN_H */

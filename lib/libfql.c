@@ -34,17 +34,23 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	        NULL,                          /* query_str */
 	        {
 	                new_(string), /* schema_path */
+	                new_(string), /* schema */
 	                "",           /* in_delim */
 	                "",           /* out_delim */
-	                false,        /* force_cartesian */
+	                "",           /* rec_terminator */
 	                false,        /* dry_run */
+	                false,        /* force_cartesian */
+	                false,        /* overwrite */
 	                false,        /* override_warnings */
 	                true,         /* print_header */
+	                false,        /* add_header */
 	                false,        /* print_plan */
 	                false,        /* threading */
 	                false,        /* verbose */
 	                false,        /* char_as_byte */
-	                false         /* strictness */
+	                false,        /* strictness */
+	                false,        /* loose_groups */
+	                false,        /* stable */
 	        }                     /* props */
 	};
 	return fql;
@@ -53,6 +59,7 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 void fql_free(struct fql_handle* fql)
 {
 	delete_(string, fql->props.schema_path);
+	delete_(string, fql->props.schema);
 	delete_if_exists_(vec, fql->api_vec);
 	free_if_exists_(fql->query_str);
 	free_if_exists_(fql);
@@ -110,6 +117,11 @@ void fql_set_dry_run(struct fql_handle* fql, int dry_run)
 	fql->props.dry_run = dry_run;
 }
 
+void fql_set_overwrite(struct fql_handle* fql, int overwrite)
+{
+	fql->props.overwrite = overwrite;
+}
+
 void fql_set_override_warnings(struct fql_handle* fql, int override)
 {
 	fql->props.override_warnings = override;
@@ -118,6 +130,11 @@ void fql_set_override_warnings(struct fql_handle* fql, int override)
 void fql_set_print_header(struct fql_handle* fql, int print_header)
 {
 	fql->props.print_header = print_header;
+}
+
+void fql_set_add_header(struct fql_handle* fql, int add_header)
+{
+	fql->props.add_header = add_header;
 }
 
 void fql_set_print_plan(struct fql_handle* fql, int print_plan)
@@ -133,6 +150,11 @@ void fql_set_in_delim(struct fql_handle* fql, const char* delim)
 void fql_set_out_delim(struct fql_handle* fql, const char* delim)
 {
 	strncpy_(fql->props.out_delim, delim, 32);
+}
+
+void fql_set_record_terminator(struct fql_handle* fql, const char* term)
+{
+	strncpy_(fql->props.rec_terminator, term, 32);
 }
 
 void fql_set_threading(struct fql_handle* fql, int threading)
@@ -158,6 +180,33 @@ void fql_set_strict_mode(struct fql_handle* fql, int strictness)
 void fql_set_schema_path(struct fql_handle* fql, const char* schema_path)
 {
 	string_strcpy(fql->props.schema_path, schema_path);
+}
+
+void fql_set_schema(struct fql_handle* fql, const char* schema)
+{
+	string_strcpy(fql->props.schema, schema);
+}
+
+void fql_set_loose_groups(struct fql_handle* fql, int loose_groups)
+{
+	fql->props.loose_groups = loose_groups;
+}
+
+void fql_set_stable(struct fql_handle* fql, int stable)
+{
+	fql->props.stable = stable;
+}
+
+void fql_set_crlf_output(struct fql_handle* fql, int crlf)
+{
+	if (crlf) {
+		fql->props.rec_terminator[0] = '\r';
+		fql->props.rec_terminator[1] = '\n';
+		fql->props.rec_terminator[2] = '\0';
+	} else {
+		fql->props.rec_terminator[0] = '\n';
+		fql->props.rec_terminator[1] = '\0';
+	}
 }
 
 /**
@@ -228,7 +277,7 @@ int fql_make_plans(struct fql_handle* fql, const char* query_str)
 		goto make_plans_fail;
 	}
 
-	if (build_plans(fql->query_list)) {
+	if (build_plans(fql->query_list, fql->props.loose_groups)) {
 		goto make_plans_fail;
 	}
 

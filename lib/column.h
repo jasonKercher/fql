@@ -36,13 +36,12 @@ struct column {
 	unsigned location;
 	unsigned width;
 	int src_idx;
-	_Bool is_resolved_to_group;
-	_Bool descending;
+	bool is_resolved_to_group;
+	bool descending;
 };
 typedef struct column column;
 
-struct column*
-column_construct(struct column*, enum expr_type, void*, const char*);
+struct column* column_construct(struct column*, enum expr_type, void* data, const char*);
 void column_destroy(void*);
 
 void column_link(struct column* dest, struct column* src);

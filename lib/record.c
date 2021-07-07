@@ -3,7 +3,7 @@
 #include "util/util.h"
 #include "util/stringview.h"
 
-record* record_construct(record* self, unsigned idx, unsigned n, _Bool owns_recs)
+record* record_construct(record* self, unsigned idx, unsigned n, bool owns_recs)
 {
 	*self = (record) {
 	        new_t_(vec, stringview), /* fields */

@@ -7,8 +7,8 @@ extern "C" {
 
 #include <stdlib.h>
 
-/* Try to get avoid includes since is our
- * interface to c++
+/* Try to get avoid includes since this
+ * is our interface to c++
  */
 struct vec;
 struct logicgroup;
@@ -166,6 +166,7 @@ int query_init_op(struct query*);
 void query_init_groupby(struct query*);
 int query_init_orderby(struct query*);
 void query_init_in_statement(struct query*);
+int query_init_union(struct query*);
 void query_assign_in_subquery(struct query*, struct query*);
 void query_add_subquery_const(struct query*, struct query*);
 void query_set_order_desc(struct query*);

@@ -358,6 +358,46 @@ int fql_groupby(dgraph* proc_graph, process* proc)
 	return 1;
 }
 
+/* This supports the loose groups option.  It works more
+ * like a distinct that just sends new groups to SELECT
+ */
+//int fql_loose_groupby(dgraph* proc_graph, process* proc)
+//{
+//	fifo* in_data = proc->fifo_in[0];
+//	fifo* in_fresh = proc->fifo_in[1];
+//	fifo* out = proc->fifo_out[0];
+//
+//	if (!in_data->is_open && fifo_is_empty(in_data)) {
+//		return _group_dump(proc, in_fresh, out);
+//	}
+//
+//	group* group = proc->proc_data;
+//
+//	vec** it = fifo_begin(in_data);
+//	for (; it != fifo_end(in_data); it = fifo_iter(in_data)) {
+//		/* TODO: something with returns? */
+//		if (!vec_empty(&group->columns)) {
+//			try_(group_record(group, *it));
+//		}
+//
+//		/* this entire if block needs to exist in case
+//		 * you _really_ need to know the results of:
+//		 * select count(*)  -- blasphemy
+//		 */
+//		if (!proc->is_const) {
+//			_recycle_recs(proc, *it, (*it)->size);
+//		} else {
+//			vec** recs = fifo_get(in_fresh);
+//			record** rec = vec_at(*recs, 0);
+//			try_(group_dump_record(group, *rec));
+//			fifo_add(out, recs);
+//			process_disable(proc);
+//		}
+//	}
+//	fifo_update(in_data);
+//	return 1;
+//}
+
 int fql_distinct(dgraph* proc_graph, process* proc)
 {
 	group* group = proc->proc_data;

@@ -62,7 +62,7 @@
 	({                                                               \
 		unsigned long u0_ = 0;                                   \
 		unsigned long u1_ = 0;                                   \
-		_Bool neg_ = false;                                      \
+		bool neg_ = false;                                       \
 		if (n0_ < 0) {                                           \
 			u0_ = n0_ * -1;                                  \
 			neg_ = true;                                     \

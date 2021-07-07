@@ -11,7 +11,7 @@ struct dnode {
 	void* data;
 	struct dnode* out[2];
 	int visit_count;
-	_Bool is_root;
+	bool is_root;
 };
 typedef struct dnode dnode;
 
@@ -24,7 +24,7 @@ struct dgraph {
 	struct fifo* _trav;
 	struct vec* _roots;
 	unsigned _root_idx;
-	_Bool _roots_good;
+	bool _roots_good;
 };
 typedef struct dgraph dgraph;
 

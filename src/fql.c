@@ -35,12 +35,19 @@ const char* _help =
         " -C, --cartesian      use cartesian join algorithm (less memory use)\n"
         " -d, --dry-run        validate and build a plan, but do not execute\n"
         " -h, --no-header      for default schema, do not print a header\n"
+        //" -H, --add-header     for no-header delimited, add a header\n"
+        " -L, --loose-groups   allow selection of outside of grouping.\n"
+        //" -o, --overwrite      creation of tables can overwrite existing files\n"
         " -O, --override       allow processing of unsupported language features\n"
         " -p, --print          print the processing plan\n"
-        " -s, --in-delim arg   for default schema, specify an input seperator\n"
-        " -S, --out-delim arg  for default schema, speficy seperator for SELECT\n"
+        " -R, --rec-term arg   set a record terminator for delimited output\n"
+        " -s, --in-delim arg   for delimited, specify an input seperator\n"
+        " -S, --out-delim arg  for delimited, speficy seperator for SELECT\n"
+        //" -t, --thread         Utilize pthreads to run processes in parallel\n"
         " -v, --verbose        print additional information to stderr\n"
-        " --schema-path arg    Takes precedence over FQL_SCHEMA_PATH\n"
+        " --stable             preserve input order\n"
+        " --schema arg         set a schema as default\n"
+        " --schema-path arg    takes precedence over FQL_SCHEMA_PATH\n"
         " --strict             see strict rules below...\n\n"
 
         "Strict mode will only allow exact matches to files to be used as tables.\n"
@@ -84,22 +91,28 @@ int main(int argc, char** argv)
 	        {"cartesian", no_argument, 0, 'C'},
 	        {"dry-run", no_argument, 0, 'd'},
 	        {"no-header", no_argument, 0, 'h'},
-	        {"help", no_argument, 0, 'H'},
+	        {"add-header", no_argument, 0, 'H'},
+	        {"loose-groups", no_argument, 0, 'L'},
+	        {"overwrite", no_argument, 0, 'o'},
 	        {"override", no_argument, 0, 'O'},
 	        {"print", no_argument, 0, 'p'},
+	        {"help", no_argument, 0, 'Q'},
 	        {"in-delim", required_argument, 0, 's'},
 	        {"out-delim", required_argument, 0, 'S'},
 	        {"threading", no_argument, 0, 't'},
 	        {"verbose", no_argument, 0, 'v'},
-	        {"schema-path", required_argument, 0, 'X'},
-	        {"strict", no_argument, 0, 'x'},
+	        {"crlf", no_argument, 0, 'W'},
+	        {"schema-path", required_argument, 0, 'x'},
+	        {"schema", required_argument, 0, 'X'},
+	        {"stable", no_argument, 0, 'z'},
+	        {"strict", no_argument, 0, 'Z'},
 	        {0, 0, 0, 0}};
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
 
 	while ((c = getopt_long(argc,
 	                        argv,
-	                        "AbCdhHOps:S:tvX:",
+	                        "AbCdhHLOpQs:S:tvWx:X:zZ",
 	                        long_options,
 	                        &option_index))
 	       != -1)
@@ -248,11 +261,17 @@ void _parse_args(struct fql_handle* handle, char c)
 	case 'd':
 		fql_set_dry_run(handle, 1);
 		break;
-	case 'H':
-		puts(_help);
-		exit(0);
 	case 'h':
 		fql_set_print_header(handle, 0);
+		break;
+	case 'H':
+		fql_set_add_header(handle, 0);
+		break;
+	case 'L':
+		fql_set_loose_groups(handle, 1);
+		break;
+	case 'o':
+		fql_set_overwrite(handle, 1);
 		break;
 	case 'O':
 		fql_set_override_warnings(handle, 1);
@@ -260,6 +279,9 @@ void _parse_args(struct fql_handle* handle, char c)
 	case 'p':
 		fql_set_print_plan(handle, 1);
 		break;
+	case 'Q': /* --help */
+		puts(_help);
+		exit(EXIT_SUCCESS);
 	case 's':
 		fql_set_in_delim(handle, optarg);
 		break;
@@ -272,10 +294,19 @@ void _parse_args(struct fql_handle* handle, char c)
 	case 'v':
 		fql_set_verbose(handle, 1);
 		break;
-	case 'X':
+	case 'W':
+		fql_set_crlf_output(handle, 1);
+		break;
+	case 'x': /* --schema-path */
 		fql_set_schema_path(handle, optarg);
 		break;
-	case 'x':
+	case 'X': /* --schema */
+		fql_set_schema(handle, optarg);
+		break;
+	case 'z': /* --stable */
+		fql_set_stable(handle, 1);
+		break;
+	case 'Z': /* --strict */
 		fql_set_strict_mode(handle, 1);
 		break;
 	default:

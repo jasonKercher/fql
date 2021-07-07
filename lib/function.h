@@ -18,7 +18,7 @@ struct function {
 	enum scalar_function type;
 	unsigned arg_min;
 	unsigned arg_max;
-	_Bool char_as_byte;
+	bool char_as_byte;
 };
 typedef struct function function;
 

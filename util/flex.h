@@ -18,7 +18,7 @@ typedef struct flex flex;
 struct flex* flex_construct(struct flex*);
 void flex_destroy(struct flex*);
 
-_Bool flex_empty(const struct flex*);
+bool flex_empty(const struct flex*);
 size_t flex_size(const struct flex*);
 void* flex_at(const struct flex*, size_t);
 struct stringview flex_pair_at(const struct flex*, size_t);

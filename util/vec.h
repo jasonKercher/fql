@@ -39,7 +39,7 @@ struct vec* vec_construct(struct vec*, size_t);
 #define vec_construct_(v_, T_) vec_construct(v_, sizeof(T_))
 void vec_destroy(struct vec*);
 
-_Bool vec_empty(const struct vec*);
+bool vec_empty(const struct vec*);
 void* vec_at(const struct vec*, size_t);
 void* vec_begin(const struct vec*);
 void* vec_back(const struct vec*);

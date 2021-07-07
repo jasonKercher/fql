@@ -45,6 +45,16 @@ schema* op_get_schema(enum op* self)
 	}
 }
 
+void op_set_rec_terminator(enum op* self, const char* terminator)
+{
+	switch (*self) {
+	case OP_SELECT:
+		fqlselect_set_rec_terminator((fqlselect*)self, terminator);
+		break;
+	default:;
+	}
+}
+
 void op_set_delim(enum op* self, const char* delim)
 {
 	switch (*self) {

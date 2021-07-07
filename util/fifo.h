@@ -31,7 +31,7 @@ struct fifo {
 	ATOMIC_ unsigned tail;
 	ATOMIC_ unsigned _iter_head;
 	unsigned input_count;
-	_Bool is_open;
+	bool is_open;
 };
 typedef struct fifo fifo;
 
@@ -42,10 +42,10 @@ void fifo_destroy(struct fifo*);
 void fifo_set_open(struct fifo*, int);
 void fifo_resize(struct fifo*, unsigned);
 unsigned fifo_available(struct fifo*);
-_Bool fifo_is_empty(const struct fifo*);
-//_Bool fifo_has_work(struct fifo*);
-_Bool fifo_is_full(const struct fifo*);
-_Bool fifo_is_open(struct fifo*);
+bool fifo_is_empty(const struct fifo*);
+//bool fifo_has_work(struct fifo*);
+bool fifo_is_full(const struct fifo*);
+bool fifo_is_open(struct fifo*);
 unsigned fifo_receivable(struct fifo*);
 void fifo_set_full(struct fifo*);
 void* fifo_get(struct fifo*);

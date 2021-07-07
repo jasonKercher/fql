@@ -28,7 +28,7 @@ struct reader {
 	size_t max_col_idx;
 	size_t reclen;
 	unsigned skip_rows;
-	_Bool eof;
+	bool eof;
 };
 typedef struct reader reader;
 

@@ -26,7 +26,7 @@ struct order {
 	char* mmap;
 	size_t file_size;
 	int fd;
-	_Bool sorted;
+	bool sorted;
 };
 typedef struct order order;
 

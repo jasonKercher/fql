@@ -27,7 +27,7 @@
 void _print_plan(plan*);
 void _activate_procs(plan* self);
 
-plan* plan_construct(plan* self, query* query)
+plan* plan_construct(plan* self, query* query, bool loose_groups)
 {
 	*self = (plan) {
 	        new_(dgraph), /* processes */
@@ -39,7 +39,8 @@ plan* plan_construct(plan* self, query* query)
 	        0,            /* rows_affected */
 	        0,            /* source_count */
 	        0,            /* plan_id */
-	        false         /* has_stepped */
+	        false,        /* has_stepped */
+	        loose_groups, /* loose_groups */
 	};
 
 	self->plan_id = query->query_id;
@@ -165,8 +166,8 @@ int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 
 int _logicgroup_process(plan* self,
                         logicgroup* lg,
-                        _Bool is_from_hash_join,
-                        _Bool is_from_having)
+                        bool is_from_hash_join,
+                        bool is_from_having)
 {
 	process* logic_proc = new_(process, "", self);
 	if (is_from_having) {
@@ -264,7 +265,8 @@ int _from(plan* self, query* query)
 		from_proc->root_fifo = 1;
 		from_node = dgraph_add_data(self->processes, from_proc);
 		from_node->is_root = true;
-		plan* subquery_plan = plan_build(table_iter->subquery, from_node);
+		plan* subquery_plan =
+		        plan_build(table_iter->subquery, from_node, self->loose_groups);
 		fail_if_(subquery_plan == NULL);
 		from_proc->subquery_plan_id = subquery_plan->plan_id;
 		dgraph_consume(self->processes, subquery_plan->processes);
@@ -290,7 +292,7 @@ int _from(plan* self, query* query)
 		}
 
 		process* join_proc = NULL;
-		_Bool is_hash_join = (table_iter->condition->join_logic != NULL);
+		bool is_hash_join = (table_iter->condition->join_logic != NULL);
 		if (is_hash_join) {
 			join_proc = _new_join_proc(table_iter->join_type, "hash", self);
 			join_proc->action__ = &fql_hash_join;
@@ -368,6 +370,11 @@ int _where(plan* self, query* query)
  */
 void _group(plan* self, query* query)
 {
+	if (query->groupby != NULL && self->loose_groups) {
+		delete_if_exists_(distinct, query->distinct);
+		query->distinct = query->groupby;
+		query->groupby = NULL;
+	}
 	if (query->groupby != NULL) {
 		process* group_proc = new_(process, "GROUP BY ", self);
 		_check_all_for_subquery_expression(group_proc, &query->groupby->columns);
@@ -586,17 +593,17 @@ void _mark_roots_const(vec* roots)
 	}
 }
 
-plan* plan_build(query* aquery, dnode* entry)
+plan* plan_build(query* aquery, dnode* entry, bool loose_groups)
 {
 	/* Loop through constant value subqueries and
 	 * build their plans
 	 */
 	query** it = vec_begin(aquery->subquery_const_vec);
 	for (; it != vec_end(aquery->subquery_const_vec); ++it) {
-		plan_build(*it, NULL);
+		plan_build(*it, NULL, loose_groups);
 	}
 
-	aquery->plan = new_(plan, aquery);
+	aquery->plan = new_(plan, aquery, loose_groups);
 	plan* self = aquery->plan;
 
 	/* aquery */
@@ -654,13 +661,13 @@ build_fail_return:
 	return NULL;
 }
 
-int build_plans(queue* query_list)
+int build_plans(queue* query_list, bool loose_groups)
 {
 	queue* node = query_list;
 
 	for (; node; node = node->next) {
 		query* query = node->data;
-		fail_if_(plan_build(query, NULL) == NULL);
+		fail_if_(plan_build(query, NULL, loose_groups) == NULL);
 	}
 
 	return FQL_GOOD;
