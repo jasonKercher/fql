@@ -22,6 +22,7 @@ struct process {
 	string* action_msg;     /* message that prints with plan */
 	vec* root_group;        /* group of recyclable roots for this process */
 	vec* wait_list;         /* list of fifos that we wait for */
+	queue* queued_results;  /* list of additional input fifos */
 	size_t rows_affected;   /* if process is true proc, track this */
 	size_t top_count;       /* If process is true proc, use this */
 	size_t max_recs_iter;   /* Max recs allowed per iteration */

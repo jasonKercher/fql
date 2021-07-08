@@ -77,6 +77,15 @@ void dgraph_consume(dgraph* dest, dgraph* src)
 
 void* dgraph_remove(dgraph* self, dnode** node)
 {
+	dnode** it = vec_begin(self->nodes);
+	for (; it != vec_end(self->nodes); ++it) {
+		if ((*it)->out[0] == *node) {
+			(*it)->out[0] = NULL;
+		}
+		if ((*it)->out[1] == *node) {
+			(*it)->out[1] = NULL;
+		}
+	}
 	void* data = (*node)->data;
 	delete_(dnode, *node);
 	vec_erase_one(self->nodes, node);

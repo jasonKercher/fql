@@ -15,7 +15,7 @@ enum op {
 	OP_UPDATE,
 };
 
-struct vec* op_get_validation_list(void* op);
+struct vec* op_get_columns(void* op);
 void op_preop(struct fql_handle*);
 struct schema* op_get_schema(enum op*);
 void op_set_schema(enum op*, const struct schema*);

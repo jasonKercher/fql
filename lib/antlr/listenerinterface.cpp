@@ -695,8 +695,8 @@ void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx)
 		_walker->set_walking(false);
 	}
 
-	query* union_query = query_new(_query_id);
-	int ret = query_init_union(_query, union_query);
+	query* union_query = query_new(++_query_id);
+	int ret = query_enter_union(_query, union_query);
 	if (ret) {
 		_return_code = ret;
 		_walker->set_walking(false);
@@ -709,7 +709,9 @@ void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx)
 
 void ListenerInterface::exitSql_union(TSqlParser::Sql_unionContext * ctx)
 {
-	_query = (query*)stack_pop(&_query_stack);
+	query* union_query = (query*)stack_pop(&_query_stack);
+	_query = (query*)_query_stack->data;
+	query_exit_union(_query, union_query);
 }
 
 /* Every Rule Operations */

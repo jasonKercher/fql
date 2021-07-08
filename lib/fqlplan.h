@@ -25,7 +25,7 @@ typedef struct fql_plan plan;
 struct fql_plan* plan_construct(struct fql_plan*, struct query*, bool);
 void plan_destroy(void*);
 
-struct fql_plan* plan_build(struct query*, struct dnode* entry, bool);
+int plan_build(struct query*, struct dnode* entry, bool);
 int build_plans(struct queue*, bool);
 void print_plans(struct queue* plans);
 

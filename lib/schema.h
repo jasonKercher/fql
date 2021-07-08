@@ -40,7 +40,6 @@ bool schema_eq(const struct schema*, const struct schema*);
 
 void schema_set_io_type(struct schema*, enum io);
 
-int schema_resolve_query(struct fql_handle*, struct query*);
 int schema_resolve(struct fql_handle*);
 
 void schema_add_column(struct schema*, struct column*, int src_idx);

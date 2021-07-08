@@ -265,9 +265,8 @@ int _from(plan* self, query* query)
 		from_proc->root_fifo = 1;
 		from_node = dgraph_add_data(self->processes, from_proc);
 		from_node->is_root = true;
-		plan* subquery_plan =
-		        plan_build(table_iter->subquery, from_node, self->loose_groups);
-		fail_if_(subquery_plan == NULL);
+		try_(plan_build(table_iter->subquery, from_node, self->loose_groups));
+		plan* subquery_plan = table_iter->subquery->plan;
 		from_proc->subquery_plan_id = subquery_plan->plan_id;
 		dgraph_consume(self->processes, subquery_plan->processes);
 		subquery_plan->processes = NULL;
@@ -428,7 +427,7 @@ void _operation(plan* self, query* query, dnode* entry)
 		true_proc->root_group = &query->groupby->_roots;
 	}
 	_check_all_for_subquery_expression(self->op_true->data,
-	                                   op_get_validation_list(query->op));
+	                                   op_get_columns(query->op));
 	if (entry == NULL) {
 		op_apply_process(query, self);
 		return;
@@ -447,6 +446,55 @@ void _operation(plan* self, query* query, dnode* entry)
 	true_proc->is_passive = true;
 	process* false_proc = self->op_false->data;
 	false_proc->is_passive = true;
+}
+
+int _union(plan* self, query* aquery, bool loose_groups)
+{
+	if (vec_empty(aquery->unions)) {
+		return FQL_GOOD;
+	}
+
+	query** it = vec_begin(aquery->unions);
+	for (; it != vec_end(aquery->unions); ++it) {
+		try_(plan_build(*it, NULL, loose_groups));
+		plan* union_plan = (*it)->plan;
+		dgraph_consume(self->processes, union_plan->processes);
+		union_plan->processes = NULL;
+	}
+	return FQL_GOOD;
+}
+
+void _union2(plan* self, query* aquery)
+{
+	if (vec_empty(aquery->unions)) {
+		return;
+	}
+
+	process* true_proc = self->op_true->data;
+
+	query** it = vec_begin(aquery->unions);
+	for (; it != vec_end(aquery->unions); ++it) {
+		plan* union_plan = (*it)->plan;
+		bool is_root = union_plan->op_true->is_root;
+		process* union_true_proc = NULL;
+
+		/* This is a shit method... */
+		dnode** node_iter = vec_begin(self->processes->nodes);
+		for (; node_iter != vec_end(self->processes->nodes); ++node_iter) {
+			if (*node_iter == union_plan->op_true) {
+				union_true_proc =
+				        dgraph_remove(self->processes, node_iter);
+				break;
+			}
+		}
+
+		if (union_true_proc == NULL) {
+			exit(EXIT_FAILURE);
+		}
+		queue_enqueue(&true_proc->queued_results, union_true_proc->fifo_in[0]);
+		union_true_proc->fifo_in[0] = NULL;
+		delete_(process, union_true_proc, is_root);
+	}
 }
 
 void _order(plan* self, query* query)
@@ -593,33 +641,27 @@ void _mark_roots_const(vec* roots)
 	}
 }
 
-plan* plan_build(query* aquery, dnode* entry, bool loose_groups)
+int plan_build(query* aquery, dnode* entry, bool loose_groups)
 {
 	/* Loop through constant value subqueries and
 	 * build their plans
 	 */
 	query** it = vec_begin(aquery->subquery_const_vec);
 	for (; it != vec_end(aquery->subquery_const_vec); ++it) {
-		plan_build(*it, NULL, loose_groups);
+		try_(plan_build(*it, NULL, loose_groups));
 	}
 
 	aquery->plan = new_(plan, aquery, loose_groups);
 	plan* self = aquery->plan;
 
 	/* aquery */
-	if (_from(self, aquery) == FQL_FAIL) {
-		goto build_fail_return;
-	}
-	if (_where(self, aquery) == FQL_FAIL) {
-		goto build_fail_return;
-	}
+	try_(_from(self, aquery));
+	try_(_where(self, aquery));
 	_group(self, aquery);
-	if (_having(self, aquery) == FQL_FAIL) {
-		goto build_fail_return;
-	}
+	try_(_having(self, aquery));
 	_operation(self, aquery, entry);
+	try_(_union(self, aquery, loose_groups));
 	_order(self, aquery);
-
 	/* Loop through constant value subqueries again,
 	 * but this time, consume all process nodes into
 	 * current plan.
@@ -632,7 +674,7 @@ plan* plan_build(query* aquery, dnode* entry, bool loose_groups)
 	if (vec_empty(self->processes->nodes)) {
 		process* entry_proc = entry->data;
 		entry_proc->is_const = true;
-		return self;
+		return FQL_GOOD;
 	}
 
 	dgraph_get_roots(self->processes);
@@ -648,17 +690,14 @@ plan* plan_build(query* aquery, dnode* entry, bool loose_groups)
 	}
 
 	if (aquery->query_id != 0) { /* is subquery */
-		return self;
+		return FQL_GOOD;
 	}
 	_activate_procs(self);
 	_make_pipes(self);
 	_update_pipes(self->processes);
+	_union2(self, aquery);
 
-	return self;
-
-build_fail_return:
-	//delete_(plan, self);
-	return NULL;
+	return FQL_GOOD;
 }
 
 int build_plans(queue* query_list, bool loose_groups)
@@ -667,7 +706,7 @@ int build_plans(queue* query_list, bool loose_groups)
 
 	for (; node; node = node->next) {
 		query* query = node->data;
-		fail_if_(plan_build(query, NULL, loose_groups) == NULL);
+		try_(plan_build(query, NULL, loose_groups));
 	}
 
 	return FQL_GOOD;

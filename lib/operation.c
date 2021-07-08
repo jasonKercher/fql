@@ -4,7 +4,7 @@
 #include "fqlselect.h"
 #include "util/util.h"
 
-vec* op_get_validation_list(void* self)
+vec* op_get_columns(void* self)
 {
 	enum op* type = self;
 

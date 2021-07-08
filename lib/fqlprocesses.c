@@ -386,9 +386,16 @@ int fql_select(dgraph* proc_graph, process* proc)
 {
 	fqlselect* select = proc->proc_data;
 	if (!proc->wait_for_in0) {
-		writer_close(select->writer);
-		process_disable(proc);
-		return 0;
+		if (fqlselect_next_union(select)) {
+			proc->wait_for_in0 = true;
+			proc->fifo_in[0] = proc->queued_results->data;
+			proc->queued_results = proc->queued_results->next;
+			return 1;
+		} else {
+			writer_close(select->writer);
+			process_disable(proc);
+			return 0;
+		}
 	}
 
 	fifo* in = proc->fifo_in[0];
@@ -420,7 +427,7 @@ int fql_orderby(dgraph* proc_graph, process* proc)
 	fifo* in = proc->fifo_in[0];
 	if (!in->is_open && fifo_is_empty(in)) {
 		if (!order->sorted) {
-			order_sort(order);
+			try_(order_sort(order));
 		}
 		return order->select__(order, proc);
 	}

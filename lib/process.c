@@ -31,6 +31,7 @@ process* process_construct(process* proc, const char* action, plan* plan)
 	        string_from_char_ptr(action), /* action_msg */
 	        NULL,                         /* root_group */
 	        NULL,                         /* wait_list */
+	        NULL,                         /* queued_results */
 	        0,                            /* rows_affected */
 	        plan->query->top_count,       /* top_count */
 	        -1,                           /* max_recs_iter */

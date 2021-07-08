@@ -28,9 +28,13 @@ fqlselect* fqlselect_construct(fqlselect* self)
 	        NULL,            /* writer */
 	        NULL,            /* list_data */
 	        NULL,            /* const_dest */
+	        NULL,            /* union_column_vecs */
+	        NULL,            /* _selection_cols */
 	        &_select_record, /* select__ */
 	        0                /* offset */
 	};
+
+	self->_selection_cols = self->schema->columns;
 
 	return self;
 }
@@ -40,8 +44,26 @@ void fqlselect_destroy(fqlselect* self)
 	if (self == NULL) {
 		return;
 	}
+	queue_free(&self->union_column_vecs);
 	delete_if_exists_(writer, self->writer);
 	delete_(schema, self->schema);
+}
+
+unsigned fqlselect_get_field_count(fqlselect* self)
+{
+	unsigned field_count = 0;
+	column** it = vec_begin(self->schema->columns);
+	for (; it != vec_end(self->schema->columns); ++it) {
+		switch ((*it)->expr) {
+		case EXPR_ASTERISK:
+			field_count += (*it)->table->schema->columns->size;
+			break;
+		default:
+			++field_count;
+		}
+	}
+
+	return field_count;
 }
 
 void fqlselect_set_delim(fqlselect* self, const char* delim)
@@ -136,6 +158,9 @@ void _expand_asterisks(query* query, bool force_expansion)
 		--i;
 	}
 
+	if (self->writer == NULL) {
+		return;
+	}
 	_resize_raw_rec(self->writer->raw_rec, col_vec->size);
 }
 
@@ -215,9 +240,6 @@ void fqlselect_apply_process(query* query, plan* plan)
 
 	string_strcpy(proc->action_msg, "SELECT ");
 
-	writer_set_delimiter(self->writer, self->schema->delimiter);
-	writer_set_rec_terminator(self->writer, self->schema->rec_terminator);
-
 	vec* col_vec = self->schema->columns;
 	column** col = vec_begin(col_vec);
 	for (; col != vec_end(col_vec); ++col) {
@@ -229,6 +251,12 @@ void fqlselect_apply_process(query* query, plan* plan)
 
 	proc = plan->op_false->data;
 	proc->is_passive = true;
+
+	if (self->writer == NULL) {
+		return;
+	}
+	writer_set_delimiter(self->writer, self->schema->delimiter);
+	writer_set_rec_terminator(self->writer, self->schema->rec_terminator);
 }
 
 void fqlselect_apply_column_alias(fqlselect* self, const char* alias)
@@ -254,11 +282,14 @@ int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 	return FQL_GOOD;
 }
 
+/* NOTE: do not allow any writer initialization if a union query */
 int fqlselect_writer_init(fqlselect* self, query* query)
 {
-	self->writer = new_(writer, self->schema->write_io_type);
+	if (!query->union_id) {
+		self->writer = new_(writer, self->schema->write_io_type);
+	}
 
-	if (query->into_table_name != NULL) {
+	if (!query->union_id && query->into_table_name) {
 		if (access(query->into_table_name, F_OK) == 0) {
 			fprintf(stderr,
 			        "Cannot SELECT INTO: file `%s' already exists\n",
@@ -268,7 +299,7 @@ int fqlselect_writer_init(fqlselect* self, query* query)
 		try_(writer_open(self->writer, query->into_table_name));
 	}
 
-	if (query->orderby != NULL) {
+	if (!query->union_id && query->orderby != NULL) {
 		char* out_name = writer_take_filename(self->writer);
 		const char* in_name = writer_get_tempname(self->writer);
 
@@ -279,6 +310,7 @@ int fqlselect_writer_init(fqlselect* self, query* query)
 
 	_expand_asterisks(query, (!query->groupby || !query->distinct));
 
+	/* TODO: verify this does not cause double free */
 	if (query->distinct != NULL) {
 		column** it = vec_begin(self->schema->columns);
 		for (; it != vec_end(self->schema->columns); ++it) {
@@ -289,6 +321,16 @@ int fqlselect_writer_init(fqlselect* self, query* query)
 	schema_preflight(self->schema);
 
 	return FQL_GOOD;
+}
+
+int fqlselect_next_union(fqlselect* self)
+{
+	if (self->union_column_vecs == NULL) {
+		return 0;
+	}
+
+	self->_selection_cols = queue_dequeue(&self->union_column_vecs);
+	return 1;
 }
 
 void fqlselect_preop(fqlselect* self, query* query)
@@ -343,7 +385,7 @@ void fqlselect_preop(fqlselect* self, query* query)
 int _select_record(fqlselect* self, vec* recs)
 {
 	writer* writer = self->writer;
-	vec* col_vec = self->schema->columns;
+	vec* col_vec = self->_selection_cols;
 
 	int ret = writer->write_record__(writer->writer_data, col_vec, recs, NULL);
 
@@ -365,7 +407,7 @@ int _select_record(fqlselect* self, vec* recs)
 
 int _select_record_api(fqlselect* self, struct vec* recs)
 {
-	vec* col_vec = self->schema->columns;
+	vec* col_vec = self->_selection_cols;
 
 	column** cols = vec_begin(col_vec);
 	unsigned i = 0;
@@ -397,7 +439,7 @@ int _select_record_order_api(fqlselect* self, struct vec* recs)
 {
 	FILE* order_input = writer_get_file(self->writer);
 
-	vec* col_vec = self->schema->columns;
+	vec* col_vec = self->_selection_cols;
 	column** cols = vec_begin(col_vec);
 	unsigned i = 0;
 	unsigned len = 0;
@@ -439,7 +481,7 @@ int _select_record_to_list(fqlselect* self, vec* recs)
 {
 	set* list = self->list_data;
 
-	column* col = *(column**)vec_begin(self->schema->columns);
+	column* col = *(column**)vec_begin(self->_selection_cols);
 
 	switch (col->field_type) {
 	case FIELD_INT: {
@@ -474,7 +516,7 @@ int _select_record_to_const(fqlselect* self, vec* recs)
 		return FQL_FAIL;
 	}
 
-	column* col = *(column**)vec_begin(self->schema->columns);
+	column* col = *(column**)vec_begin(self->_selection_cols);
 
 	self->const_dest->field_type = col->field_type;
 	self->const_dest->expr = EXPR_CONST;

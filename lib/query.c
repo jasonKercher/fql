@@ -36,6 +36,7 @@ query* query_construct(query* self, int id)
 	        new_t_(vec, query*), /* unions */
 	        NULL,                /* into_table_name */
 	        -1,                  /* top_count */
+	        0,                   /* union_id */
 	        id,                  /* query_id */
 	        0,                   /* query_total */
 	        0,                   /* expect_where */
@@ -364,12 +365,6 @@ void query_init_in_statement(query* self)
 	lg->condition->in_data = new_(inlist);
 }
 
-/* TODO */
-int query_init_union(query* self, query* union_query)
-{
-	vec_push_back(self->unions, &union_query);
-	return FQL_GOOD;
-}
 
 void query_assign_in_subquery(query* self, query* subquery)
 {
@@ -392,6 +387,31 @@ void query_set_order_desc(query* self)
 {
 	column** col = vec_back(&self->orderby->columns);
 	(*col)->descending = true;
+}
+
+int query_enter_union(query* self, query* union_query)
+{
+	vec_push_back(self->unions, &union_query);
+	union_query->op = new_(fqlselect);
+	union_query->union_id = self->unions->size;
+	return FQL_GOOD;
+}
+
+int query_exit_union(query* self, query* union_query)
+{
+	/* We need to track the column vector
+	 * from the union's select. Since we are
+	 * tracking the vector itself, it will
+	 * still be correct after the all the
+	 * schemas have resolved.
+	 */
+	vec* union_cols = op_get_columns(union_query->op);
+
+	/* select can be assumed here */
+	fqlselect* select = self->op;
+	queue_enqueue(&select->union_column_vecs, union_cols);
+
+	return FQL_GOOD;
 }
 
 int query_enter_function(query* self,

@@ -21,6 +21,8 @@
 #include "util/util.h"
 #include "util/vec.h"
 
+int _resolve_query(struct fql_handle*, query*, enum io union_io);
+
 schema* schema_construct(schema* self)
 {
 	*self = (schema) {
@@ -222,7 +224,7 @@ fuzzy_file_match_success:
 	return FQL_GOOD;
 }
 
-int schema_resolve_file(table* table, int strictness)
+int _resolve_file(table* table, int strictness)
 {
 	if (table->source_type == SOURCE_SUBQUERY) {
 		return FQL_GOOD;
@@ -464,7 +466,7 @@ int _load_by_name(table* table, struct fql_handle* fql, int src_idx)
 	return FQL_GOOD;
 }
 
-int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
+int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 {
 	schema* self = table->schema;
 	if (self && !vec_empty(self->columns)) {
@@ -492,7 +494,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	}
 
 	if (table->source_type == SOURCE_SUBQUERY) {
-		schema_resolve_query(fql, table->subquery);
+		_resolve_query(fql, table->subquery, IO_UNDEFINED);
 		fqlselect* select = table->subquery->op;
 		table->schema = select->schema;
 		self = table->schema;
@@ -504,7 +506,7 @@ int schema_resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		 * list of field names.
 		 * This is the "default schema".
 		 */
-		try_(schema_resolve_file(table, fql->props.strictness));
+		try_(_resolve_file(table, fql->props.strictness));
 		if (self->is_default) {
 			table->reader->type = IO_LIBCSV;
 		}
@@ -944,12 +946,12 @@ int _group_validation(query* query, vec* cols, bool loose_groups)
 	return FQL_GOOD;
 }
 
-int schema_resolve_query(struct fql_handle* fql, query* aquery)
+int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 {
 	vec* subqueries = aquery->subquery_const_vec;
-	query** it = vec_begin(subqueries);
-	for (; it != vec_end(subqueries); ++it) {
-		schema_resolve_query(fql, *it);
+	query** query_iter = vec_begin(subqueries);
+	for (; query_iter != vec_end(subqueries); ++query_iter) {
+		_resolve_query(fql, *query_iter, union_io);
 	}
 
 	vec* sources = aquery->sources;
@@ -990,9 +992,11 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 	unsigned i = 0;
 	for (; i < sources->size; ++i) {
 		table* table = vec_at(aquery->sources, i);
-		try_(schema_resolve_source(fql, table, i));
+		try_(_resolve_source(fql, table, i));
 
-		if (op_get_schema(aquery->op)->write_io_type == IO_UNDEFINED) {
+		if (union_io != IO_UNDEFINED) {
+			op_get_schema(aquery->op)->write_io_type = union_io;
+		} else if (op_get_schema(aquery->op)->write_io_type == IO_UNDEFINED) {
 			op_set_schema(aquery->op, table->schema);
 		}
 
@@ -1023,7 +1027,7 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 	/* Validate the columns from the operation.
 	 * (e.g. columns listed in SELECT).
 	 */
-	vec* op_cols = op_get_validation_list(aquery->op);
+	vec* op_cols = op_get_columns(aquery->op);
 	try_(_asterisk_resolve(op_cols, sources));
 	try_(_assign_columns(op_cols, sources, fql->props.strictness));
 
@@ -1072,6 +1076,28 @@ int schema_resolve_query(struct fql_handle* fql, query* aquery)
 		}
 	}
 
+	if (vec_empty(aquery->unions)) {
+		return FQL_GOOD;
+	}
+
+	/* As we loop through union queries, we want to
+	 * also verify that we have the same number of
+	 * fields. I don't really care about types to
+	 * be completely honest. Maybe that can be an
+	 * addition to strict mode... TODO
+	 */
+	enum io main_io_type = op_get_schema(aquery->op)->io_type;
+
+	unsigned expected = fqlselect_get_field_count(aquery->op);
+	query_iter = vec_begin(aquery->unions);
+	for (; query_iter != vec_end(aquery->unions); ++query_iter) {
+		_resolve_query(fql, *query_iter, main_io_type);
+		if (expected != fqlselect_get_field_count((*query_iter)->op)) {
+			fputs("UNION query schema mis-match\n", stderr);
+			return FQL_FAIL;
+		}
+	}
+
 	return FQL_GOOD;
 }
 
@@ -1089,7 +1115,7 @@ int schema_resolve(struct fql_handle* fql)
 			op_set_rec_terminator(query->op, fql->props.rec_terminator);
 		}
 
-		try_(schema_resolve_query(fql, query));
+		try_(_resolve_query(fql, query, IO_UNDEFINED));
 	}
 
 	return FQL_GOOD;

@@ -46,7 +46,6 @@ Other missing features:
  - temp tables not so temp
  - TOP PERCENT
  - WITH
- - UNION
  - COUNT(DISTINCT [col])
  - CASE statements
 
