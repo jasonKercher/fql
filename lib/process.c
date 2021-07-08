@@ -11,17 +11,16 @@
 #include "reader.h"
 #include "record.h"
 #include "operation.h"
+#include "fqlselect.h"
 #include "util/vec.h"
 #include "util/util.h"
 #include "util/dgraph.h"
 #include "util/fifo.h"
 #include "util/stringview.h"
 
-#define FIFO_SIZE 256
-
-process* process_construct(process* proc, const char* action, plan* plan)
+process* process_construct(process* self, const char* action, plan* plan)
 {
-	*proc = (process) {
+	*self = (process) {
 	        0,                            /* thread */
 	        NULL,                         /* records */
 	        &fql_no_op,                   /* action__ */
@@ -31,6 +30,7 @@ process* process_construct(process* proc, const char* action, plan* plan)
 	        string_from_char_ptr(action), /* action_msg */
 	        NULL,                         /* root_group */
 	        NULL,                         /* wait_list */
+	        new_t_(vec, dnode*),          /* union_end_nodes */
 	        NULL,                         /* queued_results */
 	        0,                            /* rows_affected */
 	        plan->query->top_count,       /* top_count */
@@ -44,11 +44,12 @@ process* process_construct(process* proc, const char* action, plan* plan)
 	        false,                        /* is_passive */
 	        true,                         /* is_enabled */
 	        false,                        /* is_const */
+	        false,                        /* has_second_input */
 	        true,                         /* wait_for_in0 */
 	        false                         /* wait_for_in0_end */
 	};
 
-	return proc;
+	return self;
 }
 
 void process_node_free(dnode* proc_node)
@@ -56,86 +57,98 @@ void process_node_free(dnode* proc_node)
 	delete_(process, proc_node->data, proc_node->is_root);
 }
 
-void process_destroy(process* proc, bool is_root)
+void process_destroy(process* self, bool is_root)
 {
-	if (is_root && proc->records != NULL) {
-		vec* it = vec_begin(proc->records);
-		for (; it != vec_end(proc->records); ++it) {
+	if (is_root && self->records != NULL) {
+		vec* it = vec_begin(self->records);
+		for (; it != vec_end(self->records); ++it) {
 			record** rec = vec_back(it);
 			delete_(record, *rec);
 			vec_destroy(it);
 		}
-		delete_(vec, proc->records);
+		delete_(vec, self->records);
 	}
-	delete_if_exists_(fifo, proc->fifo_in[0]);
-	delete_if_exists_(fifo, proc->fifo_in[1]);
-	delete_if_exists_(vec, proc->wait_list);
-	delete_(string, proc->action_msg);
+	delete_if_exists_(fifo, self->fifo_in[0]);
+	delete_if_exists_(fifo, self->fifo_in[1]);
+	delete_if_exists_(vec, self->wait_list);
+	delete_(vec, self->union_end_nodes);
+	delete_(string, self->action_msg);
 }
 
 void process_activate(dnode* proc_node, plan* plan)
 {
-	process* proc = proc_node->data;
+	process* self = proc_node->data;
 	unsigned graph_size = plan->processes->nodes->size;
-	bool is_subquery = proc->subquery_plan_id > 0;
-	if (proc->root_group == NULL && is_subquery) {
-		proc->root_group = vec_at(plan->recycle_groups, proc->subquery_plan_id);
-	} else if (proc->root_group == NULL) {
-		proc->root_group = vec_at(plan->recycle_groups, proc->plan_id);
+	unsigned fifo_size = graph_size * 4;
+	bool is_subquery = self->subquery_plan_id > 0;
+	if (self->root_group == NULL && is_subquery) {
+		self->root_group = vec_at(plan->recycle_groups, self->subquery_plan_id);
+	} else if (self->root_group == NULL) {
+		self->root_group = vec_at(plan->recycle_groups, self->plan_id);
+	}
+
+	dnode** it = vec_begin(self->union_end_nodes);
+	for (; it != vec_end(self->union_end_nodes); ++it) {
+		process* select_proc = (*it)->data;
+		select_proc->fifo_out[0] = new_t_(fifo, vec*, fifo_size);
+		queue_enqueue(&self->queued_results, select_proc->fifo_out[0]);
 	}
 
 	if (!proc_node->is_root) {
-		proc->fifo_in[0] = new_t_(fifo, vec*, FIFO_SIZE);
+		self->fifo_in[0] = new_t_(fifo, vec*, fifo_size);
+		if (self->has_second_input) {
+			self->fifo_in[1] = new_t_(fifo, vec*, fifo_size);
+		}
 		return;
 	}
 
 	/* lol subquery hack
-	 * proc->root_group is subquery root
-	 * however, proc is a root of the upper
+	 * self->root_group is subquery root
+	 * however, self is a root of the upper
 	 * query. Who wrote this garbage??
 	 */
-	vec* true_root_group = proc->root_group;
+	vec* true_root_group = self->root_group;
 	if (is_subquery) {
-		true_root_group = vec_at(plan->recycle_groups, proc->plan_id);
+		true_root_group = vec_at(plan->recycle_groups, self->plan_id);
 	}
 
 	vec_push_back(true_root_group, &proc_node);
-	if (proc->root_fifo == 1) {
-		proc->fifo_in[0] = new_t_(fifo, vec*, FIFO_SIZE);
-		if (proc->is_const) {
-			fifo_advance(proc->fifo_in[0]);
+	if (self->root_fifo == 1) {
+		self->fifo_in[0] = new_t_(fifo, vec*, fifo_size);
+		if (self->is_const) {
+			fifo_advance(self->fifo_in[0]);
 		}
 	}
 
-	proc->fifo_in[proc->root_fifo] = new_t_(fifo, vec*, FIFO_SIZE * graph_size);
+	self->fifo_in[self->root_fifo] = new_t_(fifo, vec*, fifo_size * graph_size);
 
 	int field_count = 1;
 
 	bool owns_data = true;
-	if (proc->action__ == &fql_read) {
-		table* table = proc->proc_data;
+	if (self->action__ == &fql_read) {
+		table* table = self->proc_data;
 		reader* reader = table->reader;
 		field_count = reader->max_col_idx + 1;
 		owns_data = false;
-	} else if (proc->action__ == &fql_read_subquery) {
-		table* table = proc->proc_data;
-		field_count = table->schema->columns->size;
-	} else if (proc->action__ == &fql_groupby) {
-		group* group = proc->proc_data;
+	} else if (self->action__ == &fql_read_subquery) {
+		fqlselect* select = self->proc_data;
+		field_count = fqlselect_get_field_count(select);
+	} else if (self->action__ == &fql_groupby) {
+		group* group = self->proc_data;
 		field_count = group->columns.size;
 	}
 
-	proc->records = new_t_(vec, vec);
-	vec_resize(proc->records, FIFO_SIZE * graph_size);
+	self->records = new_t_(vec, vec);
+	vec_resize(self->records, fifo_size * graph_size);
 
 	unsigned i = 0;
 
 	/* if root, it will own the vector of records */
-	vec* buf = proc->fifo_in[proc->root_fifo]->buf;
-	for (; i < proc->records->size; ++i) {
-		vec* new_recs = vec_at(proc->records, i);
+	vec* buf = self->fifo_in[self->root_fifo]->buf;
+	for (; i < self->records->size; ++i) {
+		vec* new_recs = vec_at(self->records, i);
 		vec_construct_(new_recs, record*);
-		vec_resize(new_recs, proc->out_src_count);
+		vec_resize(new_recs, self->out_src_count);
 
 		record** new_rec = vec_back(new_recs);
 		*new_rec = new_(record, i, field_count, owns_data);
@@ -147,48 +160,43 @@ void process_activate(dnode* proc_node, plan* plan)
 	/* TODO: once we stop hard coding fifo size,
 	 *       this if block can go.
 	 */
-	if (proc->is_const) {
-		fifo_advance(proc->fifo_in[proc->root_fifo]);
+	if (self->is_const) {
+		fifo_advance(self->fifo_in[self->root_fifo]);
 		return;
 	}
-	fifo_set_full(proc->fifo_in[proc->root_fifo]);
+	fifo_set_full(self->fifo_in[self->root_fifo]);
 }
 
-void process_add_second_input(process* proc)
+void process_add_to_wait_list(process* self, const process* wait_proc)
 {
-	proc->fifo_in[1] = new_t_(fifo, vec*, FIFO_SIZE);
+	if (self->wait_list == NULL) {
+		self->wait_list = new_t_(vec, process*);
+	}
+	vec_push_back(self->wait_list, &wait_proc);
 }
 
-void process_add_to_wait_list(process* proc, const process* wait_proc)
+void process_disable(process* self)
 {
-	if (proc->wait_list == NULL) {
-		proc->wait_list = new_t_(vec, process*);
+	if (self->fifo_out[0] != NULL) {
+		fifo_set_open(self->fifo_out[0], false);
 	}
-	vec_push_back(proc->wait_list, &wait_proc);
+	if (self->fifo_out[1] != NULL) {
+		fifo_set_open(self->fifo_out[1], false);
+	}
+	fifo_set_open(self->fifo_in[0], false);
+	self->is_enabled = false;
 }
 
-void process_disable(process* proc)
+void process_enable(process* self)
 {
-	if (proc->fifo_out[0] != NULL) {
-		fifo_set_open(proc->fifo_out[0], false);
+	if (self->fifo_out[0] != NULL) {
+		fifo_set_open(self->fifo_out[0], true);
 	}
-	if (proc->fifo_out[1] != NULL) {
-		fifo_set_open(proc->fifo_out[1], false);
+	if (self->fifo_out[1] != NULL) {
+		fifo_set_open(self->fifo_out[1], true);
 	}
-	fifo_set_open(proc->fifo_in[0], false);
-	proc->is_enabled = false;
-}
-
-void process_enable(process* proc)
-{
-	if (proc->fifo_out[0] != NULL) {
-		fifo_set_open(proc->fifo_out[0], true);
-	}
-	if (proc->fifo_out[1] != NULL) {
-		fifo_set_open(proc->fifo_out[1], true);
-	}
-	fifo_set_open(proc->fifo_in[0], true);
-	proc->is_enabled = true;
+	fifo_set_open(self->fifo_in[0], true);
+	self->is_enabled = true;
 }
 
 /* returns number of processes that executed or FQL_FAIL
@@ -197,38 +205,38 @@ void process_enable(process* proc)
 int _exec_one_pass(plan* plan, dgraph* proc_graph)
 {
 	dnode* proc_node = NULL;
-	process* proc = NULL;
+	process* self = NULL;
 	int run_count = 0;
 	while ((proc_node = dgraph_traverse(proc_graph))) {
-		proc = proc_node->data;
-		if (!proc->is_enabled) {
+		self = proc_node->data;
+		if (!self->is_enabled) {
 			continue;
 		}
 
 		/* Check if the process in front is closed */
-		if (proc->fifo_out[0] && !fifo_is_open(proc->fifo_out[0])) {
-			process_disable(proc);
+		if (self->fifo_out[0] && !fifo_is_open(self->fifo_out[0])) {
+			process_disable(self);
 			continue;
 		}
-		if (proc->fifo_out[1] && !fifo_is_open(proc->fifo_out[1])) {
-			process_disable(proc);
+		if (self->fifo_out[1] && !fifo_is_open(self->fifo_out[1])) {
+			process_disable(self);
 			continue;
 		}
 
-		if (proc->wait_for_in0 && !proc->fifo_in[0]->is_open
-		    && fifo_is_empty(proc->fifo_in[0])) {
-			if (proc->wait_for_in0_end) {
-				proc->wait_for_in0 = false;
+		if (self->wait_for_in0 && !self->fifo_in[0]->is_open
+		    && fifo_is_empty(self->fifo_in[0])) {
+			if (self->wait_for_in0_end) {
+				self->wait_for_in0 = false;
 			} else {
-				process_disable(proc);
+				process_disable(self);
 				continue;
 			}
 		}
 
-		if (proc->wait_list != NULL) {
+		if (self->wait_list != NULL) {
 			bool enabled = false;
-			process** it = vec_begin(proc->wait_list);
-			for (; it != vec_end(proc->wait_list); ++it) {
+			process** it = vec_begin(self->wait_list);
+			for (; it != vec_end(self->wait_list); ++it) {
 				if ((*it)->is_enabled) {
 					enabled = true;
 					break;
@@ -243,23 +251,23 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		/* check to see that there is something to process
 		 * as well as a place for it to go.
 		 */
-		if ((proc->wait_for_in0 && fifo_is_empty(proc->fifo_in[0]))
-		    || (proc->fifo_out[0] && !fifo_receivable(proc->fifo_out[0]))
-		    || (proc->fifo_out[1] && !fifo_receivable(proc->fifo_out[1]))) {
+		if ((self->wait_for_in0 && fifo_is_empty(self->fifo_in[0]))
+		    || (self->fifo_out[0] && !fifo_receivable(self->fifo_out[0]))
+		    || (self->fifo_out[1] && !fifo_receivable(self->fifo_out[1]))) {
 			++run_count;
 			continue;
 		}
 
-		int ret = try_(proc->action__(proc_graph, proc));
+		int ret = try_(self->action__(proc_graph, self));
 
-		if (proc->wait_for_in0) {
+		if (self->wait_for_in0) {
 			++run_count;
 		}
-		if (proc->rows_affected >= proc->top_count) {
-			process_disable(proc);
+		if (self->rows_affected >= self->top_count) {
+			process_disable(self);
 		}
 		if (proc_node == plan->op_true) {
-			plan->rows_affected = proc->rows_affected;
+			plan->rows_affected = self->rows_affected;
 		}
 		run_count += ret;
 	}
@@ -299,20 +307,20 @@ void* _thread_exec(void* data)
 {
 	struct thread_data* tdata = data;
 	dnode* node = tdata->proc_node;
-	process* proc = node->data;
-	fifo* in0 = proc->fifo_in[0];
-	fifo* in1 = proc->fifo_in[1];
-	fifo* out0 = proc->fifo_out[0];
-	fifo* out1 = proc->fifo_out[1];
+	process* self = node->data;
+	fifo* in0 = self->fifo_in[0];
+	fifo* in1 = self->fifo_in[1];
+	fifo* out0 = self->fifo_out[0];
+	fifo* out1 = self->fifo_out[1];
 
-	while (proc->is_enabled) {
-		if (proc->wait_for_in0 && fifo_is_empty(in0)) {
+	while (self->is_enabled) {
+		if (self->wait_for_in0 && fifo_is_empty(in0)) {
 			if (!in0->is_open) {
-				if (proc->wait_for_in0_end) {
-					proc->wait_for_in0 = false;
+				if (self->wait_for_in0_end) {
+					self->wait_for_in0 = false;
 					continue;
 				} else {
-					process_disable(proc);
+					process_disable(self);
 					break;
 				}
 			}
@@ -322,7 +330,7 @@ void* _thread_exec(void* data)
 				fifo_wait_for_work(in0);
 			}
 			if (fifo_is_empty(in0)) {
-				process_disable(proc);
+				process_disable(self);
 				break;
 			}
 		}
@@ -343,11 +351,11 @@ void* _thread_exec(void* data)
 				fifo_wait_for_get(out1);
 			}
 		}
-		int ret = proc->action__(tdata->proc_graph, proc);
+		int ret = self->action__(tdata->proc_graph, self);
 
 		/* TODO: what is best practice here? */
 		if (ret == FQL_FAIL) {
-			//process_disable(proc);
+			//process_disable(self);
 			exit(EXIT_FAILURE);
 			break;
 		}
@@ -376,8 +384,8 @@ int process_exec_plan_thread(plan* plan)
 		dnode** proc_node = vec_at(proc_graph->nodes, i);
 		tdata->proc_node = *proc_node;
 		tdata->proc_graph = proc_graph;
-		process* proc = (*proc_node)->data;
-		fail_if_(pthread_create(&proc->thread, &attr, _thread_exec, tdata));
+		process* self = (*proc_node)->data;
+		fail_if_(pthread_create(&self->thread, &attr, _thread_exec, tdata));
 	}
 
 	pthread_attr_destroy(&attr);
@@ -385,8 +393,8 @@ int process_exec_plan_thread(plan* plan)
 	void* status = NULL;
 	for (i = 0; i < tdata_vec.size; ++i) {
 		struct thread_data* tdata = vec_at(&tdata_vec, i);
-		process* proc = tdata->proc_node->data;
-		fail_if_(pthread_join(proc->thread, &status));
+		process* self = tdata->proc_node->data;
+		fail_if_(pthread_join(self->thread, &status));
 	}
 
 	pthread_exit(NULL);

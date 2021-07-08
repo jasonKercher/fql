@@ -67,16 +67,6 @@ bool schema_eq(const schema* s1, const schema* s2)
 	return true;
 }
 
-void schema_set_io_type(schema* self, enum io type)
-{
-	self->io_type = type;
-	if (type == IO_SUBQUERY) {
-		self->write_io_type = IO_UNDEFINED;
-	} else {
-		self->write_io_type = type;
-	}
-}
-
 void schema_add_column(schema* self, column* col, int src_idx)
 {
 	col->src_idx = src_idx;
@@ -512,7 +502,6 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		}
 	}
 	try_(reader_assign(table->reader, table));
-	schema_set_io_type(table->schema, table->reader->type);
 
 	switch (table->reader->type) {
 	case IO_FIXED:
@@ -527,10 +516,6 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	record_construct(&rec, 0, 0, false);
 	table->reader->max_col_idx = INT_MAX;
 	table->reader->get_record__(table->reader, &rec);
-	const char* delim = table_get_delim(table);
-	if (delim != NULL) {
-		strncpy_(self->delimiter, delim, DELIM_LEN_MAX);
-	}
 	table->reader->max_col_idx = 0;
 
 	/* redundant if default schema */
@@ -993,6 +978,7 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	for (; i < sources->size; ++i) {
 		table* table = vec_at(aquery->sources, i);
 		try_(_resolve_source(fql, table, i));
+		try_(table_resolve_schema(table));
 
 		if (union_io != IO_UNDEFINED) {
 			op_get_schema(aquery->op)->write_io_type = union_io;

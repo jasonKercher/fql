@@ -11,6 +11,7 @@
 
 struct table;
 struct reader;
+struct fqlselect;
 
 typedef int (*read_fn)(struct reader*, struct record*);
 typedef int (*read_at_fn)(struct reader*, struct record*, const char*);
@@ -37,6 +38,8 @@ void reader_destroy(struct reader*);
 
 int reader_assign(struct reader*, struct table*);
 size_t reader_get_file_size(struct reader*);
+
+int reader_subquery_get_record(struct fqlselect*, struct record*, struct vec*);
 
 /**
  * reader types own the data that is passed from

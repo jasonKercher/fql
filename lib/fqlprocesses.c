@@ -77,8 +77,7 @@ int fql_read(dgraph* proc_graph, process* proc)
 
 int fql_read_subquery(dgraph* proc_graph, process* proc)
 {
-	table* table = proc->proc_data;
-	reader* reader = table->reader;
+	fqlselect* select = proc->proc_data;
 
 	fifo* in_sub = proc->fifo_in[0];
 	fifo* in_fresh = proc->fifo_in[1];
@@ -91,9 +90,8 @@ int fql_read_subquery(dgraph* proc_graph, process* proc)
 	       && fifo_receivable(out);
 	     it_sub = fifo_iter(in_sub), it_fresh = fifo_iter(in_fresh)) {
 		record** rec_fresh = vec_back(*it_fresh);
-		reader->subquery_recs = *it_sub;
 
-		switch (reader->get_record__(reader, *rec_fresh)) {
+		switch (reader_subquery_get_record(select, *rec_fresh, *it_sub)) {
 		case FQL_GOOD:
 			ret = 1;
 			break;
@@ -385,11 +383,25 @@ int fql_distinct(dgraph* proc_graph, process* proc)
 int fql_select(dgraph* proc_graph, process* proc)
 {
 	fqlselect* select = proc->proc_data;
+
+	fifo* in = proc->fifo_in[0];
+	fifo* out = proc->fifo_out[0];
+
 	if (!proc->wait_for_in0) {
+		/* subquery reads expect union schema to
+		 * be "in sync" with the subquery select's
+		 * current schema
+		 */
+		if (out && !fifo_is_empty(out)) {
+			return 1;
+		}
+
 		if (fqlselect_next_union(select)) {
 			proc->wait_for_in0 = true;
 			proc->fifo_in[0] = proc->queued_results->data;
-			proc->queued_results = proc->queued_results->next;
+			if (proc->queued_results->next != NULL) {
+				proc->queued_results = proc->queued_results->next;
+			}
 			return 1;
 		} else {
 			writer_close(select->writer);
@@ -397,9 +409,6 @@ int fql_select(dgraph* proc_graph, process* proc)
 			return 0;
 		}
 	}
-
-	fifo* in = proc->fifo_in[0];
-	fifo* out = proc->fifo_out[0];
 
 	int ret = 0;
 	unsigned iters = 0;

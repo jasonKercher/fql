@@ -87,13 +87,13 @@ int op_writer_init(query* query)
 	}
 }
 
-void op_apply_process(query* query, plan* plan)
+void op_apply_process(query* query, plan* plan, bool is_subquery)
 {
 	enum op* self = query->op;
 
 	switch (*self) {
 	case OP_SELECT:
-		fqlselect_apply_process(query, plan);
+		fqlselect_apply_process(query, plan, is_subquery);
 		break;
 	default:;
 	}

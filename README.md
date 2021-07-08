@@ -42,12 +42,14 @@ select left(not_number_field, 9999999) from [file.txt] -- lol string
 ```
 
 Other missing features:
- - windowed-functions
- - temp tables not so temp
- - TOP PERCENT
- - WITH
- - COUNT(DISTINCT [col])
- - CASE statements
+- windowed-functions
+- temp tables not so temp
+- TOP PERCENT
+- WITH
+- COUNT(DISTINCT [col])
+- CASE
+- MERGE
+- APPLY
 
 ### Is it fast?
 

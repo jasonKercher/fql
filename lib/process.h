@@ -22,6 +22,7 @@ struct process {
 	string* action_msg;     /* message that prints with plan */
 	vec* root_group;        /* group of recyclable roots for this process */
 	vec* wait_list;         /* list of fifos that we wait for */
+	vec* union_end_nodes;   /* nodes that require re-link for union */
 	queue* queued_results;  /* list of additional input fifos */
 	size_t rows_affected;   /* if process is true proc, track this */
 	size_t top_count;       /* If process is true proc, use this */
@@ -35,6 +36,7 @@ struct process {
 	bool is_passive;        /* denotes process that does nothing */
 	bool is_enabled;        /* enabled means it still has data to process */
 	bool is_const;          /* should only run 1 time */
+	bool has_second_input;  /* will initialize fifo_in[1] during activation */
 	bool wait_for_in0;      /* allow start before in0 populated */
 	bool wait_for_in0_end;  /* allow more processing after in0 done */
 };
@@ -51,7 +53,6 @@ void process_destroy(struct process*, bool);
 void process_node_free(struct dnode* proc_node);
 
 void process_activate(dnode* proc_node, struct fql_plan*);
-void process_add_second_input(struct process*);
 int process_step(plan* plan);
 int process_exec_plan(struct fql_plan*);
 int process_exec_plan_thread(struct fql_plan*);

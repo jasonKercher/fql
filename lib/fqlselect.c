@@ -18,6 +18,7 @@ int _select_record_api(fqlselect*, struct vec* rec);
 int _select_record_order_api(fqlselect*, struct vec* rec);
 int _select_record_to_list(fqlselect*, struct vec* rec);
 int _select_record_to_const(fqlselect*, struct vec* rec);
+int _select_subquery(fqlselect*, struct vec* rec);
 
 fqlselect* fqlselect_construct(fqlselect* self)
 {
@@ -44,7 +45,7 @@ void fqlselect_destroy(fqlselect* self)
 	if (self == NULL) {
 		return;
 	}
-	queue_free(&self->union_column_vecs);
+	//queue_free(&self->union_column_vecs);
 	delete_if_exists_(writer, self->writer);
 	delete_(schema, self->schema);
 }
@@ -226,7 +227,7 @@ int fqlselect_connect_api(query* query, vec* api)
 	return FQL_GOOD;
 }
 
-void fqlselect_apply_process(query* query, plan* plan)
+void fqlselect_apply_process(query* query, plan* plan, bool is_subquery_source)
 {
 	fqlselect* self = query->op;
 	process* proc = plan->op_true->data;
@@ -236,6 +237,8 @@ void fqlselect_apply_process(query* query, plan* plan)
 
 	if (self->const_dest != NULL) {
 		self->select__ = &_select_record_to_const;
+	} else if (is_subquery_source) {
+		self->select__ = &_select_subquery;
 	}
 
 	string_strcpy(proc->action_msg, "SELECT ");
@@ -547,35 +550,11 @@ int _select_record_to_const(fqlselect* self, vec* recs)
 	}
 }
 
-/* TODO... reader.c? lol */
-
-/* This becomes a big copy operation because
- * I want to recycle the subquery's record.
+/* This is correct.  The only reason this exists is
+ * to take advantage of the fact that fql_select will
+ * move through all unions via fqlselect_next_union.
  */
-int fqlselect_subquery_record(reader* reader, record* rec)
+int _select_subquery(fqlselect* self, vec* recs)
 {
-	schema* sub_schema = reader->reader_data;
-	vec* sub_col_vec = sub_schema->columns;
-	vec* sub_recs = reader->subquery_recs;
-
-	unsigned i = 0;
-	column** sub_cols = vec_begin(sub_col_vec);
-
-	for (; i < sub_col_vec->size; ++i) {
-		stringview sv;
-		column_get_stringview(&sv, sub_cols[i], sub_recs);
-		string* s = vec_at(rec->_field_data, i);
-		string_copy_from_stringview(s, &sv);
-		stringview* rec_sv = vec_at(rec->fields, i);
-		rec_sv->data = s->data;
-		rec_sv->len = s->size;
-	}
-
 	return FQL_GOOD;
-}
-
-/* TODO */
-int fqlselect_subquery_reset(reader* reader)
-{
-	return FQL_FAIL;
 }

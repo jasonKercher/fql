@@ -24,23 +24,24 @@
  * where each node represents a process
  */
 
+int _build(query*, dnode* entry, bool loose_groups, bool is_union);
 void _print_plan(plan*);
 void _activate_procs(plan* self);
 
 plan* plan_construct(plan* self, query* query, bool loose_groups)
 {
 	*self = (plan) {
-	        new_(dgraph), /* processes */
-	        NULL,         /* op_true */
-	        NULL,         /* op_false */
-	        NULL,         /* current */
-	        NULL,         /* recycle_groups */
-	        query,        /* query */
-	        0,            /* rows_affected */
-	        0,            /* source_count */
-	        0,            /* plan_id */
-	        false,        /* has_stepped */
-	        loose_groups, /* loose_groups */
+	        new_(dgraph),        /* processes */
+	        NULL,                /* op_true */
+	        NULL,                /* op_false */
+	        NULL,                /* current */
+	        NULL,                /* recycle_groups */
+	        query,               /* query */
+	        0,                   /* rows_affected */
+	        0,                   /* source_count */
+	        0,                   /* plan_id */
+	        false,               /* has_stepped */
+	        loose_groups,        /* loose_groups */
 	};
 
 	self->plan_id = query->query_id;
@@ -259,21 +260,22 @@ int _from(plan* self, query* query)
 		from_proc = new_(process, action_msg.data, self);
 		from_proc->action__ = &fql_read;
 		from_node = dgraph_add_data(self->processes, from_proc);
+		from_proc->proc_data = table_iter;
 	} else {
 		from_proc = new_(process, "subquery select", self);
 		from_proc->action__ = &fql_read_subquery;
 		from_proc->root_fifo = 1;
 		from_node = dgraph_add_data(self->processes, from_proc);
 		from_node->is_root = true;
-		try_(plan_build(table_iter->subquery, from_node, self->loose_groups));
+		try_(_build(table_iter->subquery, from_node, self->loose_groups, false));
 		plan* subquery_plan = table_iter->subquery->plan;
+		process* sub_true_proc = subquery_plan->op_true->data;
+		fqlselect* sub_select = sub_true_proc->proc_data;
+		from_proc->proc_data = sub_select;
 		from_proc->subquery_plan_id = subquery_plan->plan_id;
 		dgraph_consume(self->processes, subquery_plan->processes);
 		subquery_plan->processes = NULL;
 	}
-	table_iter->read_proc = from_proc;
-	from_proc->proc_data = table_iter;
-
 	from_node->is_root = true;
 
 	self->current->out[0] = from_node;
@@ -296,7 +298,7 @@ int _from(plan* self, query* query)
 			join_proc = _new_join_proc(table_iter->join_type, "hash", self);
 			join_proc->action__ = &fql_hash_join;
 			table_hash_join_init(table_iter);
-			process_add_second_input(join_proc);
+			join_proc->has_second_input = true;
 
 			process* read_proc = NULL;
 			dnode* read_node = NULL;
@@ -317,7 +319,7 @@ int _from(plan* self, query* query)
 			//	read_proc->root_fifo = 1;
 			//	read_node = dgraph_add_data(self->processes, read_proc);
 			//	read_node->is_root = true;
-			//	Plan* subquery_plan = plan_build(table_iter->subquery, read_node);
+			//	Plan* subquery_plan = _build(table_iter->subquery, read_node);
 			//	fail_if_ (subquery_plan == NULL);
 			//	read_proc->subquery_plan_id = subquery_plan->plan_id;
 			//	dgraph_consume(self->processes, subquery_plan->processes);
@@ -418,34 +420,33 @@ int _having(plan* self, query* query)
 	return _logicgroup_process(self, query->having, false, true);
 }
 
-void _operation(plan* self, query* query, dnode* entry)
+void _operation(plan* self, query* query, dnode* entry, bool is_union)
 {
-	self->current->out[0] = self->op_true;
+	dnode* prev = self->current;
+	prev->out[0] = self->op_true;
 	self->current = self->op_true;
-	process* true_proc = self->op_true->data;
 	if (query->groupby) {
+		process* true_proc = self->op_true->data;
 		true_proc->root_group = &query->groupby->_roots;
 	}
 	_check_all_for_subquery_expression(self->op_true->data,
 	                                   op_get_columns(query->op));
-	if (entry == NULL) {
-		op_apply_process(query, self);
+
+	/* Current no longer matters. After operation, we
+	 * do order where current DOES matter... BUT
+	 * if we are in a union we should not encounter
+	 * ORDER BY...
+	 */
+	if (is_union) {
+		self->current = prev;
 		return;
 	}
-	self->op_true->out[0] = entry;
+	op_apply_process(query, self, (entry != NULL));
+	if (entry == NULL) {
+		return;
+	}
 
-	/* We are selecting in a subquery. The process
-	 * that reads from the subquery will read what
-	 * is needed and recycle the record back into
-	 * the subquery.
-	 *
-	 * This reading process will take the place of
-	 * op_true so both op_true and op_false can be
-	 * marked as passive.
-	 */
-	true_proc->is_passive = true;
-	process* false_proc = self->op_false->data;
-	false_proc->is_passive = true;
+	self->op_true->out[0] = entry;
 }
 
 int _union(plan* self, query* aquery, bool loose_groups)
@@ -453,49 +454,61 @@ int _union(plan* self, query* aquery, bool loose_groups)
 	if (vec_empty(aquery->unions)) {
 		return FQL_GOOD;
 	}
+	/* we have a union, we can assume, our operation is select */
+	process* select_proc = self->op_true->data;
 
 	query** it = vec_begin(aquery->unions);
 	for (; it != vec_end(aquery->unions); ++it) {
-		try_(plan_build(*it, NULL, loose_groups));
+		try_(_build(*it, NULL, loose_groups, true));
 		plan* union_plan = (*it)->plan;
+		vec_push_back(select_proc->union_end_nodes, &union_plan->current);
+		process* union_proc = union_plan->op_true->data;
+		union_proc->is_passive = true;
+		union_proc = union_plan->op_false->data;
+		union_proc->is_passive = true;
 		dgraph_consume(self->processes, union_plan->processes);
 		union_plan->processes = NULL;
 	}
 	return FQL_GOOD;
 }
 
-void _union2(plan* self, query* aquery)
-{
-	if (vec_empty(aquery->unions)) {
-		return;
-	}
-
-	process* true_proc = self->op_true->data;
-
-	query** it = vec_begin(aquery->unions);
-	for (; it != vec_end(aquery->unions); ++it) {
-		plan* union_plan = (*it)->plan;
-		bool is_root = union_plan->op_true->is_root;
-		process* union_true_proc = NULL;
-
-		/* This is a shit method... */
-		dnode** node_iter = vec_begin(self->processes->nodes);
-		for (; node_iter != vec_end(self->processes->nodes); ++node_iter) {
-			if (*node_iter == union_plan->op_true) {
-				union_true_proc =
-				        dgraph_remove(self->processes, node_iter);
-				break;
-			}
-		}
-
-		if (union_true_proc == NULL) {
-			exit(EXIT_FAILURE);
-		}
-		queue_enqueue(&true_proc->queued_results, union_true_proc->fifo_in[0]);
-		union_true_proc->fifo_in[0] = NULL;
-		delete_(process, union_true_proc, is_root);
-	}
-}
+//void _union2(plan* self, query* aquery)
+//{
+//	if (vec_empty(aquery->unions)) {
+//		return;
+//	}
+//
+//	process* true_proc = self->op_true->data;
+//
+//	query** it = vec_begin(aquery->unions);
+//	for (; it != vec_end(aquery->unions); ++it) {
+//		plan* union_plan = (*it)->plan;
+//		bool is_root = union_plan->op_true->is_root;
+//		process* union_true_proc = NULL;
+//
+//		/* This is a shit method... */
+//		dnode** node_iter = vec_begin(self->processes->nodes);
+//		for (; node_iter != vec_end(self->processes->nodes); ++node_iter) {
+//			if (*node_iter == union_plan->op_true) {
+//				union_true_proc =
+//				        dgraph_remove(self->processes, node_iter);
+//				break;
+//			}
+//		}
+//
+//		/* TODO: this should be impossible...
+//		 *       prove that and remove.
+//		 */
+//		if (union_true_proc == NULL) {
+//			fputs("failed to find union_true_proc\n", stderr);
+//			exit(EXIT_FAILURE);
+//		}
+//
+//		queue_enqueue(&true_proc->queued_results, union_true_proc->fifo_in[0]);
+//		union_true_proc->fifo_in[0] = NULL;
+//		delete_(process, union_true_proc, is_root);
+//	}
+//}
 
 void _order(plan* self, query* query)
 {
@@ -641,14 +654,14 @@ void _mark_roots_const(vec* roots)
 	}
 }
 
-int plan_build(query* aquery, dnode* entry, bool loose_groups)
+int _build(query* aquery, dnode* entry, bool loose_groups, bool is_union)
 {
 	/* Loop through constant value subqueries and
 	 * build their plans
 	 */
 	query** it = vec_begin(aquery->subquery_const_vec);
 	for (; it != vec_end(aquery->subquery_const_vec); ++it) {
-		try_(plan_build(*it, NULL, loose_groups));
+		try_(_build(*it, NULL, loose_groups, false));
 	}
 
 	aquery->plan = new_(plan, aquery, loose_groups);
@@ -659,13 +672,10 @@ int plan_build(query* aquery, dnode* entry, bool loose_groups)
 	try_(_where(self, aquery));
 	_group(self, aquery);
 	try_(_having(self, aquery));
-	_operation(self, aquery, entry);
+	_operation(self, aquery, entry, is_union);
 	try_(_union(self, aquery, loose_groups));
 	_order(self, aquery);
-	/* Loop through constant value subqueries again,
-	 * but this time, consume all process nodes into
-	 * current plan.
-	 */
+
 	/* Uncomment this to view the plan *with* passive nodes */
 	//_print_plan(self);
 
@@ -678,6 +688,10 @@ int plan_build(query* aquery, dnode* entry, bool loose_groups)
 	}
 
 	dgraph_get_roots(self->processes);
+	/* Loop through constant value subqueries again,
+	 * but this time, consume all process nodes into
+	 * current plan.
+	 */
 	it = vec_begin(aquery->subquery_const_vec);
 	for (; it != vec_end(aquery->subquery_const_vec); ++it) {
 		dgraph_consume(aquery->plan->processes, (*it)->plan->processes);
@@ -695,7 +709,7 @@ int plan_build(query* aquery, dnode* entry, bool loose_groups)
 	_activate_procs(self);
 	_make_pipes(self);
 	_update_pipes(self->processes);
-	_union2(self, aquery);
+	//_union2(self, aquery);
 
 	return FQL_GOOD;
 }
@@ -706,7 +720,7 @@ int build_plans(queue* query_list, bool loose_groups)
 
 	for (; node; node = node->next) {
 		query* query = node->data;
-		try_(plan_build(query, NULL, loose_groups));
+		try_(_build(query, NULL, loose_groups, false));
 	}
 
 	return FQL_GOOD;

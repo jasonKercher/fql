@@ -3,12 +3,13 @@
 #include "column.h"
 #include "reader.h"
 #include "logic.h"
+#include "operation.h"
 #include "antlr/antlr.h"
 #include "util/util.h"
 
 /**
  * When building a hash table for a file, we can
- * get a size estimate from the file and avoid 
+ * get a size estimate from the file and avoid
  * resizing the hashmap.  If it is a subquery, we
  * have no such information.
  */
@@ -89,20 +90,31 @@ void table_destroy(table* self)
 	delete_if_exists_(query, self->subquery);
 }
 
-const char* table_get_delim(table* self)
+int table_resolve_schema(table* self)
 {
 	reader* reader = self->reader;
+	const char* delim = NULL;
 	switch (reader->type) {
 	case IO_LIBCSV:
-		return csv_reader_get_delim(reader->reader_data);
-	case IO_SUBQUERY:
-		return table_get_delim(vec_begin(self->subquery->sources));
-	case IO_FIXED:
-		return NULL;
-	default:
-		fprintf(stderr, "%d: unknown read_type\n", reader->type);
-		return NULL;
+		delim = csv_reader_get_delim(reader->reader_data);
+		self->schema->write_io_type = IO_LIBCSV;
+		break;
+	case IO_SUBQUERY: {
+		schema* sub_schema = op_get_schema(self->subquery->op);
+		delim = sub_schema->delimiter;
+		self->schema->write_io_type = sub_schema->write_io_type;
+		break;
 	}
+	case IO_FIXED:
+		self->schema->write_io_type = IO_FIXED;
+		return FQL_GOOD;
+	default:
+		fprintf(stderr, "%d: unknown io_type\n", reader->type);
+		return FQL_FAIL;
+	}
+
+	strncpy_(self->schema->delimiter, delim, DELIM_LEN_MAX);
+	return FQL_GOOD;
 }
 
 hashjoin* hashjoin_construct(hashjoin* join)

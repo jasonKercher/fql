@@ -21,7 +21,7 @@ struct schema* op_get_schema(enum op*);
 void op_set_schema(enum op*, const struct schema*);
 void op_set_rec_terminator(enum op*, const char* term);
 void op_set_delim(enum op*, const char* delim);
-void op_apply_process(struct query*, struct fql_plan*);
+void op_apply_process(struct query*, struct fql_plan*, bool is_subquery);
 int op_writer_init(struct query*);
 void op_destroy(enum op*);
 

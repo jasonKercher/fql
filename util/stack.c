@@ -88,16 +88,19 @@ int stack_count(stack* head)
 
 void stack_free_func(stack** head, generic_data_fn free_func)
 {
+	*head = stack_top(*head);
 	for (; *head; stack_pop(head))
 		free_func((*head)->data);
 }
 
 void stack_free_data(stack** head)
 {
+	*head = stack_top(*head);
 	for (; *head; stack_delete(head, *head));
 }
 
 void stack_free(stack** head)
 {
+	*head = stack_top(*head);
 	for (; *head; stack_pop(head));
 }

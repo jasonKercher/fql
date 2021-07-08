@@ -66,10 +66,10 @@ int reader_assign(reader* self, table* table)
 		return FQL_GOOD;
 	case IO_SUBQUERY:
 		//self->free__ = &query_free;
-		self->get_record__ = &fqlselect_subquery_record;
-		self->get_record_at__ = NULL; /* TODO */
-		self->reset__ = &fqlselect_subquery_reset;
-		self->reader_data = table->schema;
+		//self->get_record__ = &_subquery_get_record;
+		//self->get_record_at__ = NULL; /* TODO */
+		//self->reset__ = &_subquery_reset;
+		//self->reader_data = table->schema;
 		return FQL_GOOD;
 	default:
 		fprintf(stderr, "%d: unknown read_type\n", self->type);
@@ -88,4 +88,30 @@ size_t reader_get_file_size(reader* self)
 	default:
 		return 0;
 	}
+}
+
+/* This becomes a big copy operation because
+ * we want to recycle the subquery's record.
+ * In theory, you could deadlock a query if
+ * we try to persist subquery records into
+ * the parent query.
+ */
+int reader_subquery_get_record(fqlselect* select, record* rec, vec* sub_recs)
+{
+	vec* sub_col_vec = select->_selection_cols;
+
+	unsigned i = 0;
+	column** sub_cols = vec_begin(sub_col_vec);
+
+	for (; i < sub_col_vec->size; ++i) {
+		stringview sv;
+		column_get_stringview(&sv, sub_cols[i], sub_recs);
+		string* s = vec_at(rec->_field_data, i);
+		string_copy_from_stringview(s, &sv);
+		stringview* rec_sv = vec_at(rec->fields, i);
+		rec_sv->data = s->data;
+		rec_sv->len = s->size;
+	}
+
+	return FQL_GOOD;
 }
