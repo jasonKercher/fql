@@ -484,7 +484,7 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	}
 
 	if (table->source_type == SOURCE_SUBQUERY) {
-		_resolve_query(fql, table->subquery, IO_UNDEFINED);
+		try_(_resolve_query(fql, table->subquery, IO_UNDEFINED));
 		fqlselect* select = table->subquery->op;
 		table->schema = select->schema;
 		self = table->schema;

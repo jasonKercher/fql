@@ -17,7 +17,8 @@
 #include "operation.h"
 #include "util/util.h"
 
-#define PLAN_COLUMN_SEP " | "
+#define PLAN_COLUMN_SEP   " | "
+#define FIFO_SCALE_FACTOR 4
 
 /**
  * Plan is basically a decision graph
@@ -31,17 +32,18 @@ void _activate_procs(plan* self);
 plan* plan_construct(plan* self, query* query, bool loose_groups)
 {
 	*self = (plan) {
-	        new_(dgraph),        /* processes */
-	        NULL,                /* op_true */
-	        NULL,                /* op_false */
-	        NULL,                /* current */
-	        NULL,                /* recycle_groups */
-	        query,               /* query */
-	        0,                   /* rows_affected */
-	        0,                   /* source_count */
-	        0,                   /* plan_id */
-	        false,               /* has_stepped */
-	        loose_groups,        /* loose_groups */
+	        new_(dgraph), /* processes */
+	        NULL,         /* op_true */
+	        NULL,         /* op_false */
+	        NULL,         /* current */
+	        NULL,         /* root */
+	        NULL,         /* records */
+	        query,        /* query */
+	        0,            /* rows_affected */
+	        0,            /* source_count */
+	        0,            /* plan_id */
+	        false,        /* has_stepped */
+	        loose_groups, /* loose_groups */
 	};
 
 	self->plan_id = query->query_id;
@@ -809,6 +811,35 @@ void print_plans(queue* query_list)
 
 void _activate_procs(plan* self)
 {
+	/* First, build root record pipe */
+	unsigned graph_size = self->processes->nodes->size;
+	unsigned fifo_size = graph_size * FIFO_SCALE_FACTOR;
+	unsigned root_count = self->processes->_roots->size;
+
+	self->records = new_t_(vec, vec);
+	vec_resize(self->records, fifo_size * graph_size * root_count);
+
+	unsigned i = 0;
+
+	vec* buf = self->root->buf;
+	for (; i < self->records->size; ++i) {
+		vec* new_recs = vec_at(self->records, i);
+		vec_construct_(new_recs, record*);
+		vec_resize(new_recs, self->out_src_count);
+
+		record** new_rec = vec_back(new_recs);
+		*new_rec = new_(record, i);
+
+		vec** recs = vec_at(self->root->buf, i);
+		*recs = new_recs;
+	}
+
+	//if (self->is_const) {
+	//	fifo_advance(self->fifo_in[self->root_fifo]);
+	//	return;
+	//}
+	fifo_set_full(self->root);
+
 	vec* node_vec = self->processes->nodes;
 	dnode** nodes = vec_begin(node_vec);
 

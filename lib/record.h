@@ -13,13 +13,15 @@ struct record {
 	struct csv_record* libcsv_rec;
 	stringview rec_raw;
 	size_t offset;
+	unsigned max_size;
 	unsigned select_len;
 	unsigned idx;
 	_Atomic int ref_count;
 };
 typedef struct record record;
 
-struct record* record_construct(struct record*, unsigned idx, unsigned n, bool owns_recs);
+struct record* record_construct(struct record*, unsigned idx);
 void record_destroy(struct record*);
+void rec_resize(struct record*, unsigned size);
 
 #endif /* RECORD_H */

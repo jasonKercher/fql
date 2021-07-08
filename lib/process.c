@@ -22,8 +22,8 @@ process* process_construct(process* self, const char* action, plan* plan)
 {
 	*self = (process) {
 	        0,                            /* thread */
-	        NULL,                         /* records */
 	        &fql_no_op,                   /* action__ */
+	        NULL,                         /* root_ref */
 	        {NULL, NULL},                 /* fifo_in */
 	        {NULL, NULL},                 /* fifo_out */
 	        NULL,                         /* proc_data */
@@ -59,15 +59,15 @@ void process_node_free(dnode* proc_node)
 
 void process_destroy(process* self, bool is_root)
 {
-	if (is_root && self->records != NULL) {
-		vec* it = vec_begin(self->records);
-		for (; it != vec_end(self->records); ++it) {
-			record** rec = vec_back(it);
-			delete_(record, *rec);
-			vec_destroy(it);
-		}
-		delete_(vec, self->records);
-	}
+	//if (is_root && self->records != NULL) {
+	//	vec* it = vec_begin(self->records);
+	//	for (; it != vec_end(self->records); ++it) {
+	//		record** rec = vec_back(it);
+	//		delete_(record, *rec);
+	//		vec_destroy(it);
+	//	}
+	//	delete_(vec, self->records);
+	//}
 	delete_if_exists_(fifo, self->fifo_in[0]);
 	delete_if_exists_(fifo, self->fifo_in[1]);
 	delete_if_exists_(vec, self->wait_list);
@@ -75,11 +75,12 @@ void process_destroy(process* self, bool is_root)
 	delete_(string, self->action_msg);
 }
 
-void process_activate(dnode* proc_node, plan* plan)
+void process_activate(dnode* proc_node, plan* plan, unsigned fifo_size)
 {
 	process* self = proc_node->data;
+
+	self->root_ref = plan->root;
 	unsigned graph_size = plan->processes->nodes->size;
-	unsigned fifo_size = graph_size * 4;
 	bool is_subquery = self->subquery_plan_id > 0;
 	if (self->root_group == NULL && is_subquery) {
 		self->root_group = vec_at(plan->recycle_groups, self->subquery_plan_id);
@@ -138,33 +139,6 @@ void process_activate(dnode* proc_node, plan* plan)
 		field_count = group->columns.size;
 	}
 
-	self->records = new_t_(vec, vec);
-	vec_resize(self->records, fifo_size * graph_size);
-
-	unsigned i = 0;
-
-	/* if root, it will own the vector of records */
-	vec* buf = self->fifo_in[self->root_fifo]->buf;
-	for (; i < self->records->size; ++i) {
-		vec* new_recs = vec_at(self->records, i);
-		vec_construct_(new_recs, record*);
-		vec_resize(new_recs, self->out_src_count);
-
-		record** new_rec = vec_back(new_recs);
-		*new_rec = new_(record, i, field_count, owns_data);
-
-		vec** recs = vec_at(buf, i);
-		*recs = new_recs;
-	}
-
-	/* TODO: once we stop hard coding fifo size,
-	 *       this if block can go.
-	 */
-	if (self->is_const) {
-		fifo_advance(self->fifo_in[self->root_fifo]);
-		return;
-	}
-	fifo_set_full(self->fifo_in[self->root_fifo]);
 }
 
 void process_add_to_wait_list(process* self, const process* wait_proc)

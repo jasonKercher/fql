@@ -1,4 +1,5 @@
 #include "table.h"
+#include "fql.h"
 #include "query.h"
 #include "column.h"
 #include "reader.h"
@@ -101,6 +102,9 @@ int table_resolve_schema(table* self)
 		break;
 	case IO_SUBQUERY: {
 		schema* sub_schema = op_get_schema(self->subquery->op);
+		if (sub_schema == self->schema) {
+			return FQL_GOOD;
+		}
 		delim = sub_schema->delimiter;
 		self->schema->write_io_type = sub_schema->write_io_type;
 		break;

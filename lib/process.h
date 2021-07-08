@@ -14,8 +14,8 @@ typedef int(process_fn)(struct dgraph*, struct process*);
 
 struct process {
 	pthread_t thread;       /* pthread handle */
-	struct vec* records;    /* this is the owned record data for roots */
 	process_fn* action__;   /* function pointer for process */
+	fifo* root_ref;         /* Reference to plan-wide root-records */
 	fifo* fifo_in[2];       /* ring buffer of records */
 	fifo* fifo_out[2];      /* default next process fifo */
 	void* proc_data;        /* process specific data */
