@@ -77,16 +77,17 @@ int fixedreader_get_record_at(reader* reader, record* rec, const char* begin)
 {
 	fixedreader* self = reader->reader_data;
 
-	vec_clear(rec->fields);
+	record_resize(rec, self->columns->size);
 
-	column** it = vec_begin(self->columns);
-	for (; it != vec_end(self->columns); ++it) {
-		stringview sv = {begin + (*it)->location, (*it)->width};
-		vec_push_back(rec->fields, &sv);
+	unsigned i = 0;
+	for (; i < self->columns->size; ++i) {
+		column** col = vec_at(self->columns, i);
+		stringview sv = {begin + (*col)->location, (*col)->width};
+		vec_set(&rec->fields, i, &sv);
 	}
 
-	rec->rec_raw.data = begin;
-	rec->rec_raw.len = reader->reclen; /* redundant */
+	rec->rec_ref.data = begin;
+	rec->rec_ref.len = reader->reclen; /* redundant */
 
 	return FQL_GOOD;
 }

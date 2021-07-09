@@ -14,8 +14,11 @@ int libcsv_get_record(reader* self, record* rec)
 	struct csv_reader* csv = self->reader_data;
 
 	if (self->eof) {
-		//return csv_reader_reset(csv);
 		return FQL_FAIL;
+	}
+
+	if (rec->libcsv_rec == NULL) {
+		rec->libcsv_rec = csv_record_new();
 	}
 
 	int ret = csv_get_record_to(csv, rec->libcsv_rec, self->max_col_idx + 1);
@@ -29,14 +32,9 @@ int libcsv_get_record(reader* self, record* rec)
 		return EOF;
 	}
 
-	/* redundant:
-	 * this should really never change...
-	 * _guess_row_count relies on this...
-	 * but it probably shouldn't...
-	 */
-	vec_resize(rec->fields, rec->libcsv_rec->size);
+	record_resize(rec, rec->libcsv_rec->size);
 
-	stringview* sv = vec_begin(rec->fields);
+	stringview* sv = vec_begin(&rec->fields);
 	struct csv_field* fields = rec->libcsv_rec->fields;
 
 	int i = 0;
@@ -45,15 +43,8 @@ int libcsv_get_record(reader* self, record* rec)
 		sv[i].len = fields[i].len;
 	}
 
-	/* TODO: if reading from stdin, we may need to make a copy */
-	//string_strncpy(rec->rec_cpy,
-	//	       rec->libcsv_rec->rec,
-	//	       rec->libcsv_rec->reclen);
-	//rec->rec_raw.data = rec->rec_cpy->data;
-	//rec->rec_raw.len = rec->rec_cpy->size;
-
-	rec->rec_raw.data = rec->libcsv_rec->rec;
-	rec->rec_raw.len = rec->libcsv_rec->reclen;
+	rec->rec_ref.data = rec->libcsv_rec->rec;
+	rec->rec_ref.len = rec->libcsv_rec->reclen;
 
 	return FQL_GOOD;
 }

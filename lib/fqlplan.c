@@ -36,8 +36,8 @@ plan* plan_construct(plan* self, query* query, bool loose_groups)
 	        NULL,         /* op_true */
 	        NULL,         /* op_false */
 	        NULL,         /* current */
+	        NULL,         /* _recgroups */
 	        NULL,         /* root */
-	        NULL,         /* records */
 	        query,        /* query */
 	        0,            /* rows_affected */
 	        0,            /* source_count */
@@ -53,15 +53,6 @@ plan* plan_construct(plan* self, query* query, bool loose_groups)
 	self->op_false = new_(dnode, new_(process, "OP_FALSE", self));
 
 	self->source_count = 0;
-
-	if (query->query_id == 0) {
-		self->recycle_groups = new_t_(vec, vec);
-		vec_resize(self->recycle_groups, query->query_total);
-		vec* it = vec_begin(self->recycle_groups);
-		for (; it != vec_end(self->recycle_groups); ++it) {
-			vec_construct_(it, dnode*);
-		}
-	}
 
 	process* start = new_(process, "start", self);
 	start->is_passive = true;
@@ -81,13 +72,6 @@ void plan_destroy(void* generic_plan)
 			process_node_free(*it);
 		}
 		delete_(dgraph, self->processes);
-	}
-	if (self->recycle_groups != NULL) {
-		vec* it = vec_begin(self->recycle_groups);
-		for (; it != vec_end(self->recycle_groups); ++it) {
-			vec_destroy(it);
-		}
-		delete_(vec, self->recycle_groups);
 	}
 }
 
@@ -813,26 +797,21 @@ void _activate_procs(plan* self)
 {
 	/* First, build root record pipe */
 	unsigned graph_size = self->processes->nodes->size;
-	unsigned fifo_size = graph_size * FIFO_SCALE_FACTOR;
-	unsigned root_count = self->processes->_roots->size;
+	unsigned fifo_base_size = graph_size * FIFO_SCALE_FACTOR;
+	unsigned root_process_count = self->processes->_roots->size;
 
-	self->records = new_t_(vec, vec);
-	vec_resize(self->records, fifo_size * graph_size * root_count);
+	unsigned root_size = fifo_base_size * root_process_count;
+
+	self->_recgroups = new_t_(vec, recgroup);
+	vec_resize(self->_recgroups, root_size);
 
 	unsigned i = 0;
-
-	vec* buf = self->root->buf;
-	for (; i < self->records->size; ++i) {
-		vec* new_recs = vec_at(self->records, i);
-		vec_construct_(new_recs, record*);
-		vec_resize(new_recs, self->out_src_count);
-
-		record** new_rec = vec_back(new_recs);
-		*new_rec = new_(record, i);
-
-		vec** recs = vec_at(self->root->buf, i);
-		*recs = new_recs;
+	for (; i < self->root->buf->size; ++i) {
+		recgroup* rg = vec_at(self->root->buf, i);
+		recgroup_construct(rg, i);
 	}
+
+	self->root = new_t_(fifo, recgroup*, root_size);
 
 	//if (self->is_const) {
 	//	fifo_advance(self->fifo_in[self->root_fifo]);
@@ -843,9 +822,7 @@ void _activate_procs(plan* self)
 	vec* node_vec = self->processes->nodes;
 	dnode** nodes = vec_begin(node_vec);
 
-	/* Unroll the first few so they
-	 * can be tracked easier
-	 */
+	/* Unroll the first few for easy tracking */
 	process_activate(*nodes, self);
 	if (++nodes == vec_end(node_vec))
 		return;

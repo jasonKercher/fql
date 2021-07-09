@@ -11,41 +11,12 @@
 #include "fqlselect.h"
 #include "util/fifo.h"
 
-void _recycle_specific(process* proc, vec* recs, int index)
+void _recycle(process* proc, recgroup* rg)
 {
-	dnode** root_node = vec_at(proc->root_group, index);
-	process* root = (*root_node)->data;
-
-	if (root->is_const) {
-		return;
-	}
-
-	record** rec = vec_at(recs, index);
-	if (--(*rec)->ref_count > 0) {
-		return;
-	}
-
-	vec* proc_recs = vec_at(root->records, (*rec)->idx);
-
-	fifo_add(root->fifo_in[root->root_fifo], &proc_recs);
+	fifo_add(proc->root_ref, &rg);
 }
 
-/* trigger appropiate roots to read the next record */
-void _recycle_recs(process* proc, vec* recs, int width)
-{
-	/* width == 0 means constant expression */
-	if (width == 0) {
-		dnode** root_node = vec_begin(proc->root_group);
-		process_disable((*root_node)->data);
-		return;
-	}
-	int i = 0;
-	for (; i < width; ++i) {
-		_recycle_specific(proc, recs, i);
-	}
-}
-
-int fql_read(dgraph* proc_graph, process* proc)
+int fql_read(process* proc)
 {
 	table* table = proc->proc_data;
 	reader* reader = table->reader;
@@ -53,13 +24,14 @@ int fql_read(dgraph* proc_graph, process* proc)
 	fifo* in = proc->fifo_in[0];
 	fifo* out = proc->fifo_out[0];
 
-	vec** it = fifo_begin(in);
+	recgroup** it = fifo_begin(in);
 	for (; it != fifo_end(in) && fifo_receivable(out); it = fifo_iter(in)) {
-		record** rec = vec_back(*it);
+		recgroup_resize(*it, 1);
+		record* rec = recgroup_rec_at(*it, 0);
 
-		switch (reader->get_record__(reader, *rec)) {
+		switch (reader->get_record__(reader, rec)) {
 		case FQL_GOOD:
-			(*rec)->ref_count = 0;
+			//rec->ref_count = 0;
 			break;
 		case FQL_FAIL:
 			return FQL_FAIL;
@@ -75,43 +47,43 @@ int fql_read(dgraph* proc_graph, process* proc)
 	return 1;
 }
 
-int fql_read_subquery(dgraph* proc_graph, process* proc)
-{
-	fqlselect* select = proc->proc_data;
-
-	fifo* in_sub = proc->fifo_in[0];
-	fifo* in_fresh = proc->fifo_in[1];
-	fifo* out = proc->fifo_out[0];
-
-	int ret = 0;
-	vec** it_sub = fifo_begin(in_sub);
-	vec** it_fresh = fifo_begin(in_fresh);
-	for (; it_sub != fifo_end(in_sub) && it_fresh != fifo_end(in_fresh)
-	       && fifo_receivable(out);
-	     it_sub = fifo_iter(in_sub), it_fresh = fifo_iter(in_fresh)) {
-		record** rec_fresh = vec_back(*it_fresh);
-
-		switch (reader_subquery_get_record(select, *rec_fresh, *it_sub)) {
-		case FQL_GOOD:
-			ret = 1;
-			break;
-		case FQL_FAIL:
-		default:
-			return FQL_FAIL;
-		}
-
-		if (proc->is_const) {
-			process_disable(proc);
-		} else {
-			_recycle_recs(proc, *it_sub, (*it_sub)->size);
-		}
-		fifo_add(out, it_fresh);
-	}
-	fifo_update(in_sub);
-	fifo_update(in_fresh);
-
-	return ret;
-}
+//int fql_read_subquery(process* proc)
+//{
+//	fqlselect* select = proc->proc_data;
+//
+//	fifo* in_sub = proc->fifo_in[0];
+//	fifo* in_fresh = proc->fifo_in[1];
+//	fifo* out = proc->fifo_out[0];
+//
+//	int ret = 0;
+//	vec** it_sub = fifo_begin(in_sub);
+//	vec** it_fresh = fifo_begin(in_fresh);
+//	for (; it_sub != fifo_end(in_sub) && it_fresh != fifo_end(in_fresh)
+//	       && fifo_receivable(out);
+//	     it_sub = fifo_iter(in_sub), it_fresh = fifo_iter(in_fresh)) {
+//		record** rec_fresh = vec_back(*it_fresh);
+//
+//		switch (reader_subquery_get_record(select, *rec_fresh, *it_sub)) {
+//		case FQL_GOOD:
+//			ret = 1;
+//			break;
+//		case FQL_FAIL:
+//		default:
+//			return FQL_FAIL;
+//		}
+//
+//		if (proc->is_const) {
+//			process_disable(proc);
+//		} else {
+//			_recycle_recs(proc, *it_sub, (*it_sub)->size);
+//		}
+//		fifo_add(out, it_fresh);
+//	}
+//	fifo_update(in_sub);
+//	fifo_update(in_fresh);
+//
+//	return ret;
+//}
 
 void _adj_left_side_ref_count(vec* leftrecs, int adj)
 {
@@ -121,7 +93,7 @@ void _adj_left_side_ref_count(vec* leftrecs, int adj)
 	}
 }
 
-int fql_cartesian_join(dgraph* proc_graph, process* proc)
+int fql_cartesian_join(process* proc)
 {
 	table* table = proc->proc_data;
 	reader* reader = table->reader;
@@ -209,7 +181,7 @@ vec* _hash_join_left_side(process* proc, table* table, vec* leftrecs)
 	return *rightrecs;
 }
 
-int fql_hash_join(dgraph* proc_graph, process* proc)
+int fql_hash_join(process* proc)
 {
 	table* table = proc->proc_data;
 	struct hashjoin* hj = table->join_data;
@@ -240,7 +212,7 @@ int fql_hash_join(dgraph* proc_graph, process* proc)
 
 	vec** it = fifo_begin(in_left);
 	while (it != fifo_end(in_left) && fifo_receivable(out)) {
-		fql_no_op(proc_graph, right_side_read_proc);
+		fql_no_op(right_side_read_proc);
 
 		vec* rightrecs = _hash_join_left_side(proc, table, *it);
 		if (rightrecs == NULL) {
@@ -267,7 +239,7 @@ int fql_hash_join(dgraph* proc_graph, process* proc)
 	return 1;
 }
 
-int fql_logic(dgraph* proc_graph, process* proc)
+int fql_logic(process* proc)
 {
 	logicgroup* lg = proc->proc_data;
 
@@ -319,7 +291,7 @@ int _group_dump(process* proc, fifo* in_fresh, fifo* out)
 	return 1;
 }
 
-int fql_groupby(dgraph* proc_graph, process* proc)
+int fql_groupby(process* proc)
 {
 	fifo* in_data = proc->fifo_in[0];
 	fifo* in_fresh = proc->fifo_in[1];
@@ -356,7 +328,7 @@ int fql_groupby(dgraph* proc_graph, process* proc)
 	return 1;
 }
 
-int fql_distinct(dgraph* proc_graph, process* proc)
+int fql_distinct(process* proc)
 {
 	group* group = proc->proc_data;
 
@@ -380,7 +352,7 @@ int fql_distinct(dgraph* proc_graph, process* proc)
 	return 1;
 }
 
-int fql_select(dgraph* proc_graph, process* proc)
+int fql_select(process* proc)
 {
 	fqlselect* select = proc->proc_data;
 
@@ -430,7 +402,7 @@ int fql_select(dgraph* proc_graph, process* proc)
 	return ret;
 }
 
-int fql_orderby(dgraph* proc_graph, process* proc)
+int fql_orderby(process* proc)
 {
 	order* order = proc->proc_data;
 	fifo* in = proc->fifo_in[0];
@@ -452,7 +424,7 @@ int fql_orderby(dgraph* proc_graph, process* proc)
 	return 0;
 }
 
-int fql_no_op(dgraph* proc_graph, process* proc)
+int fql_no_op(process* proc)
 {
 	vec** recs = fifo_get(proc->fifo_in[0]);
 	fifo_add(proc->fifo_out[0], recs);

@@ -11,6 +11,8 @@
 #include "util/stringview.h"
 #include "util/util.h"
 
+int _subquery_get_record(reader* reader, record* rec);
+
 reader* reader_construct(reader* self)
 {
 	*self = (reader) {
@@ -66,7 +68,7 @@ int reader_assign(reader* self, table* table)
 		return FQL_GOOD;
 	case IO_SUBQUERY:
 		//self->free__ = &query_free;
-		//self->get_record__ = &_subquery_get_record;
+		self->get_record__ = &_subquery_get_record;
 		//self->get_record_at__ = NULL; /* TODO */
 		//self->reset__ = &_subquery_reset;
 		//self->reader_data = table->schema;
@@ -90,14 +92,12 @@ size_t reader_get_file_size(reader* self)
 	}
 }
 
-/* This becomes a big copy operation because
- * we want to recycle the subquery's record.
- * In theory, you could deadlock a query if
- * we try to persist subquery records into
- * the parent query.
+/* This becomes a big copy operation because.... 
+ * NO it the fuck doesn't... TODO!!
  */
-int reader_subquery_get_record(fqlselect* select, record* rec, vec* sub_recs)
+int _subquery_get_record(reader* reader, record* rec)
 {
+	fqlselect* select = reader->reader_data;
 	vec* sub_col_vec = select->_selection_cols;
 
 	unsigned i = 0;
