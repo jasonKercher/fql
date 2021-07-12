@@ -32,7 +32,7 @@ static const char* _scalar_str[] = {
         "STR",       "SUBSTRING",  "UPPER",    "USER_NAME",     "YEAR",
 };
 
-int _not_implemented(function* fn, union field* f, vec* rec)
+int _not_implemented(function* fn, union field* f, recgroup* unused)
 {
 	fprintf(stderr,
 	        "function not implemented: %s\n",

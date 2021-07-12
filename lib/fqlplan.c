@@ -36,12 +36,13 @@ plan* plan_construct(plan* self, query* query, bool loose_groups)
 	        NULL,         /* op_true */
 	        NULL,         /* op_false */
 	        NULL,         /* current */
-	        NULL,         /* _recgroups */
 	        NULL,         /* root */
 	        query,        /* query */
 	        0,            /* rows_affected */
+	        0,            /* iterations */
 	        0,            /* source_count */
 	        0,            /* plan_id */
+	        false,        /* is_const */
 	        false,        /* has_stepped */
 	        loose_groups, /* loose_groups */
 	};
@@ -157,9 +158,9 @@ int _logicgroup_process(plan* self,
                         bool is_from_having)
 {
 	process* logic_proc = new_(process, "", self);
-	if (is_from_having) {
-		logic_proc->root_group = &self->query->groupby->_roots;
-	}
+	//if (is_from_having) {
+	//	logic_proc->root_group = &self->query->groupby->_roots;
+	//}
 	logic_proc->action__ = &fql_logic;
 	logic_proc->proc_data = lg;
 	try_(_logic_to_process(self, logic_proc, lg));
@@ -244,25 +245,25 @@ int _from(plan* self, query* query)
 		               "stream read");
 
 		from_proc = new_(process, action_msg.data, self);
-		from_proc->action__ = &fql_read;
+		from_proc->root_fifo = 0;
 		from_node = dgraph_add_data(self->processes, from_proc);
+		from_node->is_root = true;
 		from_proc->proc_data = table_iter;
 	} else {
 		from_proc = new_(process, "subquery select", self);
-		from_proc->action__ = &fql_read_subquery;
-		from_proc->root_fifo = 1;
+		from_proc->action__ = &fql_read;
+		//from_proc->root_fifo = 1;
 		from_node = dgraph_add_data(self->processes, from_proc);
-		from_node->is_root = true;
+		//from_node->is_root = true;
 		try_(_build(table_iter->subquery, from_node, self->loose_groups, false));
 		plan* subquery_plan = table_iter->subquery->plan;
 		process* sub_true_proc = subquery_plan->op_true->data;
 		fqlselect* sub_select = sub_true_proc->proc_data;
 		from_proc->proc_data = sub_select;
-		from_proc->subquery_plan_id = subquery_plan->plan_id;
 		dgraph_consume(self->processes, subquery_plan->processes);
 		subquery_plan->processes = NULL;
 	}
-	from_node->is_root = true;
+	from_proc->action__ = &fql_read;
 
 	self->current->out[0] = from_node;
 	self->current = from_node;
@@ -314,6 +315,7 @@ int _from(plan* self, query* query)
 			table_iter->read_proc = read_proc;
 			read_proc->proc_data = table_iter;
 			read_proc->is_secondary = true;
+			read_proc->root_fifo = 0;
 			read_node->is_root = true;
 
 			join_node = dgraph_add_data(self->processes, join_proc);
@@ -374,20 +376,20 @@ void _group(plan* self, query* query)
 		group_proc->action__ = &fql_groupby;
 		group_proc->proc_data = query->groupby;
 		group_proc->wait_for_in0_end = true;
-		group_proc->root_fifo = 1;
+		//group_proc->root_fifo = 1;
 		group_cat_description(query->groupby, group_proc);
 		dnode* group_node = dgraph_add_data(self->processes, group_proc);
 		vec_push_back(&query->groupby->_roots, &group_node);
-		group_node->is_root = true;
+		//group_node->is_root = true;
 		self->current->out[0] = group_node;
 		self->current = group_node;
 	}
 
 	if (query->distinct) {
 		process* group_proc = new_(process, "DISTINCT ", self);
-		if (query->groupby) {
-			group_proc->root_group = &query->groupby->_roots;
-		}
+		//if (query->groupby) {
+		//	group_proc->root_group = &query->groupby->_roots;
+		//}
 		group_proc->action__ = &fql_distinct;
 		group_proc->proc_data = query->distinct;
 		group_cat_description(query->distinct, group_proc);
@@ -411,10 +413,10 @@ void _operation(plan* self, query* query, dnode* entry, bool is_union)
 	dnode* prev = self->current;
 	prev->out[0] = self->op_true;
 	self->current = self->op_true;
-	if (query->groupby) {
-		process* true_proc = self->op_true->data;
-		true_proc->root_group = &query->groupby->_roots;
-	}
+	//if (query->groupby) {
+	//	process* true_proc = self->op_true->data;
+	//	true_proc->root_group = &query->groupby->_roots;
+	//}
 	_check_all_for_subquery_expression(self->op_true->data,
 	                                   op_get_columns(query->op));
 
@@ -458,53 +460,15 @@ int _union(plan* self, query* aquery, bool loose_groups)
 	return FQL_GOOD;
 }
 
-//void _union2(plan* self, query* aquery)
-//{
-//	if (vec_empty(aquery->unions)) {
-//		return;
-//	}
-//
-//	process* true_proc = self->op_true->data;
-//
-//	query** it = vec_begin(aquery->unions);
-//	for (; it != vec_end(aquery->unions); ++it) {
-//		plan* union_plan = (*it)->plan;
-//		bool is_root = union_plan->op_true->is_root;
-//		process* union_true_proc = NULL;
-//
-//		/* This is a shit method... */
-//		dnode** node_iter = vec_begin(self->processes->nodes);
-//		for (; node_iter != vec_end(self->processes->nodes); ++node_iter) {
-//			if (*node_iter == union_plan->op_true) {
-//				union_true_proc =
-//				        dgraph_remove(self->processes, node_iter);
-//				break;
-//			}
-//		}
-//
-//		/* TODO: this should be impossible...
-//		 *       prove that and remove.
-//		 */
-//		if (union_true_proc == NULL) {
-//			fputs("failed to find union_true_proc\n", stderr);
-//			exit(EXIT_FAILURE);
-//		}
-//
-//		queue_enqueue(&true_proc->queued_results, union_true_proc->fifo_in[0]);
-//		union_true_proc->fifo_in[0] = NULL;
-//		delete_(process, union_true_proc, is_root);
-//	}
-//}
-
 void _order(plan* self, query* query)
 {
 	if (query->orderby == NULL) {
 		return;
 	}
 	process* order_proc = new_(process, "ORDER BY ", self);
-	if (query->groupby) {
-		order_proc->root_group = &query->groupby->_roots;
-	}
+	//if (query->groupby) {
+	//	order_proc->root_group = &query->groupby->_roots;
+	//}
 	_check_all_for_subquery_expression(order_proc, &query->orderby->columns);
 	order_proc->action__ = &fql_orderby;
 	order_proc->proc_data = query->orderby;
@@ -618,23 +582,13 @@ void _make_pipes(plan* self)
 	}
 }
 
-void _unmark_const_is_root(vec* nodes)
-{
-	dnode** it = vec_begin(nodes);
-	for (; it != vec_end(nodes); ++it) {
-		process* proc = (*it)->data;
-		if (proc->is_const) {
-			(*it)->is_root = false;
-		}
-	}
-}
-
 void _mark_roots_const(vec* roots)
 {
 	dnode** it = vec_begin(roots);
 	for (; it != vec_end(roots); ++it) {
 		process* proc = (*it)->data;
 		if (proc->action__ != fql_read) {
+			proc->root_fifo = 0;
 			proc->is_const = true;
 		}
 	}
@@ -802,8 +756,7 @@ void _activate_procs(plan* self)
 
 	unsigned root_size = fifo_base_size * root_process_count;
 
-	self->_recgroups = new_t_(vec, recgroup);
-	vec_resize(self->_recgroups, root_size);
+	self->root = new_t_(fifo, recgroup, root_size);
 
 	unsigned i = 0;
 	for (; i < self->root->buf->size; ++i) {
@@ -811,36 +764,44 @@ void _activate_procs(plan* self)
 		recgroup_construct(rg, i);
 	}
 
-	self->root = new_t_(fifo, recgroup*, root_size);
-
-	//if (self->is_const) {
-	//	fifo_advance(self->fifo_in[self->root_fifo]);
-	//	return;
-	//}
-	fifo_set_full(self->root);
-
 	vec* node_vec = self->processes->nodes;
 	dnode** nodes = vec_begin(node_vec);
 
-	/* Unroll the first few for easy tracking */
-	process_activate(*nodes, self);
+	dnode** root_node = vec_begin(self->processes->_roots);
+	process* first_root = (*root_node)->data;
+
+	if (first_root->is_const) {
+		self->is_const = true;
+		fifo_advance(self->root);
+	} else {
+		self->is_const = false;
+		fifo_set_full(self->root);
+	}
+
+	/* (*nodes)->data is passing the process...
+	 * in the ugliest possible way.
+	 *
+	 * This could all be done using the bottom loop,
+	 * but I unrolled a few for easier tracking.
+	 */
+	process_activate((*nodes)->data, self, fifo_base_size);
 	if (++nodes == vec_end(node_vec))
 		return;
-	process_activate(*nodes, self);
+	process_activate((*nodes)->data, self, fifo_base_size);
 	if (++nodes == vec_end(node_vec))
 		return;
-	process_activate(*nodes, self);
+	process_activate((*nodes)->data, self, fifo_base_size);
 	if (++nodes == vec_end(node_vec))
 		return;
-	process_activate(*nodes, self);
+	process_activate((*nodes)->data, self, fifo_base_size);
 	if (++nodes == vec_end(node_vec))
 		return;
-	process_activate(*nodes, self);
+	process_activate((*nodes)->data, self, fifo_base_size);
 	if (++nodes == vec_end(node_vec))
 		return;
-	process_activate(*nodes, self);
+	process_activate((*nodes)->data, self, fifo_base_size);
 
 	for (++nodes; nodes != vec_end(node_vec); ++nodes) {
-		process_activate(*nodes, self);
+		process_activate((*nodes)->data, self, fifo_base_size);
 	}
 }

@@ -1,17 +1,20 @@
 #ifndef COLUMN_H
 #define COLUMN_H
 
-#include "fqlimits.h"
 #include "table.h"
 #include "field.h"
-#include "util/stringview.h"
+#include "record.h"
+#include "fqlimits.h"
 #include "util/stringy.h"
+
+struct stringview;
 
 /** expression **/
 enum expr_type {
 	EXPR_UNDEFINED,
-	EXPR_FULL_RECORD, /* This is for keyword __REC */
 	EXPR_COLUMN_NAME,
+	EXPR_FULL_RECORD, /* This is for keyword __REC */
+	EXPR_GROUPING,
 	EXPR_CONST,
 	EXPR_ASTERISK,
 	EXPR_FUNCTION,
@@ -36,7 +39,6 @@ struct column {
 	unsigned location;
 	unsigned width;
 	int src_idx;
-	bool is_resolved_to_group;
 	bool descending;
 };
 typedef struct column column;
@@ -49,8 +51,8 @@ void column_cat_description(struct column* col, string*);
 int column_try_assign_source(struct column*, struct table*);
 
 /* data access */
-int column_get_int(long*, struct column*, struct vec*);
-int column_get_float(double*, struct column*, struct vec*);
-int column_get_stringview(struct stringview*, struct column*, struct vec*);
+int column_get_int(long*, struct column*, struct recgroup*);
+int column_get_float(double*, struct column*, struct recgroup*);
+int column_get_stringview(struct stringview*, struct column*, struct recgroup*);
 
 #endif /* COLUMN_H */

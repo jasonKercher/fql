@@ -15,7 +15,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					order.h order.c \
 					operation.h operation.c \
 					io.h \
-					reader.h reader.c libcsvread.c fixedread.c \
+					reader.h reader.c libcsvread.c fixedread.c subquery.c \
 					writer.h writer.c libcsvwrite.c fixedwrite.c \
 					logic.h logic.c fqllogic.c like.c inlist.c\
 					fqlselect.h fqlselect.c \

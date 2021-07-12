@@ -11,14 +11,11 @@
 #include "util/stringview.h"
 #include "util/util.h"
 
-int _subquery_get_record(reader* reader, record* rec);
-
 reader* reader_construct(reader* self)
 {
 	*self = (reader) {
 	        IO_UNDEFINED, /* type */
 	        NULL,         /* reader_data */
-	        NULL,         /* subquery_recs */
 	        NULL,         /* get_record__ */
 	        NULL,         /* get_record_at__ */
 	        NULL,         /* free__ */
@@ -67,11 +64,11 @@ int reader_assign(reader* self, table* table)
 		fail_if_(fixedreader_open(self, string_c_str(&self->file_name)));
 		return FQL_GOOD;
 	case IO_SUBQUERY:
-		//self->free__ = &query_free;
-		self->get_record__ = &_subquery_get_record;
-		//self->get_record_at__ = NULL; /* TODO */
-		//self->reset__ = &_subquery_reset;
-		//self->reader_data = table->schema;
+		self->free__ = &subquery_free;
+		self->get_record__ = &subquery_get_record;
+		self->get_record_at__ = &subquery_get_record_at;
+		self->reset__ = &subquery_reset;
+		// reader_data set in schema.c
 		return FQL_GOOD;
 	default:
 		fprintf(stderr, "%d: unknown read_type\n", self->type);
@@ -92,26 +89,3 @@ size_t reader_get_file_size(reader* self)
 	}
 }
 
-/* This becomes a big copy operation because.... 
- * NO it the fuck doesn't... TODO!!
- */
-int _subquery_get_record(reader* reader, record* rec)
-{
-	fqlselect* select = reader->reader_data;
-	vec* sub_col_vec = select->_selection_cols;
-
-	unsigned i = 0;
-	column** sub_cols = vec_begin(sub_col_vec);
-
-	for (; i < sub_col_vec->size; ++i) {
-		stringview sv;
-		column_get_stringview(&sv, sub_cols[i], sub_recs);
-		string* s = vec_at(rec->_field_data, i);
-		string_copy_from_stringview(s, &sv);
-		stringview* rec_sv = vec_at(rec->fields, i);
-		rec_sv->data = s->data;
-		rec_sv->len = s->size;
-	}
-
-	return FQL_GOOD;
-}

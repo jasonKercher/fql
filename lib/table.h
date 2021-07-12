@@ -1,12 +1,11 @@
 #ifndef TABLE_H
 #define TABLE_H
 
-#include "util/stack.h"
-#include "util/hashmap.h"
-#include "util/stringy.h"
 #include "query.h"
 #include "schema.h"
 #include "fqlimits.h"
+#include "util/hashmap.h"
+#include "util/stringy.h"
 
 enum source_type {
 	SOURCE_TABLE,
@@ -47,7 +46,7 @@ struct hashjoin {
 	multimap* hash_data;
 	struct column* left_col;
 	struct column* right_col;
-	vec* recs;
+	struct vec* recs;
 	enum join_side state;
 	unsigned rec_idx;
 };

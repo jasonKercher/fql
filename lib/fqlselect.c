@@ -13,12 +13,12 @@
 #include "util/stringy.h"
 #include "util/util.h"
 
-int _select_record(fqlselect*, struct vec* rec);
-int _select_record_api(fqlselect*, struct vec* rec);
-int _select_record_order_api(fqlselect*, struct vec* rec);
-int _select_record_to_list(fqlselect*, struct vec* rec);
-int _select_record_to_const(fqlselect*, struct vec* rec);
-int _select_subquery(fqlselect*, struct vec* rec);
+int _select_record(fqlselect*, struct recgroup*);
+int _select_record_api(fqlselect*, struct recgroup*);
+int _select_record_order_api(fqlselect*, struct recgroup*);
+int _select_record_to_list(fqlselect*, struct recgroup*);
+int _select_record_to_const(fqlselect*, struct recgroup*);
+int _select_subquery(fqlselect*, struct recgroup*);
 
 fqlselect* fqlselect_construct(fqlselect* self)
 {
@@ -385,30 +385,30 @@ void fqlselect_preop(fqlselect* self, query* query)
 	vec_destroy(&header);
 }
 
-int _select_record(fqlselect* self, vec* recs)
+int _select_record(fqlselect* self, recgroup* rg)
 {
 	writer* writer = self->writer;
 	vec* col_vec = self->_selection_cols;
 
-	int ret = writer->write_record__(writer->writer_data, col_vec, recs, NULL);
+	int ret = writer->write_record__(writer->writer_data, col_vec, rg, NULL);
 
-	if (ret == FQL_FAIL || recs == NULL) {
+	if (ret == FQL_FAIL || rg == NULL) {
 		return ret;
 	}
 
 	/* pass offset information along
 	 * in the top record
 	 */
-	record** rec = vec_begin(recs);
-	(*rec)->offset = self->offset;
-	(*rec)->select_len = ret;
+	record* rec = recgroup_rec_at(rg, 0);
+	rec->offset = self->offset;
+	rg->select_len = ret;
 
 	self->offset += ret;
 
 	return ret;
 }
 
-int _select_record_api(fqlselect* self, struct vec* recs)
+int _select_record_api(fqlselect* self, struct recgroup* rg)
 {
 	vec* col_vec = self->_selection_cols;
 
@@ -418,14 +418,14 @@ int _select_record_api(fqlselect* self, struct vec* recs)
 		struct fql_field* field = vec_at(self->api, i);
 		switch (cols[i]->field_type) {
 		case FIELD_INT:
-			try_(column_get_int(&field->data.i, cols[i], recs));
+			try_(column_get_int(&field->data.i, cols[i], rg));
 			break;
 		case FIELD_FLOAT:
-			try_(column_get_float(&field->data.f, cols[i], recs));
+			try_(column_get_float(&field->data.f, cols[i], rg));
 			break;
 		case FIELD_STRING: {
 			stringview sv;
-			try_(column_get_stringview(&sv, cols[i], recs));
+			try_(column_get_stringview(&sv, cols[i], rg));
 			string* s = field->_in;
 			string_copy_from_stringview(s, &sv);
 			field->data.s = s->data;
@@ -438,7 +438,7 @@ int _select_record_api(fqlselect* self, struct vec* recs)
 	return 1;
 }
 
-int _select_record_order_api(fqlselect* self, struct vec* recs)
+int _select_record_order_api(fqlselect* self, struct recgroup* rg)
 {
 	FILE* order_input = writer_get_file(self->writer);
 
@@ -450,21 +450,21 @@ int _select_record_order_api(fqlselect* self, struct vec* recs)
 		switch (cols[i]->field_type) {
 		case FIELD_INT: {
 			long num = 0;
-			try_(column_get_int(&num, cols[i], recs));
+			try_(column_get_int(&num, cols[i], rg));
 			fwrite(&num, sizeof(num), 1, order_input);
 			len += sizeof(num);
 			break;
 		}
 		case FIELD_FLOAT: {
 			double num = 0;
-			try_(column_get_float(&num, cols[i], recs));
+			try_(column_get_float(&num, cols[i], rg));
 			fwrite(&num, sizeof(num), 1, order_input);
 			len += sizeof(num);
 			break;
 		}
 		case FIELD_STRING: {
 			stringview sv;
-			try_(column_get_stringview(&sv, cols[i], recs));
+			try_(column_get_stringview(&sv, cols[i], rg));
 			fwrite(&sv.len, sizeof(sv.len), 1, order_input);
 			fwrite(sv.data, 1, sv.len, order_input);
 			len += sizeof(sv.len) + sv.len;
@@ -473,14 +473,14 @@ int _select_record_order_api(fqlselect* self, struct vec* recs)
 		default:;
 		}
 	}
-	record** rec = vec_begin(recs);
-	(*rec)->offset = self->offset;
+	record* rec = recgroup_rec_at(rg, 0);
+	rec->offset = self->offset;
 	self->offset += len;
 
 	return 1;
 }
 
-int _select_record_to_list(fqlselect* self, vec* recs)
+int _select_record_to_list(fqlselect* self, recgroup* rg)
 {
 	set* list = self->list_data;
 
@@ -489,19 +489,19 @@ int _select_record_to_list(fqlselect* self, vec* recs)
 	switch (col->field_type) {
 	case FIELD_INT: {
 		long num = 0;
-		try_(column_get_int(&num, col, recs));
+		try_(column_get_int(&num, col, rg));
 		set_nadd(list, (char*)&num, sizeof(num));
 		return 1;
 	}
 	case FIELD_FLOAT: {
 		double num = 0;
-		try_(column_get_float(&num, col, recs));
+		try_(column_get_float(&num, col, rg));
 		set_nadd(list, (char*)&num, sizeof(num));
 		return 1;
 	}
 	case FIELD_STRING: {
 		stringview sv;
-		try_(column_get_stringview(&sv, col, recs));
+		try_(column_get_stringview(&sv, col, rg));
 		set_nadd(list, sv.data, sv.len);
 		return 1;
 	}
@@ -511,7 +511,7 @@ int _select_record_to_list(fqlselect* self, vec* recs)
 	}
 }
 
-int _select_record_to_const(fqlselect* self, vec* recs)
+int _select_record_to_const(fqlselect* self, recgroup* rg)
 {
 	//bool fail_if_on_result = (self->const_dest->expr == EXPR_CONST) {
 	if (self->const_dest->expr == EXPR_CONST) {
@@ -527,19 +527,19 @@ int _select_record_to_const(fqlselect* self, vec* recs)
 	switch (col->field_type) {
 	case FIELD_INT: {
 		long num = 0;
-		try_(column_get_int(&num, col, recs));
+		try_(column_get_int(&num, col, rg));
 		self->const_dest->field.i = num;
 		return 1;
 	}
 	case FIELD_FLOAT: {
 		double num = 0;
-		try_(column_get_float(&num, col, recs));
+		try_(column_get_float(&num, col, rg));
 		self->const_dest->field.f = num;
 		return 1;
 	}
 	case FIELD_STRING: {
 		stringview sv;
-		try_(column_get_stringview(&sv, col, recs));
+		try_(column_get_stringview(&sv, col, rg));
 		string_copy_from_stringview(&self->const_dest->buf, &sv);
 		self->const_dest->field.s = &self->const_dest->buf;
 		return 1;
@@ -554,7 +554,7 @@ int _select_record_to_const(fqlselect* self, vec* recs)
  * to take advantage of the fact that fql_select will
  * move through all unions via fqlselect_next_union.
  */
-int _select_subquery(fqlselect* self, vec* recs)
+int _select_subquery(fqlselect* self, recgroup* rg)
 {
 	return FQL_GOOD;
 }

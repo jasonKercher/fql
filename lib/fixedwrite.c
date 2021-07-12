@@ -151,7 +151,10 @@ const char* fixedwriter_get_tempname(fixedwriter* self)
 	return _get_filename(self);
 }
 
-int fixedwriter_write_record(void* writer_data, vec* col_vec, vec* recs, FILE* outstream)
+int fixedwriter_write_record(void* writer_data,
+                             vec* col_vec,
+                             recgroup* rg,
+                             FILE* outstream)
 {
 	fixedwriter* self = writer_data;
 
@@ -170,10 +173,10 @@ int fixedwriter_write_record(void* writer_data, vec* col_vec, vec* recs, FILE* o
 	for (; i < col_vec->size; ++i) {
 		stringview sv;
 		if (cols[i]->expr == EXPR_ASTERISK) {
-			record** rec = vec_at(recs, cols[i]->src_idx);
-			sv = (*rec)->rec_raw;
+			record* rec = recgroup_rec_at(rg, cols[i]->src_idx);
+			sv = rec->rec_ref;
 		} else {
-			try_(column_get_stringview(&sv, cols[i], recs));
+			try_(column_get_stringview(&sv, cols[i], rg));
 		}
 		fprintf(self->file, "%.*s", sv.len, sv.data);
 		len += sv.len;

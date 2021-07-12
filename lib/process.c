@@ -83,12 +83,12 @@ void process_activate(process* self, plan* plan, unsigned fifo_size)
 	dnode** it = vec_begin(self->union_end_nodes);
 	for (; it != vec_end(self->union_end_nodes); ++it) {
 		process* select_proc = (*it)->data;
-		select_proc->fifo_out[0] = new_t_(fifo, vec*, fifo_size);
+		select_proc->fifo_out[0] = new_t_(fifo, recgroup, fifo_size);
 		queue_enqueue(&self->queued_results, select_proc->fifo_out[0]);
 	}
 
 	if (self->fifo_in[0] == NULL) {
-		self->fifo_in[0] = new_t_(fifo, vec*, fifo_size);
+		self->fifo_in[0] = new_t_(fifo, recgroup, fifo_size);
 	}
 	if (self->has_second_input) {
 		/* should never happen */
@@ -96,7 +96,7 @@ void process_activate(process* self, plan* plan, unsigned fifo_size)
 			fputs("Useless has_second_input\n", stderr);
 			return;
 		}
-		self->fifo_in[1] = new_t_(fifo, vec*, fifo_size);
+		self->fifo_in[1] = new_t_(fifo, recgroup, fifo_size);
 	}
 }
 
@@ -137,6 +137,10 @@ void process_enable(process* self)
  */
 int _exec_one_pass(plan* plan, dgraph* proc_graph)
 {
+	if (++plan->iterations == 2 && plan->is_const) {
+		return 0;
+	}
+
 	dnode* proc_node = NULL;
 	process* self = NULL;
 	int run_count = 0;
@@ -191,7 +195,7 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 			continue;
 		}
 
-		int ret = try_(self->action__(proc_graph, self));
+		int ret = try_(self->action__(self));
 
 		if (self->wait_for_in0) {
 			++run_count;
@@ -284,7 +288,7 @@ void* _thread_exec(void* data)
 				fifo_wait_for_get(out1);
 			}
 		}
-		int ret = self->action__(tdata->proc_graph, self);
+		int ret = self->action__(self);
 
 		/* TODO: what is best practice here? */
 		if (ret == FQL_FAIL) {

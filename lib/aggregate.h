@@ -1,11 +1,11 @@
 #ifndef AGGREGATE_H
 #define AGGREGATE_H
 
+#include "field.h"
 #include "query.h"
 #include "column.h"
-#include "field.h"
-#include "util/stringy.h"
 #include "util/vec.h"
+#include "util/stringy.h"
 
 struct aggresult {
 	union {
@@ -21,7 +21,7 @@ struct aggregate;
 typedef int (*aggregate_fn)(struct aggregate*,
                             struct group*,
                             struct aggresult*,
-                            struct vec* rec);
+                            struct recgroup* rec);
 
 struct aggregate {
 	aggregate_fn call__;
@@ -41,17 +41,17 @@ const char* aggregate_get_name(struct aggregate*);
 void aggregate_add_column(struct aggregate*, struct column*);
 int aggregate_resolve(struct aggregate*, struct column*);
 
-int fql_count(struct aggregate*, struct group*, struct aggresult*, struct vec*);
+int fql_count(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
 
-int fql_min_i(struct aggregate*, struct group*, struct aggresult*, struct vec*);
-int fql_min_f(struct aggregate*, struct group*, struct aggresult*, struct vec*);
-int fql_min_s(struct aggregate*, struct group*, struct aggresult*, struct vec*);
+int fql_min_i(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
+int fql_min_f(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
+int fql_min_s(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
 
-int fql_max_i(struct aggregate*, struct group*, struct aggresult*, struct vec*);
-int fql_max_f(struct aggregate*, struct group*, struct aggresult*, struct vec*);
-int fql_max_s(struct aggregate*, struct group*, struct aggresult*, struct vec*);
+int fql_max_i(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
+int fql_max_f(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
+int fql_max_s(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
 
-int fql_sum_i(struct aggregate*, struct group*, struct aggresult*, struct vec*);
-int fql_sum_f(struct aggregate*, struct group*, struct aggresult*, struct vec*);
+int fql_sum_i(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
+int fql_sum_f(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
 
 #endif /* AGGREGATE_H */

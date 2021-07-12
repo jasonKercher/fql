@@ -29,7 +29,6 @@ column* column_construct(column* col,
 	        0,               /* location */
 	        0,               /* width */
 	        0,               /* src_idx */
-	        false,           /* is_resolved_to_group */
 	        false            /* descending */
 	};
 
@@ -37,12 +36,11 @@ column* column_construct(column* col,
 	string_construct_from_char_ptr(&col->table_name, table_name);
 
 	switch (expr) {
+	case EXPR_GROUPING:
 	case EXPR_FULL_RECORD:
 	case EXPR_COLUMN_NAME:
 		string_construct_from_char_ptr(&col->alias, data);
 		string_construct_from_char_ptr(&col->name, data);
-		//string_copy(&col->buf, &col->alias);
-		//col->field.s = data;
 		return col; /* skip alias construct */
 	case EXPR_FUNCTION:
 		col->field.fn = data;
@@ -83,7 +81,6 @@ void column_destroy(void* generic_col)
 void column_link(struct column* dest, struct column* src)
 {
 	dest->data_source = src;
-	//dest->expr = src->expr;
 	dest->field_type = src->field_type;
 
 	if (src->expr == EXPR_AGGREGATE) {
@@ -103,6 +100,7 @@ void column_link(struct column* dest, struct column* src)
 void column_cat_description(column* col, string* msg)
 {
 	switch (col->expr) {
+	case EXPR_GROUPING:
 	case EXPR_FULL_RECORD:
 	case EXPR_COLUMN_NAME:
 		string_append(msg, &col->alias);
@@ -183,26 +181,27 @@ int column_try_assign_source(column* col, table* table)
  *       type. The best way to handle this would be to set
  *       the type during parsing.
  */
-int column_get_int(long* ret, column* col, vec* recs)
+int column_get_int(long* ret, column* col, recgroup* rg)
 {
 	switch (col->expr) {
 	case EXPR_FULL_RECORD: {
-		record** rec = vec_at(recs, col->src_idx);
-		stringview* sv = &(*rec)->rec_raw;
+		record* rec = recgroup_rec_at(rg, col->src_idx);
+		stringview* sv = &rec->rec_ref;
 		string_copy_from_stringview(&col->buf, sv);
 		fail_if_(str2long(ret, col->buf.data));
 		return FQL_GOOD;
 	}
+	case EXPR_GROUPING:
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		column* src_col = col->data_source;
-		record** rec = vec_at(recs, src_col->src_idx);
-		if ((*rec)->fields->size <= src_col->index) {
+		record* rec = recgroup_rec_at(rg, src_col->src_idx);
+		if (rec->fields.size <= src_col->index) {
 			string_clear(&col->buf);
 			*ret = 0;
 			return FQL_GOOD;
 		}
-		stringview* sv = vec_at((*rec)->fields, src_col->index);
+		stringview* sv = vec_at(&rec->fields, src_col->index);
 		string_copy_from_stringview(&col->buf, sv);
 		fail_if_(str2long(ret, col->buf.data));
 		return FQL_GOOD;
@@ -215,7 +214,7 @@ int column_get_int(long* ret, column* col, vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		try_(func->call__(func, &new_field, recs));
+		try_(func->call__(func, &new_field, rg));
 		try_(field_to_int(ret, &new_field, &new_field_type));
 		break;
 	}
@@ -230,26 +229,27 @@ int column_get_int(long* ret, column* col, vec* recs)
 	return FQL_GOOD;
 }
 
-int column_get_float(double* ret, column* col, vec* recs)
+int column_get_float(double* ret, column* col, recgroup* rg)
 {
 	switch (col->expr) {
 	case EXPR_FULL_RECORD: {
-		record** rec = vec_at(recs, col->src_idx);
-		stringview* sv = &(*rec)->rec_raw;
+		record* rec = recgroup_rec_at(rg, col->src_idx);
+		stringview* sv = &rec->rec_ref;
 		string_copy_from_stringview(&col->buf, sv);
 		fail_if_(str2double(ret, col->buf.data));
 		return FQL_GOOD;
 	}
+	case EXPR_GROUPING:
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		column* src_col = col->data_source;
-		record** rec = vec_at(recs, src_col->src_idx);
-		if ((*rec)->fields->size <= src_col->index) {
+		record* rec = recgroup_rec_at(rg, src_col->src_idx);
+		if (rec->fields.size <= src_col->index) {
 			string_clear(&col->buf);
 			*ret = 0;
 			return FQL_GOOD;
 		}
-		stringview* sv = vec_at((*rec)->fields, src_col->index);
+		stringview* sv = vec_at(&rec->fields, src_col->index);
 		string_copy_from_stringview(&col->buf, sv);
 		fail_if_(str2double(ret, col->buf.data));
 		return FQL_GOOD;
@@ -262,7 +262,7 @@ int column_get_float(double* ret, column* col, vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		try_(func->call__(func, &new_field, recs));
+		try_(func->call__(func, &new_field, rg));
 		try_(field_to_float(ret, &new_field, &new_field_type));
 		break;
 	}
@@ -277,25 +277,26 @@ int column_get_float(double* ret, column* col, vec* recs)
 	return FQL_GOOD;
 }
 
-int column_get_stringview(stringview* ret, column* col, vec* recs)
+int column_get_stringview(stringview* ret, column* col, recgroup* rg)
 {
 	switch (col->expr) {
 	case EXPR_FULL_RECORD: {
-		record** rec = vec_at(recs, col->src_idx);
-		*ret = (*rec)->rec_raw;
+		record* rec = recgroup_rec_at(rg, col->src_idx);
+		*ret = rec->rec_ref;
 		return FQL_GOOD;
 	}
+	case EXPR_GROUPING:
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		column* src_col = col->data_source;
-		record** rec = vec_at(recs, src_col->src_idx);
-		if ((*rec)->fields->size <= src_col->index) {
+		record* rec = recgroup_rec_at(rg, src_col->src_idx);
+		if (rec->fields.size <= src_col->index) {
 			string_clear(&col->buf);
 			ret->data = col->buf.data;
 			ret->len = 0;
 			return FQL_GOOD;
 		}
-		stringview* sv = vec_at((*rec)->fields, src_col->index);
+		stringview* sv = vec_at(&rec->fields, src_col->index);
 		ret->data = sv->data;
 		ret->len = sv->len;
 		return FQL_GOOD;
@@ -308,7 +309,7 @@ int column_get_stringview(stringview* ret, column* col, vec* recs)
 			new_field.s = &col->buf;
 			string_clear(new_field.s);
 		}
-		try_(func->call__(func, &new_field, recs));
+		try_(func->call__(func, &new_field, rg));
 		try_(field_to_stringview(ret, &col->buf, &new_field, &new_field_type));
 		break;
 	}

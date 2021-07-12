@@ -2,15 +2,15 @@
 #define SELECT_H
 
 #include "query.h"
-#include "operation.h"
 #include "writer.h"
 #include "schema.h"
 #include "column.h"
+#include "operation.h"
 
 struct record;
 struct fqlselect;
 struct inlist;
-typedef int (*select_fn)(struct fqlselect*, struct vec*);
+typedef int (*select_fn)(struct fqlselect*, struct recgroup*);
 
 struct fqlselect {
 	enum op oper_type;

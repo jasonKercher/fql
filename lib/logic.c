@@ -203,10 +203,12 @@ unsigned logicgroup_get_condition_count(logicgroup* lg)
 }
 
 /* essentially the same as logicgroup_eval.
- * except all logic is true except the one provided.
+ * All logic is assumed true except the one provided.
  * the point is to determine if that self MUST be
  * true for the group to evaluate to true. I believe
- * ignoring negation here is correct.
+ * ignoring negation here is correct. The purpose 
+ * being, if it must be true, it is a candidate for
+ * hash join logic.
  */
 int logic_can_be_false(logicgroup* lg, logic* check_logic)
 {
@@ -231,18 +233,20 @@ int logic_can_be_false(logicgroup* lg, logic* check_logic)
 	return ret;
 }
 
-/* evaluate the self statement
+/* evaluate the logic expression.
  * the skip argument is for logic that can
  * be assumed true because it was evaluated
- * prior to calling this function.
+ * prior to calling this function. Most likely
+ * the skip logic will be the evaluation of a
+ * hash join.
  */
-int logicgroup_eval(logicgroup* lg, vec* recs, logic* skip)
+int logicgroup_eval(logicgroup* lg, recgroup* rg, logic* skip)
 {
 	if (lg->type == LG_NOT && lg->condition != NULL) {
 		if (lg->condition == skip) {
 			return 1;
 		}
-		int ret = try_(lg->condition->logic__(lg->condition, recs));
+		int ret = try_(lg->condition->logic__(lg->condition, rg));
 		if (lg->negation) {
 			return !ret;
 		}
@@ -252,7 +256,7 @@ int logicgroup_eval(logicgroup* lg, vec* recs, logic* skip)
 	int ret = 0;
 	logicgroup** it = vec_begin(&lg->items);
 	for (; it != vec_end(&lg->items); ++it) {
-		ret = try_(logicgroup_eval(*it, recs, skip));
+		ret = try_(logicgroup_eval(*it, rg, skip));
 		if (lg->negation) {
 			ret = !ret;
 		}

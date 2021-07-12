@@ -67,7 +67,7 @@ void group_cat_description(group* self, process* proc)
 	}
 }
 
-int _add_agg_result(group* self, vec* recs)
+int _add_agg_result(group* self, recgroup* rg)
 {
 	aggregate** it = vec_begin(&self->aggregates);
 	for (; it != vec_end(&self->aggregates); ++it) {
@@ -76,23 +76,24 @@ int _add_agg_result(group* self, vec* recs)
 		if ((*it)->data_type == FIELD_STRING) {
 			string_construct(&result->data.s);
 		}
-		try_((*it)->call__(*it, self, result, recs));
+		try_((*it)->call__(*it, self, result, rg));
 		++result->qty;
 	}
 	return FQL_GOOD;
 }
 
-int _update_agg_result(group* self, vec* recs, unsigned idx)
+int _update_agg_result(group* self, recgroup* rg, unsigned idx)
 {
 	aggregate** it = vec_begin(&self->aggregates);
 	for (; it != vec_end(&self->aggregates); ++it) {
 		struct aggresult* result = vec_at(&(*it)->results, idx);
-		try_((*it)->call__(*it, self, result, recs));
+		try_((*it)->call__(*it, self, result, rg));
 		++result->qty;
 	}
 	return FQL_GOOD;
 }
-int group_record(group* self, vec* recs)
+
+int group_record(group* self, recgroup* rg)
 {
 	size_t org_size = flex_size(&self->group_data);
 
@@ -105,20 +106,18 @@ int group_record(group* self, vec* recs)
 		}
 		switch (cols[i]->field_type) {
 		case FIELD_STRING:
-			try_(column_get_stringview(sv, cols[i], recs));
-			flex_push_back(&self->group_data,
-			               (void*)sv->data,
-			               sv->len);
+			try_(column_get_stringview(sv, cols[i], rg));
+			flex_push_back(&self->group_data, (void*)sv->data, sv->len);
 			break;
 		case FIELD_INT: {
 			long num_i = 0;
-			try_(column_get_int(&num_i, cols[i], recs));
+			try_(column_get_int(&num_i, cols[i], rg));
 			flex_push_back_str_int(&self->group_data, num_i);
 			break;
 		}
 		case FIELD_FLOAT: {
 			double num_f = 0;
-			try_(column_get_float(&num_f, cols[i], recs));
+			try_(column_get_float(&num_f, cols[i], rg));
 			flex_push_back_str_float(&self->group_data, num_f);
 		}
 		default:;
@@ -133,14 +132,12 @@ int group_record(group* self, vec* recs)
 	unsigned* idx_ptr = compositemap_get(&self->val_map, &self->_composite);
 	int ret = 0;
 	if (idx_ptr == NULL) {
-		compositemap_set(&self->val_map,
-		                 &self->_composite,
-		                 &group_count);
-		try_(_add_agg_result(self, recs));
+		compositemap_set(&self->val_map, &self->_composite, &group_count);
+		try_(_add_agg_result(self, rg));
 		ret = 1;
 	} else {
 		flex_resize(&self->group_data, org_size);
-		try_(_update_agg_result(self, recs, *idx_ptr));
+		try_(_update_agg_result(self, rg, *idx_ptr));
 	}
 
 	return ret;
@@ -177,15 +174,17 @@ int group_dump_record(group* self, record* rec)
 	size_t idx = self->_composite.size * self->_dump_idx;
 
 	column** group_cols = vec_begin(&self->columns);
-	stringview* rec_svs = vec_begin(rec->fields);
+	stringview* rec_svs = vec_begin(&rec->fields);
+
+	record_clear_strings(rec, rec->group_strings);
 
 	unsigned i = 0;
 	for (; i < self->columns.size; ++i) {
 		if (group_cols[i]->expr == EXPR_AGGREGATE) {
-			_read_aggregate(group_cols[i],
-			                vec_at(rec->_field_data, i),
-			                &rec_svs[i],
-			                self->_dump_idx);
+			string* s = record_generate_string(rec,
+			                                   rec->group_strings,
+			                                   &rec->max_group_count);
+			_read_aggregate(group_cols[i], s, &rec_svs[i], self->_dump_idx);
 			continue;
 		}
 		rec_svs[i] = flex_pair_at(&self->group_data, idx++);

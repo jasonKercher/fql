@@ -73,12 +73,12 @@ int _get_rev_byte_count(const char* s, unsigned limit)
 
 /** ret is assumed to be of the correct type **/
 
-int fql_len(function* fn, union field* ret, vec* recs)
+int fql_len(function* fn, union field* ret, recgroup* rg)
 {
 	column** arg = vec_begin(fn->args);
 	stringview sv;
 
-	try_(column_get_stringview(&sv, *arg, recs));
+	try_(column_get_stringview(&sv, *arg, rg));
 
 	unsigned idx = 0;
 	int bytes = 1;
@@ -100,7 +100,7 @@ int fql_len(function* fn, union field* ret, vec* recs)
 	return FQL_GOOD;
 }
 
-int fql_datalength(function* fn, union field* ret, vec* recs)
+int fql_datalength(function* fn, union field* ret, recgroup* rg)
 {
 	column** arg = vec_begin(fn->args);
 	switch ((*arg)->field_type) {
@@ -117,20 +117,20 @@ int fql_datalength(function* fn, union field* ret, vec* recs)
 	}
 
 	stringview sv;
-	try_(column_get_stringview(&sv, *arg, recs));
+	try_(column_get_stringview(&sv, *arg, rg));
 
 	ret->i = sv.len;
 
 	return FQL_GOOD;
 }
 
-int fql_left(function* fn, union field* ret, vec* recs)
+int fql_left(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	stringview sv;
-	try_(column_get_stringview(&sv, args[0], recs));
+	try_(column_get_stringview(&sv, args[0], rg));
 	long n = 0;
-	try_(column_get_int(&n, args[1], recs));
+	try_(column_get_int(&n, args[1], rg));
 
 	if (n > sv.len) {
 		string_strncpy(ret->s, sv.data, sv.len);
@@ -156,13 +156,13 @@ int fql_left(function* fn, union field* ret, vec* recs)
 	return FQL_GOOD;
 }
 
-int fql_right(function* fn, union field* ret, vec* recs)
+int fql_right(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	stringview sv;
-	column_get_stringview(&sv, args[0], recs);
+	column_get_stringview(&sv, args[0], rg);
 	long n = 0;
-	try_(column_get_int(&n, args[1], recs));
+	try_(column_get_int(&n, args[1], rg));
 
 	if (n > sv.len) {
 		string_strncpy(ret->s, sv.data, n);
@@ -189,16 +189,16 @@ int fql_right(function* fn, union field* ret, vec* recs)
 	return FQL_GOOD;
 }
 
-int fql_substring(function* fn, union field* ret, vec* recs)
+int fql_substring(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	stringview sv;
-	try_(column_get_stringview(&sv, args[0], recs));
+	try_(column_get_stringview(&sv, args[0], rg));
 	long start = 0;
-	try_(column_get_int(&start, args[1], recs));
+	try_(column_get_int(&start, args[1], rg));
 	--start;
 	long n = 0;
-	try_(column_get_int(&n, args[2], recs));
+	try_(column_get_int(&n, args[2], rg));
 
 	unsigned idx = 0;
 	int bytes = 0;
@@ -238,39 +238,39 @@ int fql_substring(function* fn, union field* ret, vec* recs)
 }
 
 /* opertor functions */
-int fql_op_plus_i(function* fn, union field* ret, vec* recs)
+int fql_op_plus_i(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], recs));
-	try_(column_get_int(&n1, args[1], recs));
+	try_(column_get_int(&n0, args[0], rg));
+	try_(column_get_int(&n1, args[1], rg));
 
 	ret->i = overflow_safe_add_i(n0, n1);
 
 	return FQL_GOOD;
 }
 
-int fql_op_plus_f(function* fn, union field* ret, vec* recs)
+int fql_op_plus_f(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	try_(column_get_float(&n0, args[0], recs));
-	try_(column_get_float(&n1, args[1], recs));
+	try_(column_get_float(&n0, args[0], rg));
+	try_(column_get_float(&n1, args[1], rg));
 
 	ret->f = n0 + n1;
 
 	return FQL_GOOD;
 }
 
-int fql_op_plus_s(function* fn, union field* ret, vec* recs)
+int fql_op_plus_s(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	stringview s0;
 	stringview s1;
-	column_get_stringview(&s0, args[0], recs);
-	column_get_stringview(&s1, args[1], recs);
+	column_get_stringview(&s0, args[0], rg);
+	column_get_stringview(&s1, args[1], rg);
 
 	string_copy_from_stringview(ret->s, &s0);
 	string_append_stringview(ret->s, &s1);
@@ -278,65 +278,65 @@ int fql_op_plus_s(function* fn, union field* ret, vec* recs)
 	return FQL_GOOD;
 }
 
-int fql_op_minus_i(function* fn, union field* ret, vec* recs)
+int fql_op_minus_i(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], recs));
-	try_(column_get_int(&n1, args[1], recs));
+	try_(column_get_int(&n0, args[0], rg));
+	try_(column_get_int(&n1, args[1], rg));
 
 	ret->i = overflow_safe_minus_i(n0, n1);
 
 	return FQL_GOOD;
 }
 
-int fql_op_minus_f(function* fn, union field* ret, vec* recs)
+int fql_op_minus_f(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	try_(column_get_float(&n0, args[0], recs));
-	try_(column_get_float(&n1, args[1], recs));
+	try_(column_get_float(&n0, args[0], rg));
+	try_(column_get_float(&n1, args[1], rg));
 
 	ret->f = n0 - n1;
 
 	return FQL_GOOD;
 }
 
-int fql_op_mult_i(function* fn, union field* ret, vec* recs)
+int fql_op_mult_i(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], recs));
-	try_(column_get_int(&n1, args[1], recs));
+	try_(column_get_int(&n0, args[0], rg));
+	try_(column_get_int(&n1, args[1], rg));
 
 	ret->i = overflow_safe_multiply_i(n0, n1);
 
 	return FQL_GOOD;
 }
 
-int fql_op_mult_f(function* fn, union field* ret, vec* recs)
+int fql_op_mult_f(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	try_(column_get_float(&n0, args[0], recs));
-	try_(column_get_float(&n1, args[1], recs));
+	try_(column_get_float(&n0, args[0], rg));
+	try_(column_get_float(&n1, args[1], rg));
 
 	ret->f = n0 * n1;
 
 	return FQL_GOOD;
 }
 
-int fql_op_divi_i(function* fn, union field* ret, vec* recs)
+int fql_op_divi_i(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], recs));
-	try_(column_get_int(&n1, args[1], recs));
+	try_(column_get_int(&n0, args[0], rg));
+	try_(column_get_int(&n1, args[1], rg));
 
 	if (n1 == 0) {
 		fputs("division by zero\n", stderr);
@@ -348,13 +348,13 @@ int fql_op_divi_i(function* fn, union field* ret, vec* recs)
 	return FQL_GOOD;
 }
 
-int fql_op_divi_f(function* fn, union field* ret, vec* recs)
+int fql_op_divi_f(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	try_(column_get_float(&n0, args[0], recs));
-	try_(column_get_float(&n1, args[1], recs));
+	try_(column_get_float(&n0, args[0], rg));
+	try_(column_get_float(&n1, args[1], rg));
 
 	if (n1 == 0) {
 		fputs("division by zero\n", stderr);
@@ -366,74 +366,74 @@ int fql_op_divi_f(function* fn, union field* ret, vec* recs)
 	return FQL_GOOD;
 }
 
-int fql_op_mod_i(function* fn, union field* ret, vec* recs)
+int fql_op_mod_i(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], recs));
-	try_(column_get_int(&n1, args[1], recs));
+	try_(column_get_int(&n0, args[0], rg));
+	try_(column_get_int(&n1, args[1], rg));
 
 	ret->i = n0 % n1;
 
 	return FQL_GOOD;
 }
 
-int fql_op_bit_or(function* fn, union field* ret, vec* recs)
+int fql_op_bit_or(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], recs));
-	try_(column_get_int(&n1, args[1], recs));
+	try_(column_get_int(&n0, args[0], rg));
+	try_(column_get_int(&n1, args[1], rg));
 
 	ret->i = n0 | n1;
 
 	return FQL_GOOD;
 }
 
-int fql_op_bit_and(function* fn, union field* ret, vec* recs)
+int fql_op_bit_and(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], recs));
-	try_(column_get_int(&n1, args[1], recs));
+	try_(column_get_int(&n0, args[0], rg));
+	try_(column_get_int(&n1, args[1], rg));
 
 	ret->i = n0 & n1;
 
 	return FQL_GOOD;
 }
 
-int fql_op_bit_xor(function* fn, union field* ret, vec* recs)
+int fql_op_bit_xor(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], recs));
-	try_(column_get_int(&n1, args[1], recs));
+	try_(column_get_int(&n0, args[0], rg));
+	try_(column_get_int(&n1, args[1], rg));
 
 	ret->i = n0 ^ n1;
 
 	return FQL_GOOD;
 }
 
-int fql_op_bit_not(function* fn, union field* ret, vec* recs)
+int fql_op_bit_not(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
-	try_(column_get_int(&n0, args[0], recs));
+	try_(column_get_int(&n0, args[0], rg));
 
 	ret->i = ~n0;
 
 	return FQL_GOOD;
 }
 
-int fql_op_unary_minus_i(function* fn, union field* ret, vec* recs)
+int fql_op_unary_minus_i(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	long n0 = 0;
-	try_(column_get_int(&n0, args[0], recs));
+	try_(column_get_int(&n0, args[0], rg));
 
 	if (n0 == LONG_MIN) {
 		fputs("arithmetic overflow detected\n", stderr);
@@ -445,11 +445,11 @@ int fql_op_unary_minus_i(function* fn, union field* ret, vec* recs)
 	return FQL_GOOD;
 }
 
-int fql_op_unary_minus_f(function* fn, union field* ret, vec* recs)
+int fql_op_unary_minus_f(function* fn, union field* ret, recgroup* rg)
 {
 	column** args = vec_begin(fn->args);
 	double n0 = 0;
-	try_(column_get_float(&n0, args[0], recs));
+	try_(column_get_float(&n0, args[0], rg));
 
 	ret->f = -n0;
 

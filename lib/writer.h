@@ -2,14 +2,14 @@
 #define WRITER_H
 
 #include "io.h"
-#include "util/vec.h"
-#include "util/stringy.h"
+#include "record.h"
 #include "util/util.h"
+#include "util/stringy.h"
 
 typedef struct csv_writer csv_writer;
 typedef struct csv_record csv_record;
 
-int libcsv_write_record(void* writer_data, struct vec*, struct vec*, FILE*);
+int libcsv_write_record(void* writer_data, struct vec*, struct recgroup*, FILE*);
 
 struct fixedwriter {
 	FILE* file;
@@ -27,9 +27,9 @@ int fixedwriter_close(struct fixedwriter*);
 FILE* fixedwriter_get_file(struct fixedwriter*);
 char* fixedwriter_take_filename(struct fixedwriter*);
 const char* fixedwriter_get_tempname(struct fixedwriter*);
-int fixedwriter_write_record(void*, struct vec*, struct vec*, FILE*);
+int fixedwriter_write_record(void*, struct vec*, struct recgroup*, FILE*);
 
-typedef int (*write_fn)(void*, struct vec*, struct vec*, FILE*);
+typedef int (*write_fn)(void*, struct vec*, struct recgroup*, FILE*);
 
 struct writer {
 	enum io type;

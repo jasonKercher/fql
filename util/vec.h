@@ -53,6 +53,7 @@ void vec_shrink_to_fit(struct vec*);
 void vec_pop_back(struct vec*);
 
 void* vec_add_one(struct vec*);
+void* vec_add_one_front(struct vec*);
 void vec_set(struct vec*, size_t, const void*);
 void vec_push_back(struct vec*, const void*);
 

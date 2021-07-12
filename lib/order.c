@@ -109,6 +109,7 @@ int order_preresolve_columns(order* self, fqlselect* select)
 	for (; it != vec_end(&self->columns); ++it) {
 		column** result = NULL;
 		switch ((*it)->expr) {
+		case EXPR_GROUPING:
 		case EXPR_FULL_RECORD:
 		case EXPR_COLUMN_NAME: {
 			vec* cols = multimap_get(select_map, (*it)->alias.data);
@@ -145,12 +146,10 @@ int order_preresolve_columns(order* self, fqlselect* select)
 		}
 		if ((*result)->expr == EXPR_CONST) {
 			column_link(*it, *result);
-			(*it)->is_resolved_to_group = true;
 			continue;
 		}
 		column_link(*it, (*result)->data_source);
-		(*it)->is_resolved_to_group = true;
-		(*it)->expr = EXPR_COLUMN_NAME;
+		(*it)->expr = EXPR_GROUPING;
 	}
 
 	return FQL_GOOD;
@@ -184,13 +183,13 @@ void order_cat_description(order* self, process* proc)
 	}
 }
 
-int order_add_record(order* self, vec* recs)
+int order_add_record(order* self, recgroup* rg)
 {
-	record** top = vec_begin(recs);
+	record* top = recgroup_rec_at(rg, 0);
 	struct _entry entry = {
 	        flex_size(&self->order_data), /* idx */
-	        (*top)->offset,               /* offset */
-	        (*top)->select_len,           /* len */
+	        top->offset,                  /* offset */
+	        rg->select_len,               /* len */
 	};
 
 	column** cols = vec_begin(&self->columns);
@@ -201,19 +200,19 @@ int order_add_record(order* self, vec* recs)
 		case FIELD_INT: {
 			/* NOTE: storing numbers in binary */
 			long num_i = 0;
-			try_(column_get_int(&num_i, cols[i], recs));
+			try_(column_get_int(&num_i, cols[i], rg));
 			flex_push_back_(&self->order_data, &num_i, long);
 			break;
 		}
 		case FIELD_FLOAT: {
 			double num_f = 0;
-			try_(column_get_float(&num_f, cols[i], recs));
+			try_(column_get_float(&num_f, cols[i], rg));
 			flex_push_back_(&self->order_data, &num_f, double);
 			break;
 		}
 		case FIELD_STRING: {
 			stringview sv;
-			try_(column_get_stringview(&sv, cols[i], recs));
+			try_(column_get_stringview(&sv, cols[i], rg));
 			flex_push_back(&self->order_data, (void*)sv.data, sv.len);
 			break;
 		}

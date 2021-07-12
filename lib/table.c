@@ -156,7 +156,7 @@ size_t _guess_row_count(table* self)
 	reader->max_col_idx = 0;
 
 	record rec;
-	record_construct(&rec, 0, 0, false);
+	record_construct(&rec);
 
 	int i = 0;
 	for (; i < 10; ++i) {
@@ -165,7 +165,7 @@ size_t _guess_row_count(table* self)
 		}
 		/* ignore header */
 		if (i) {
-			total_length += rec.rec_raw.len;
+			total_length += rec.rec_ref.len;
 		}
 	}
 

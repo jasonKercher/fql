@@ -226,8 +226,8 @@ int _resolve_file(table* table, int strictness)
 void schema_assign_header(table* table, record* rec, int src_idx)
 {
 	int i = 0;
-	stringview* it = vec_begin(rec->fields);
-	for (; it != vec_end(rec->fields); ++it) {
+	stringview* it = vec_begin(&rec->fields);
+	for (; it != vec_end(&rec->fields); ++it) {
 		string col_str;
 		string_construct_from_stringview(&col_str, it);
 		column* new_col = new_(column, EXPR_COLUMN_NAME, col_str.data, "");
@@ -489,6 +489,7 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		table->schema = select->schema;
 		self = table->schema;
 		table->reader->type = IO_SUBQUERY;
+		table->reader->reader_data = select;
 	} else {
 		/* if we've made it this far, we want to try
 		 * and determine schema by reading the top
@@ -513,7 +514,7 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	}
 
 	record rec;
-	record_construct(&rec, 0, 0, false);
+	record_construct(&rec);
 	table->reader->max_col_idx = INT_MAX;
 	table->reader->get_record__(table->reader, &rec);
 	table->reader->max_col_idx = 0;
@@ -525,11 +526,11 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		schema_assign_header(table, &rec, src_idx);
 	} else {
 		/* TODO: in the future, maybe just set these SQL NULL */
-		column** it = vec_at(self->columns, rec.fields->size);
+		column** it = vec_at(self->columns, rec.fields.size);
 		for (; it != vec_end(self->columns); ++it) {
 			delete_(column, *it);
 		}
-		vec_resize(self->columns, rec.fields->size);
+		vec_resize(self->columns, rec.fields.size);
 		schema_preflight(self);
 	}
 	record_destroy(&rec);
@@ -835,7 +836,6 @@ int _op_find_group(compositemap* expr_map, column* col, vec* key, bool loose_gro
 
 	column** result = compositemap_get(expr_map, key);
 	if (result != NULL) {
-		col->is_resolved_to_group = true;
 		if (loose_groups) {
 			return FQL_GOOD;
 		}
@@ -844,11 +844,7 @@ int _op_find_group(compositemap* expr_map, column* col, vec* key, bool loose_gro
 		}
 		col->src_idx = 0;
 		col->data_source = *result;
-		/* the operation (select) will not be evaluating
-		 * the expression.  it is simply going to read
-		 * from the grouping as if it were a column.
-		 */
-		col->expr = EXPR_COLUMN_NAME;
+		col->expr = EXPR_GROUPING;
 		return FQL_GOOD;
 	}
 
@@ -918,7 +914,7 @@ int _group_validation(query* query, vec* cols, bool loose_groups)
 	vec_construct_(&key, stringview);
 	column** it = vec_begin(cols);
 	for (; it != vec_end(cols); ++it) {
-		if ((*it)->is_resolved_to_group) {
+		if ((*it)->expr == EXPR_GROUPING) {
 			continue;
 		}
 		if (_op_find_group(expr_map, *it, &key, loose_groups)) {

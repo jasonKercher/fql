@@ -4,8 +4,9 @@
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 
-#include "process.h"
 #include "field.h"
+#include "record.h"
+#include "process.h"
 #include "util/dgraph.h"
 #include "util/hashmap.h"
 
@@ -33,7 +34,7 @@ struct logic;
 struct like;
 struct inlist;
 struct query;
-typedef int (*logic_fn)(struct logic*, struct vec*);
+typedef int (*logic_fn)(struct logic*, struct recgroup*);
 
 struct logic {
 	struct column* col[2];
@@ -102,34 +103,34 @@ void logicgroup_destroy(struct logicgroup*);
 
 unsigned logicgroup_get_condition_count(struct logicgroup* lg);
 int logic_can_be_false(struct logicgroup*, struct logic*);
-int logicgroup_eval(struct logicgroup*, struct vec*, struct logic* skip);
+int logicgroup_eval(struct logicgroup*, struct recgroup*, struct logic* skip);
 
 /* logic functions */
-int fql_logic_eq_i(struct logic*, struct vec*);
-int fql_logic_eq_f(struct logic*, struct vec*);
-int fql_logic_eq_s(struct logic*, struct vec*);
-int fql_logic_ne_i(struct logic*, struct vec*);
-int fql_logic_ne_f(struct logic*, struct vec*);
-int fql_logic_ne_s(struct logic*, struct vec*);
-int fql_logic_gt_i(struct logic*, struct vec*);
-int fql_logic_gt_f(struct logic*, struct vec*);
-int fql_logic_gt_s(struct logic*, struct vec*);
-int fql_logic_ge_i(struct logic*, struct vec*);
-int fql_logic_ge_f(struct logic*, struct vec*);
-int fql_logic_ge_s(struct logic*, struct vec*);
-int fql_logic_lt_i(struct logic*, struct vec*);
-int fql_logic_lt_f(struct logic*, struct vec*);
-int fql_logic_lt_s(struct logic*, struct vec*);
-int fql_logic_le_i(struct logic*, struct vec*);
-int fql_logic_le_f(struct logic*, struct vec*);
-int fql_logic_le_s(struct logic*, struct vec*);
-int fql_logic_in_i(struct logic*, struct vec*);
-int fql_logic_in_f(struct logic*, struct vec*);
-int fql_logic_in_s(struct logic*, struct vec*);
-int fql_logic_subin_i(struct logic*, struct vec*);
-int fql_logic_subin_f(struct logic*, struct vec*);
-int fql_logic_subin_s(struct logic*, struct vec*);
-int fql_logic_like(struct logic*, struct vec*);
-int fql_logic_is_null(struct logic*, struct vec*);
+int fql_logic_eq_i(struct logic*, struct recgroup*);
+int fql_logic_eq_f(struct logic*, struct recgroup*);
+int fql_logic_eq_s(struct logic*, struct recgroup*);
+int fql_logic_ne_i(struct logic*, struct recgroup*);
+int fql_logic_ne_f(struct logic*, struct recgroup*);
+int fql_logic_ne_s(struct logic*, struct recgroup*);
+int fql_logic_gt_i(struct logic*, struct recgroup*);
+int fql_logic_gt_f(struct logic*, struct recgroup*);
+int fql_logic_gt_s(struct logic*, struct recgroup*);
+int fql_logic_ge_i(struct logic*, struct recgroup*);
+int fql_logic_ge_f(struct logic*, struct recgroup*);
+int fql_logic_ge_s(struct logic*, struct recgroup*);
+int fql_logic_lt_i(struct logic*, struct recgroup*);
+int fql_logic_lt_f(struct logic*, struct recgroup*);
+int fql_logic_lt_s(struct logic*, struct recgroup*);
+int fql_logic_le_i(struct logic*, struct recgroup*);
+int fql_logic_le_f(struct logic*, struct recgroup*);
+int fql_logic_le_s(struct logic*, struct recgroup*);
+int fql_logic_in_i(struct logic*, struct recgroup*);
+int fql_logic_in_f(struct logic*, struct recgroup*);
+int fql_logic_in_s(struct logic*, struct recgroup*);
+int fql_logic_subin_i(struct logic*, struct recgroup*);
+int fql_logic_subin_f(struct logic*, struct recgroup*);
+int fql_logic_subin_s(struct logic*, struct recgroup*);
+int fql_logic_like(struct logic*, struct recgroup*);
+int fql_logic_is_null(struct logic*, struct recgroup*);
 
 #endif /* LOGIC_H */

@@ -20,7 +20,6 @@ typedef int (*reset_fn)(struct reader*);
 struct reader {
 	enum io type;
 	void* reader_data;
-	struct vec* subquery_recs;
 	read_fn get_record__;
 	read_at_fn get_record_at__;
 	generic_data_fn free__;
@@ -39,18 +38,27 @@ void reader_destroy(struct reader*);
 int reader_assign(struct reader*, struct table*);
 size_t reader_get_file_size(struct reader*);
 
-int reader_subquery_get_record(struct fqlselect*, struct record*, struct vec*);
 
-/**
- * reader types own the data that is passed from
- * process to process. the records pass a vector
- * of fields in the form of read-only stringviews.
+/* Below structures extend struct reader 
+ * via the "reader_data" member. 
  */
-void libcsv_free(void*);
-int libcsv_get_record(struct reader*, struct record*);
-int libcsv_get_record_at(struct reader*, struct record*, const char*);
-int libcsv_reset(struct reader*);
 
+/** subquery **/
+struct subquery {
+	struct fqlselect* select;
+	struct recgroup* _rg_ref;
+	struct record copy_data;
+};
+typedef struct subquery subquery;
+
+struct subquery* subquery_construct(struct subquery*, struct fqlselect*);
+void subquery_free(void*);
+int subquery_get_record(struct reader*, struct record*);
+int subquery_get_record_at(struct reader*, struct record*, const char*);
+int subquery_reset(struct reader*);
+
+
+/** fixedreader **/
 struct fixedreader {
 	char* mmap;
 	char* iter;
@@ -66,5 +74,16 @@ int fixedreader_open(struct reader*, const char* file_name);
 int fixedreader_get_record(struct reader*, struct record*);
 int fixedreader_get_record_at(struct reader*, struct record*, const char*);
 int fixedreader_reset(struct reader*);
+
+
+/* These functions are using libcsv's 
+ * "struct csv_reader" for reader_data.
+ */
+typedef struct csv_reader csv_reader;
+
+void libcsv_free(void*);
+int libcsv_get_record(struct reader*, struct record*);
+int libcsv_get_record_at(struct reader*, struct record*, const char*);
+int libcsv_reset(struct reader*);
 
 #endif /* READER_H */

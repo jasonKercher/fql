@@ -2,11 +2,9 @@
 #define SCHEMA_H
 
 #include "io.h"
-#include "fqlhandle.h"
 #include "fqlimits.h"
-#include "util/queue.h"
+#include "fqlhandle.h"
 #include "util/hashmap.h"
-#include "util/vec.h"
 #include "util/stringy.h"
 
 struct schema {

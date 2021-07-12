@@ -23,7 +23,7 @@ fifo* fifo_construct(fifo* self, size_t elem_size, unsigned buf_size)
 	        true                  /* is_open */
 	};
 
-	vec_resize(self->buf, buf_size);
+	vec_resize_and_zero(self->buf, buf_size);
 
 	pthread_mutex_init(&self->head_mutex, NULL);
 	pthread_mutex_init(&self->tail_mutex, NULL);
