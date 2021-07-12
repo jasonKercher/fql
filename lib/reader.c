@@ -64,6 +64,7 @@ int reader_assign(reader* self, table* table)
 		fail_if_(fixedreader_open(self, string_c_str(&self->file_name)));
 		return FQL_GOOD;
 	case IO_SUBQUERY:
+		self->reader_data = new_(subquery, table->subquery->op);
 		self->free__ = &subquery_free;
 		self->get_record__ = &subquery_get_record;
 		self->get_record_at__ = &subquery_get_record_at;

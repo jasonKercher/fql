@@ -20,7 +20,7 @@ struct process {
 	struct fifo* fifo_in[2];      /* input record fifos */
 	struct fifo* fifo_out[2];     /* output record fifos */
 	void* proc_data;              /* process specific data */
-	string* action_msg;           /* message that prints with plan */
+	string* plan_msg;             /* message that prints with plan */
 	struct vec* wait_list;        /* list of fifos that we wait for */
 	struct vec* union_end_nodes;  /* nodes that will re-link for union */
 	struct queue* queued_results; /* list of additional input fifos */

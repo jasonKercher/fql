@@ -31,6 +31,7 @@ void record_destroy(record* self)
 		}
 		delete_(vec, self->group_strings);
 	}
+
 	if (self->subquery_strings != NULL) {
 		string* it = vec_begin(self->subquery_strings);
 		for (; it != vec_end(self->subquery_strings); ++it) {
@@ -38,8 +39,12 @@ void record_destroy(record* self)
 		}
 		delete_(vec, self->subquery_strings);
 	}
+
+	if (self->libcsv_rec != NULL) {
+		csv_record_free(self->libcsv_rec);
+	}
+
 	vec_destroy(&self->fields);
-	csv_record_free(self->libcsv_rec);
 }
 
 void record_resize(record* self, unsigned size)
@@ -152,7 +157,7 @@ void recgroup_rec_set_ref(recgroup* self, unsigned idx, const record* src)
 void recgroup_rec_push_back(recgroup* self, const record* src)
 {
 	vec_insert_at(self->records, self->records->size, src, 1);
-	vec_push_back(self->records, src);
+	++self->_max_sources;
 }
 
 
@@ -190,7 +195,7 @@ record* recgroup_rec_add_one_front(recgroup* self)
 	return vec_begin(self->records);
 }
 
-void recgroup_rec_add(recgroup* self, size_t n)
+void recgroup_rec_add_front(recgroup* self, size_t n)
 {
 	unsigned i = 0;
 	for (; i < n; ++i) {

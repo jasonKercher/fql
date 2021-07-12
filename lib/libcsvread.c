@@ -9,8 +9,10 @@ void libcsv_free(void* csv)
 	csv_reader_free(csv);
 }
 
-int libcsv_get_record(reader* self, record* rec)
+int libcsv_get_record(reader* self, recgroup* rg)
 {
+	recgroup_resize(rg, 1);
+	record* rec = recgroup_rec_begin(rg);
 	struct csv_reader* csv = self->reader_data;
 
 	if (self->eof) {
@@ -49,11 +51,11 @@ int libcsv_get_record(reader* self, record* rec)
 	return FQL_GOOD;
 }
 
-int libcsv_get_record_at(reader* self, record* rec, const char* location)
+int libcsv_get_record_at(reader* self, recgroup* rg, const char* location)
 {
 	try_(csv_reader_goto(self->reader_data, location));
 	self->eof = false;
-	return libcsv_get_record(self, rec);
+	return libcsv_get_record(self, rg);
 }
 
 int libcsv_reset(reader* self)

@@ -61,9 +61,9 @@ void group_cat_description(group* self, process* proc)
 	column** it = vec_begin(&self->columns);
 	for (; it != vec_end(&self->columns); ++it) {
 		if (it != vec_begin(&self->columns)) {
-			string_strcat(proc->action_msg, ",");
+			string_strcat(proc->plan_msg, ",");
 		}
-		column_cat_description(*it, proc->action_msg);
+		column_cat_description(*it, proc->plan_msg);
 	}
 }
 

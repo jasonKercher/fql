@@ -16,7 +16,7 @@
  * through the fifo. It's probably faster to pass
  * pointers, but instead I just packed it all sorts
  * of stupid becasue I want...
- * 
+ *
  * // this
  * recgroup *rg = fifo_get(in);
  * int i = rg->fifo_idx;
@@ -56,7 +56,7 @@ struct record* recgroup_rec_back(const struct recgroup*);
 void recgroup_rec_set(struct recgroup*, unsigned, const struct record*);
 void recgroup_rec_set_ref(struct recgroup*, unsigned, const struct record*);
 void recgroup_rec_push_back(struct recgroup*, const struct record*);
-void recgroup_rec_add(struct recgroup*, size_t);
+void recgroup_rec_add_front(struct recgroup*, size_t);
 struct record* recgroup_rec_pop(struct recgroup*);
 void recgroup_clear_refs(struct recgroup*);
 

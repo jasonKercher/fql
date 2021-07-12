@@ -55,7 +55,7 @@ int fixedreader_open(reader* reader, const char* file_name)
 	return FQL_GOOD;
 }
 
-int fixedreader_get_record(reader* reader, record* rec)
+int fixedreader_get_record(reader* reader, recgroup* rg)
 {
 	if (reader->eof) {
 		return FQL_FAIL;
@@ -68,13 +68,15 @@ int fixedreader_get_record(reader* reader, record* rec)
 		return EOF;
 	}
 
-	int ret = fixedreader_get_record_at(reader, rec, self->iter);
+	int ret = fixedreader_get_record_at(reader, rg, self->iter);
 	self->iter += reader->reclen;
 	return ret;
 }
 
-int fixedreader_get_record_at(reader* reader, record* rec, const char* begin)
+int fixedreader_get_record_at(reader* reader, recgroup* rg, const char* begin)
 {
+	record* rec = recgroup_rec_begin(rg);
+	recgroup_resize(rg, 1);
 	fixedreader* self = reader->reader_data;
 
 	record_resize(rec, self->columns->size);

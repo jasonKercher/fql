@@ -489,7 +489,7 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		table->schema = select->schema;
 		self = table->schema;
 		table->reader->type = IO_SUBQUERY;
-		table->reader->reader_data = select;
+		//table->reader->reader_data = select;
 	} else {
 		/* if we've made it this far, we want to try
 		 * and determine schema by reading the top
@@ -513,27 +513,28 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	default:;
 	}
 
-	record rec;
-	record_construct(&rec);
+	recgroup* rg = new_(recgroup, 0);
 	table->reader->max_col_idx = INT_MAX;
-	table->reader->get_record__(table->reader, &rec);
+	table->reader->get_record__(table->reader, rg);
 	table->reader->max_col_idx = 0;
 
 	/* redundant if default schema */
 	table->reader->reset__(table->reader);
 
+	record* rec = recgroup_rec_begin(rg);
+
 	if (self->is_default) {
-		schema_assign_header(table, &rec, src_idx);
+		schema_assign_header(table, rec, src_idx);
 	} else {
 		/* TODO: in the future, maybe just set these SQL NULL */
-		column** it = vec_at(self->columns, rec.fields.size);
+		column** it = vec_at(self->columns, rec->fields.size);
 		for (; it != vec_end(self->columns); ++it) {
 			delete_(column, *it);
 		}
-		vec_resize(self->columns, rec.fields.size);
+		vec_resize(self->columns, rec->fields.size);
 		schema_preflight(self);
 	}
-	record_destroy(&rec);
+	delete_(recgroup, rg);
 
 	return FQL_GOOD;
 }

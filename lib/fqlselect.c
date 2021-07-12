@@ -241,15 +241,15 @@ void fqlselect_apply_process(query* query, plan* plan, bool is_subquery_source)
 		self->select__ = &_select_subquery;
 	}
 
-	string_strcpy(proc->action_msg, "SELECT ");
+	string_strcpy(proc->plan_msg, "SELECT ");
 
 	vec* col_vec = self->schema->columns;
 	column** col = vec_begin(col_vec);
 	for (; col != vec_end(col_vec); ++col) {
 		if (col != vec_begin(col_vec)) {
-			string_strcat(proc->action_msg, ",");
+			string_strcat(proc->plan_msg, ",");
 		}
-		column_cat_description(*col, proc->action_msg);
+		column_cat_description(*col, proc->plan_msg);
 	}
 
 	proc = plan->op_false->data;

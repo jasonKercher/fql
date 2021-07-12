@@ -32,7 +32,7 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        {NULL, NULL},                 /* fifo_in */
 	        {NULL, NULL},                 /* fifo_out */
 	        NULL,                         /* proc_data */
-	        string_from_char_ptr(action), /* action_msg */
+	        string_from_char_ptr(action), /* plan_msg */
 	        NULL,                         /* wait_list */
 	        new_t_(vec, dnode*),          /* union_end_nodes */
 	        NULL,                         /* queued_results */
@@ -69,7 +69,7 @@ void process_destroy(process* self, bool is_root)
 	}
 	delete_if_exists_(vec, self->wait_list);
 	delete_(vec, self->union_end_nodes);
-	delete_(string, self->action_msg);
+	delete_(string, self->plan_msg);
 }
 
 void process_activate(process* self, plan* plan, unsigned fifo_size)
@@ -137,7 +137,7 @@ void process_enable(process* self)
  */
 int _exec_one_pass(plan* plan, dgraph* proc_graph)
 {
-	if (++plan->iterations == 2 && plan->is_const) {
+	if (plan->rows_affected >= 1 && plan->is_const) {
 		return 0;
 	}
 

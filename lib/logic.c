@@ -71,46 +71,46 @@ int logic_assign_process(logic* self, process* proc)
 	}
 	self->logic__ = _logic_matrix[self->comp_type][self->data_type];
 
-	column_cat_description(self->col[0], proc->action_msg);
+	column_cat_description(self->col[0], proc->plan_msg);
 	switch (self->comp_type) {
 	case COMP_EQ:
-		string_strcat(proc->action_msg, " = ");
+		string_strcat(proc->plan_msg, " = ");
 		break;
 	case COMP_NE:
-		string_strcat(proc->action_msg, " != ");
+		string_strcat(proc->plan_msg, " != ");
 		break;
 	case COMP_GT:
-		string_strcat(proc->action_msg, " > ");
+		string_strcat(proc->plan_msg, " > ");
 		break;
 	case COMP_GE:
-		string_strcat(proc->action_msg, " >= ");
+		string_strcat(proc->plan_msg, " >= ");
 		break;
 	case COMP_LT:
-		string_strcat(proc->action_msg, " < ");
+		string_strcat(proc->plan_msg, " < ");
 		break;
 	case COMP_LE:
-		string_strcat(proc->action_msg, " <= ");
+		string_strcat(proc->plan_msg, " <= ");
 		break;
 	case COMP_IN:
-		string_strcat(proc->action_msg, " IN ");
+		string_strcat(proc->plan_msg, " IN ");
 		break;
 	case COMP_LIKE:
 		try_(_precompile_like(self));
-		string_strcat(proc->action_msg, " LIKE ");
+		string_strcat(proc->plan_msg, " LIKE ");
 		break;
 	case COMP_NULL:
-		string_strcat(proc->action_msg, " NULL ");
+		string_strcat(proc->plan_msg, " NULL ");
 		break;
 	case COMP_NOT_SET:
-		string_strcat(proc->action_msg, " <no comparison> ");
+		string_strcat(proc->plan_msg, " <no comparison> ");
 		break;
 	default:
 		break;
 	}
 	if (self->in_data != NULL) {
-		inlist_cat_description(self->in_data, proc->action_msg);
+		inlist_cat_description(self->in_data, proc->plan_msg);
 	} else {
-		column_cat_description(self->col[1], proc->action_msg);
+		column_cat_description(self->col[1], proc->plan_msg);
 	}
 
 	return FQL_GOOD;

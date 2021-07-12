@@ -118,16 +118,16 @@ int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 {
 	switch (lg->type) {
 	case LG_ROOT:
-		string_strcat(logic_proc->action_msg, "(");
+		string_strcat(logic_proc->plan_msg, "(");
 		break;
 	case LG_AND:
-		string_strcat(logic_proc->action_msg, "AND(");
+		string_strcat(logic_proc->plan_msg, "AND(");
 		break;
 	case LG_NOT:
 		if (lg->negation) {
-			string_strcat(logic_proc->action_msg, "NOT(");
+			string_strcat(logic_proc->plan_msg, "NOT(");
 		} else {
-			string_strcat(logic_proc->action_msg, "(");
+			string_strcat(logic_proc->plan_msg, "(");
 		}
 		if (lg->condition != NULL) {
 			if (lg->condition->in_data && lg->condition->in_data->subquery) {
@@ -148,7 +148,7 @@ int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 		try_(_logic_to_process(self, logic_proc, *it));
 	}
 
-	string_strcat(logic_proc->action_msg, ")");
+	string_strcat(logic_proc->plan_msg, ")");
 	return FQL_GOOD;
 }
 
@@ -231,24 +231,23 @@ int _from(plan* self, query* query)
 		return FQL_GOOD;
 	}
 
-	string action_msg;
-	string_construct(&action_msg);
+	string plan_msg;
+	string_construct(&plan_msg);
 	table* table_iter = vec_begin(query->sources);
 
 	process* from_proc = NULL;
 	dnode* from_node = NULL;
 	++self->source_count;
 	if (table_iter->source_type == SOURCE_TABLE) {
-		string_sprintf(&action_msg,
+		string_sprintf(&plan_msg,
 		               "%s: %s",
 		               table_iter->reader->file_name.data,
 		               "stream read");
 
-		from_proc = new_(process, action_msg.data, self);
+		from_proc = new_(process, plan_msg.data, self);
 		from_proc->root_fifo = 0;
 		from_node = dgraph_add_data(self->processes, from_proc);
 		from_node->is_root = true;
-		from_proc->proc_data = table_iter;
 	} else {
 		from_proc = new_(process, "subquery select", self);
 		from_proc->action__ = &fql_read;
@@ -257,12 +256,13 @@ int _from(plan* self, query* query)
 		//from_node->is_root = true;
 		try_(_build(table_iter->subquery, from_node, self->loose_groups, false));
 		plan* subquery_plan = table_iter->subquery->plan;
-		process* sub_true_proc = subquery_plan->op_true->data;
-		fqlselect* sub_select = sub_true_proc->proc_data;
-		from_proc->proc_data = sub_select;
+		//process* sub_true_proc = subquery_plan->op_true->data;
+		//fqlselect* sub_select = sub_true_proc->proc_data;
+		//from_proc->proc_data = sub_select;
 		dgraph_consume(self->processes, subquery_plan->processes);
 		subquery_plan->processes = NULL;
 	}
+	from_proc->proc_data = table_iter;
 	from_proc->action__ = &fql_read;
 
 	self->current->out[0] = from_node;
@@ -292,12 +292,12 @@ int _from(plan* self, query* query)
 
 			/* TODO: subquery on right side of join */
 			//if (table_iter->source_type == SOURCE_TABLE) {
-			string_sprintf(&action_msg,
+			string_sprintf(&plan_msg,
 			               "%s: %s",
 			               table_iter->reader->file_name.data,
 			               "mmap read");
 
-			read_proc = new_(process, action_msg.data, self);
+			read_proc = new_(process, plan_msg.data, self);
 			read_proc->action__ = &fql_read;
 			read_node = dgraph_add_data(self->processes, read_proc);
 			//} else {
@@ -340,7 +340,7 @@ int _from(plan* self, query* query)
 		}
 	}
 
-	string_destroy(&action_msg);
+	string_destroy(&plan_msg);
 
 	return FQL_GOOD;
 }
@@ -376,11 +376,11 @@ void _group(plan* self, query* query)
 		group_proc->action__ = &fql_groupby;
 		group_proc->proc_data = query->groupby;
 		group_proc->wait_for_in0_end = true;
-		//group_proc->root_fifo = 1;
+		group_proc->root_fifo = 1;
 		group_cat_description(query->groupby, group_proc);
 		dnode* group_node = dgraph_add_data(self->processes, group_proc);
 		vec_push_back(&query->groupby->_roots, &group_node);
-		//group_node->is_root = true;
+		group_node->is_root = true;
 		self->current->out[0] = group_node;
 		self->current = group_node;
 	}
@@ -588,7 +588,9 @@ void _mark_roots_const(vec* roots)
 	for (; it != vec_end(roots); ++it) {
 		process* proc = (*it)->data;
 		if (proc->action__ != fql_read) {
-			proc->root_fifo = 0;
+			if (proc->root_fifo == PROCESS_NO_ROOT) {
+				proc->root_fifo = 0;
+			}
 			proc->is_const = true;
 		}
 	}
@@ -685,7 +687,7 @@ void _print_plan(plan* self)
 	dnode** it = vec_begin(nodes);
 	for (; it != vec_end(nodes); ++it) {
 		process* proc = (*it)->data;
-		int len = proc->action_msg->size;
+		int len = proc->plan_msg->size;
 		if (len > max_len) {
 			max_len = len;
 		}
@@ -716,21 +718,21 @@ void _print_plan(plan* self)
 		fputc('\n', stderr);
 
 		process* proc = (*it)->data;
-		int len = proc->action_msg->size;
-		fputs(proc->action_msg->data, stderr);
+		int len = proc->plan_msg->size;
+		fputs(proc->plan_msg->data, stderr);
 		_col_sep(max_len - len);
 		len = 0;
 
 		if ((*it)->out[0] != NULL) {
 			proc = (*it)->out[0]->data;
-			len = proc->action_msg->size;
-			fputs(proc->action_msg->data, stderr);
+			len = proc->plan_msg->size;
+			fputs(proc->plan_msg->data, stderr);
 		}
 		_col_sep(max_len - len);
 
 		if ((*it)->out[1] != NULL) {
 			proc = (*it)->out[1]->data;
-			fputs(proc->action_msg->data, stderr);
+			fputs(proc->plan_msg->data, stderr);
 		}
 	}
 	fputs("\n", stderr);
