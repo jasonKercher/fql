@@ -44,8 +44,8 @@ int table_resolve_schema(struct table*);
 
 struct hashjoin {
 	multimap* hash_data;
-	struct column* left_col;
-	struct column* right_col;
+	struct expression* left_expr;
+	struct expression* right_expr;
 	struct vec* recs;
 	enum join_side state;
 	unsigned rec_idx;

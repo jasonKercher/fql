@@ -36,7 +36,7 @@ const char* _help =
         " -d, --dry-run          validate and build a plan, but do not execute\n"
         " -h, --no-header        for default schema, do not print a header\n"
         //" -H, --add-header       for no-header delimited, add a header\n"
-        " -L, --loose-groups     allow selection of outside of grouping.\n"
+        " -L, --summarize        allow selection of outside of grouping.\n"
         //" -o, --overwrite        creation of tables can overwrite existing files\n"
         " -O, --override         allow processing of unsupported language features\n"
         " -p, --print            print the processing plan\n"
@@ -93,7 +93,7 @@ int main(int argc, char** argv)
 	        {"dry-run", no_argument, 0, 'd'},
 	        {"no-header", no_argument, 0, 'h'},
 	        {"add-header", no_argument, 0, 'H'},
-	        {"loose-groups", no_argument, 0, 'L'},
+	        {"summarize", no_argument, 0, 'L'},
 	        {"overwrite", no_argument, 0, 'o'},
 	        {"override", no_argument, 0, 'O'},
 	        {"print", no_argument, 0, 'p'},

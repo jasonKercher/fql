@@ -1,16 +1,17 @@
 #include "operation.h"
 
 #include "fql.h"
+#include "fqlhandle.h"
 #include "fqlselect.h"
 #include "util/util.h"
 
-vec* op_get_columns(void* self)
+vec* op_get_expressions(void* self)
 {
 	enum op* type = self;
 
 	switch (*type) {
 	case OP_SELECT:
-		return ((fqlselect*)self)->schema->columns;
+		return ((fqlselect*)self)->schema->expressions;
 	default:
 		return NULL;
 	}
@@ -75,13 +76,13 @@ void op_set_schema(enum op* self, const schema* src_schema)
 	}
 }
 
-int op_writer_init(query* query)
+int op_writer_init(query* query, struct fql_handle* fql)
 {
 	enum op* self = query->op;
 
 	switch (*self) {
 	case OP_SELECT:
-		return fqlselect_writer_init(query->op, query);
+		return fqlselect_writer_init(query->op, query, fql);
 	default:
 		return FQL_FAIL;
 	}

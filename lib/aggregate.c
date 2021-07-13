@@ -22,12 +22,12 @@ static const char* agg_str[14] = {
 aggregate* aggregate_construct(aggregate* self,
                                enum aggregate_function agg_type)
 {
-	*self = (aggregate) {NULL,                 /* call__ */
-	                     new_t_(vec, column*), /* args */
-	                     {0},                  /* results */
-	                     NULL,                 /* linked_column */
-	                     agg_type,             /* agg_type */
-	                     FIELD_UNDEFINED};     /* data_type */
+	*self = (aggregate) {NULL,                     /* call__ */
+	                     new_t_(vec, expression*), /* args */
+	                     {0},                      /* results */
+	                     NULL,                     /* linked_expression */
+	                     agg_type,                 /* agg_type */
+	                     FIELD_UNDEFINED};         /* data_type */
 
 	vec_construct(&self->results, sizeof(struct aggresult));
 
@@ -36,9 +36,9 @@ aggregate* aggregate_construct(aggregate* self,
 
 void aggregate_destroy(aggregate* self)
 {
-	column** it = vec_begin(self->args);
+	expression** it = vec_begin(self->args);
 	for (; it != vec_end(self->args); ++it) {
-		delete_(column, *it);
+		delete_(expression, *it);
 	}
 	delete_(vec, self->args);
 	if (self->data_type == FIELD_STRING) {
@@ -55,17 +55,17 @@ const char* aggregate_get_name(aggregate* self)
 	return agg_str[self->agg_type];
 }
 
-void aggregate_add_column(aggregate* self, column* col)
+void aggregate_add_expression(aggregate* self, expression* col)
 {
 	vec_push_back(self->args, &col);
 }
 
-int aggregate_resolve(aggregate* self, column* col)
+int aggregate_resolve(aggregate* self, expression* col)
 {
 	if (self->call__ != NULL) {
 		return FQL_GOOD;
 	}
-	column* argument = *(column**)vec_begin(self->args);
+	expression* argument = *(expression**)vec_begin(self->args);
 	switch (self->agg_type) {
 	case AGG_COUNT:
 		self->call__ = &fql_count;

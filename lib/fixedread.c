@@ -3,16 +3,16 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "fql.h"
-#include "column.h"
+#include "expression.h"
 
-fixedreader* fixedreader_construct(fixedreader* self, vec* columns)
+fixedreader* fixedreader_construct(fixedreader* self, vec* expressions)
 {
 	*self = (fixedreader) {
-	        NULL,    /* mmap */
-	        NULL,    /* iter */
-	        columns, /* columns */
-	        0,       /* file_size */
-	        0,       /* fd */
+	        NULL,        /* mmap */
+	        NULL,        /* iter */
+	        expressions, /* expressions */
+	        0,           /* file_size */
+	        0,           /* fd */
 	};
 	return self;
 }
@@ -63,7 +63,7 @@ int fixedreader_get_record(reader* reader, recgroup* rg)
 
 	fixedreader* self = reader->reader_data;
 	const char* end = self->mmap + self->file_size;
-	if (self->iter + reader->reclen >= end) {
+	if (self->iter + reader->reclen > end) {
 		reader->eof = true;
 		return EOF;
 	}
@@ -79,11 +79,11 @@ int fixedreader_get_record_at(reader* reader, recgroup* rg, const char* begin)
 	recgroup_resize(rg, 1);
 	fixedreader* self = reader->reader_data;
 
-	record_resize(rec, self->columns->size);
+	record_resize(rec, self->expressions->size);
 
 	unsigned i = 0;
-	for (; i < self->columns->size; ++i) {
-		column** col = vec_at(self->columns, i);
+	for (; i < self->expressions->size; ++i) {
+		expression** col = vec_at(self->expressions, i);
 		stringview sv = {begin + (*col)->location, (*col)->width};
 		vec_set(&rec->fields, i, &sv);
 	}

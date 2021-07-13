@@ -4,7 +4,7 @@
 
 #include "fql.h"
 #include "query.h"
-//#include "column.h"
+//#include "expression.h"
 #include "util/util.h"
 
 /** Utility functions **/
@@ -326,7 +326,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 
 	switch (_tok_type) {
 	case TOK_COLUMN_NAME:
-		if (query_add_column(_query, token, _table_name)) {
+		if (query_add_expression(_query, token, _table_name)) {
 			_walker->set_walking(false);
 			_return_code = FQL_FAIL;
 		}
@@ -335,7 +335,7 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 		free_(token);
 		break;
 	case TOK_COLUMN_ALIAS:
-		query_apply_column_alias(_query, token);
+		query_apply_expression_alias(_query, token);
 		free_(token);
 		break;
 	case TOK_INTO_TABLE:

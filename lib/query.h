@@ -13,7 +13,7 @@ extern "C" {
 struct vec;
 struct logicgroup;
 struct group;
-struct column;
+struct expression;
 typedef struct vec string;
 
 enum aggregate_function {
@@ -120,7 +120,7 @@ struct query {
 	struct order* orderby;
 	void* op; /* operation structure */
 	struct vec* subquery_const_vec;
-	struct column* top_expr;
+	struct expression* top_expr;
 	struct vec* unions;
 	char* into_table_name;
 	size_t top_count;
@@ -154,12 +154,12 @@ void query_destroy(struct query*);
 void query_free(void*);
 
 int query_add_constant(struct query*, const char*, int);
-int query_add_column(struct query*, char*, const char* table);
+int query_add_expression(struct query*, char*, const char* table);
 int query_add_asterisk(struct query*, const char* table);
 void query_add_source(struct query*, struct stack**, const char*);
 void query_add_subquery_source(struct query*, struct query*, const char*);
 void query_apply_table_alias(struct query*, const char*);
-void query_apply_column_alias(struct query*, const char*);
+void query_apply_expression_alias(struct query*, const char*);
 int query_set_top_count(struct query*, const char*);
 int query_set_into_table(struct query*, const char*);
 void query_set_distinct(struct query*);

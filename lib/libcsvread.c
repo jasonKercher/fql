@@ -23,7 +23,7 @@ int libcsv_get_record(reader* self, recgroup* rg)
 		rec->libcsv_rec = csv_record_new();
 	}
 
-	int ret = csv_get_record_to(csv, rec->libcsv_rec, self->max_col_idx + 1);
+	int ret = csv_get_record_to(csv, rec->libcsv_rec, self->max_idx + 1);
 	switch (ret) {
 	case CSV_GOOD:
 		break;

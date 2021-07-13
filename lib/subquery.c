@@ -29,15 +29,15 @@ int subquery_get_record(reader* reader, recgroup* rg)
 	//record* dest = recgroup_rec_at(rg, 0);
 
 	subquery* self = reader->reader_data;
-	vec* columns = self->select->_selection_cols;
+	vec* expressions = self->select->_selection_exprs;
 
 	record_clear_strings(&self->copy_data, self->copy_data.subquery_strings);
 	vec_clear(&self->copy_data.fields);
 
-	column** it = vec_begin(columns);
-	for (; it != vec_end(columns); ++it) {
+	expression** it = vec_begin(expressions);
+	for (; it != vec_end(expressions); ++it) {
 		stringview* copy_sv = vec_add_one(&self->copy_data.fields);
-		try_(column_get_stringview(copy_sv, *it, rg));
+		try_(expression_get_stringview(copy_sv, *it, rg));
 
 		switch ((*it)->expr) {
 		case EXPR_GROUPING:

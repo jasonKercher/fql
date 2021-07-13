@@ -136,9 +136,9 @@ libfql_la_DEPENDENCIES = antlr/libantlr.la ../util/libutil.la
 am_libfql_la_OBJECTS = libfql_la-libfql.lo libfql_la-fqlplan.lo \
 	libfql_la-process.lo libfql_la-fqlprocesses.lo \
 	libfql_la-query.lo libfql_la-table.lo libfql_la-schema.lo \
-	libfql_la-column.lo libfql_la-group.lo libfql_la-aggregate.lo \
-	libfql_la-aggregatefn.lo libfql_la-order.lo \
-	libfql_la-operation.lo libfql_la-reader.lo \
+	libfql_la-expression.lo libfql_la-group.lo \
+	libfql_la-aggregate.lo libfql_la-aggregatefn.lo \
+	libfql_la-order.lo libfql_la-operation.lo libfql_la-reader.lo \
 	libfql_la-libcsvread.lo libfql_la-fixedread.lo \
 	libfql_la-subquery.lo libfql_la-writer.lo \
 	libfql_la-libcsvwrite.lo libfql_la-fixedwrite.lo \
@@ -171,7 +171,7 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/libfql_la-aggregate.Plo \
 	./$(DEPDIR)/libfql_la-aggregatefn.Plo \
-	./$(DEPDIR)/libfql_la-column.Plo \
+	./$(DEPDIR)/libfql_la-expression.Plo \
 	./$(DEPDIR)/libfql_la-field.Plo \
 	./$(DEPDIR)/libfql_la-fixedread.Plo \
 	./$(DEPDIR)/libfql_la-fixedwrite.Plo \
@@ -301,6 +301,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHECK_CFLAGS = @CHECK_CFLAGS@
 CHECK_LIBS = @CHECK_LIBS@
+CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -405,7 +406,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -424,7 +424,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					query.h query.c \
 					table.h table.c \
 					schema.h schema.c \
-					column.h column.c \
+					expression.h expression.c \
 					group.h group.c \
 					aggregate.h aggregate.c aggregatefn.c \
 					order.h order.c \
@@ -522,7 +522,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-aggregate.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-aggregatefn.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-column.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-expression.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-field.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fixedread.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fixedwrite.Plo@am__quote@ # am--include-marker
@@ -626,12 +626,12 @@ libfql_la-schema.lo: schema.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-schema.lo `test -f 'schema.c' || echo '$(srcdir)/'`schema.c
 
-libfql_la-column.lo: column.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-column.lo -MD -MP -MF $(DEPDIR)/libfql_la-column.Tpo -c -o libfql_la-column.lo `test -f 'column.c' || echo '$(srcdir)/'`column.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libfql_la-column.Tpo $(DEPDIR)/libfql_la-column.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='column.c' object='libfql_la-column.lo' libtool=yes @AMDEPBACKSLASH@
+libfql_la-expression.lo: expression.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-expression.lo -MD -MP -MF $(DEPDIR)/libfql_la-expression.Tpo -c -o libfql_la-expression.lo `test -f 'expression.c' || echo '$(srcdir)/'`expression.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libfql_la-expression.Tpo $(DEPDIR)/libfql_la-expression.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='expression.c' object='libfql_la-expression.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-column.lo `test -f 'column.c' || echo '$(srcdir)/'`column.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-expression.lo `test -f 'expression.c' || echo '$(srcdir)/'`expression.c
 
 libfql_la-group.lo: group.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-group.lo -MD -MP -MF $(DEPDIR)/libfql_la-group.Tpo -c -o libfql_la-group.lo `test -f 'group.c' || echo '$(srcdir)/'`group.c
@@ -1010,7 +1010,7 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 distclean: distclean-recursive
 		-rm -f ./$(DEPDIR)/libfql_la-aggregate.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-aggregatefn.Plo
-	-rm -f ./$(DEPDIR)/libfql_la-column.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-expression.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-field.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fixedread.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fixedwrite.Plo
@@ -1084,7 +1084,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 		-rm -f ./$(DEPDIR)/libfql_la-aggregate.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-aggregatefn.Plo
-	-rm -f ./$(DEPDIR)/libfql_la-column.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-expression.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-field.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fixedread.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fixedwrite.Plo

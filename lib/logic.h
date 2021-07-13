@@ -37,7 +37,7 @@ struct query;
 typedef int (*logic_fn)(struct logic*, struct recgroup*);
 
 struct logic {
-	struct column* col[2];
+	struct expression* expr[2];
 	struct like* like_data;
 	struct inlist* in_data;
 	logic_fn logic__;
@@ -50,11 +50,11 @@ struct logic* logic_construct(struct logic*);
 void logic_destroy(struct logic*);
 
 int logic_assign_process(struct logic*, struct process*);
-void logic_add_column(struct logic*, struct column*);
+void logic_add_expression(struct logic*, struct expression*);
 void logic_set_comparison(struct logic* logic, const char* op);
 
 struct inlist {
-	struct vec* columns;
+	struct vec* expressions;
 	struct query* subquery;
 	set* list_data;
 };
@@ -62,8 +62,8 @@ typedef struct inlist inlist;
 
 struct inlist* inlist_construct(struct inlist*);
 void inlist_destroy(struct inlist*);
-void inlist_add_column(struct inlist*, struct column*);
-enum field_type inlist_determine_type(struct inlist*, struct column*);
+void inlist_add_expression(struct inlist*, struct expression*);
+enum field_type inlist_determine_type(struct inlist*, struct expression*);
 void inlist_cat_description(struct inlist*, string* msg);
 
 struct like {
@@ -89,7 +89,7 @@ enum logicgroup_type {
 struct logicgroup {
 	enum logicgroup_type type;
 	struct vec items;    /* logicgroup* */
-	struct vec* columns; /* All columns in group */
+	struct vec* expressions; /* All expressions in group */
 	struct vec* joinable;
 	struct logic* join_logic;
 	struct logic* condition;

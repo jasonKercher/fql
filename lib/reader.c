@@ -21,7 +21,7 @@ reader* reader_construct(reader* self)
 	        NULL,         /* free__ */
 	        NULL,         /* reset__ */
 	        {0},          /* file_name */
-	        0,            /* max_col_idx */
+	        0,            /* max_idx */
 	        0,            /* reclen */
 	        1,            /* skip_rows */
 	        false         /* eof */
@@ -56,7 +56,7 @@ int reader_assign(reader* self, table* table)
 		}
 		return FQL_GOOD;
 	case IO_FIXED:
-		self->reader_data = new_(fixedreader, table->schema->columns);
+		self->reader_data = new_(fixedreader, table->schema->expressions);
 		self->free__ = &fixedreader_free;
 		self->get_record__ = &fixedreader_get_record;
 		self->get_record_at__ = &fixedreader_get_record_at;

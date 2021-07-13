@@ -8,7 +8,7 @@
 #include "misc.h"
 #include "field.h"
 #include "record.h"
-#include "column.h"
+#include "expression.h"
 #include "fqlselect.h"
 #include "process.h"
 #include "util/util.h"
@@ -25,7 +25,7 @@ int _order_select(order* self, process*);
 order* order_construct(order* self)
 {
 	*self = (order) {
-	        {0},           /* columns */
+	        {0},           /* expressions */
 	        {0},           /* entries */
 	        {0},           /* order_data */
 	        _order_select, /* select__ */
@@ -39,7 +39,7 @@ order* order_construct(order* self)
 	        false          /* sorted */
 	};
 
-	vec_construct_(&self->columns, column*);
+	vec_construct_(&self->expressions, expression*);
 	vec_construct_(&self->entries, struct _entry);
 	flex_construct(&self->order_data);
 
@@ -56,11 +56,11 @@ order* order_construct(order* self)
 
 void order_destroy(order* self)
 {
-	column** it = vec_begin(&self->columns);
-	for (; it != vec_end(&self->columns); ++it) {
-		delete_(column, *it);
+	expression** it = vec_begin(&self->expressions);
+	for (; it != vec_end(&self->expressions); ++it) {
+		delete_(expression, *it);
 	}
-	vec_destroy(&self->columns);
+	vec_destroy(&self->expressions);
 	vec_destroy(&self->entries);
 	flex_destroy(&self->order_data);
 	if (self->mmap != NULL) {
@@ -86,14 +86,14 @@ int order_init_io(order* self, const char* in_name, const char* out_name)
 	return FQL_GOOD;
 }
 
-int order_preresolve_columns(order* self, fqlselect* select)
+int order_preresolve_expressions(order* self, fqlselect* select)
 {
 	/* First, we want to try and resolve by ordinal:
 	 * SELECT foo
 	 * FROM T1
 	 * ORDER BY 1
 	 */
-	vec* select_cols = select->schema->columns;
+	vec* select_exprs = select->schema->expressions;
 
 	/* We also want to try and match fields by SELECT alias:
 	 * SELECT foo bar
@@ -103,41 +103,41 @@ int order_preresolve_columns(order* self, fqlselect* select)
 	 * These were never mapped. Preflight does this.
 	 */
 	schema_preflight(select->schema);
-	multimap* select_map = select->schema->col_map;
+	multimap* select_map = select->schema->expr_map;
 
-	column** it = vec_begin(&self->columns);
-	for (; it != vec_end(&self->columns); ++it) {
-		column** result = NULL;
+	expression** it = vec_begin(&self->expressions);
+	for (; it != vec_end(&self->expressions); ++it) {
+		expression** result = NULL;
 		switch ((*it)->expr) {
 		case EXPR_GROUPING:
 		case EXPR_FULL_RECORD:
 		case EXPR_COLUMN_NAME: {
-			vec* cols = multimap_get(select_map, (*it)->alias.data);
-			if (cols == NULL) {
+			vec* exprs = multimap_get(select_map, (*it)->alias.data);
+			if (exprs == NULL) {
 				break;
 			}
-			if (cols->size > 1) {
+			if (exprs->size > 1) {
 				fprintf(stderr,
-				        "ORDER BY column `%s' ambiguous\n",
+				        "ORDER BY expression `%s' ambiguous\n",
 				        (const char*)(*it)->alias.data);
 				return FQL_FAIL;
 			}
-			result = vec_begin(cols);
+			result = vec_begin(exprs);
 			break;
 		}
 		case EXPR_CONST: {
 			long ordinal = 0;
-			try_(column_get_int(&ordinal, *it, NULL));
+			try_(expression_get_int(&ordinal, *it, NULL));
 
-			if (ordinal <= 0 || ordinal > (int)select_cols->size) {
+			if (ordinal <= 0 || ordinal > (int)select_exprs->size) {
 				fprintf(stderr, "Ordinal `%ld' out of range\n", ordinal);
 				return FQL_FAIL;
 			}
-			result = vec_at(select_cols, ordinal - 1);
+			result = vec_at(select_exprs, ordinal - 1);
 			break;
 		}
 		default:;
-			// fprintf(stderr, "unexpected column type");
+			// fprintf(stderr, "unexpected expression type");
 			// return FQL_FAIL;
 		}
 
@@ -145,10 +145,10 @@ int order_preresolve_columns(order* self, fqlselect* select)
 			continue;
 		}
 		if ((*result)->expr == EXPR_CONST) {
-			column_link(*it, *result);
+			expression_link(*it, *result);
 			continue;
 		}
-		column_link(*it, (*result)->data_source);
+		expression_link(*it, (*result)->data_source);
 		(*it)->expr = EXPR_GROUPING;
 	}
 
@@ -162,24 +162,24 @@ void order_connect_api(query* query, vec* api_vec)
 	self->api = api_vec;
 }
 
-int order_add_column(order* self, column* col)
+int order_add_expression(order* self, expression* expr)
 {
 	if (self == NULL) {
-		delete_(column, col);
+		delete_(expression, expr);
 		return FQL_GOOD;
 	}
-	vec_push_back(&self->columns, &col);
+	vec_push_back(&self->expressions, &expr);
 	return FQL_GOOD;
 }
 
 void order_cat_description(order* self, process* proc)
 {
-	column** it = vec_begin(&self->columns);
-	for (; it != vec_end(&self->columns); ++it) {
-		if (it != vec_begin(&self->columns)) {
+	expression** it = vec_begin(&self->expressions);
+	for (; it != vec_end(&self->expressions); ++it) {
+		if (it != vec_begin(&self->expressions)) {
 			string_strcat(proc->plan_msg, ",");
 		}
-		column_cat_description(*it, proc->plan_msg);
+		expression_cat_description(*it, proc->plan_msg);
 	}
 }
 
@@ -192,27 +192,27 @@ int order_add_record(order* self, recgroup* rg)
 	        rg->select_len,               /* len */
 	};
 
-	column** cols = vec_begin(&self->columns);
+	expression** exprs = vec_begin(&self->expressions);
 
 	unsigned i = 0;
-	for (; i < self->columns.size; ++i) {
-		switch (cols[i]->field_type) {
+	for (; i < self->expressions.size; ++i) {
+		switch (exprs[i]->field_type) {
 		case FIELD_INT: {
 			/* NOTE: storing numbers in binary */
 			long num_i = 0;
-			try_(column_get_int(&num_i, cols[i], rg));
+			try_(expression_get_int(&num_i, exprs[i], rg));
 			flex_push_back_(&self->order_data, &num_i, long);
 			break;
 		}
 		case FIELD_FLOAT: {
 			double num_f = 0;
-			try_(column_get_float(&num_f, cols[i], rg));
+			try_(expression_get_float(&num_f, exprs[i], rg));
 			flex_push_back_(&self->order_data, &num_f, double);
 			break;
 		}
 		case FIELD_STRING: {
 			stringview sv;
-			try_(column_get_stringview(&sv, cols[i], rg));
+			try_(expression_get_stringview(&sv, exprs[i], rg));
 			flex_push_back(&self->order_data, (void*)sv.data, sv.len);
 			break;
 		}
@@ -237,8 +237,8 @@ int _compare(const void* a, const void* b, void* data)
 	size_t idx1 = p1->idx;
 
 	int ret = 0;
-	column** it = vec_begin(&orderby->columns);
-	for (; ret == 0 && it != vec_end(&orderby->columns); ++it) {
+	expression** it = vec_begin(&orderby->expressions);
+	for (; ret == 0 && it != vec_end(&orderby->expressions); ++it) {
 		switch ((*it)->field_type) {
 		case FIELD_INT: {
 			long* num0 = flex_at(&orderby->order_data, idx0);

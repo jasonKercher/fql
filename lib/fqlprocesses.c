@@ -5,7 +5,7 @@
 #include "logic.h"
 #include "order.h"
 #include "record.h"
-#include "column.h"
+#include "expression.h"
 #include "reader.h"
 #include "aggregate.h"
 #include "fqlselect.h"
@@ -112,7 +112,7 @@ void _hash_join_right_side(process* proc, table* table, fifo* in_right)
 		//recgroup_rec_add_one_front(rg_iter);
 		//recgroup_resize(rg_iter, proc->out_src_count);
 		recgroup_rec_add_front(rg_iter, proc->out_src_count - 1);
-		column_get_stringview(&sv, hj->right_col, rg_iter);
+		expression_get_stringview(&sv, hj->right_expr, rg_iter);
 
 		record* rec = recgroup_rec_back(rg_iter);
 		//record** rightrec = vec_back(rg_iter);
@@ -129,7 +129,7 @@ char* _hash_join_left_side(process* proc, table* table, recgroup* left_rg)
 
 	if (hj->recs == NULL) {
 		stringview sv;
-		column_get_stringview(&sv, hj->left_col, left_rg);
+		expression_get_stringview(&sv, hj->left_expr, left_rg);
 
 		hj->recs = multimap_nget(hj->hash_data, sv.data, sv.len);
 		if (hj->recs == NULL) {
@@ -287,7 +287,7 @@ int fql_groupby(process* proc)
 	recgroup* rg_iter = fifo_begin(in_data);
 	for (; rg_iter != fifo_end(in_data); rg_iter = fifo_iter(in_data)) {
 		/* TODO: something with returns? */
-		if (!vec_empty(&group->columns)) {
+		if (!vec_empty(&group->expressions)) {
 			try_(group_record(group, rg_iter));
 		}
 

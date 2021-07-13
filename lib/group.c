@@ -12,7 +12,7 @@ group* group_construct(group* self)
 	                        unsigned,
 	                        128,
 	                        HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
-	vec_construct_(&self->columns, column*);
+	vec_construct_(&self->expressions, expression*);
 	vec_construct_(&self->aggregates, aggregate*);
 	vec_construct_(&self->_composite, stringview);
 	vec_construct_(&self->_roots, dnode*);
@@ -29,41 +29,41 @@ void group_destroy(group* self)
 	vec_destroy(&self->_composite);
 	flex_destroy(&self->group_data);
 
-	column** it = vec_begin(&self->columns);
-	for (; it != vec_end(&self->columns); ++it) {
+	expression** it = vec_begin(&self->expressions);
+	for (; it != vec_end(&self->expressions); ++it) {
 		/* Avoid double free on aggregate */
 		if ((*it)->expr == EXPR_AGGREGATE) {
 			(*it)->expr = EXPR_UNDEFINED;
 		}
-		delete_(column, *it);
+		delete_(expression, *it);
 	}
-	vec_destroy(&self->columns);
+	vec_destroy(&self->expressions);
 	vec_destroy(&self->_roots);
 }
 
 void distinct_destroy(group* self)
 {
-	vec_clear(&self->columns);
+	vec_clear(&self->expressions);
 	group_destroy(self);
 }
 
-void group_add_column(group* self, column* col)
+void group_add_expression(group* self, expression* expr)
 {
-	col->index = self->columns.size;
-	vec_push_back(&self->columns, &col);
-	if (col->expr != EXPR_AGGREGATE) {
+	expr->index = self->expressions.size;
+	vec_push_back(&self->expressions, &expr);
+	if (expr->expr != EXPR_AGGREGATE) {
 		vec_add_one(&self->_composite);
 	}
 }
 
 void group_cat_description(group* self, process* proc)
 {
-	column** it = vec_begin(&self->columns);
-	for (; it != vec_end(&self->columns); ++it) {
-		if (it != vec_begin(&self->columns)) {
+	expression** it = vec_begin(&self->expressions);
+	for (; it != vec_end(&self->expressions); ++it) {
+		if (it != vec_begin(&self->expressions)) {
 			string_strcat(proc->plan_msg, ",");
 		}
-		column_cat_description(*it, proc->plan_msg);
+		expression_cat_description(*it, proc->plan_msg);
 	}
 }
 
@@ -97,27 +97,27 @@ int group_record(group* self, recgroup* rg)
 {
 	size_t org_size = flex_size(&self->group_data);
 
-	column** cols = vec_begin(&self->columns);
+	expression** exprs = vec_begin(&self->expressions);
 	stringview* sv = vec_begin(&self->_composite);
 	unsigned i = 0;
-	for (; i < self->columns.size; ++i) {
-		if (cols[i]->expr == EXPR_AGGREGATE) {
+	for (; i < self->expressions.size; ++i) {
+		if (exprs[i]->expr == EXPR_AGGREGATE) {
 			continue;
 		}
-		switch (cols[i]->field_type) {
+		switch (exprs[i]->field_type) {
 		case FIELD_STRING:
-			try_(column_get_stringview(sv, cols[i], rg));
+			try_(expression_get_stringview(sv, exprs[i], rg));
 			flex_push_back(&self->group_data, (void*)sv->data, sv->len);
 			break;
 		case FIELD_INT: {
 			long num_i = 0;
-			try_(column_get_int(&num_i, cols[i], rg));
+			try_(expression_get_int(&num_i, exprs[i], rg));
 			flex_push_back_str_int(&self->group_data, num_i);
 			break;
 		}
 		case FIELD_FLOAT: {
 			double num_f = 0;
-			try_(column_get_float(&num_f, cols[i], rg));
+			try_(expression_get_float(&num_f, exprs[i], rg));
 			flex_push_back_str_float(&self->group_data, num_f);
 		}
 		default:;
@@ -146,9 +146,9 @@ int group_record(group* self, recgroup* rg)
 /* TODO: eliminate switch with a function pointer to
  *       a function that dumps the aggregate results.
  */
-void _read_aggregate(column* agg_col, string* raw, stringview* sv, size_t idx)
+void _read_aggregate(expression* agg_expr, string* raw, stringview* sv, size_t idx)
 {
-	aggregate* agg = agg_col->field.agg;
+	aggregate* agg = agg_expr->field.agg;
 	struct aggresult* result = vec_at(&agg->results, idx);
 	switch (agg->data_type) {
 	case FIELD_INT:
@@ -173,18 +173,18 @@ int group_dump_record(group* self, record* rec)
 
 	size_t idx = self->_composite.size * self->_dump_idx;
 
-	record_resize(rec, self->columns.size);
+	record_resize(rec, self->expressions.size);
 
-	column** group_cols = vec_begin(&self->columns);
+	expression** group_exprs = vec_begin(&self->expressions);
 	stringview* rec_svs = vec_begin(&rec->fields);
 
 	record_clear_strings(rec, rec->group_strings);
 
 	unsigned i = 0;
-	for (; i < self->columns.size; ++i) {
-		if (group_cols[i]->expr == EXPR_AGGREGATE) {
+	for (; i < self->expressions.size; ++i) {
+		if (group_exprs[i]->expr == EXPR_AGGREGATE) {
 			string* s = record_generate_groupby_string(rec);
-			_read_aggregate(group_cols[i], s, &rec_svs[i], self->_dump_idx);
+			_read_aggregate(group_exprs[i], s, &rec_svs[i], self->_dump_idx);
 			continue;
 		}
 		rec_svs[i] = flex_pair_at(&self->group_data, idx++);

@@ -8,8 +8,8 @@
 #include "util/stringy.h"
 
 struct schema {
-	struct vec* columns;
-	multimap* col_map;
+	struct vec* expressions;
+	multimap* expr_map;
 	string* schema_path;
 	string* name;
 	char delimiter[DELIM_LEN_MAX];
@@ -28,7 +28,7 @@ enum join_side {
 	SIDE_MIXED,
 };
 
-struct column;
+struct expression;
 struct query;
 
 struct schema* schema_construct(struct schema*);
@@ -38,8 +38,8 @@ bool schema_eq(const struct schema*, const struct schema*);
 
 int schema_resolve(struct fql_handle*);
 
-void schema_add_column(struct schema*, struct column*, int src_idx);
-void schema_apply_column_alias(struct schema* schema, const char* alias);
+void schema_add_expression(struct schema*, struct expression*, int src_idx);
+void schema_apply_expression_alias(struct schema* schema, const char* alias);
 void schema_preflight(struct schema*);
 
 #endif /* SCHEMA_H */

@@ -1,12 +1,12 @@
 #include "logic.h"
-#include "column.h"
+#include "expression.h"
 #include "fqlselect.h"
 #include "util/util.h"
 
 inlist* inlist_construct(inlist* self)
 {
 	*self = (inlist) {
-	        NULL, /* columns */
+	        NULL, /* expressions */
 	        NULL, /* subquery */
 	        NULL, /* list_data */
 	};
@@ -15,29 +15,29 @@ inlist* inlist_construct(inlist* self)
 
 void inlist_destroy(inlist* self)
 {
-	delete_if_exists_(vec, self->columns);
+	delete_if_exists_(vec, self->expressions);
 	delete_if_exists_(set, self->list_data);
 }
 
-void inlist_add_column(inlist* self, column* col)
+void inlist_add_expression(inlist* self, expression* expr)
 {
-	if (self->columns == NULL) {
-		self->columns = new_t_(vec, column*);
+	if (self->expressions == NULL) {
+		self->expressions = new_t_(vec, expression*);
 	}
-	vec_push_back(self->columns, &col);
+	vec_push_back(self->expressions, &expr);
 }
 
-enum field_type inlist_determine_type(inlist* self, column* left_side)
+enum field_type inlist_determine_type(inlist* self, expression* left_side)
 {
 	enum field_type type = left_side->field_type;
-	vec* columns = self->columns;
+	vec* expressions = self->expressions;
 	if (self->subquery != NULL) {
 		fqlselect* select = self->subquery->op;
-		columns = select->schema->columns;
+		expressions = select->schema->expressions;
 	}
 
-	column** it = vec_begin(columns);
-	for (; it != vec_end(columns); ++it) {
+	expression** it = vec_begin(expressions);
+	for (; it != vec_end(expressions); ++it) {
 		type = field_determine_type(type, (*it)->field_type);
 	}
 
@@ -50,12 +50,12 @@ void inlist_cat_description(inlist* self, string* msg)
 		string_strcat(msg, " <subquery>");
 		return;
 	}
-	column** begin = vec_begin(self->columns);
-	column** it = begin;
-	for (; it != vec_end(self->columns); ++it) {
+	expression** begin = vec_begin(self->expressions);
+	expression** it = begin;
+	for (; it != vec_end(self->expressions); ++it) {
 		if (it != begin) {
 			string_strcat(msg, ", ");
 		}
-		column_cat_description(*it, msg);
+		expression_cat_description(*it, msg);
 	}
 }

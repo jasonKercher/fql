@@ -1,7 +1,7 @@
 #include "writer.h"
 #include <sys/stat.h>
 #include "record.h"
-#include "column.h"
+#include "expression.h"
 #include "misc.h"
 #include "fql.h"
 
@@ -152,7 +152,7 @@ const char* fixedwriter_get_tempname(fixedwriter* self)
 }
 
 int fixedwriter_write_record(void* writer_data,
-                             vec* col_vec,
+                             vec* expr_vec,
                              recgroup* rg,
                              FILE* outstream)
 {
@@ -168,15 +168,15 @@ int fixedwriter_write_record(void* writer_data,
 
 	int len = 0;
 
-	column** cols = vec_begin(col_vec);
+	expression** exprs = vec_begin(expr_vec);
 	unsigned i = 0;
-	for (; i < col_vec->size; ++i) {
+	for (; i < expr_vec->size; ++i) {
 		stringview sv;
-		if (cols[i]->expr == EXPR_ASTERISK) {
-			record* rec = recgroup_rec_at(rg, cols[i]->src_idx);
+		if (exprs[i]->expr == EXPR_ASTERISK) {
+			record* rec = recgroup_rec_at(rg, exprs[i]->src_idx);
 			sv = rec->rec_ref;
 		} else {
-			try_(column_get_stringview(&sv, cols[i], rg));
+			try_(expression_get_stringview(&sv, exprs[i], rg));
 		}
 		fprintf(self->file, "%.*s", sv.len, sv.data);
 		len += sv.len;

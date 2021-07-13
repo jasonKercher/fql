@@ -10,7 +10,7 @@
 #include "order.h"
 #include "logic.h"
 #include "reader.h"
-#include "column.h"
+#include "expression.h"
 #include "process.h"
 #include "function.h"
 #include "fqlselect.h"
@@ -76,27 +76,27 @@ void plan_destroy(void* generic_plan)
 	}
 }
 
-void _check_all_for_subquery_expression(process* proc, vec* columns);
-void _check_for_subquery_expression(process* proc, column* col)
+void _check_all_for_subquery_expression(process* proc, vec* expressions);
+void _check_for_subquery_expression(process* proc, expression* expr)
 {
-	if (col == NULL) {
+	if (expr == NULL) {
 		return;
 	}
-	if (col->expr == EXPR_SUBQUERY) {
-		process_add_to_wait_list(proc, col->subquery->plan->op_true->data);
+	if (expr->expr == EXPR_SUBQUERY) {
+		process_add_to_wait_list(proc, expr->subquery->plan->op_true->data);
 		return;
 	}
-	if (col->expr == EXPR_FUNCTION) {
-		_check_all_for_subquery_expression(proc, col->field.fn->args);
+	if (expr->expr == EXPR_FUNCTION) {
+		_check_all_for_subquery_expression(proc, expr->field.fn->args);
 	}
 }
-void _check_all_for_subquery_expression(process* proc, vec* columns)
+void _check_all_for_subquery_expression(process* proc, vec* expressions)
 {
-	if (columns == NULL) {
+	if (expressions == NULL) {
 		return;
 	}
-	column** it = vec_begin(columns);
-	for (; it != vec_end(columns); ++it) {
+	expression** it = vec_begin(expressions);
+	for (; it != vec_end(expressions); ++it) {
 		_check_for_subquery_expression(proc, *it);
 	}
 }
@@ -133,8 +133,10 @@ int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 			if (lg->condition->in_data && lg->condition->in_data->subquery) {
 				try_(_subquery_inlist(self, logic_proc, lg));
 			}
-			_check_for_subquery_expression(logic_proc, lg->condition->col[0]);
-			_check_for_subquery_expression(logic_proc, lg->condition->col[1]);
+			_check_for_subquery_expression(logic_proc,
+			                               lg->condition->expr[0]);
+			_check_for_subquery_expression(logic_proc,
+			                               lg->condition->expr[1]);
 			try_(logic_assign_process(lg->condition, logic_proc));
 		}
 		break;
@@ -366,7 +368,8 @@ void _group(plan* self, query* query)
 	}
 	if (query->groupby != NULL) {
 		process* group_proc = new_(process, "GROUP BY ", self);
-		_check_all_for_subquery_expression(group_proc, &query->groupby->columns);
+		_check_all_for_subquery_expression(group_proc,
+		                                   &query->groupby->expressions);
 		self->source_count = 1;
 		group_proc->out_src_count = 1;
 		process* true_proc = self->op_true->data;
@@ -418,7 +421,7 @@ void _operation(plan* self, query* query, dnode* entry, bool is_union)
 	//	true_proc->root_group = &query->groupby->_roots;
 	//}
 	_check_all_for_subquery_expression(self->op_true->data,
-	                                   op_get_columns(query->op));
+	                                   op_get_expressions(query->op));
 
 	/* Current no longer matters. After operation, we
 	 * do order where current DOES matter... BUT
@@ -469,7 +472,7 @@ void _order(plan* self, query* query)
 	//if (query->groupby) {
 	//	order_proc->root_group = &query->groupby->_roots;
 	//}
-	_check_all_for_subquery_expression(order_proc, &query->orderby->columns);
+	_check_all_for_subquery_expression(order_proc, &query->orderby->expressions);
 	order_proc->action__ = &fql_orderby;
 	order_proc->proc_data = query->orderby;
 	order_proc->wait_for_in0_end = true;
@@ -668,7 +671,7 @@ int build_plans(struct fql_handle* fql)
 	return FQL_GOOD;
 }
 
-void _col_sep(int n)
+void _expr_sep(int n)
 {
 	for (; n > 0; --n) {
 		fputc(' ', stderr);
@@ -695,20 +698,20 @@ void _print_plan(plan* self)
 
 	/* Print Header */
 	fputs("NODE", stderr);
-	_col_sep(max_len - strlen("NODE"));
+	_expr_sep(max_len - strlen("NODE"));
 	fputs("BRANCH 0", stderr);
-	_col_sep(max_len - strlen("BRANCH 0"));
+	_expr_sep(max_len - strlen("BRANCH 0"));
 	fputs("BRANCH 1\n", stderr);
 
 	int i = 0;
 	for (i = 0; i < max_len; ++i) {
 		fputc('=', stderr);
 	}
-	_col_sep(0);
+	_expr_sep(0);
 	for (i = 0; i < max_len; ++i) {
 		fputc('=', stderr);
 	}
-	_col_sep(0);
+	_expr_sep(0);
 	for (i = 0; i < max_len; ++i) {
 		fputc('=', stderr);
 	}
@@ -720,7 +723,7 @@ void _print_plan(plan* self)
 		process* proc = (*it)->data;
 		int len = proc->plan_msg->size;
 		fputs(proc->plan_msg->data, stderr);
-		_col_sep(max_len - len);
+		_expr_sep(max_len - len);
 		len = 0;
 
 		if ((*it)->out[0] != NULL) {
@@ -728,7 +731,7 @@ void _print_plan(plan* self)
 			len = proc->plan_msg->size;
 			fputs(proc->plan_msg->data, stderr);
 		}
-		_col_sep(max_len - len);
+		_expr_sep(max_len - len);
 
 		if ((*it)->out[1] != NULL) {
 			proc = (*it)->out[1]->data;

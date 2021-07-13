@@ -3,7 +3,7 @@
 
 #include "field.h"
 #include "query.h"
-#include "column.h"
+#include "expression.h"
 #include "util/vec.h"
 #include "util/stringy.h"
 
@@ -27,7 +27,7 @@ struct aggregate {
 	aggregate_fn call__;
 	struct vec* args;
 	struct vec results;
-	struct column* linked_column;
+	struct expression* linked_expression;
 	enum aggregate_function agg_type;
 	enum field_type data_type;
 };
@@ -38,8 +38,8 @@ struct aggregate* aggregate_construct(struct aggregate*,
 void aggregate_destroy(struct aggregate*);
 
 const char* aggregate_get_name(struct aggregate*);
-void aggregate_add_column(struct aggregate*, struct column*);
-int aggregate_resolve(struct aggregate*, struct column*);
+void aggregate_add_expression(struct aggregate*, struct expression*);
+int aggregate_resolve(struct aggregate*, struct expression*);
 
 int fql_count(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
 

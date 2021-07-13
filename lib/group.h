@@ -2,7 +2,7 @@
 #define GROUP_H
 
 #include "query.h"
-#include "column.h"
+#include "expression.h"
 #include "process.h"
 #include "util/vec.h"
 #include "util/flex.h"
@@ -13,7 +13,7 @@ struct record;
 struct group {
 	compositemap* expr_map;
 	compositemap val_map;
-	struct vec columns;
+	struct vec expressions;
 	struct vec aggregates;
 	struct flex group_data;
 	struct vec _composite; /* temporary */
@@ -26,7 +26,7 @@ struct group* group_construct(struct group*);
 void group_destroy(struct group*);
 void distinct_destroy(struct group*);
 
-void group_add_column(struct group*, struct column*);
+void group_add_expression(struct group*, struct expression*);
 void group_cat_description(struct group*, struct process*);
 
 int group_record(struct group*, struct recgroup* rec);

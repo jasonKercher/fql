@@ -25,7 +25,7 @@ struct reader {
 	generic_data_fn free__;
 	reset_fn reset__;
 	string file_name;
-	size_t max_col_idx;
+	size_t max_idx;
 	size_t reclen;
 	unsigned skip_rows;
 	bool eof;
@@ -61,13 +61,13 @@ int subquery_reset(struct reader*);
 struct fixedreader {
 	char* mmap;
 	char* iter;
-	struct vec* columns;
+	struct vec* expressions;
 	size_t file_size;
 	int fd;
 };
 typedef struct fixedreader fixedreader;
 
-struct fixedreader* fixedreader_construct(struct fixedreader*, struct vec* columns);
+struct fixedreader* fixedreader_construct(struct fixedreader*, struct vec* expressions);
 void fixedreader_free(void*);
 int fixedreader_open(struct reader*, const char* file_name);
 int fixedreader_get_record(struct reader*, struct recgroup*);

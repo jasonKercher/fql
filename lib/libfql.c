@@ -92,7 +92,7 @@ int _api_connect(struct fql_handle* fql, query* query)
 		if (proc->action__ == fql_read) {
 			table* table = proc->proc_data;
 			reader* reader = table->reader;
-			reader->max_col_idx = INT_MAX;
+			reader->max_idx = INT_MAX;
 		}
 	}
 

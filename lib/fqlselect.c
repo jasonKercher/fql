@@ -7,7 +7,7 @@
 #include "logic.h"
 #include "query.h"
 #include "reader.h"
-#include "column.h"
+#include "expression.h"
 #include "schema.h"
 #include "process.h"
 #include "util/stringy.h"
@@ -29,13 +29,14 @@ fqlselect* fqlselect_construct(fqlselect* self)
 	        NULL,            /* writer */
 	        NULL,            /* list_data */
 	        NULL,            /* const_dest */
-	        NULL,            /* union_column_vecs */
-	        NULL,            /* _selection_cols */
+	        NULL,            /* union_expression_vecs */
+	        NULL,            /* _selection_exprs */
 	        &_select_record, /* select__ */
-	        0                /* offset */
+	        0,               /* offset */
+	        0,               /* rownum */
 	};
 
-	self->_selection_cols = self->schema->columns;
+	self->_selection_exprs = self->schema->expressions;
 
 	return self;
 }
@@ -45,7 +46,7 @@ void fqlselect_destroy(fqlselect* self)
 	if (self == NULL) {
 		return;
 	}
-	//queue_free(&self->union_column_vecs);
+	//queue_free(&self->union_expression_vecs);
 	delete_if_exists_(writer, self->writer);
 	delete_(schema, self->schema);
 }
@@ -53,11 +54,11 @@ void fqlselect_destroy(fqlselect* self)
 unsigned fqlselect_get_field_count(fqlselect* self)
 {
 	unsigned field_count = 0;
-	column** it = vec_begin(self->schema->columns);
-	for (; it != vec_end(self->schema->columns); ++it) {
+	expression** it = vec_begin(self->schema->expressions);
+	for (; it != vec_end(self->schema->expressions); ++it) {
 		switch ((*it)->expr) {
 		case EXPR_ASTERISK:
-			field_count += (*it)->table->schema->columns->size;
+			field_count += (*it)->table->schema->expressions->size;
 			break;
 		default:
 			++field_count;
@@ -94,9 +95,9 @@ void fqlselect_set_schema(fqlselect* self, const schema* src_schema)
 	self->schema->is_default = src_schema->is_default;
 }
 
-void fqlselect_add_column(fqlselect* self, column* col)
+void fqlselect_add_expression(fqlselect* self, expression* expr)
 {
-	schema_add_column(self->schema, col, 0);
+	schema_add_expression(self->schema, expr, 0);
 }
 
 void _resize_raw_rec(vec* raw_rec, unsigned size)
@@ -110,39 +111,40 @@ void _resize_raw_rec(vec* raw_rec, unsigned size)
 }
 
 /* this should be in schema.c */
-int _expand_asterisk(vec* col_vec, table* table, unsigned src_idx, unsigned* col_idx)
+int _expand_asterisk(vec* expr_vec, table* table, unsigned src_idx, unsigned* expr_idx)
 {
-	vec* src_col_vec = table->schema->columns;
+	vec* src_expr_vec = table->schema->expressions;
 
-	table->reader->max_col_idx = src_col_vec->size - 1;
+	table->reader->max_idx = src_expr_vec->size - 1;
 
-	column** it = vec_begin(src_col_vec);
-	for (; it != vec_end(src_col_vec); ++it) {
-		//string* col_name = string_from_string(&(*it)->alias);
-		column* new_col = new_(column, EXPR_COLUMN_NAME, (*it)->alias.data, "");
-		new_col->data_source = *it;
-		new_col->src_idx = src_idx;
-		new_col->field_type = (*it)->field_type;
-		++(*col_idx);
-		vec_insert_at(col_vec, *col_idx, &new_col, 1);
+	expression** it = vec_begin(src_expr_vec);
+	for (; it != vec_end(src_expr_vec); ++it) {
+		//string* expr_name = string_from_string(&(*it)->alias);
+		expression* new_expr =
+		        new_(expression, EXPR_COLUMN_NAME, (*it)->alias.data, "");
+		new_expr->data_source = *it;
+		new_expr->src_idx = src_idx;
+		new_expr->field_type = (*it)->field_type;
+		++(*expr_idx);
+		vec_insert_at(expr_vec, *expr_idx, &new_expr, 1);
 	}
 
-	return table->schema->columns->size;
+	return table->schema->expressions->size;
 }
 
 void _expand_asterisks(query* query, bool force_expansion)
 {
 	fqlselect* self = query->op;
-	vec* col_vec = self->schema->columns;
+	vec* expr_vec = self->schema->expressions;
 	unsigned i = 0;
 
-	for (; i < col_vec->size; ++i) {
-		column** col = vec_at(col_vec, i);
-		if ((*col)->expr != EXPR_ASTERISK) {
+	for (; i < expr_vec->size; ++i) {
+		expression** expr = vec_at(expr_vec, i);
+		if ((*expr)->expr != EXPR_ASTERISK) {
 			continue;
 		}
 
-		table* table = vec_at(query->sources, (*col)->src_idx);
+		table* table = vec_at(query->sources, (*expr)->src_idx);
 
 		if (table->subquery == NULL /* is not a subquery source */
 		    && !force_expansion && query->query_id == 0 /* is in main query */
@@ -151,37 +153,37 @@ void _expand_asterisks(query* query, bool force_expansion)
 		}
 
 		unsigned asterisk_index = i;
-		_expand_asterisk(col_vec, table, (*col)->src_idx, &i);
+		_expand_asterisk(expr_vec, table, (*expr)->src_idx, &i);
 
-		column** asterisk_col = vec_at(col_vec, asterisk_index);
-		delete_(column, *asterisk_col);
-		vec_erase_at(col_vec, asterisk_index, 1);
+		expression** asterisk_expr = vec_at(expr_vec, asterisk_index);
+		delete_(expression, *asterisk_expr);
+		vec_erase_at(expr_vec, asterisk_index, 1);
 		--i;
 	}
 
 	if (self->writer == NULL) {
 		return;
 	}
-	_resize_raw_rec(self->writer->raw_rec, col_vec->size);
+	_resize_raw_rec(self->writer->raw_rec, expr_vec->size);
 }
 
-int fqlselect_resolve_type_from_subquery(column* col)
+int fqlselect_resolve_type_from_subquery(expression* expr)
 {
-	query* subquery = col->subquery;
+	query* subquery = expr->subquery;
 	fqlselect* subselect = subquery->op;
-	if (subselect->schema->columns->size > 1) {
-		fputs("Only one column can be supplied if subquery is an "
+	if (subselect->schema->expressions->size > 1) {
+		fputs("Only one expression can be supplied if subquery is an "
 		      "expression\n",
 		      stderr);
 		return FQL_FAIL;
 	}
-	column** subcol = vec_begin(subselect->schema->columns);
-	if ((*subcol)->subquery == NULL) {
-		col->field_type = (*subcol)->field_type;
+	expression** subexpr = vec_begin(subselect->schema->expressions);
+	if ((*subexpr)->subquery == NULL) {
+		expr->field_type = (*subexpr)->field_type;
 		return FQL_GOOD;
 	}
-	try_(fqlselect_resolve_type_from_subquery(*subcol));
-	col->field_type = (*subcol)->field_type;
+	try_(fqlselect_resolve_type_from_subquery(*subexpr));
+	expr->field_type = (*subexpr)->field_type;
 
 	return FQL_GOOD;
 }
@@ -196,12 +198,12 @@ int fqlselect_connect_api(query* query, vec* api)
 	}
 	_expand_asterisks(query, true);
 
-	vec* cols = self->schema->columns;
-	vec_resize(api, cols->size);
+	vec* exprs = self->schema->expressions;
+	vec_resize(api, exprs->size);
 
-	column** it = vec_begin(cols);
+	expression** it = vec_begin(exprs);
 	unsigned i = 0;
-	for (; i < cols->size; ++i) {
+	for (; i < exprs->size; ++i) {
 		if ((*it)->subquery != NULL) {
 			try_(fqlselect_resolve_type_from_subquery(*it));
 		}
@@ -243,13 +245,13 @@ void fqlselect_apply_process(query* query, plan* plan, bool is_subquery_source)
 
 	string_strcpy(proc->plan_msg, "SELECT ");
 
-	vec* col_vec = self->schema->columns;
-	column** col = vec_begin(col_vec);
-	for (; col != vec_end(col_vec); ++col) {
-		if (col != vec_begin(col_vec)) {
+	vec* expr_vec = self->schema->expressions;
+	expression** expr = vec_begin(expr_vec);
+	for (; expr != vec_end(expr_vec); ++expr) {
+		if (expr != vec_begin(expr_vec)) {
 			string_strcat(proc->plan_msg, ",");
 		}
-		column_cat_description(*col, proc->plan_msg);
+		expression_cat_description(*expr, proc->plan_msg);
 	}
 
 	proc = plan->op_false->data;
@@ -262,20 +264,20 @@ void fqlselect_apply_process(query* query, plan* plan, bool is_subquery_source)
 	writer_set_rec_terminator(self->writer, self->schema->rec_terminator);
 }
 
-void fqlselect_apply_column_alias(fqlselect* self, const char* alias)
+void fqlselect_apply_expression_alias(fqlselect* self, const char* alias)
 {
-	schema_apply_column_alias(self->schema, alias);
+	schema_apply_expression_alias(self->schema, alias);
 }
 
 int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 {
-	if (self->schema->columns->size == 1) {
-		column** col = vec_begin(self->schema->columns);
-		if ((*col)->expr == EXPR_ASTERISK) {
+	if (self->schema->expressions->size == 1) {
+		expression** expr = vec_begin(self->schema->expressions);
+		if ((*expr)->expr == EXPR_ASTERISK) {
 			_expand_asterisks(inlist->subquery, true);
 		}
 	}
-	if (self->schema->columns->size != 1) {
+	if (self->schema->expressions->size != 1) {
 		fputs("Only one expression can be specified in subquery\n", stderr);
 		return FQL_FAIL;
 	}
@@ -286,14 +288,14 @@ int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 }
 
 /* NOTE: do not allow any writer initialization if a union query */
-int fqlselect_writer_init(fqlselect* self, query* query)
+int fqlselect_writer_init(fqlselect* self, query* query, struct fql_handle* fql)
 {
 	if (!query->union_id) {
 		self->writer = new_(writer, self->schema->write_io_type);
 	}
 
 	if (!query->union_id && query->into_table_name) {
-		if (access(query->into_table_name, F_OK) == 0) {
+		if (!fql->props.overwrite && access(query->into_table_name, F_OK) == 0) {
 			fprintf(stderr,
 			        "Cannot SELECT INTO: file `%s' already exists\n",
 			        query->into_table_name);
@@ -315,9 +317,9 @@ int fqlselect_writer_init(fqlselect* self, query* query)
 
 	/* TODO: verify this does not cause double free */
 	if (query->distinct != NULL) {
-		column** it = vec_begin(self->schema->columns);
-		for (; it != vec_end(self->schema->columns); ++it) {
-			group_add_column(query->distinct, *it);
+		expression** it = vec_begin(self->schema->expressions);
+		for (; it != vec_end(self->schema->expressions); ++it) {
+			group_add_expression(query->distinct, *it);
 		}
 	}
 
@@ -328,11 +330,11 @@ int fqlselect_writer_init(fqlselect* self, query* query)
 
 int fqlselect_next_union(fqlselect* self)
 {
-	if (self->union_column_vecs == NULL) {
+	if (self->union_expression_vecs == NULL) {
 		return 0;
 	}
 
-	self->_selection_cols = queue_dequeue(&self->union_column_vecs);
+	self->_selection_exprs = queue_dequeue(&self->union_expression_vecs);
 	return 1;
 }
 
@@ -343,29 +345,30 @@ void fqlselect_preop(fqlselect* self, query* query)
 	}
 
 	vec header;
-	vec_construct_(&header, column*);
+	vec_construct_(&header, expression*);
 
 	/* print header */
-	column** it = vec_begin(self->schema->columns);
-	for (; it != vec_end(self->schema->columns); ++it) {
+	expression** it = vec_begin(self->schema->expressions);
+	for (; it != vec_end(self->schema->expressions); ++it) {
 		if ((*it)->expr == EXPR_ASTERISK) {
 			table* aster_src = vec_at(query->sources, (*it)->src_idx);
-			vec* aster_cols = aster_src->schema->columns;
-			column** it2 = vec_begin(aster_cols);
-			for (; it2 != vec_end(aster_cols); ++it2) {
-				column* field_col = new_(column, EXPR_CONST, NULL, "");
-				string_copy(&field_col->buf, &(*it2)->alias);
-				field_col->field.s = &field_col->buf;
-				field_col->field_type = FIELD_STRING;
-				vec_push_back(&header, &field_col);
+			vec* aster_exprs = aster_src->schema->expressions;
+			expression** it2 = vec_begin(aster_exprs);
+			for (; it2 != vec_end(aster_exprs); ++it2) {
+				expression* field_expr =
+				        new_(expression, EXPR_CONST, NULL, "");
+				string_copy(&field_expr->buf, &(*it2)->alias);
+				field_expr->field.s = &field_expr->buf;
+				field_expr->field_type = FIELD_STRING;
+				vec_push_back(&header, &field_expr);
 			}
 			continue;
 		}
-		column* field_col = new_(column, EXPR_CONST, NULL, "");
-		string_copy(&field_col->buf, &(*it)->alias);
-		field_col->field.s = &field_col->buf;
-		field_col->field_type = FIELD_STRING;
-		vec_push_back(&header, &field_col);
+		expression* field_expr = new_(expression, EXPR_CONST, NULL, "");
+		string_copy(&field_expr->buf, &(*it)->alias);
+		field_expr->field.s = &field_expr->buf;
+		field_expr->field_type = FIELD_STRING;
+		vec_push_back(&header, &field_expr);
 	}
 
 	writer* writer = self->writer;
@@ -380,17 +383,18 @@ void fqlselect_preop(fqlselect* self, query* query)
 
 	it = vec_begin(&header);
 	for (; it != vec_end(&header); ++it) {
-		delete_(column, *it);
+		delete_(expression, *it);
 	}
 	vec_destroy(&header);
 }
 
 int _select_record(fqlselect* self, recgroup* rg)
 {
+	++self->rownum;
 	writer* writer = self->writer;
-	vec* col_vec = self->_selection_cols;
+	vec* expr_vec = self->_selection_exprs;
 
-	int ret = writer->write_record__(writer->writer_data, col_vec, rg, NULL);
+	int ret = writer->write_record__(writer->writer_data, expr_vec, rg, NULL);
 
 	if (ret == FQL_FAIL || rg == NULL) {
 		return ret;
@@ -410,22 +414,23 @@ int _select_record(fqlselect* self, recgroup* rg)
 
 int _select_record_api(fqlselect* self, struct recgroup* rg)
 {
-	vec* col_vec = self->_selection_cols;
+	++self->rownum;
+	vec* expr_vec = self->_selection_exprs;
 
-	column** cols = vec_begin(col_vec);
+	expression** exprs = vec_begin(expr_vec);
 	unsigned i = 0;
-	for (; i < col_vec->size; ++i) {
+	for (; i < expr_vec->size; ++i) {
 		struct fql_field* field = vec_at(self->api, i);
-		switch (cols[i]->field_type) {
+		switch (exprs[i]->field_type) {
 		case FIELD_INT:
-			try_(column_get_int(&field->data.i, cols[i], rg));
+			try_(expression_get_int(&field->data.i, exprs[i], rg));
 			break;
 		case FIELD_FLOAT:
-			try_(column_get_float(&field->data.f, cols[i], rg));
+			try_(expression_get_float(&field->data.f, exprs[i], rg));
 			break;
 		case FIELD_STRING: {
 			stringview sv;
-			try_(column_get_stringview(&sv, cols[i], rg));
+			try_(expression_get_stringview(&sv, exprs[i], rg));
 			string* s = field->_in;
 			string_copy_from_stringview(s, &sv);
 			field->data.s = s->data;
@@ -440,31 +445,32 @@ int _select_record_api(fqlselect* self, struct recgroup* rg)
 
 int _select_record_order_api(fqlselect* self, struct recgroup* rg)
 {
+	++self->rownum;
 	FILE* order_input = writer_get_file(self->writer);
 
-	vec* col_vec = self->_selection_cols;
-	column** cols = vec_begin(col_vec);
+	vec* expr_vec = self->_selection_exprs;
+	expression** exprs = vec_begin(expr_vec);
 	unsigned i = 0;
 	unsigned len = 0;
-	for (; i < col_vec->size; ++i) {
-		switch (cols[i]->field_type) {
+	for (; i < expr_vec->size; ++i) {
+		switch (exprs[i]->field_type) {
 		case FIELD_INT: {
 			long num = 0;
-			try_(column_get_int(&num, cols[i], rg));
+			try_(expression_get_int(&num, exprs[i], rg));
 			fwrite(&num, sizeof(num), 1, order_input);
 			len += sizeof(num);
 			break;
 		}
 		case FIELD_FLOAT: {
 			double num = 0;
-			try_(column_get_float(&num, cols[i], rg));
+			try_(expression_get_float(&num, exprs[i], rg));
 			fwrite(&num, sizeof(num), 1, order_input);
 			len += sizeof(num);
 			break;
 		}
 		case FIELD_STRING: {
 			stringview sv;
-			try_(column_get_stringview(&sv, cols[i], rg));
+			try_(expression_get_stringview(&sv, exprs[i], rg));
 			fwrite(&sv.len, sizeof(sv.len), 1, order_input);
 			fwrite(sv.data, 1, sv.len, order_input);
 			len += sizeof(sv.len) + sv.len;
@@ -482,26 +488,27 @@ int _select_record_order_api(fqlselect* self, struct recgroup* rg)
 
 int _select_record_to_list(fqlselect* self, recgroup* rg)
 {
+	++self->rownum;
 	set* list = self->list_data;
 
-	column* col = *(column**)vec_begin(self->_selection_cols);
+	expression* expr = *(expression**)vec_begin(self->_selection_exprs);
 
-	switch (col->field_type) {
+	switch (expr->field_type) {
 	case FIELD_INT: {
 		long num = 0;
-		try_(column_get_int(&num, col, rg));
+		try_(expression_get_int(&num, expr, rg));
 		set_nadd(list, (char*)&num, sizeof(num));
 		return 1;
 	}
 	case FIELD_FLOAT: {
 		double num = 0;
-		try_(column_get_float(&num, col, rg));
+		try_(expression_get_float(&num, expr, rg));
 		set_nadd(list, (char*)&num, sizeof(num));
 		return 1;
 	}
 	case FIELD_STRING: {
 		stringview sv;
-		try_(column_get_stringview(&sv, col, rg));
+		try_(expression_get_stringview(&sv, expr, rg));
 		set_nadd(list, sv.data, sv.len);
 		return 1;
 	}
@@ -514,32 +521,33 @@ int _select_record_to_list(fqlselect* self, recgroup* rg)
 int _select_record_to_const(fqlselect* self, recgroup* rg)
 {
 	//bool fail_if_on_result = (self->const_dest->expr == EXPR_CONST) {
+	++self->rownum;
 	if (self->const_dest->expr == EXPR_CONST) {
 		fputs("subquery returned more than 1 value as expression\n", stderr);
 		return FQL_FAIL;
 	}
 
-	column* col = *(column**)vec_begin(self->_selection_cols);
+	expression* expr = *(expression**)vec_begin(self->_selection_exprs);
 
-	self->const_dest->field_type = col->field_type;
+	self->const_dest->field_type = expr->field_type;
 	self->const_dest->expr = EXPR_CONST;
 
-	switch (col->field_type) {
+	switch (expr->field_type) {
 	case FIELD_INT: {
 		long num = 0;
-		try_(column_get_int(&num, col, rg));
+		try_(expression_get_int(&num, expr, rg));
 		self->const_dest->field.i = num;
 		return 1;
 	}
 	case FIELD_FLOAT: {
 		double num = 0;
-		try_(column_get_float(&num, col, rg));
+		try_(expression_get_float(&num, expr, rg));
 		self->const_dest->field.f = num;
 		return 1;
 	}
 	case FIELD_STRING: {
 		stringview sv;
-		try_(column_get_stringview(&sv, col, rg));
+		try_(expression_get_stringview(&sv, expr, rg));
 		string_copy_from_stringview(&self->const_dest->buf, &sv);
 		self->const_dest->field.s = &self->const_dest->buf;
 		return 1;
@@ -556,5 +564,6 @@ int _select_record_to_const(fqlselect* self, recgroup* rg)
  */
 int _select_subquery(fqlselect* self, recgroup* rg)
 {
+	++self->rownum;
 	return FQL_GOOD;
 }

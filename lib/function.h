@@ -32,7 +32,7 @@ void function_destroy(struct function*);
 
 const char* function_get_name(struct function*);
 int function_validate(struct function*);
-void function_add_column(struct function* func, void* col);
+void function_add_expression(struct function* func, void* col);
 int function_op_resolve(function* func, enum field_type*);
 
 /* scalar functions list */

@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-#include "column.h"
+#include "expression.h"
 #include "field.h"
 #include "misc.h"
 #include "util/util.h"
@@ -23,7 +23,7 @@ static logic_fn _logic_matrix[COMP_COUNT][FIELD_TYPE_COUNT] = {
 logic* logic_construct(logic* self)
 {
 	*self = (logic) {
-	        {NULL, NULL},    /* col */
+	        {NULL, NULL},    /* expr */
 	        NULL,            /* like_data */
 	        NULL,            /* in_data */
 	        NULL,            /* logic__ */
@@ -39,19 +39,19 @@ void logic_destroy(logic* self)
 	if (self == NULL) {
 		return;
 	}
-	delete_if_exists_(column, self->col[0]);
-	delete_if_exists_(column, self->col[1]);
+	delete_if_exists_(expression, self->expr[0]);
+	delete_if_exists_(expression, self->expr[1]);
 	delete_if_exists_(inlist, self->in_data);
 }
 
 int _precompile_like(logic* self)
 {
 	self->like_data = new_(like);
-	if (self->col[1]->expr != EXPR_CONST) {
+	if (self->expr[1]->expr != EXPR_CONST) {
 		return FQL_GOOD;
 	}
 	stringview sv = {0};
-	try_(column_get_stringview(&sv, self->col[1], NULL));
+	try_(expression_get_stringview(&sv, self->expr[1], NULL));
 	try_(like_to_regex(self->like_data, sv));
 
 	pcre2_jit_compile(self->like_data->regex, PCRE2_JIT_COMPLETE);
@@ -62,16 +62,14 @@ int _precompile_like(logic* self)
 int logic_assign_process(logic* self, process* proc)
 {
 	if (self->in_data != NULL) {
-		self->data_type =
-		        inlist_determine_type(self->in_data, self->col[0]);
+		self->data_type = inlist_determine_type(self->in_data, self->expr[0]);
 	} else {
-		self->data_type =
-		        field_determine_type(self->col[0]->field_type,
-		                             self->col[1]->field_type);
+		self->data_type = field_determine_type(self->expr[0]->field_type,
+		                                       self->expr[1]->field_type);
 	}
 	self->logic__ = _logic_matrix[self->comp_type][self->data_type];
 
-	column_cat_description(self->col[0], proc->plan_msg);
+	expression_cat_description(self->expr[0], proc->plan_msg);
 	switch (self->comp_type) {
 	case COMP_EQ:
 		string_strcat(proc->plan_msg, " = ");
@@ -110,23 +108,23 @@ int logic_assign_process(logic* self, process* proc)
 	if (self->in_data != NULL) {
 		inlist_cat_description(self->in_data, proc->plan_msg);
 	} else {
-		column_cat_description(self->col[1], proc->plan_msg);
+		expression_cat_description(self->expr[1], proc->plan_msg);
 	}
 
 	return FQL_GOOD;
 }
 
-void logic_add_column(logic* self, struct column* col)
+void logic_add_expression(logic* self, struct expression* expr)
 {
-	if (self->col[0] == NULL) {
-		self->col[0] = col;
+	if (self->expr[0] == NULL) {
+		self->expr[0] = expr;
 		return;
 	}
 	if (self->in_data != NULL) {
-		inlist_add_column(self->in_data, col);
+		inlist_add_expression(self->in_data, expr);
 		return;
 	}
-	self->col[1] = col;
+	self->expr[1] = expr;
 }
 
 void logic_set_comparison(logic* self, const char* op)
@@ -159,7 +157,7 @@ logicgroup* logicgroup_construct(logicgroup* lg, enum logicgroup_type type)
 	*lg = (logicgroup) {
 	        type,  /* type */
 	        {0},   /* items */
-	        NULL,  /* columns */
+	        NULL,  /* expressions */
 	        NULL,  /* joinable */
 	        NULL,  /* join_logic */
 	        NULL,  /* condition */
@@ -181,7 +179,7 @@ void logicgroup_destroy(logicgroup* lg)
 	}
 	delete_if_exists_(vec, lg->joinable);
 	vec_destroy(&lg->items);
-	delete_if_exists_(vec, lg->columns);
+	delete_if_exists_(vec, lg->expressions);
 }
 
 void _get_condition_count(logicgroup* lg, unsigned* count)
@@ -206,7 +204,7 @@ unsigned logicgroup_get_condition_count(logicgroup* lg)
  * All logic is assumed true except the one provided.
  * the point is to determine if that self MUST be
  * true for the group to evaluate to true. I believe
- * ignoring negation here is correct. The purpose 
+ * ignoring negation here is correct. The purpose
  * being, if it must be true, it is a candidate for
  * hash join logic.
  */

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 
+#include "expression.h"
 #include "fql.h"
 #include "fqlselect.h"
 #include "logic.h"
@@ -71,7 +72,7 @@ void query_destroy(query* self)
 	delete_if_exists_(distinct, self->distinct);
 	delete_if_exists_(logicgroup, self->having);
 	delete_if_exists_(order, self->orderby);
-	delete_if_exists_(column, self->top_expr);
+	delete_if_exists_(expression, self->top_expr);
 
 	query** q_it = vec_begin(self->subquery_const_vec);
 	for (; q_it != vec_end(self->subquery_const_vec); ++q_it) {
@@ -91,53 +92,53 @@ void query_free(void* data)
 	delete_if_exists_(query, data);
 }
 
-int _add_logic_column(query* self, column* col)
+int _add_logic_expression(query* self, expression* expr)
 {
-	if (self->logic_mode != LOGIC_HAVING && col->expr == EXPR_AGGREGATE) {
+	if (self->logic_mode != LOGIC_HAVING && expr->expr == EXPR_AGGREGATE) {
 		fputs("Cannot have aggregate logic outside of HAVING\n",
 		      stderr);
 		return FQL_FAIL;
 	}
 	logicgroup* lg = stack_bottom(self->logic_stack)->data;
-	vec_push_back(lg->columns, &col);
+	vec_push_back(lg->expressions, &expr);
 
 	lg = self->logic_stack->data;
 	if (lg->condition == NULL) {
 		lg->condition = new_(logic);
 	}
-	logic_add_column(lg->condition, col);
+	logic_add_expression(lg->condition, expr);
 
 	return FQL_GOOD;
 }
 
-int _distribute_column(query* self, column* col)
+int _distribute_expression(query* self, expression* expr)
 {
 	if (self->function_stack) {
-		column* fn_col = self->function_stack->data;
-		function_add_column(fn_col->field.fn, col);
+		expression* fn_expr = self->function_stack->data;
+		function_add_expression(fn_expr->field.fn, expr);
 		return FQL_GOOD;
 	}
 	if (self->in_aggregate) {
 		aggregate** back = vec_back(&self->groupby->aggregates);
-		aggregate_add_column(*back, col);
+		aggregate_add_expression(*back, expr);
 		return FQL_GOOD;
 	}
 	switch (self->mode) {
 	case MODE_SELECT:
-		fqlselect_add_column(self->op, col);
+		fqlselect_add_expression(self->op, expr);
 		break;
 	case MODE_TOP:
-		self->top_expr = col;
+		self->top_expr = expr;
 		break;
 	case MODE_IN:
 	case MODE_SEARCH:
-		try_(_add_logic_column(self, col));
+		try_(_add_logic_expression(self, expr));
 		break;
 	case MODE_GROUPBY:
-		group_add_column(self->groupby, col);
+		group_add_expression(self->groupby, expr);
 		break;
 	case MODE_ORDERBY:
-		order_add_column(self->orderby, col);
+		order_add_expression(self->orderby, expr);
 		break;
 	default:
 		return FQL_FAIL;
@@ -145,35 +146,40 @@ int _distribute_column(query* self, column* col)
 	return FQL_GOOD;
 }
 
-int query_add_column(query* self, char* col_name, const char* table_id)
+int query_add_expression(query* self, char* expr_name, const char* table_id)
 {
 	/* TODO: should probably handle built-ins with
 	 *       their own function triggered by "__.*"
 	 */
-	column* col = NULL;
-	if (istring_eq(col_name, "__lf")) {
-		col = new_(column, EXPR_CONST, NULL, "");
-		string_strcpy(&col->buf, "\n");
-		col->field_type = FIELD_STRING;
-		col->field.s = &col->buf;
-	} else if (istring_eq(col_name, "__crlf")) {
-		col = new_(column, EXPR_CONST, NULL, "");
-		string_strcpy(&col->buf, "\r\n");
-		col->field_type = FIELD_STRING;
-		col->field.s = &col->buf;
-	} else if (istring_eq(col_name, "__cr")) {
-		col = new_(column, EXPR_CONST, NULL, "");
-		string_strcpy(&col->buf, "\r");
-		col->field_type = FIELD_STRING;
-		col->field.s = &col->buf;
-	} else if (istring_eq(col_name, "__rec")) {
-		col = new_(column, EXPR_FULL_RECORD, col_name, table_id);
+	expression* expr = NULL;
+	if (istring_eq(expr_name, "__lf")) {
+		expr = new_(expression, EXPR_CONST, NULL, "");
+		string_strcpy(&expr->buf, "\n");
+		expr->field_type = FIELD_STRING;
+		expr->field.s = &expr->buf;
+	} else if (istring_eq(expr_name, "__crlf")) {
+		expr = new_(expression, EXPR_CONST, NULL, "");
+		string_strcpy(&expr->buf, "\r\n");
+		expr->field_type = FIELD_STRING;
+		expr->field.s = &expr->buf;
+	} else if (istring_eq(expr_name, "__cr")) {
+		expr = new_(expression, EXPR_CONST, NULL, "");
+		string_strcpy(&expr->buf, "\r");
+		expr->field_type = FIELD_STRING;
+		expr->field.s = &expr->buf;
+	} else if (istring_eq(expr_name, "__rec")) {
+		expr = new_(expression, EXPR_FULL_RECORD, expr_name, table_id);
+	} else if (istring_eq(expr_name, "__rownum") && self->mode == MODE_SELECT) {
+		expr = new_(expression, EXPR_ROW_NUMBER, expr_name, table_id);
+		expr->field_type = FIELD_INT;
+		fqlselect* select = self->op;
+		expr->rownum_ref = &select->rownum;
 	} else {
-		col = new_(column, EXPR_COLUMN_NAME, col_name, table_id);
+		expr = new_(expression, EXPR_COLUMN_NAME, expr_name, table_id);
 	}
 
-	if (_distribute_column(self, col)) {
-		fprintf(stderr, "unhandled COLUMN_NAME: %s\n", col_name);
+	if (_distribute_expression(self, expr)) {
+		fprintf(stderr, "unhandled COLUMN_NAME: %s\n", expr_name);
 		return FQL_FAIL;
 	}
 	return FQL_GOOD;
@@ -181,9 +187,9 @@ int query_add_column(query* self, char* col_name, const char* table_id)
 
 int query_add_asterisk(query* self, const char* table_id)
 {
-	column* col = new_(column, EXPR_ASTERISK, NULL, table_id);
+	expression* expr = new_(expression, EXPR_ASTERISK, NULL, table_id);
 
-	if (_distribute_column(self, col)) {
+	if (_distribute_expression(self, expr)) {
 		fprintf(stderr, "unhandled asterisk\n");
 		return FQL_FAIL;
 	}
@@ -192,27 +198,27 @@ int query_add_asterisk(query* self, const char* table_id)
 
 int query_add_constant(query* self, const char* s, int len)
 {
-	column* col = new_(column, EXPR_CONST, NULL, "");
+	expression* expr = new_(expression, EXPR_CONST, NULL, "");
 
 	enum field_type type = FIELD_UNDEFINED;
 	if (s[0] == '\'') {
 		type = FIELD_STRING;
-		string_strcpy(&col->buf, s + 1);
-		((char*)col->buf.data)[len - 2] = '\0';
-		--col->buf.size;
-		col->field.s = &col->buf;
+		string_strcpy(&expr->buf, s + 1);
+		((char*)expr->buf.data)[len - 2] = '\0';
+		--expr->buf.size;
+		expr->field.s = &expr->buf;
 	} else {
 		if (strhaschar(s, '.')) {
 			type = FIELD_FLOAT;
-			fail_if_(str2double(&col->field.f, s));
+			fail_if_(str2double(&expr->field.f, s));
 		} else {
 			type = FIELD_INT;
-			fail_if_(str2long(&col->field.i, s));
+			fail_if_(str2long(&expr->field.i, s));
 		}
 	}
 
-	col->field_type = type;
-	if (_distribute_column(self, col)) {
+	expr->field_type = type;
+	if (_distribute_expression(self, expr)) {
 		fprintf(stderr,
 		        "unhandled constant expression: %d\n",
 		        self->mode);
@@ -263,9 +269,9 @@ void query_apply_table_alias(query* self, const char* alias)
 	string_strcpy(&table->alias, alias);
 }
 
-void query_apply_column_alias(query* self, const char* alias)
+void query_apply_expression_alias(query* self, const char* alias)
 {
-	fqlselect_apply_column_alias(self->op, alias);
+	fqlselect_apply_expression_alias(self->op, alias);
 }
 
 void query_set_distinct(query* self)
@@ -296,29 +302,29 @@ int query_add_aggregate(query* self, enum aggregate_function agg_type)
 	aggregate* agg = new_(aggregate, agg_type);
 	vec_push_back(&self->groupby->aggregates, &agg);
 
-	column* group_col = new_(column, EXPR_AGGREGATE, agg, "");
-	group_add_column(self->groupby, group_col);
+	expression* group_expr = new_(expression, EXPR_AGGREGATE, agg, "");
+	group_add_expression(self->groupby, group_expr);
 
-	column* linked_col = new_(column, EXPR_AGGREGATE, agg, "");
-	column_link(linked_col, group_col);
-	agg->linked_column = linked_col;
-	try_(_distribute_column(self, linked_col));
+	expression* linked_expr = new_(expression, EXPR_AGGREGATE, agg, "");
+	expression_link(linked_expr, group_expr);
+	agg->linked_expression = linked_expr;
+	try_(_distribute_expression(self, linked_expr));
 
 	return FQL_GOOD;
 }
 
 int _add_function(query* self, function* func, enum field_type type)
 {
-	column* col = new_(column, EXPR_FUNCTION, func, "");
-	col->field_type = type;
+	expression* expr = new_(expression, EXPR_FUNCTION, func, "");
+	expr->field_type = type;
 
-	if (_distribute_column(self, col)) {
+	if (_distribute_expression(self, expr)) {
 		fprintf(stderr,
 		        "unhandled function: %s\n",
 		        function_get_name(func));
 		return FQL_FAIL;
 	}
-	stack_push(&self->function_stack, col);
+	stack_push(&self->function_stack, expr);
 	return FQL_GOOD;
 }
 
@@ -376,17 +382,17 @@ void query_assign_in_subquery(query* self, query* subquery)
 
 void query_add_subquery_const(query* self, query* subquery)
 {
-	column* subquery_column = new_(column, EXPR_SUBQUERY, subquery, "");
+	expression* subquery_expression = new_(expression, EXPR_SUBQUERY, subquery, "");
 	fqlselect* subselect = subquery->op;
-	subselect->const_dest = subquery_column;
+	subselect->const_dest = subquery_expression;
 	vec_push_back(self->subquery_const_vec, &subquery);
-	_distribute_column(self, subquery_column);
+	_distribute_expression(self, subquery_expression);
 }
 
 void query_set_order_desc(query* self)
 {
-	column** col = vec_back(&self->orderby->columns);
-	(*col)->descending = true;
+	expression** expr = vec_back(&self->orderby->expressions);
+	(*expr)->descending = true;
 }
 
 int query_enter_union(query* self, query* union_query)
@@ -399,17 +405,17 @@ int query_enter_union(query* self, query* union_query)
 
 int query_exit_union(query* self, query* union_query)
 {
-	/* We need to track the column vector
+	/* We need to track the expression vector
 	 * from the union's select. Since we are
 	 * tracking the vector itself, it will
 	 * still be correct after the all the
 	 * schemas have resolved.
 	 */
-	vec* union_cols = op_get_columns(union_query->op);
+	vec* union_exprs = op_get_expressions(union_query->op);
 
 	/* select can be assumed here */
 	fqlselect* select = self->op;
-	queue_enqueue(&select->union_column_vecs, union_cols);
+	queue_enqueue(&select->union_expression_vecs, union_exprs);
 
 	return FQL_GOOD;
 }
@@ -436,7 +442,7 @@ int query_enter_operator(query* self, enum scalar_function op)
 
 void query_exit_function(query* self)
 {
-	//column* col = stack_pop(&self->function_stack);
+	//expression* expr = stack_pop(&self->function_stack);
 	stack_pop(&self->function_stack);
 }
 
@@ -487,7 +493,7 @@ void enter_search(query* self)
 {
 	if (self->logic_stack == NULL) {
 		logicgroup* lg = new_(logicgroup, LG_ROOT);
-		lg->columns = new_t_(vec, column*);
+		lg->expressions = new_t_(vec, expression*);
 		stack_push(&self->logic_stack, lg);
 		self->joinable = new_t_(vec, logic*);
 		return;
@@ -533,12 +539,12 @@ void exit_search_not(query* self)
 
 	/* pre-requisite test for joinability
 	 * A complete test for joinablity cannot occur
-	 * until all logic columns have been resolved
+	 * until all logic expressions have been resolved
 	 * to a source.
 	 */
 	if (top->condition != NULL && top->condition->comp_type == COMP_EQ
-	    && top->condition->col[0]->expr != EXPR_CONST
-	    && top->condition->col[1]->expr != EXPR_CONST) {
+	    && top->condition->expr[0]->expr != EXPR_CONST
+	    && top->condition->expr[1]->expr != EXPR_CONST) {
 		vec_push_back(self->joinable, &top->condition);
 	}
 }

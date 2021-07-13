@@ -3,7 +3,7 @@
 #include "fql.h"
 #include "misc.h"
 #include "query.h"
-#include "column.h"
+#include "expression.h"
 #include "aggregate.h"
 #include "fqlselect.h"
 #include "util/util.h"
@@ -46,12 +46,12 @@ function* function_construct(function* func,
                              int char_as_byte)
 {
 	*func = (function) {
-	        &_not_implemented,    /* call__ */
-	        new_t_(vec, column*), /* args */
-	        scalar_type,          /* type */
-	        0,                    /* arg_min */
-	        0,                    /* arg_max */
-	        char_as_byte          /* char_as_byte */
+	        &_not_implemented,        /* call__ */
+	        new_t_(vec, expression*), /* args */
+	        scalar_type,              /* type */
+	        0,                        /* arg_min */
+	        0,                        /* arg_max */
+	        char_as_byte              /* char_as_byte */
 	};
 
 	/* if this is an operator, we don't have enough info */
@@ -196,9 +196,9 @@ function* function_construct(function* func,
 
 void function_destroy(function* func)
 {
-	column** it = vec_begin(func->args);
+	expression** it = vec_begin(func->args);
 	for (; it != vec_end(func->args); ++it) {
-		delete_(column, *it);
+		delete_(expression, *it);
 	}
 	delete_(vec, func->args);
 }
@@ -212,21 +212,21 @@ int function_op_resolve(function* func, enum field_type* type)
 	func->arg_min = 2;
 	func->arg_max = 2;
 
-	column** args = func->args->data;
-	column* col0 = args[0];
-	column* col1 = col0;
+	expression** args = func->args->data;
+	expression* expr0 = args[0];
+	expression* expr1 = expr0;
 	if (func->args->size == 2) {
-		col1 = args[1];
+		expr1 = args[1];
 	}
 
-	if (col0->expr == EXPR_AGGREGATE) {
-		aggregate_resolve(col0->field.agg, col0);
+	if (expr0->expr == EXPR_AGGREGATE) {
+		aggregate_resolve(expr0->field.agg, expr0);
 	}
-	if (col1->expr == EXPR_AGGREGATE) {
-		aggregate_resolve(col1->field.agg, col1);
+	if (expr1->expr == EXPR_AGGREGATE) {
+		aggregate_resolve(expr1->field.agg, expr1);
 	}
 
-	*type = field_determine_type(col0->field_type, col1->field_type);
+	*type = field_determine_type(expr0->field_type, expr1->field_type);
 
 	switch (func->type) {
 	case SCALAR_OP_UNARY_BIT_NOT:
@@ -280,7 +280,7 @@ int function_validate(function* func)
 	return FQL_FAIL;
 }
 
-void function_add_column(function* func, void* col)
+void function_add_expression(function* func, void* expr)
 {
-	vec_push_back(func->args, &col);
+	vec_push_back(func->args, &expr);
 }

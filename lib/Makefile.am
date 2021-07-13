@@ -9,7 +9,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					query.h query.c \
 					table.h table.c \
 					schema.h schema.c \
-					column.h column.c \
+					expression.h expression.c \
 					group.h group.c \
 					aggregate.h aggregate.c aggregatefn.c \
 					order.h order.c \

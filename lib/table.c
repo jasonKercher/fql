@@ -1,7 +1,7 @@
 #include "table.h"
 #include "fql.h"
 #include "query.h"
-#include "column.h"
+#include "expression.h"
 #include "reader.h"
 #include "logic.h"
 #include "operation.h"
@@ -125,8 +125,8 @@ hashjoin* hashjoin_construct(hashjoin* join)
 {
 	*join = (struct hashjoin) {
 	        NULL,       /* hash_data */
-	        NULL,       /* left_col */
-	        NULL,       /* right_col */
+	        NULL,       /* left_expr */
+	        NULL,       /* right_expr */
 	        NULL,       /* recs */
 	        SIDE_RIGHT, /* state */
 	        0           /* rec_idx */
@@ -152,8 +152,8 @@ size_t _guess_row_count(table* self)
 
 	reader* reader = self->reader;
 
-	unsigned max_col_store = reader->max_col_idx;
-	reader->max_col_idx = 0;
+	unsigned max_expr_store = reader->max_idx;
+	reader->max_idx = 0;
 
 	recgroup* rg = new_(recgroup, 0);
 
@@ -176,7 +176,7 @@ size_t _guess_row_count(table* self)
 	//record_destroy(&rec);
 	delete_(recgroup, rg);
 
-	reader->max_col_idx = max_col_store;
+	reader->max_idx = max_expr_store;
 
 	double avg_len = total_length / (double)i - 1;
 	if (avg_len < 1)

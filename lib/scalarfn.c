@@ -3,7 +3,7 @@
 #include <limits.h>
 #include <ctype.h>
 #include "fql.h"
-#include "column.h"
+#include "expression.h"
 #include "misc.h"
 #include "util/stringview.h"
 #include "util/util.h"
@@ -75,10 +75,10 @@ int _get_rev_byte_count(const char* s, unsigned limit)
 
 int fql_len(function* fn, union field* ret, recgroup* rg)
 {
-	column** arg = vec_begin(fn->args);
+	expression** arg = vec_begin(fn->args);
 	stringview sv;
 
-	try_(column_get_stringview(&sv, *arg, rg));
+	try_(expression_get_stringview(&sv, *arg, rg));
 
 	unsigned idx = 0;
 	int bytes = 1;
@@ -102,7 +102,7 @@ int fql_len(function* fn, union field* ret, recgroup* rg)
 
 int fql_datalength(function* fn, union field* ret, recgroup* rg)
 {
-	column** arg = vec_begin(fn->args);
+	expression** arg = vec_begin(fn->args);
 	switch ((*arg)->field_type) {
 	case FIELD_INT:
 		ret->i = sizeof(long);
@@ -117,7 +117,7 @@ int fql_datalength(function* fn, union field* ret, recgroup* rg)
 	}
 
 	stringview sv;
-	try_(column_get_stringview(&sv, *arg, rg));
+	try_(expression_get_stringview(&sv, *arg, rg));
 
 	ret->i = sv.len;
 
@@ -126,11 +126,11 @@ int fql_datalength(function* fn, union field* ret, recgroup* rg)
 
 int fql_left(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	stringview sv;
-	try_(column_get_stringview(&sv, args[0], rg));
+	try_(expression_get_stringview(&sv, args[0], rg));
 	long n = 0;
-	try_(column_get_int(&n, args[1], rg));
+	try_(expression_get_int(&n, args[1], rg));
 
 	if (n > sv.len) {
 		string_strncpy(ret->s, sv.data, sv.len);
@@ -158,11 +158,11 @@ int fql_left(function* fn, union field* ret, recgroup* rg)
 
 int fql_right(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	stringview sv;
-	column_get_stringview(&sv, args[0], rg);
+	expression_get_stringview(&sv, args[0], rg);
 	long n = 0;
-	try_(column_get_int(&n, args[1], rg));
+	try_(expression_get_int(&n, args[1], rg));
 
 	if (n > sv.len) {
 		string_strncpy(ret->s, sv.data, n);
@@ -191,14 +191,14 @@ int fql_right(function* fn, union field* ret, recgroup* rg)
 
 int fql_substring(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	stringview sv;
-	try_(column_get_stringview(&sv, args[0], rg));
+	try_(expression_get_stringview(&sv, args[0], rg));
 	long start = 0;
-	try_(column_get_int(&start, args[1], rg));
+	try_(expression_get_int(&start, args[1], rg));
 	--start;
 	long n = 0;
-	try_(column_get_int(&n, args[2], rg));
+	try_(expression_get_int(&n, args[2], rg));
 
 	unsigned idx = 0;
 	int bytes = 0;
@@ -240,11 +240,11 @@ int fql_substring(function* fn, union field* ret, recgroup* rg)
 /* opertor functions */
 int fql_op_plus_i(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], rg));
-	try_(column_get_int(&n1, args[1], rg));
+	try_(expression_get_int(&n0, args[0], rg));
+	try_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = overflow_safe_add_i(n0, n1);
 
@@ -253,11 +253,11 @@ int fql_op_plus_i(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_plus_f(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	try_(column_get_float(&n0, args[0], rg));
-	try_(column_get_float(&n1, args[1], rg));
+	try_(expression_get_float(&n0, args[0], rg));
+	try_(expression_get_float(&n1, args[1], rg));
 
 	ret->f = n0 + n1;
 
@@ -266,11 +266,11 @@ int fql_op_plus_f(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_plus_s(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	stringview s0;
 	stringview s1;
-	column_get_stringview(&s0, args[0], rg);
-	column_get_stringview(&s1, args[1], rg);
+	expression_get_stringview(&s0, args[0], rg);
+	expression_get_stringview(&s1, args[1], rg);
 
 	string_copy_from_stringview(ret->s, &s0);
 	string_append_stringview(ret->s, &s1);
@@ -280,11 +280,11 @@ int fql_op_plus_s(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_minus_i(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], rg));
-	try_(column_get_int(&n1, args[1], rg));
+	try_(expression_get_int(&n0, args[0], rg));
+	try_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = overflow_safe_minus_i(n0, n1);
 
@@ -293,11 +293,11 @@ int fql_op_minus_i(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_minus_f(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	try_(column_get_float(&n0, args[0], rg));
-	try_(column_get_float(&n1, args[1], rg));
+	try_(expression_get_float(&n0, args[0], rg));
+	try_(expression_get_float(&n1, args[1], rg));
 
 	ret->f = n0 - n1;
 
@@ -306,11 +306,11 @@ int fql_op_minus_f(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_mult_i(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], rg));
-	try_(column_get_int(&n1, args[1], rg));
+	try_(expression_get_int(&n0, args[0], rg));
+	try_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = overflow_safe_multiply_i(n0, n1);
 
@@ -319,11 +319,11 @@ int fql_op_mult_i(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_mult_f(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	try_(column_get_float(&n0, args[0], rg));
-	try_(column_get_float(&n1, args[1], rg));
+	try_(expression_get_float(&n0, args[0], rg));
+	try_(expression_get_float(&n1, args[1], rg));
 
 	ret->f = n0 * n1;
 
@@ -332,11 +332,11 @@ int fql_op_mult_f(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_divi_i(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], rg));
-	try_(column_get_int(&n1, args[1], rg));
+	try_(expression_get_int(&n0, args[0], rg));
+	try_(expression_get_int(&n1, args[1], rg));
 
 	if (n1 == 0) {
 		fputs("division by zero\n", stderr);
@@ -350,11 +350,11 @@ int fql_op_divi_i(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_divi_f(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	try_(column_get_float(&n0, args[0], rg));
-	try_(column_get_float(&n1, args[1], rg));
+	try_(expression_get_float(&n0, args[0], rg));
+	try_(expression_get_float(&n1, args[1], rg));
 
 	if (n1 == 0) {
 		fputs("division by zero\n", stderr);
@@ -368,11 +368,11 @@ int fql_op_divi_f(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_mod_i(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], rg));
-	try_(column_get_int(&n1, args[1], rg));
+	try_(expression_get_int(&n0, args[0], rg));
+	try_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = n0 % n1;
 
@@ -381,11 +381,11 @@ int fql_op_mod_i(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_bit_or(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], rg));
-	try_(column_get_int(&n1, args[1], rg));
+	try_(expression_get_int(&n0, args[0], rg));
+	try_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = n0 | n1;
 
@@ -394,11 +394,11 @@ int fql_op_bit_or(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_bit_and(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], rg));
-	try_(column_get_int(&n1, args[1], rg));
+	try_(expression_get_int(&n0, args[0], rg));
+	try_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = n0 & n1;
 
@@ -407,11 +407,11 @@ int fql_op_bit_and(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_bit_xor(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(column_get_int(&n0, args[0], rg));
-	try_(column_get_int(&n1, args[1], rg));
+	try_(expression_get_int(&n0, args[0], rg));
+	try_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = n0 ^ n1;
 
@@ -420,9 +420,9 @@ int fql_op_bit_xor(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_bit_not(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	long n0 = 0;
-	try_(column_get_int(&n0, args[0], rg));
+	try_(expression_get_int(&n0, args[0], rg));
 
 	ret->i = ~n0;
 
@@ -431,9 +431,9 @@ int fql_op_bit_not(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_unary_minus_i(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	long n0 = 0;
-	try_(column_get_int(&n0, args[0], rg));
+	try_(expression_get_int(&n0, args[0], rg));
 
 	if (n0 == LONG_MIN) {
 		fputs("arithmetic overflow detected\n", stderr);
@@ -447,9 +447,9 @@ int fql_op_unary_minus_i(function* fn, union field* ret, recgroup* rg)
 
 int fql_op_unary_minus_f(function* fn, union field* ret, recgroup* rg)
 {
-	column** args = vec_begin(fn->args);
+	expression** args = vec_begin(fn->args);
 	double n0 = 0;
-	try_(column_get_float(&n0, args[0], rg));
+	try_(expression_get_float(&n0, args[0], rg));
 
 	ret->f = -n0;
 
