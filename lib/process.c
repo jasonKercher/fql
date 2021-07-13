@@ -84,11 +84,19 @@ void process_activate(process* self, plan* plan, unsigned fifo_size)
 	for (; it != vec_end(self->union_end_nodes); ++it) {
 		process* select_proc = (*it)->data;
 		select_proc->fifo_out[0] = new_t_(fifo, recgroup, fifo_size);
+		select_proc->fifo_out[0]->input_count = 1;
 		queue_enqueue(&self->queued_results, select_proc->fifo_out[0]);
 	}
 
 	if (self->fifo_in[0] == NULL) {
 		self->fifo_in[0] = new_t_(fifo, recgroup, fifo_size);
+		/* NOTE: GROUP BY hack. a constant query expression
+		 *       containing a group by essentially has 2 roots.
+		 *       We just give in[0] a nudge (like a root).
+		 */
+		if (self->action__ == &fql_groupby && self->is_const) {
+			fifo_advance(self->fifo_in[0]);
+		}
 	}
 	if (self->has_second_input) {
 		/* should never happen */

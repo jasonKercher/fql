@@ -14,6 +14,8 @@
 #include "util/queue.h"
 #include "antlr/antlr.h"
 
+#define PIPE_FACTOR_DEFAULT 16
+
 /**
  * No need to expose this function. A user will
  * not know the size of struct fql_handle.
@@ -33,25 +35,26 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	        new_t_(vec, struct fql_field), /* api_vec */
 	        NULL,                          /* query_str */
 	        {
-	                new_(string), /* schema_path */
-	                new_(string), /* schema */
-	                "",           /* in_delim */
-	                "",           /* out_delim */
-	                "",           /* rec_terminator */
-	                false,        /* dry_run */
-	                false,        /* force_cartesian */
-	                false,        /* overwrite */
-	                false,        /* override_warnings */
-	                true,         /* print_header */
-	                false,        /* add_header */
-	                false,        /* print_plan */
-	                false,        /* threading */
-	                false,        /* verbose */
-	                false,        /* char_as_byte */
-	                false,        /* strictness */
-	                false,        /* loose_groups */
-	                false,        /* stable */
-	        }                     /* props */
+	                new_(string),        /* schema_path */
+	                new_(string),        /* schema */
+	                "",                  /* in_delim */
+	                "",                  /* out_delim */
+	                "",                  /* rec_terminator */
+	                PIPE_FACTOR_DEFAULT, /* pipe_factor */
+	                false,               /* dry_run */
+	                false,               /* force_cartesian */
+	                false,               /* overwrite */
+	                false,               /* override_warnings */
+	                true,                /* print_header */
+	                false,               /* add_header */
+	                false,               /* print_plan */
+	                false,               /* threading */
+	                false,               /* verbose */
+	                false,               /* char_as_byte */
+	                false,               /* strictness */
+	                false,               /* loose_groups */
+	                false,               /* stable */
+	        }                            /* props */
 	};
 	return fql;
 }
@@ -172,6 +175,19 @@ void fql_set_force_cartesian(struct fql_handle* fql, int force_cartesian)
 	fql->props.force_cartesian = force_cartesian;
 }
 
+void fql_set_pipe_factor(struct fql_handle* fql, int pipe_factor)
+{
+	if (pipe_factor < 2) {
+		fprintf(stderr,
+		        "pipe factor (%d) invalid, pipe factor set to %d\n",
+		        pipe_factor,
+		        PIPE_FACTOR_DEFAULT);
+		fql->props.pipe_factor = 2;
+	} else {
+		fql->props.pipe_factor = pipe_factor;
+	}
+}
+
 void fql_set_strict_mode(struct fql_handle* fql, int strictness)
 {
 	fql->props.strictness = strictness;
@@ -277,7 +293,7 @@ int fql_make_plans(struct fql_handle* fql, const char* query_str)
 		goto make_plans_fail;
 	}
 
-	if (build_plans(fql->query_list, fql->props.loose_groups)) {
+	if (build_plans(fql)) {
 		goto make_plans_fail;
 	}
 

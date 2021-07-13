@@ -18,33 +18,33 @@
 #include "util/util.h"
 
 #define PLAN_COLUMN_SEP   " | "
-#define FIFO_SCALE_FACTOR 4
 
 /**
  * Plan is basically a decision graph
  * where each node represents a process
  */
 
-int _build(query*, dnode* entry, bool loose_groups, bool is_union);
+int _build(query*, struct fql_handle*, dnode* entry, bool is_union);
 void _print_plan(plan*);
 void _activate_procs(plan* self);
 
-plan* plan_construct(plan* self, query* query, bool loose_groups)
+plan* plan_construct(plan* self, query* query, struct fql_handle* fql)
 {
 	*self = (plan) {
-	        new_(dgraph), /* processes */
-	        NULL,         /* op_true */
-	        NULL,         /* op_false */
-	        NULL,         /* current */
-	        NULL,         /* root */
-	        query,        /* query */
-	        0,            /* rows_affected */
-	        0,            /* iterations */
-	        0,            /* source_count */
-	        0,            /* plan_id */
-	        false,        /* is_const */
-	        false,        /* has_stepped */
-	        loose_groups, /* loose_groups */
+	        new_(dgraph),            /* processes */
+	        NULL,                    /* op_true */
+	        NULL,                    /* op_false */
+	        NULL,                    /* current */
+	        NULL,                    /* root */
+	        query,                   /* query */
+	        0,                       /* rows_affected */
+	        0,                       /* iterations */
+	        0,                       /* source_count */
+	        0,                       /* plan_id */
+	        fql->props.pipe_factor,  /* pipe_factor */
+	        false,                   /* is_const */
+	        false,                   /* has_stepped */
+	        fql->props.loose_groups, /* loose_groups */
 	};
 
 	self->plan_id = query->query_id;
@@ -225,7 +225,7 @@ process* _new_join_proc(enum join_type type, const char* algorithm, plan* self)
 }
 
 /* lol */
-int _from(plan* self, query* query)
+int _from(plan* self, query* query, struct fql_handle* fql)
 {
 	if (query->sources->size == 0) {
 		return FQL_GOOD;
@@ -254,7 +254,7 @@ int _from(plan* self, query* query)
 		//from_proc->root_fifo = 1;
 		from_node = dgraph_add_data(self->processes, from_proc);
 		//from_node->is_root = true;
-		try_(_build(table_iter->subquery, from_node, self->loose_groups, false));
+		try_(_build(table_iter->subquery, fql, from_node, false));
 		plan* subquery_plan = table_iter->subquery->plan;
 		//process* sub_true_proc = subquery_plan->op_true->data;
 		//fqlselect* sub_select = sub_true_proc->proc_data;
@@ -437,7 +437,7 @@ void _operation(plan* self, query* query, dnode* entry, bool is_union)
 	self->op_true->out[0] = entry;
 }
 
-int _union(plan* self, query* aquery, bool loose_groups)
+int _union(plan* self, query* aquery, struct fql_handle* fql)
 {
 	if (vec_empty(aquery->unions)) {
 		return FQL_GOOD;
@@ -447,7 +447,7 @@ int _union(plan* self, query* aquery, bool loose_groups)
 
 	query** it = vec_begin(aquery->unions);
 	for (; it != vec_end(aquery->unions); ++it) {
-		try_(_build(*it, NULL, loose_groups, true));
+		try_(_build(*it, fql, NULL, true));
 		plan* union_plan = (*it)->plan;
 		vec_push_back(select_proc->union_end_nodes, &union_plan->current);
 		process* union_proc = union_plan->op_true->data;
@@ -596,26 +596,26 @@ void _mark_roots_const(vec* roots)
 	}
 }
 
-int _build(query* aquery, dnode* entry, bool loose_groups, bool is_union)
+int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 {
 	/* Loop through constant value subqueries and
 	 * build their plans
 	 */
 	query** it = vec_begin(aquery->subquery_const_vec);
 	for (; it != vec_end(aquery->subquery_const_vec); ++it) {
-		try_(_build(*it, NULL, loose_groups, false));
+		try_(_build(*it, fql, NULL, false));
 	}
 
-	aquery->plan = new_(plan, aquery, loose_groups);
+	aquery->plan = new_(plan, aquery, fql);
 	plan* self = aquery->plan;
 
 	/* aquery */
-	try_(_from(self, aquery));
+	try_(_from(self, aquery, fql));
 	try_(_where(self, aquery));
 	_group(self, aquery);
 	try_(_having(self, aquery));
 	_operation(self, aquery, entry, is_union);
-	try_(_union(self, aquery, loose_groups));
+	try_(_union(self, aquery, fql));
 	_order(self, aquery);
 
 	/* Uncomment this to view the plan *with* passive nodes */
@@ -656,13 +656,13 @@ int _build(query* aquery, dnode* entry, bool loose_groups, bool is_union)
 	return FQL_GOOD;
 }
 
-int build_plans(queue* query_list, bool loose_groups)
+int build_plans(struct fql_handle* fql)
 {
-	queue* node = query_list;
+	queue* node = fql->query_list;
 
 	for (; node; node = node->next) {
 		query* query = node->data;
-		try_(_build(query, NULL, loose_groups, false));
+		try_(_build(query, fql, NULL, false));
 	}
 
 	return FQL_GOOD;
@@ -749,14 +749,26 @@ void print_plans(queue* query_list)
 	}
 }
 
+unsigned _get_union_pipe_count(vec* nodes)
+{
+	unsigned total = 0;
+	dnode** it = vec_begin(nodes);
+	for (; it != vec_end(nodes); ++it) {
+		process* proc = (*it)->data;
+		total += proc->union_end_nodes->size;
+	}
+	return total;
+}
+
 void _activate_procs(plan* self)
 {
 	/* First, build root record pipe */
 	unsigned graph_size = self->processes->nodes->size;
-	unsigned fifo_base_size = graph_size * FIFO_SCALE_FACTOR;
-	unsigned root_process_count = self->processes->_roots->size;
+	unsigned union_pipes = _get_union_pipe_count(self->processes->nodes);
+	unsigned pipe_count = graph_size + union_pipes;
 
-	unsigned root_size = fifo_base_size * root_process_count;
+	unsigned fifo_base_size = pipe_count * self->pipe_factor;
+	unsigned root_size = fifo_base_size * pipe_count;
 
 	self->root = new_t_(fifo, recgroup, root_size);
 

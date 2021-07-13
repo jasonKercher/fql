@@ -74,23 +74,44 @@ void record_clear_strings(record* self, vec* strings)
 	}
 }
 
-string* record_generate_string(record* self, vec* strings, unsigned* max)
+string* record_generate_subquery_string(record* self)
 {
-	if (strings == NULL) {
-		strings = new_t_(vec, string);
+	if (self->subquery_strings == NULL) {
+		self->subquery_strings = new_t_(vec, string);
 	}
 
-	string* ret = vec_add_one(strings);
-	if (strings->size <= *max) {
+	string* ret = vec_add_one(self->subquery_strings);
+	if (self->subquery_strings->size <= self->max_subquery_count) {
 		return ret;
 	}
 
-	unsigned i = (*max) ? *max : 0;
-	for (; i < strings->size; ++i) {
+	unsigned i = (self->max_subquery_count) ? self->max_subquery_count : 0;
+	for (; i < self->subquery_strings->size; ++i) {
 		string_construct(ret);
 	}
 
-	*max = strings->size;
+	self->max_subquery_count = self->subquery_strings->size;
+
+	return ret;
+}
+
+string* record_generate_groupby_string(record* self)
+{
+	if (self->group_strings == NULL) {
+		self->group_strings = new_t_(vec, string);
+	}
+
+	string* ret = vec_add_one(self->group_strings);
+	if (self->group_strings->size <= self->max_group_count) {
+		return ret;
+	}
+
+	unsigned i = (self->max_group_count) ? self->max_group_count : 0;
+	for (; i < self->group_strings->size; ++i) {
+		string_construct(ret);
+	}
+
+	self->max_group_count = self->group_strings->size;
 
 	return ret;
 }

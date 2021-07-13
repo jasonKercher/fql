@@ -15,6 +15,7 @@ struct fql_handle {
 		char in_delim[32];
 		char out_delim[32];
 		char rec_terminator[32];
+		int pipe_factor;
 		int dry_run;
 		int force_cartesian;
 		int overwrite;

@@ -1,7 +1,6 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
-#define PROCESS_BUFFER_SIZE 256
 #define PROCESS_NO_ROOT     -1
 
 #include "fqlplan.h"

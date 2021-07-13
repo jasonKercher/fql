@@ -123,7 +123,7 @@ void _hash_join_right_side(process* proc, table* table, fifo* in_right)
 	fifo_update(in_right);
 }
 
-recgroup* _hash_join_left_side(process* proc, table* table, recgroup* left_rg)
+char* _hash_join_left_side(process* proc, table* table, recgroup* left_rg)
 {
 	struct hashjoin* hj = table->join_data;
 
@@ -138,22 +138,12 @@ recgroup* _hash_join_left_side(process* proc, table* table, recgroup* left_rg)
 		hj->rec_idx = 0;
 	}
 
-	char** rightrec_ptr = vec_at(hj->recs, hj->rec_idx++);
+	char** right_location_ref = vec_at(hj->recs, hj->rec_idx++);
 	if (hj->rec_idx >= hj->recs->size) {
 		hj->recs = NULL;
 	}
-	//_adj_left_side_ref_count(left_rg, 1);
 
-	recgroup* right_rg = fifo_get(proc->fifo_in[1]);
-	//recgroup_resize(right_rg, proc->out_src_count);
-	//record* rec = recgroup_rec_back(right_rg);
-
-	reader* reader = table->reader;
-
-	reader->get_record_at__(reader, right_rg, *rightrec_ptr);
-	recgroup_rec_add_front(right_rg, proc->out_src_count - 1);
-
-	return right_rg;
+	return *right_location_ref;
 }
 
 int fql_hash_join(process* proc)
@@ -187,15 +177,20 @@ int fql_hash_join(process* proc)
 
 	recgroup* left_rg_iter = fifo_begin(in_left);
 	while (left_rg_iter != fifo_end(in_left) && fifo_receivable(out)) {
-		fql_no_op(right_side_read_proc);
 
-		recgroup* right_rg = _hash_join_left_side(proc, table, left_rg_iter);
-		if (right_rg == NULL) {
+		char* right_location = _hash_join_left_side(proc, table, left_rg_iter);
+		if (right_location == NULL) {
 			_recycle(proc, left_rg_iter);
 			left_rg_iter = fifo_iter(in_left);
-			fifo_iter(in_right);
 			continue;
 		}
+		fql_no_op(right_side_read_proc);
+		recgroup* right_rg = fifo_get(proc->fifo_in[1]);
+
+		reader* reader = table->reader;
+
+		reader->get_record_at__(reader, right_rg, right_location);
+		recgroup_rec_add_front(right_rg, proc->out_src_count - 1);
 
 		/* If this is the last record match to the left
 		 * side, send the left side. Otherwise, insert
@@ -258,7 +253,8 @@ int _group_dump(process* proc, fifo* in_fresh, fifo* out)
 	recgroup* rg_iter = fifo_begin(in_fresh);
 	for (; rg_iter != fifo_end(in_fresh) && fifo_receivable(out);
 	     rg_iter = fifo_iter(in_fresh)) {
-		record* rec = recgroup_rec_at(rg_iter, 0);
+		recgroup_resize(rg_iter, 1);
+		record* rec = recgroup_rec_begin(rg_iter);
 
 		switch (group_dump_record(group, rec)) {
 		case FQL_FAIL:
@@ -303,6 +299,7 @@ int fql_groupby(process* proc)
 			_recycle(proc, rg_iter);
 		} else {
 			recgroup* rg = fifo_get(in_fresh);
+			recgroup_resize(rg, 1);
 			record* rec = recgroup_rec_at(rg, 0);
 			try_(group_dump_record(group, rec));
 			fifo_add(out, rg);

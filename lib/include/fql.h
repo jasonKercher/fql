@@ -136,6 +136,12 @@ void fql_set_char_as_byte(struct fql_handle*, int);
 void fql_set_force_cartesian(struct fql_handle*, int);
 
 /**
+ * set a multiplier for the size of the pipes used to
+ * pass data to different processes. Default: 4
+ */
+void fql_set_pipe_factor(struct fql_handle*, int pipe_factor);
+
+/**
  * This setting takes precedence over the
  * FQL_SCHEMA_PATHenvironment variable and
  * "$HOME/.config/fql/"

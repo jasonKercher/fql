@@ -65,10 +65,7 @@ int subquery_get_record(reader* reader, recgroup* rg)
 			 *       return value of LEFT. The result of the
 			 *       function must outlive the select clause.
 			 */
-			string* s = record_generate_string(
-			        &self->copy_data,
-			        self->copy_data.subquery_strings,
-			        &self->copy_data.max_subquery_count);
+			string* s = record_generate_subquery_string(&self->copy_data);
 			string_copy_from_stringview(s, copy_sv);
 			*copy_sv = (stringview) {s->data, s->size};
 			break;

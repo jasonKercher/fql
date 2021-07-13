@@ -173,6 +173,8 @@ int group_dump_record(group* self, record* rec)
 
 	size_t idx = self->_composite.size * self->_dump_idx;
 
+	record_resize(rec, self->columns.size);
+
 	column** group_cols = vec_begin(&self->columns);
 	stringview* rec_svs = vec_begin(&rec->fields);
 
@@ -181,9 +183,7 @@ int group_dump_record(group* self, record* rec)
 	unsigned i = 0;
 	for (; i < self->columns.size; ++i) {
 		if (group_cols[i]->expr == EXPR_AGGREGATE) {
-			string* s = record_generate_string(rec,
-			                                   rec->group_strings,
-			                                   &rec->max_group_count);
+			string* s = record_generate_groupby_string(rec);
 			_read_aggregate(group_cols[i], s, &rec_svs[i], self->_dump_idx);
 			continue;
 		}

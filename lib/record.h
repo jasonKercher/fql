@@ -79,6 +79,7 @@ void record_destroy(struct record*);
 void record_resize(struct record*, unsigned size);
 void record_swap(struct record*, struct record* src);
 void record_clear_strings(struct record*, struct vec*);
-string* record_generate_string(struct record*, struct vec*, unsigned* max);
+string* record_generate_groupby_string(struct record*);
+string* record_generate_subquery_string(struct record*);
 
 #endif /* RECORD_H */
