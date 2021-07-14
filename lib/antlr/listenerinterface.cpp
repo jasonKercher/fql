@@ -687,6 +687,15 @@ void ListenerInterface::enterTop_count(TSqlParser::Top_countContext * ctx)
 }
 void ListenerInterface::exitTop_count(TSqlParser::Top_countContext * ctx) { }
 
+void ListenerInterface::enterCase_expression(TSqlParser::Case_expressionContext* ctx)
+{
+	query_enter_case_expression(_query);
+}
+void ListenerInterface::exitCase_expression(TSqlParser::Case_expressionContext* ctx)
+{
+	query_exit_case_expression(_query);
+}
+
 void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx)
 {
 	if (!ctx->ALL()) {
@@ -1120,9 +1129,6 @@ void ListenerInterface::exitSet_special(TSqlParser::Set_specialContext * ctx) { 
 
 void ListenerInterface::enterConstant_LOCAL_ID(TSqlParser::Constant_LOCAL_IDContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitConstant_LOCAL_ID(TSqlParser::Constant_LOCAL_IDContext * ctx) { }
-
-void ListenerInterface::enterCase_expression(TSqlParser::Case_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitCase_expression(TSqlParser::Case_expressionContext * ctx) { }
 
 void ListenerInterface::enterConstant_expression(TSqlParser::Constant_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitConstant_expression(TSqlParser::Constant_expressionContext * ctx) { }

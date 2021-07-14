@@ -132,11 +132,12 @@ struct query {
 	/* all the variables below are temporaries for
 	 * tracking the query as antlr traverses it
 	 */
-	struct stack* logic_stack;    /* used to build logic groups */
-	struct vec* joinable;         /* denotes a joinable condition */
-	struct stack* function_stack; /* used to track function nesting */
+	struct stack* logic_stack;      /* used to build logic groups */
+	struct vec* joinable;           /* denotes a joinable condition */
+	struct stack* function_stack;   /* track function nesting */
+	struct stack* switchcase_stack; /* track casestatement nesting */
 
-	int in_aggregate;          /* Boolean for whether we are in aggregate */
+	int in_aggregate;
 	int in_bracket_expression; /* boolean for whether we are in a
 	                            * bracket expression or not
 	                            */
@@ -178,6 +179,9 @@ int query_exit_union(struct query*, struct query*);
 int query_enter_function(struct query*, enum scalar_function, int);
 void query_exit_function(struct query*);
 int query_enter_operator(struct query*, enum scalar_function op);
+
+int query_enter_case_expression(struct query*);
+int query_exit_case_expression(struct query*);
 
 /* search building functions */
 void query_set_logic_comparison(struct query*, const char*, int negation);

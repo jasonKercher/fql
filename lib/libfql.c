@@ -236,13 +236,10 @@ void fql_set_crlf_output(struct fql_handle* fql, int crlf)
  */
 int fql_exec_plans(struct fql_handle* fql, int plan_count)
 {
-	if (plan_count == 0) {
-		return FQL_GOOD;
-	}
 	int i = 0;
 	int ret = 0;
-	query* query = fql->query_list->data;
 	for (; fql->query_list && i < plan_count; ++i) {
+		query* query = fql->query_list->data;
 		plan* plan = query->plan;
 		if (plan->has_stepped) {
 			fputs("Cannot execute plan that has been"
@@ -260,7 +257,7 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 		}
 
 		query_free(query);
-		query = queue_dequeue(&fql->query_list);
+		queue_dequeue(&fql->query_list);
 		if (ret == FQL_FAIL) {
 			break;
 		}

@@ -45,6 +45,7 @@ query* query_construct(query* self, int id)
 	        NULL, /* logic_stack */
 	        NULL, /* joinable */
 	        NULL, /* function_stack */
+	        NULL, /* switchcase_stack */
 
 	        0, /* in_aggregate */
 	        0, /* in_bracket_expression */
@@ -113,9 +114,18 @@ int _add_logic_expression(query* self, expression* expr)
 
 int _distribute_expression(query* self, expression* expr)
 {
+	/* Order probably important here. This is
+	 * the priority of ownership for the most
+	 * recent expression.
+	 */
 	if (self->function_stack) {
 		expression* fn_expr = self->function_stack->data;
 		function_add_expression(fn_expr->field.fn, expr);
+		return FQL_GOOD;
+	}
+	if (self->switchcase_stack) {
+		expression* sc_expr = self->switchcase_stack->data;
+		//switchcase_add_expression(sc_expr, expr);
 		return FQL_GOOD;
 	}
 	if (self->in_aggregate) {
@@ -426,6 +436,7 @@ int query_enter_function(query* self,
 {
 	enum field_type type = FIELD_UNDEFINED;
 	function* func = new_(function, scalar_type, &type, char_as_byte);
+
 	fail_if_(func->call__ == NULL);
 	try_(_add_function(self, func, type));
 
@@ -444,6 +455,25 @@ void query_exit_function(query* self)
 {
 	//expression* expr = stack_pop(&self->function_stack);
 	stack_pop(&self->function_stack);
+}
+
+int query_enter_case_expression(query* self)
+{
+	expression* expr = new_(expression, EXPR_SWITCH_CASE, "SWITCHCASE OBJECT!!!", "");
+	expr->field_type = FIELD_UNDEFINED;
+
+	if (_distribute_expression(self, expr)) {
+		fputs("unhandled switch case\n", stderr);
+		return FQL_FAIL;
+	}
+	stack_push(&self->switchcase_stack, expr);
+	return FQL_GOOD;
+}
+
+int query_exit_case_expression(query* self)
+{
+	stack_pop(&self->switchcase_stack);
+	return FQL_GOOD;
 }
 
 void query_set_logic_comparison(query* self, const char* op, int negation)

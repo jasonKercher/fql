@@ -13,6 +13,7 @@ struct stringview;
 enum expr_type {
 	EXPR_UNDEFINED,
 	EXPR_COLUMN_NAME,
+	EXPR_SWITCH_CASE,
 	EXPR_ROW_NUMBER,  /* keyword __ROWNUM */
 	EXPR_FULL_RECORD, /* keyword __REC */
 	EXPR_GROUPING,
