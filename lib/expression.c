@@ -5,10 +5,11 @@
 #include "reader.h"
 #include "record.h"
 #include "process.h"
-#include "aggregate.h"
 #include "function.h"
-#include "stringy.h"
+#include "aggregate.h"
+#include "switchcase.h"
 #include "util/util.h"
+#include "util/stringy.h"
 
 expression* expression_construct(expression* self,
                                  enum expr_type expr,
@@ -45,6 +46,9 @@ expression* expression_construct(expression* self,
 		string_construct_from_char_ptr(&self->alias, data);
 		string_construct_from_char_ptr(&self->name, data);
 		return self; /* skip alias construct */
+	case EXPR_SWITCH_CASE:
+		self->field.sc = data;
+		break;
 	case EXPR_FUNCTION:
 		self->field.fn = data;
 		break;
@@ -79,6 +83,23 @@ void expression_destroy(void* generic_expr)
 	string_destroy(&self->alias);
 	string_destroy(&self->table_name);
 	string_destroy(&self->buf);
+}
+
+/* This is used for static case expressions */
+expression* expression_copy(const struct expression* src)
+{
+	expression* dest = malloc_(sizeof(*dest));
+	memset(dest, 0, sizeof(*dest));
+
+	string_construct_from_string(&dest->name, &src->name);
+	string_construct_from_string(&dest->alias, &src->alias);
+	string_construct_from_string(&dest->table_name, &src->alias);
+	string_construct_from_string(&dest->buf, &src->buf);
+
+	dest->expr = src->expr;
+	dest->field = src->field;
+
+	return dest;
 }
 
 void expression_link(struct expression* dest, struct expression* src)
@@ -188,6 +209,9 @@ int expression_try_assign_source(expression* self, table* table)
 int expression_get_int(long* ret, expression* self, recgroup* rg)
 {
 	switch (self->expr) {
+	case EXPR_SWITCH_CASE:
+		try_(switchcase_eval_to_int(self->field.sc, ret, rg));
+		return FQL_GOOD;
 	case EXPR_ROW_NUMBER:
 		*ret = *self->rownum_ref;
 		return FQL_GOOD;
@@ -239,6 +263,9 @@ int expression_get_int(long* ret, expression* self, recgroup* rg)
 int expression_get_float(double* ret, expression* self, recgroup* rg)
 {
 	switch (self->expr) {
+	case EXPR_SWITCH_CASE:
+		try_(switchcase_eval_to_float(self->field.sc, ret, rg));
+		return FQL_GOOD;
 	case EXPR_ROW_NUMBER:
 		*ret = (double)*self->rownum_ref;
 		return FQL_GOOD;
@@ -290,6 +317,9 @@ int expression_get_float(double* ret, expression* self, recgroup* rg)
 int expression_get_stringview(stringview* ret, expression* self, recgroup* rg)
 {
 	switch (self->expr) {
+	case EXPR_SWITCH_CASE:
+		try_(switchcase_eval_to_stringview(self->field.sc, ret, rg));
+		return FQL_GOOD;
 	case EXPR_FULL_RECORD: {
 		record* rec = recgroup_rec_at(rg, self->src_idx);
 		*ret = rec->rec_ref;

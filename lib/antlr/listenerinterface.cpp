@@ -532,7 +532,6 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 
 void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContext * ctx)
 {
-	_query->mode = MODE_SEARCH;
 	if (_query->logic_mode == LOGIC_UNDEFINED) {
 		if (_query->expect_where && !_query->where) {
 			_query->logic_mode = LOGIC_WHERE;
@@ -548,37 +547,36 @@ void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContex
 			}
 		}
 	}
-	enter_search(_query);
+	query_enter_search(_query);
 }
 void ListenerInterface::exitSearch_condition(TSqlParser::Search_conditionContext * ctx)
 {
-	exit_search(_query);
+	query_exit_search(_query);
 }
 
 void ListenerInterface::enterSearch_condition_and(TSqlParser::Search_condition_andContext * ctx)
 {
-	enter_search_and(_query);
+	query_enter_search_and(_query);
 }
 void ListenerInterface::exitSearch_condition_and(TSqlParser::Search_condition_andContext * ctx)
 {
-	exit_search_and(_query);
+	query_exit_search_and(_query);
 }
 
 void ListenerInterface::enterSearch_condition_not(TSqlParser::Search_condition_notContext * ctx)
 {
 	bool negation = (ctx->NOT() != NULL);
-	enter_search_not(_query, negation);
+	query_enter_search_not(_query, negation);
 }
 void ListenerInterface::exitSearch_condition_not(TSqlParser::Search_condition_notContext * ctx)
 {
-	exit_search_not(_query);
+	query_exit_search_not(_query);
 }
 
 void ListenerInterface::enterPredicate(TSqlParser::PredicateContext * ctx)
 {
 	if (ctx->IN()) {
-		_query->mode = MODE_IN;
-		query_init_in_statement(_query);
+		query_enter_in_statement(_query);
 	}
 }
 
@@ -587,11 +585,11 @@ void ListenerInterface::exitPredicate(TSqlParser::PredicateContext * ctx)
 	bool negation = (ctx->NOT() != NULL);
 	if (ctx->IN()) {
 		query_set_logic_comparison(_query, "IN", negation);
-		_query->mode = MODE_SEARCH;
+		query_exit_in_statement(_query);
 	} else if (ctx->LIKE()) {
 		query_set_logic_comparison(_query, "LIKE", negation);
 	}
-	_query->mode = MODE_SEARCH;
+	//_query->mode = MODE_SEARCH;
 }
 
 void ListenerInterface::enterQuery_expression(TSqlParser::Query_expressionContext * ctx) { }
@@ -696,16 +694,24 @@ void ListenerInterface::exitCase_expression(TSqlParser::Case_expressionContext* 
 	query_exit_case_expression(_query);
 }
 
-void ListenerInterface::enterSwitch_section(TSqlParser::Switch_sectionContext* ctx) { }
-void ListenerInterface::exitSwitch_section(TSqlParser::Switch_sectionContext* ctx) { }
+void ListenerInterface::enterSwitch_section(TSqlParser::Switch_sectionContext* ctx)
+{
+	query_enter_switch_section(_query);
+}
+void ListenerInterface::exitSwitch_section(TSqlParser::Switch_sectionContext* ctx)
+{
+	query_exit_switch_section(_query);
+}
 
 void ListenerInterface::enterSwitch_search_condition_section(
         TSqlParser::Switch_search_condition_sectionContext* ctx)
 {
+	query_enter_switch_search(_query);
 }
 void ListenerInterface::exitSwitch_search_condition_section(
         TSqlParser::Switch_search_condition_sectionContext* ctx)
 {
+	query_exit_switch_search(_query);
 }
 
 void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx)

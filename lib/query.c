@@ -113,6 +113,24 @@ int _add_logic_expression(query* self, expression* expr)
 	return FQL_GOOD;
 }
 
+int _add_switchcase_expression(query* self, expression* expr)
+{
+	switchcase* sc = self->switchcase_stack->data;
+	switch (sc->state) {
+	case SWITCH_STATIC:
+		sc->static_expr = expr;
+		break;
+	case SWITCH_VALUE:
+		switchcase_add_value(sc, expr);
+		break;
+	case SWITCH_STATIC_CMP:
+		sc->state = SWITCH_VALUE;
+	case SWITCH_LOGIC_GROUP:
+		_add_logic_expression(self, expr);
+	}
+	return FQL_GOOD;
+}
+
 int _distribute_expression(query* self, expression* expr)
 {
 	/* Order probably important here. This is
@@ -122,11 +140,6 @@ int _distribute_expression(query* self, expression* expr)
 	if (self->function_stack) {
 		expression* fn_expr = self->function_stack->data;
 		function_add_expression(fn_expr->field.fn, expr);
-		return FQL_GOOD;
-	}
-	if (self->switchcase_stack) {
-		expression* sc_expr = self->switchcase_stack->data;
-		switchcase_add_expression(sc_expr->field.sc, expr);
 		return FQL_GOOD;
 	}
 	if (self->in_aggregate) {
@@ -140,6 +153,9 @@ int _distribute_expression(query* self, expression* expr)
 		break;
 	case MODE_TOP:
 		self->top_expr = expr;
+		break;
+	case MODE_CASE:
+		try_(_add_switchcase_expression(self, expr));
 		break;
 	case MODE_IN:
 	case MODE_SEARCH:
@@ -373,13 +389,21 @@ int query_init_orderby(query* self)
 	return FQL_GOOD;
 }
 
-void query_init_in_statement(query* self)
+void query_enter_in_statement(query* self)
 {
 	logicgroup* lg = self->logic_stack->data;
 	if (lg->condition == NULL) {
 		lg->condition = new_(logic);
 	}
 	lg->condition->in_data = new_(inlist);
+	lg->condition->in_data->return_mode = self->mode;
+	self->mode = MODE_IN;
+}
+
+void query_exit_in_statement(query* self)
+{
+	logicgroup* lg = self->logic_stack->data;
+	self->mode = lg->condition->in_data->return_mode;
 }
 
 
@@ -460,20 +484,71 @@ void query_exit_function(query* self)
 
 int query_enter_case_expression(query* self)
 {
-	expression* expr = new_(expression, EXPR_SWITCH_CASE, "SWITCHCASE OBJECT!!!", "");
+	switchcase* new_sc = new_(switchcase);
+	expression* expr = new_(expression, EXPR_SWITCH_CASE, new_sc, "");
 	expr->field_type = FIELD_UNDEFINED;
 
 	if (_distribute_expression(self, expr)) {
 		fputs("unhandled switch case\n", stderr);
 		return FQL_FAIL;
 	}
-	stack_push(&self->switchcase_stack, expr);
+	stack_push(&self->switchcase_stack, new_sc);
+
+	new_sc->return_mode = self->mode;
+	new_sc->return_logic_mode = self->logic_mode;
+	new_sc->return_logic_stack = self->logic_stack;
+	self->logic_mode = LOGIC_CASE;
+	self->mode = MODE_CASE;
+	self->logic_stack = NULL;
 	return FQL_GOOD;
 }
 
 int query_exit_case_expression(query* self)
 {
-	stack_pop(&self->switchcase_stack);
+	switchcase* sc = stack_pop(&self->switchcase_stack);
+	self->mode = sc->return_mode;
+	self->logic_mode = sc->return_logic_mode;
+	self->logic_stack = sc->return_logic_stack;
+	return FQL_GOOD;
+}
+
+int query_enter_switch_section(query* self)
+{
+	switchcase* sc = self->switchcase_stack->data;
+	sc->state = SWITCH_STATIC_CMP;
+
+	if (sc->static_expr == NULL) {
+		fputs("reached WHEN branch without static case\n", stderr);
+		return FQL_FAIL;
+	}
+
+	expression* static_expr_copy = expression_copy(sc->static_expr);
+	query_enter_search(self);
+	query_enter_search_and(self);
+	query_enter_search_not(self, false);
+	_add_logic_expression(self, static_expr_copy);
+	query_set_logic_comparison(self, "=", false);
+	return FQL_GOOD;
+}
+int query_exit_switch_section(query* self)
+{
+	query_exit_search_not(self);
+	query_exit_search_and(self);
+	query_exit_search(self);
+	switchcase* sc = self->switchcase_stack->data;
+	sc->state = SWITCH_VALUE;
+	return FQL_GOOD;
+}
+int query_enter_switch_search(query* self)
+{
+	switchcase* sc = self->switchcase_stack->data;
+	sc->state = SWITCH_LOGIC_GROUP;
+	return FQL_GOOD;
+}
+int query_exit_switch_search(query* self)
+{
+	switchcase* sc = self->switchcase_stack->data;
+	sc->state = SWITCH_VALUE;
 	return FQL_GOOD;
 }
 
@@ -505,13 +580,15 @@ void _assign_logic(query* self, logicgroup* lg)
 	case LOGIC_HAVING:
 		self->having = lg;
 		break;
+	case LOGIC_CASE:
+		switchcase_add_logicgroup(self->switchcase_stack->data, lg);
+		break;
 	default:
 		fprintf(stderr, "unexpected logic mode assigning group\n");
 	}
-	self->logic_mode = LOGIC_UNDEFINED;
 }
 
-logicgroup* _add_item(query* self, enum logicgroup_type type)
+logicgroup* _add_logic_item(query* self, enum logicgroup_type type)
 {
 	logicgroup* lg = new_(logicgroup, type);
 	logicgroup* parent = self->logic_stack->data;
@@ -520,8 +597,11 @@ logicgroup* _add_item(query* self, enum logicgroup_type type)
 	return lg;
 }
 
-void enter_search(query* self)
+void query_enter_search(query* self)
 {
+	if (self->mode != MODE_CASE) {
+		self->mode = MODE_SEARCH;
+	}
 	if (self->logic_stack == NULL) {
 		logicgroup* lg = new_(logicgroup, LG_ROOT);
 		lg->expressions = new_t_(vec, expression*);
@@ -530,10 +610,10 @@ void enter_search(query* self)
 		return;
 	}
 
-	_add_item(self, LG_ROOT);
+	_add_logic_item(self, LG_ROOT);
 }
 
-void exit_search(query* self)
+void query_exit_search(query* self)
 {
 	logicgroup* lg = stack_pop(&self->logic_stack);
 	if (self->logic_stack == NULL) {
@@ -548,23 +628,23 @@ void exit_search(query* self)
 	}
 }
 
-void enter_search_and(query* self)
+void query_enter_search_and(query* self)
 {
-	_add_item(self, LG_AND);
+	_add_logic_item(self, LG_AND);
 }
 
-void exit_search_and(query* self)
+void query_exit_search_and(query* self)
 {
 	stack_pop(&self->logic_stack);
 }
 
-void enter_search_not(query* self, int negation)
+void query_enter_search_not(query* self, int negation)
 {
-	logicgroup* lg = _add_item(self, LG_NOT);
+	logicgroup* lg = _add_logic_item(self, LG_NOT);
 	lg->negation = negation;
 }
 
-void exit_search_not(query* self)
+void query_exit_search_not(query* self)
 {
 	logicgroup* top = stack_pop(&self->logic_stack);
 

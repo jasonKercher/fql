@@ -50,6 +50,8 @@ struct expression*
 expression_construct(struct expression*, enum expr_type, void* data, const char*);
 void expression_destroy(void*);
 
+struct expression* expression_copy(const struct expression*);
+
 void expression_link(struct expression* dest, struct expression* src);
 void expression_cat_description(struct expression*, string*);
 int expression_try_assign_source(struct expression*, struct table*);

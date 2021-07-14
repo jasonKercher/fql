@@ -4,6 +4,7 @@
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 
+#include "query.h"
 #include "field.h"
 #include "record.h"
 #include "process.h"
@@ -57,6 +58,7 @@ struct inlist {
 	struct vec* expressions;
 	struct query* subquery;
 	set* list_data;
+	enum mode return_mode;
 };
 typedef struct inlist inlist;
 

@@ -13,14 +13,14 @@ string* string_construct(string* s)
 	return s;
 }
 
-string* string_from_string(string* src)
+string* string_from_string(const string* src)
 {
 	string* new_string = new_(string);
 	string_copy(new_string, src);
 	return new_string;
 }
 
-string* string_construct_from_string(string* dest, string* src)
+string* string_construct_from_string(string* dest, const string* src)
 {
 	string_construct(dest);
 	string_copy(dest, src);

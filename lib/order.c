@@ -24,32 +24,13 @@ int _order_select(order* self, process*);
 
 order* order_construct(order* self)
 {
-	*self = (order) {
-	        {0},           /* expressions */
-	        {0},           /* entries */
-	        {0},           /* order_data */
-	        _order_select, /* select__ */
-	        NULL,          /* api */
-	        NULL,          /* in_filename */
-	        stdout,        /* out_file */
-	        NULL,          /* entry_iter */
-	        NULL,          /* mmap */
-	        0,             /* file_size */
-	        0,             /* fd */
-	        false          /* sorted */
-	};
+	memset(self, 0, sizeof(*self));
+	self->select__ = _order_select;
+	self->out_file = stdout;
 
 	vec_construct_(&self->expressions, expression*);
 	vec_construct_(&self->entries, struct _entry);
 	flex_construct(&self->order_data);
-
-	/* Moved to order_init_io */
-	//if (out_name != NULL) {
-	//	self->out_file = fopen(out_name, "w");
-	//	if (self->out_file == NULL) {
-	//		perror(out_name);
-	//	}
-	//}
 
 	return self;
 }

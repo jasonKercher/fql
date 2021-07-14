@@ -10,11 +10,12 @@
 #include "order.h"
 #include "logic.h"
 #include "reader.h"
-#include "expression.h"
 #include "process.h"
 #include "function.h"
 #include "fqlselect.h"
 #include "operation.h"
+#include "switchcase.h"
+#include "expression.h"
 #include "util/util.h"
 
 #define PLAN_COLUMN_SEP   " | "
@@ -76,28 +77,40 @@ void plan_destroy(void* generic_plan)
 	}
 }
 
-void _check_all_for_subquery_expression(process* proc, vec* expressions);
-void _check_for_subquery_expression(process* proc, expression* expr)
+int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg);
+void _check_all_for_special_expression(plan* self, process* proc, vec* expressions);
+void _check_for_special_expression(plan* self, process* proc, expression* expr)
 {
 	if (expr == NULL) {
 		return;
 	}
-	if (expr->expr == EXPR_SUBQUERY) {
+
+	switch (expr->expr) {
+	case EXPR_SUBQUERY:
 		process_add_to_wait_list(proc, expr->subquery->plan->op_true->data);
-		return;
+		break;
+	case EXPR_SWITCH_CASE: {
+		logicgroup** it = vec_begin(&expr->field.sc->tests);
+		for (; it != vec_end(&expr->field.sc->tests); ++it) {
+			_logic_to_process(self, proc, *it);
+		}
+		_check_all_for_special_expression(self, proc, &expr->field.sc->values);
+
+		break;
 	}
-	if (expr->expr == EXPR_FUNCTION) {
-		_check_all_for_subquery_expression(proc, expr->field.fn->args);
+	case EXPR_FUNCTION:
+		_check_all_for_special_expression(self, proc, expr->field.fn->args);
+	default:;
 	}
 }
-void _check_all_for_subquery_expression(process* proc, vec* expressions)
+void _check_all_for_special_expression(plan* self, process* proc, vec* expressions)
 {
 	if (expressions == NULL) {
 		return;
 	}
 	expression** it = vec_begin(expressions);
 	for (; it != vec_end(expressions); ++it) {
-		_check_for_subquery_expression(proc, *it);
+		_check_for_special_expression(self, proc, *it);
 	}
 }
 
@@ -133,10 +146,12 @@ int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 			if (lg->condition->in_data && lg->condition->in_data->subquery) {
 				try_(_subquery_inlist(self, logic_proc, lg));
 			}
-			_check_for_subquery_expression(logic_proc,
-			                               lg->condition->expr[0]);
-			_check_for_subquery_expression(logic_proc,
-			                               lg->condition->expr[1]);
+			_check_for_special_expression(self,
+			                              logic_proc,
+			                              lg->condition->expr[0]);
+			_check_for_special_expression(self,
+			                              logic_proc,
+			                              lg->condition->expr[1]);
 			try_(logic_assign_process(lg->condition, logic_proc));
 		}
 		break;
@@ -368,8 +383,9 @@ void _group(plan* self, query* query)
 	}
 	if (query->groupby != NULL) {
 		process* group_proc = new_(process, "GROUP BY ", self);
-		_check_all_for_subquery_expression(group_proc,
-		                                   &query->groupby->expressions);
+		_check_all_for_special_expression(self,
+		                                  group_proc,
+		                                  &query->groupby->expressions);
 		self->source_count = 1;
 		group_proc->out_src_count = 1;
 		process* true_proc = self->op_true->data;
@@ -420,8 +436,9 @@ void _operation(plan* self, query* query, dnode* entry, bool is_union)
 	//	process* true_proc = self->op_true->data;
 	//	true_proc->root_group = &query->groupby->_roots;
 	//}
-	_check_all_for_subquery_expression(self->op_true->data,
-	                                   op_get_expressions(query->op));
+	_check_all_for_special_expression(self,
+	                                  self->op_true->data,
+	                                  op_get_expressions(query->op));
 
 	/* Current no longer matters. After operation, we
 	 * do order where current DOES matter... BUT
@@ -472,7 +489,7 @@ void _order(plan* self, query* query)
 	//if (query->groupby) {
 	//	order_proc->root_group = &query->groupby->_roots;
 	//}
-	_check_all_for_subquery_expression(order_proc, &query->orderby->expressions);
+	_check_all_for_special_expression(self, order_proc, &query->orderby->expressions);
 	order_proc->action__ = &fql_orderby;
 	order_proc->proc_data = query->orderby;
 	order_proc->wait_for_in0_end = true;

@@ -47,9 +47,13 @@ Other missing features:
 - TOP PERCENT
 - WITH
 - COUNT(DISTINCT [col])
-- CASE
 - MERGE
 - APPLY
+- UNION without ALL
+
+Most recent and possibly unstable features:
+- UNION ALL
+- CASE statements
 
 ### Is it fast?
 

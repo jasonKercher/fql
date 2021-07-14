@@ -69,6 +69,10 @@ int logic_assign_process(logic* self, process* proc)
 	}
 	self->logic__ = _logic_matrix[self->comp_type][self->data_type];
 
+	if (proc == NULL) {
+		return FQL_GOOD;
+	}
+
 	expression_cat_description(self->expr[0], proc->plan_msg);
 	switch (self->comp_type) {
 	case COMP_EQ:

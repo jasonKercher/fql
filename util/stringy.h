@@ -20,8 +20,8 @@ typedef vec string;
 
 /* constructors */
 string* string_construct(string*);
-string* string_from_string(string*);
-string* string_construct_from_string(string*, string*);
+string* string_from_string(const string*);
+string* string_construct_from_string(string*, const string*);
 string* string_from_char_ptr(const char*);
 string* string_construct_from_char_ptr(string*, const char*);
 string* string_from_stringview(const struct stringview*);

@@ -7,19 +7,20 @@
 #include "io.h"
 #include "misc.h"
 #include "query.h"
-#include "stringview.h"
 #include "table.h"
 #include "group.h"
 #include "order.h"
 #include "logic.h"
 #include "reader.h"
-#include "expression.h"
 #include "function.h"
 #include "aggregate.h"
 #include "fqlselect.h"
 #include "operation.h"
+#include "switchcase.h"
+#include "expression.h"
 #include "util/util.h"
 #include "util/vec.h"
+#include "util/stringview.h"
 
 int _resolve_query(struct fql_handle*, query*, enum io union_io);
 
@@ -512,6 +513,7 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	switch (table->reader->type) {
 	case IO_FIXED:
 		schema_preflight(self);
+		return FQL_GOOD;
 	case IO_SUBQUERY:
 		return FQL_GOOD;
 	case IO_LIBCSV:
@@ -574,6 +576,22 @@ int _assign_expressions_limited(vec* expressions, vec* sources, int limit, int s
 	expression** it = vec_begin(expressions);
 	for (; it != vec_end(expressions); ++it) {
 		switch ((*it)->expr) {
+		case EXPR_SWITCH_CASE: {
+			switchcase* sc = (*it)->field.sc;
+			logicgroup** lg_iter = vec_begin(&sc->tests);
+			for (; lg_iter != vec_end(&sc->tests); ++lg_iter) {
+				try_(_assign_expressions_limited((*lg_iter)->expressions,
+				                                 sources,
+				                                 limit,
+				                                 strictness));
+			}
+			try_(_assign_expressions_limited(&sc->values,
+			                                 sources,
+			                                 limit,
+			                                 strictness));
+			try_(switchcase_resolve_type(sc, *it));
+			break;
+		}
 		case EXPR_FUNCTION: {
 			function* func = (*it)->field.fn;
 			try_(_assign_expressions_limited(func->args,
@@ -742,88 +760,117 @@ void _resolve_join_conditions(table* right_table, int right_idx)
 }
 
 enum _expr_type {
-	MAP_UNDEFINED,
 	MAP_CONST_INT,
 	MAP_CONST_FLOAT,
 	MAP_CONST_STRING,
 	MAP_COLUMN,
-	MAP_FUNCTION,
 	MAP_AGGREGATE,
 	MAP_SUBQUERY,
+	MAP_FUNCTION,
+	MAP_FUNCTION_END,
+	MAP_SWITCHCASE,
+	MAP_SWITCHCASE_END,
 };
 
 int _map_expression(vec* key, expression* expr)
 {
-	/* I mean... heh? */
-	static const enum _expr_type _undef = MAP_UNDEFINED;
 	static const enum _expr_type _c_int = MAP_CONST_INT;
 	static const enum _expr_type _c_float = MAP_CONST_FLOAT;
 	static const enum _expr_type _c_string = MAP_CONST_STRING;
 	static const enum _expr_type _expr = MAP_COLUMN;
-	static const enum _expr_type _func = MAP_FUNCTION;
 	static const enum _expr_type _agg = MAP_AGGREGATE;
 	static const enum _expr_type _sub = MAP_SUBQUERY;
+	static const enum _expr_type _func = MAP_FUNCTION;
+	static const enum _expr_type _func_end = MAP_FUNCTION_END;
+	static const enum _expr_type _switchcase = MAP_SWITCHCASE;
+	static const enum _expr_type _switchcase_end = MAP_SWITCHCASE_END;
 
-	const enum _expr_type* map_type = &_undef;
-	stringview type_sv;
+	stringview type_sv = {NULL, sizeof(enum _expr_type)};
 	stringview val_sv;
+
 	switch (expr->expr) {
 	case EXPR_CONST:
 		switch (expr->field_type) {
 		case FIELD_INT:
-			map_type = &_c_int;
+			type_sv.data = (void*)&_c_int;
+			vec_push_back(key, &type_sv);
 			stringview_nset(&val_sv, (char*)&expr->field.f, sizeof(double));
+			vec_push_back(key, &val_sv);
 			break;
 		case FIELD_FLOAT:
-			map_type = &_c_float;
+			type_sv.data = (void*)&_c_float;
+			vec_push_back(key, &type_sv);
 			stringview_nset(&val_sv, (char*)&expr->field.f, sizeof(double));
+			vec_push_back(key, &val_sv);
 			break;
 		case FIELD_STRING:
-			map_type = &_c_string;
+			type_sv.data = (void*)&_c_string;
+			vec_push_back(key, &type_sv);
 			stringview_set_string(&val_sv, expr->field.s);
+			vec_push_back(key, &val_sv);
 		default:;
 		}
 
 		break;
 	case EXPR_FULL_RECORD:
 	case EXPR_COLUMN_NAME:
-		map_type = &_expr;
+		type_sv.data = (void*)&_expr;
+		vec_push_back(key, &type_sv);
 		stringview_nset(&val_sv, (char*)&expr->data_source, sizeof(expression*));
+		vec_push_back(key, &val_sv);
 		break;
-	case EXPR_FUNCTION:
-		map_type = &_func;
+	case EXPR_FUNCTION: {
+		type_sv.data = (void*)&_func;
+		vec_push_back(key, &type_sv);
 		stringview_nset(&val_sv,
 		                (char*)&expr->field.fn->type,
 		                sizeof(enum scalar_function));
+		vec_push_back(key, &val_sv);
+
+		expression** it = vec_begin(expr->field.fn->args);
+		for (; it != vec_end(expr->field.fn->args); ++it) {
+			try_(_map_expression(key, *it));
+		}
+
+		type_sv.data = (void*)&_func_end;
+		vec_push_back(key, &type_sv); /* SIGNIFY FUNCTION ARGS END */
 		break;
+	}
 	case EXPR_AGGREGATE:
-		map_type = &_agg;
+		type_sv.data = (void*)&_agg;
+		vec_push_back(key, &type_sv);
 		stringview_nset(&val_sv,
 		                (char*)&expr->field.agg->agg_type,
 		                sizeof(enum aggregate_function));
+		vec_push_back(key, &val_sv);
 		break;
+	case EXPR_SWITCH_CASE: {
+		type_sv.data = (void*)&_switchcase;
+		vec_push_back(key, &type_sv);
+
+		expression** it = vec_begin(&expr->field.sc->values);
+		for (; it != vec_end(&expr->field.sc->values); ++it) {
+			try_(_map_expression(key, *it));
+		}
+		//logicgroup** lg_iter = vec_begin(&expr->field.sc->tests);
+		//for (; lg_iter != vec_end(&expr->field.sc->tests); ++lg_iter) {
+		//	try_(_map_case_expression(key, *lg_iter));
+		//}
+
+		type_sv.data = (void*)&_switchcase_end;
+		vec_push_back(key, &type_sv); /* SIGNIFY CASE EXPRESSION END */
+		break;
+	}
 	/* Maybe let's not group by a subquery expression?? */
 	case EXPR_SUBQUERY:
-		map_type = &_sub;
+		type_sv.data = (void*)&_sub;
+		vec_push_back(key, &type_sv);
 		stringview_nset(&val_sv, (char*)&expr->subquery, sizeof(void*));
+		vec_push_back(key, &val_sv);
 		break;
 	default:
 		fputs("unexpected expression\n", stderr);
 		return FQL_FAIL;
-	}
-
-	stringview_nset(&type_sv, (char*)map_type, sizeof(enum _expr_type));
-
-	vec_push_back(key, &type_sv);
-	vec_push_back(key, &val_sv);
-
-	if (*map_type != MAP_FUNCTION) {
-		return FQL_GOOD;
-	}
-
-	expression** it = vec_begin(expr->field.fn->args);
-	for (; it != vec_end(expr->field.fn->args); ++it) {
-		try_(_map_expression(key, *it));
 	}
 
 	return FQL_GOOD;

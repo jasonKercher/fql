@@ -82,13 +82,14 @@ enum scalar_function {
 
 enum mode {
 	MODE_UNDEFINED,
-	MODE_SELECT,
+	MODE_IN,
 	MODE_TOP,
+	MODE_CASE,
 	MODE_INTO,
 	MODE_UPDATE,
-	MODE_SOURCES,
+	MODE_SELECT,
 	MODE_SEARCH,
-	MODE_IN,
+	MODE_SOURCES,
 	MODE_GROUPBY,
 	MODE_ORDERBY,
 };
@@ -98,6 +99,7 @@ enum logic_mode {
 	LOGIC_WHERE,
 	LOGIC_JOIN,
 	LOGIC_HAVING,
+	LOGIC_CASE,
 };
 
 enum join_type {
@@ -168,7 +170,8 @@ int query_add_aggregate(struct query*, enum aggregate_function);
 int query_init_op(struct query*);
 void query_init_groupby(struct query*);
 int query_init_orderby(struct query*);
-void query_init_in_statement(struct query*);
+void query_enter_in_statement(struct query*);
+void query_exit_in_statement(struct query*);
 void query_assign_in_subquery(struct query*, struct query*);
 void query_add_subquery_const(struct query*, struct query*);
 void query_set_order_desc(struct query*);
@@ -182,15 +185,19 @@ int query_enter_operator(struct query*, enum scalar_function op);
 
 int query_enter_case_expression(struct query*);
 int query_exit_case_expression(struct query*);
+int query_enter_switch_section(struct query*);
+int query_exit_switch_section(struct query*);
+int query_enter_switch_search(struct query*);
+int query_exit_switch_search(struct query*);
 
 /* search building functions */
 void query_set_logic_comparison(struct query*, const char*, int negation);
-void enter_search(struct query*);
-void exit_search(struct query*);
-void enter_search_and(struct query*);
-void exit_search_and(struct query*);
-void enter_search_not(struct query*, int negation);
-void exit_search_not(struct query*);
+void query_enter_search(struct query*);
+void query_exit_search(struct query*);
+void query_enter_search_and(struct query*);
+void query_exit_search_and(struct query*);
+void query_enter_search_not(struct query*, int negation);
+void query_exit_search_not(struct query*);
 
 #ifdef __cplusplus
 }
