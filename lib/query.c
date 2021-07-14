@@ -3,18 +3,19 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-#include "expression.h"
 #include "fql.h"
-#include "fqlselect.h"
+#include "misc.h"
 #include "logic.h"
 #include "group.h"
 #include "order.h"
-#include "aggregate.h"
 #include "field.h"
 #include "function.h"
-#include "misc.h"
-#include "util/dgraph.h"
+#include "fqlselect.h"
+#include "aggregate.h"
+#include "expression.h"
+#include "switchcase.h"
 #include "util/util.h"
+#include "util/dgraph.h"
 
 query* query_new(int id)
 {
@@ -125,7 +126,7 @@ int _distribute_expression(query* self, expression* expr)
 	}
 	if (self->switchcase_stack) {
 		expression* sc_expr = self->switchcase_stack->data;
-		//switchcase_add_expression(sc_expr, expr);
+		switchcase_add_expression(sc_expr->field.sc, expr);
 		return FQL_GOOD;
 	}
 	if (self->in_aggregate) {

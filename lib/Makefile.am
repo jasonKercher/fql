@@ -5,21 +5,19 @@ include_HEADERS = include/fql.h
 lib_LTLIBRARIES = libfql.la
 libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c \
 					fqlplan.h fqlplan.c \
-					process.h process.c fqlprocesses.c \
 					query.h query.c \
-					table.h table.c \
 					schema.h schema.c \
-					expression.h expression.c \
+					table.h table.c \
+					expression.h expression.c switchcase.h switchcase.c function.h function.c scalarfn.c \
 					group.h group.c \
 					aggregate.h aggregate.c aggregatefn.c \
 					order.h order.c \
-					operation.h operation.c \
+					operation.h operation.c fqlselect.h fqlselect.c \
 					io.h \
 					reader.h reader.c libcsvread.c fixedread.c subquery.c \
 					writer.h writer.c libcsvwrite.c fixedwrite.c \
 					logic.h logic.c fqllogic.c like.c inlist.c\
-					fqlselect.h fqlselect.c \
-					function.h function.c scalarfn.c \
+					process.h process.c fqlprocesses.c \
 					record.h record.c \
 					field.h field.c \
 					misc.h

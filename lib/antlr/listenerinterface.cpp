@@ -696,6 +696,18 @@ void ListenerInterface::exitCase_expression(TSqlParser::Case_expressionContext* 
 	query_exit_case_expression(_query);
 }
 
+void ListenerInterface::enterSwitch_section(TSqlParser::Switch_sectionContext* ctx) { }
+void ListenerInterface::exitSwitch_section(TSqlParser::Switch_sectionContext* ctx) { }
+
+void ListenerInterface::enterSwitch_search_condition_section(
+        TSqlParser::Switch_search_condition_sectionContext* ctx)
+{
+}
+void ListenerInterface::exitSwitch_search_condition_section(
+        TSqlParser::Switch_search_condition_sectionContext* ctx)
+{
+}
+
 void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx)
 {
 	if (!ctx->ALL()) {
@@ -1288,12 +1300,6 @@ void ListenerInterface::exitModify_method(TSqlParser::Modify_methodContext * ctx
 
 void ListenerInterface::enterNodes_method(TSqlParser::Nodes_methodContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitNodes_method(TSqlParser::Nodes_methodContext * ctx) { }
-
-void ListenerInterface::enterSwitch_section(TSqlParser::Switch_sectionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSwitch_section(TSqlParser::Switch_sectionContext * ctx) { }
-
-void ListenerInterface::enterSwitch_search_condition_section(TSqlParser::Switch_search_condition_sectionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSwitch_search_condition_section(TSqlParser::Switch_search_condition_sectionContext * ctx) { }
 
 void ListenerInterface::enterWith_table_hints(TSqlParser::With_table_hintsContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitWith_table_hints(TSqlParser::With_table_hintsContext * ctx) { }

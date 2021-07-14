@@ -16,10 +16,12 @@ enum field_type {
 
 struct function;
 struct aggregate;
+struct switchcase;
 
 union field {
 	struct function* fn;
 	struct aggregate* agg;
+	struct switchcase* sc;
 	string* s;
 	double f;
 	long i;
