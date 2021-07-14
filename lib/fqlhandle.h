@@ -25,6 +25,7 @@ struct fql_handle {
 		int print_plan;
 		int threading;
 		int verbose;
+		int parse_only;
 		int char_as_byte;
 		int strictness;
 		int loose_groups;

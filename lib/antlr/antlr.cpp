@@ -1,7 +1,9 @@
 #include "antlr.h"
+#include "fql.h"
+#include "parseonly.h"
+#include "treewalker.h"
 #include "upperstream.h"
 #include "errorlistener.h"
-#include "treewalker.h"
 #include "listenerinterface.h"
 
 int analyze_query(struct fql_handle* fql)
@@ -33,11 +35,14 @@ int analyze_query(struct fql_handle* fql)
 	}
 
 	std::vector<std::string> rule_names = parser.getRuleNames();
+	if (fql->props.parse_only) {
+		ParseOnly parse_only(rule_names);
+		antlr4::tree::ParseTreeWalker::DEFAULT.walk(&parse_only, tree);
+		return FQL_GOOD;
+	}
 
 	TreeWalker walker;
-
 	ListenerInterface analyzer(fql, &walker, rule_names);
-
 	walker.set_walking(true);
 	walker.walk(&analyzer, tree);
 	walker.set_walking(false);

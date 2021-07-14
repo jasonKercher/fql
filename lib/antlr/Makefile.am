@@ -6,5 +6,6 @@ libantlr_la_SOURCES = antlr.h antlr.cpp \
 					  upperstream.h upperstream.cpp \
 					  errorlistener.h errorlistener.cpp \
 					  listenerinterface.h listenerinterface.cpp \
+					  parseonly.h parseonly.cpp \
 					  treewalker.h treewalker.cpp
 libantlr_la_LIBADD = gen/libgen.la

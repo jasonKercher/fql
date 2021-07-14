@@ -50,6 +50,7 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	                false,               /* print_plan */
 	                false,               /* threading */
 	                false,               /* verbose */
+	                false,               /* parse_only */
 	                false,               /* char_as_byte */
 	                false,               /* strictness */
 	                false,               /* loose_groups */
@@ -113,6 +114,11 @@ int fql_field_count(struct fql_handle* fql)
 void fql_set_verbose(struct fql_handle* fql, int verbose)
 {
 	fql->props.verbose = verbose;
+}
+
+void fql_set_parse_only(struct fql_handle* fql, int parse_only)
+{
+	fql->props.parse_only = parse_only;
 }
 
 void fql_set_dry_run(struct fql_handle* fql, int dry_run)
@@ -230,6 +236,9 @@ void fql_set_crlf_output(struct fql_handle* fql, int crlf)
  */
 int fql_exec_plans(struct fql_handle* fql, int plan_count)
 {
+	if (plan_count == 0) {
+		return FQL_GOOD;
+	}
 	int i = 0;
 	int ret = 0;
 	query* query = fql->query_list->data;

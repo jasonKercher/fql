@@ -10,6 +10,13 @@
 
 #include "fql.h"
 
+#define HELP_ARG        0x80
+#define PARSE_ONLY_ARG  0x81
+#define SCHEMA_PATH_ARG 0x82
+#define SCHEMA_ARG      0x83
+#define STABLE_ARG      0x84
+#define STRICT_ARG      0x85
+
 const char* _help =
         "\nUsage fql -[bCdhHOpv] [-sS delim] [--strict] [file.sql]\n\n"
 
@@ -46,6 +53,7 @@ const char* _help =
         " -S, --out-delim arg    for delimited, speficy seperator for SELECT\n"
         //" -t, --thread           Utilize pthreads to run processes in parallel\n"
         " -v, --verbose          print additional information to stderr\n"
+        " --parse-only           just run the parser and output the steps\n"
         " --stable               preserve input order\n"
         " --schema arg           set a schema as default\n"
         " --schema-path arg      takes precedence over FQL_SCHEMA_PATH\n"
@@ -56,7 +64,7 @@ const char* _help =
         "foo,bar,foo\n"
         "a,b,c\n";
 
-void _parse_args(struct fql_handle* handle, char c);
+void _parse_args(struct fql_handle* handle, int c);
 void _print_field(struct fql_field* field);
 
 static int use_api = 0;
@@ -98,25 +106,36 @@ int main(int argc, char** argv)
 	        {"override", no_argument, 0, 'O'},
 	        {"print", no_argument, 0, 'p'},
 	        {"pipe-factor", required_argument, 0, 'P'},
-	        {"help", no_argument, 0, 'Q'},
 	        {"in-delim", required_argument, 0, 's'},
 	        {"out-delim", required_argument, 0, 'S'},
 	        {"threading", no_argument, 0, 't'},
 	        {"verbose", no_argument, 0, 'v'},
 	        {"crlf", no_argument, 0, 'W'},
-	        {"schema-path", required_argument, 0, 'x'},
-	        {"schema", required_argument, 0, 'X'},
-	        {"stable", no_argument, 0, 'z'},
-	        {"strict", no_argument, 0, 'Z'},
-	        {0, 0, 0, 0}};
+	        {"help", no_argument, 0, HELP_ARG},
+	        {"parse-only", no_argument, 0, PARSE_ONLY_ARG},
+	        {"schema-path", required_argument, 0, SCHEMA_PATH_ARG},
+	        {"schema", required_argument, 0, SCHEMA_ARG},
+	        {"stable", no_argument, 0, STABLE_ARG},
+	        {"strict", no_argument, 0, STRICT_ARG},
+	        {0, 0, 0, 0},
+	};
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
 
-	while ((c = getopt_long(argc,
-	                        argv,
-	                        "AbCdhHLOpP:Qs:S:tvWx:X:zZ",
-	                        long_options,
-	                        &option_index))
+	char opt_string[64] = "AbCdhHLOpP:s:S:tvW";
+	char* opt_iter = opt_string + strlen(opt_string) - 1;
+	*++opt_iter = HELP_ARG;
+	*++opt_iter = PARSE_ONLY_ARG;
+	*++opt_iter = SCHEMA_PATH_ARG;
+	*++opt_iter = ':';
+	*++opt_iter = SCHEMA_ARG;
+	*++opt_iter = ':';
+	*++opt_iter = STABLE_ARG;
+	*++opt_iter = STRICT_ARG;
+	*++opt_iter = '\0';
+
+
+	while ((c = getopt_long(argc, argv, opt_string, long_options, &option_index))
 	       != -1)
 		_parse_args(handle, c);
 
@@ -248,7 +267,7 @@ err_exit:
 	return EXIT_FAILURE;
 }
 
-void _parse_args(struct fql_handle* handle, char c)
+void _parse_args(struct fql_handle* handle, int c)
 {
 	switch (c) {
 	case 'A':
@@ -284,9 +303,6 @@ void _parse_args(struct fql_handle* handle, char c)
 	case 'P':
 		fql_set_pipe_factor(handle, atoi(optarg));
 		break;
-	case 'Q': /* --help */
-		puts(_help);
-		exit(EXIT_SUCCESS);
 	case 's':
 		fql_set_in_delim(handle, optarg);
 		break;
@@ -302,16 +318,22 @@ void _parse_args(struct fql_handle* handle, char c)
 	case 'W':
 		fql_set_crlf_output(handle, 1);
 		break;
-	case 'x': /* --schema-path */
+	case HELP_ARG: /* --help */
+		puts(_help);
+		exit(EXIT_SUCCESS);
+	case PARSE_ONLY_ARG:
+		fql_set_parse_only(handle, 1);
+		break;
+	case SCHEMA_PATH_ARG: /* --schema-path */
 		fql_set_schema_path(handle, optarg);
 		break;
-	case 'X': /* --schema */
+	case SCHEMA_ARG: /* --schema */
 		fql_set_schema(handle, optarg);
 		break;
-	case 'z': /* --stable */
+	case STABLE_ARG: /* --stable */
 		fql_set_stable(handle, 1);
 		break;
-	case 'Z': /* --strict */
+	case STRICT_ARG: /* --strict */
 		fql_set_strict_mode(handle, 1);
 		break;
 	default:

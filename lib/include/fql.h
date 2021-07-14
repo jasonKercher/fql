@@ -45,6 +45,11 @@ void fql_free(struct fql_handle*);
 void fql_set_verbose(struct fql_handle*, int);
 
 /**
+ * Do nothing other than run the parser.
+ */
+void fql_set_parse_only(struct fql_handle*, int);
+
+/**
  * set dry run to avoid execution. Useful if you
  * just want to look at the generated plan.
  */
