@@ -14,6 +14,7 @@
 #include "function.h"
 #include "fqlselect.h"
 #include "operation.h"
+#include "aggregate.h"
 #include "switchcase.h"
 #include "expression.h"
 #include "util/util.h"
@@ -98,8 +99,12 @@ void _check_for_special_expression(plan* self, process* proc, expression* expr)
 
 		break;
 	}
+	case EXPR_AGGREGATE:
+		_check_all_for_special_expression(self, proc, expr->field.agg->args);
+		break;
 	case EXPR_FUNCTION:
 		_check_all_for_special_expression(self, proc, expr->field.fn->args);
+		break;
 	default:;
 	}
 }

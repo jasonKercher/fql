@@ -633,15 +633,16 @@ void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_w
 	else if (ctx->VAR())          fn = AGG_VAR;
 	else if (ctx->VARP())         fn = AGG_VARP;
 
-	if (query_add_aggregate(_query, fn)) {
+	if (query_enter_aggregate(_query, fn)) {
 		_return_code = FQL_FAIL;
 		_walker->set_walking(false);
 	}
-	_query->in_aggregate = true;
+	//_query->in_aggregate = true;
 }
 void ListenerInterface::exitAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * ctx)
 {
-	_query->in_aggregate = false;
+	query_exit_aggregate(_query);
+	//_query->in_aggregate = false;
 }
 
 void ListenerInterface::enterAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * ctx) { }

@@ -48,7 +48,7 @@ query* query_construct(query* self, int id)
 	        NULL, /* function_stack */
 	        NULL, /* switchcase_stack */
 
-	        0, /* in_aggregate */
+	        //0, /* in_aggregate */
 	        0, /* in_bracket_expression */
 
 	        MODE_UNDEFINED,  /* mode */
@@ -126,7 +126,7 @@ int _add_switchcase_expression(query* self, expression* expr)
 	case SWITCH_STATIC_CMP:
 		sc->state = SWITCH_VALUE;
 	case SWITCH_LOGIC_GROUP: /* FALL THROUGH ON PURPOSE */
-		_add_logic_expression(self, expr);
+		try_(_add_logic_expression(self, expr));
 	}
 	return FQL_GOOD;
 }
@@ -140,11 +140,6 @@ int _distribute_expression(query* self, expression* expr)
 	if (self->function_stack) {
 		expression* fn_expr = self->function_stack->data;
 		function_add_expression(fn_expr->field.fn, expr);
-		return FQL_GOOD;
-	}
-	if (self->in_aggregate) {
-		aggregate** back = vec_back(&self->groupby->aggregates);
-		aggregate_add_expression(*back, expr);
 		return FQL_GOOD;
 	}
 	switch (self->mode) {
@@ -167,6 +162,12 @@ int _distribute_expression(query* self, expression* expr)
 	case MODE_ORDERBY:
 		order_add_expression(self->orderby, expr);
 		break;
+	case MODE_AGGREGATE: {
+		aggregate** back = vec_back(&self->groupby->aggregates);
+		aggregate_add_expression(*back, expr);
+		break;
+	}
+
 	default:
 		return FQL_FAIL;
 	}
@@ -321,7 +322,7 @@ int query_set_into_table(query* self, const char* table_name)
 	return FQL_GOOD;
 }
 
-int query_add_aggregate(query* self, enum aggregate_function agg_type)
+int query_enter_aggregate(query* self, enum aggregate_function agg_type)
 {
 	if (self->groupby == NULL) {
 		self->groupby = new_(group);
@@ -337,6 +338,16 @@ int query_add_aggregate(query* self, enum aggregate_function agg_type)
 	agg->linked_expression = linked_expr;
 	try_(_distribute_expression(self, linked_expr));
 
+	agg->return_mode = self->mode;
+	self->mode = MODE_AGGREGATE;
+
+	return FQL_GOOD;
+}
+
+int query_exit_aggregate(query* self)
+{
+	aggregate** agg = vec_back(&self->groupby->aggregates);
+	self->mode = (*agg)->return_mode;
 	return FQL_GOOD;
 }
 

@@ -22,12 +22,15 @@ static const char* agg_str[14] = {
 aggregate* aggregate_construct(aggregate* self,
                                enum aggregate_function agg_type)
 {
-	*self = (aggregate) {NULL,                     /* call__ */
-	                     new_t_(vec, expression*), /* args */
-	                     {0},                      /* results */
-	                     NULL,                     /* linked_expression */
-	                     agg_type,                 /* agg_type */
-	                     FIELD_UNDEFINED};         /* data_type */
+	*self = (aggregate) {
+	        NULL,                     /* call__ */
+	        new_t_(vec, expression*), /* args */
+	        {0},                      /* results */
+	        NULL,                     /* linked_expression */
+	        agg_type,                 /* agg_type */
+	        FIELD_UNDEFINED,          /* data_type */
+	        MODE_UNDEFINED,           /* return_mode */
+	};
 
 	vec_construct(&self->results, sizeof(struct aggresult));
 

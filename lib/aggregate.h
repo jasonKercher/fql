@@ -30,6 +30,7 @@ struct aggregate {
 	struct expression* linked_expression;
 	enum aggregate_function agg_type;
 	enum field_type data_type;
+	enum mode return_mode;
 };
 typedef struct aggregate aggregate;
 

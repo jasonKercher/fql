@@ -93,7 +93,7 @@ expression* expression_copy(const struct expression* src)
 
 	string_construct_from_string(&dest->name, &src->name);
 	string_construct_from_string(&dest->alias, &src->alias);
-	string_construct_from_string(&dest->table_name, &src->alias);
+	string_construct_from_string(&dest->table_name, &src->table_name);
 	string_construct_from_string(&dest->buf, &src->buf);
 
 	dest->expr = src->expr;

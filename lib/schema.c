@@ -571,81 +571,85 @@ int _evaluate_if_const(expression* expr)
 	return FQL_GOOD;
 }
 
+int _assign_expressions_limited(vec* expressions, vec* sources, int, int);
+
+int _assign_expression_limited(expression* expr, vec* sources, int limit, int strictness)
+{
+	switch (expr->expr) {
+	case EXPR_SWITCH_CASE: {
+		switchcase* sc = expr->field.sc;
+		logicgroup** lg_iter = vec_begin(&sc->tests);
+		for (; lg_iter != vec_end(&sc->tests); ++lg_iter) {
+			try_(_assign_expressions_limited((*lg_iter)->expressions,
+			                                 sources,
+			                                 limit,
+			                                 strictness));
+		}
+		try_(_assign_expressions_limited(&sc->values,
+		                                 sources,
+		                                 limit,
+		                                 strictness));
+		try_(switchcase_resolve_type(sc, expr));
+		break;
+	}
+	case EXPR_FUNCTION: {
+		function* func = expr->field.fn;
+		try_(_assign_expressions_limited(func->args, sources, limit, strictness));
+		try_(function_op_resolve(func, &expr->field_type));
+		try_(function_validate(func));
+		try_(_evaluate_if_const(expr));
+		break;
+	}
+	case EXPR_SUBQUERY:
+		try_(fqlselect_resolve_type_from_subquery(expr));
+		break;
+	case EXPR_FULL_RECORD:
+	case EXPR_COLUMN_NAME: {
+		if (expr->data_source != NULL) {
+			return FQL_GOOD;
+		}
+
+		int matches = 0;
+		int j = 0;
+
+		for (; j <= limit; ++j) {
+			table* search_table = vec_at(sources, j);
+			if (string_empty(&expr->table_name)
+			    || istring_eq(expr->table_name.data,
+			                  search_table->alias.data)) {
+				int n = expression_try_assign_source(expr, search_table);
+				if (n > 1 && !strictness) {
+					n = 1;
+				}
+				matches += n;
+			}
+		}
+
+		if (matches > 1) {
+			fprintf(stderr,
+			        "%s: ambiguous expression\n",
+			        (char*)expr->name.data);
+			return FQL_FAIL;
+		}
+
+		if (matches == 0) {
+			fprintf(stderr,
+			        "%s: cannot find expression\n",
+			        (char*)expr->name.data);
+			return FQL_FAIL;
+		}
+	}
+	default:;
+	}
+
+	return FQL_GOOD;
+}
+
 int _assign_expressions_limited(vec* expressions, vec* sources, int limit, int strictness)
 {
 	expression** it = vec_begin(expressions);
 	for (; it != vec_end(expressions); ++it) {
-		switch ((*it)->expr) {
-		case EXPR_SWITCH_CASE: {
-			switchcase* sc = (*it)->field.sc;
-			logicgroup** lg_iter = vec_begin(&sc->tests);
-			for (; lg_iter != vec_end(&sc->tests); ++lg_iter) {
-				try_(_assign_expressions_limited((*lg_iter)->expressions,
-				                                 sources,
-				                                 limit,
-				                                 strictness));
-			}
-			try_(_assign_expressions_limited(&sc->values,
-			                                 sources,
-			                                 limit,
-			                                 strictness));
-			try_(switchcase_resolve_type(sc, *it));
-			break;
-		}
-		case EXPR_FUNCTION: {
-			function* func = (*it)->field.fn;
-			try_(_assign_expressions_limited(func->args,
-			                                 sources,
-			                                 limit,
-			                                 strictness));
-			try_(function_op_resolve(func, &(*it)->field_type));
-			try_(function_validate(func));
-			try_(_evaluate_if_const(*it));
-			break;
-		}
-		case EXPR_SUBQUERY:
-			try_(fqlselect_resolve_type_from_subquery(*it));
-			break;
-		case EXPR_FULL_RECORD:
-		case EXPR_COLUMN_NAME: {
-			if ((*it)->data_source != NULL) {
-				continue;
-			}
-
-			int matches = 0;
-			int j = 0;
-
-			for (; j <= limit; ++j) {
-				table* search_table = vec_at(sources, j);
-				if (string_empty(&(*it)->table_name)
-				    || istring_eq((*it)->table_name.data,
-				                  search_table->alias.data)) {
-					int n = expression_try_assign_source(
-					        *it,
-					        search_table);
-					if (n > 1 && !strictness) {
-						n = 1;
-					}
-					matches += n;
-				}
-			}
-
-			if (matches > 1) {
-				fprintf(stderr,
-				        "%s: ambiguous expression\n",
-				        (char*)(*it)->name.data);
-				return FQL_FAIL;
-			}
-
-			if (matches == 0) {
-				fprintf(stderr,
-				        "%s: cannot find expression\n",
-				        (char*)(*it)->name.data);
-				return FQL_FAIL;
-			}
-		}
-		default:;
-		}
+		try_(_assign_expression_limited(*it, sources, limit, strictness));
 	}
 
 	return FQL_GOOD;
@@ -909,6 +913,22 @@ int _op_find_group(compositemap* expr_map, expression* expr, vec* key, bool loos
 		expression** it = vec_begin(expr->field.fn->args);
 		for (; it != vec_end(expr->field.fn->args); ++it) {
 			try_(_op_find_group(expr_map, *it, key, loose_groups));
+		}
+		return FQL_GOOD;
+	}
+
+	if (expr->expr == EXPR_SWITCH_CASE) {
+		expression** it = vec_begin(&expr->field.sc->values);
+		for (; it != vec_end(&expr->field.sc->values); ++it) {
+			try_(_op_find_group(expr_map, *it, key, loose_groups));
+		}
+
+		logicgroup** lg_iter = vec_begin(&expr->field.sc->tests);
+		for (; lg_iter != vec_end(&expr->field.sc->tests); ++lg_iter) {
+			it = vec_begin((*lg_iter)->expressions);
+			for (; it != vec_end((*lg_iter)->expressions); ++it) {
+				try_(_op_find_group(expr_map, *it, key, loose_groups));
+			}
 		}
 		return FQL_GOOD;
 	}

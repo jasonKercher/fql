@@ -92,6 +92,7 @@ enum mode {
 	MODE_SOURCES,
 	MODE_GROUPBY,
 	MODE_ORDERBY,
+	MODE_AGGREGATE,
 };
 
 enum logic_mode {
@@ -139,7 +140,6 @@ struct query {
 	struct stack* function_stack;   /* track function nesting */
 	struct stack* switchcase_stack; /* track casestatement nesting */
 
-	int in_aggregate;
 	int in_bracket_expression; /* boolean for whether we are in a
 	                            * bracket expression or not
 	                            */
@@ -166,7 +166,8 @@ void query_apply_expression_alias(struct query*, const char*);
 int query_set_top_count(struct query*, const char*);
 int query_set_into_table(struct query*, const char*);
 void query_set_distinct(struct query*);
-int query_add_aggregate(struct query*, enum aggregate_function);
+int query_enter_aggregate(struct query*, enum aggregate_function);
+int query_exit_aggregate(struct query*);
 int query_init_op(struct query*);
 void query_init_groupby(struct query*);
 int query_init_orderby(struct query*);
