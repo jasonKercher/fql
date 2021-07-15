@@ -9,32 +9,7 @@
 #include "util/stringview.h"
 #include "util/stringy.h"
 
-/* NOTE:
- *
- * This is the structure that we run through
- * the process fifos. We pass the entire struct
- * through the fifo. It's probably faster to pass
- * pointers, but instead I just packed it all sorts
- * of stupid becasue I want...
- *
- * // this
- * recgroup *rg = fifo_get(in);
- * int i = rg->fifo_idx;
- *
- * // not this
- * recgroup** rg = fifo_get(in);
- * int i = (*rg)->fifo_idx;
- *
- * recgroup is just that. A group of records.
- * consider:
- *
- * SELECT *
- * FROM t1 JOIN t2
- *   ON t1.foo = t2.foo
- *
- * t1.foo and t2.foo come from 2 different records.
- * Now, put that in your pipe and smoke it.
- */
+
 struct recgroup {
 	struct vec* records;
 	uint32_t select_len;

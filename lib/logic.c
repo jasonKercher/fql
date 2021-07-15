@@ -55,6 +55,7 @@ void logic_destroy(logic* self)
 	delete_if_exists_(expression, self->expr[0]);
 	delete_if_exists_(expression, self->expr[1]);
 	delete_if_exists_(inlist, self->in_data);
+	delete_if_exists_(like, self->like_data);
 }
 
 int _precompile_like(logic* self)

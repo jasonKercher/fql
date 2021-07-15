@@ -12,6 +12,7 @@ struct fql_plan {
 	struct dnode* op_true;
 	struct dnode* op_false;
 	struct dnode* current; /* temp */
+	struct vec* _recgroups;
 	struct fifo* root;
 	struct query* query;
 	size_t rows_affected;

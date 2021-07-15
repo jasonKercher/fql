@@ -37,6 +37,7 @@ plan* plan_construct(plan* self, query* query, struct fql_handle* fql)
 	        NULL,                    /* op_true */
 	        NULL,                    /* op_false */
 	        NULL,                    /* current */
+	        NULL,                    /* _recgroups */
 	        NULL,                    /* root */
 	        query,                   /* query */
 	        0,                       /* rows_affected */
@@ -76,6 +77,17 @@ void plan_destroy(void* generic_plan)
 		}
 		delete_(dgraph, self->processes);
 	}
+
+	if (self->root == NULL) {
+		return;
+	}
+
+	recgroup* it = vec_begin(self->_recgroups);
+	for (; it != vec_end(self->_recgroups); ++it) {
+		recgroup_destroy(it);
+	}
+	delete_(vec, self->_recgroups);
+	delete_(fifo, self->root);
 }
 
 int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg);
@@ -795,12 +807,15 @@ void _activate_procs(plan* self)
 	unsigned fifo_base_size = pipe_count * self->pipe_factor;
 	unsigned root_size = fifo_base_size * pipe_count;
 
-	self->root = new_t_(fifo, recgroup, root_size);
+	self->_recgroups = new_t_(vec, recgroup);
+	vec_resize(self->_recgroups, root_size);
+	self->root = new_t_(fifo, recgroup*, root_size);
 
 	unsigned i = 0;
-	for (; i < self->root->buf->size; ++i) {
-		recgroup* rg = vec_at(self->root->buf, i);
+	for (; i < self->_recgroups->size; ++i) {
+		recgroup* rg = vec_at(self->_recgroups, i);
 		recgroup_construct(rg, i);
+		vec_set(self->root->buf, i, &rg);
 	}
 
 	vec* node_vec = self->processes->nodes;

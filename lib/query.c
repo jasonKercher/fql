@@ -85,6 +85,7 @@ void query_destroy(query* self)
 	for (; q_it != vec_end(self->unions); ++q_it) {
 		delete_(query, *q_it);
 	}
+	delete_(vec, self->unions);
 	delete_(vec, self->subquery_const_vec);
 }
 

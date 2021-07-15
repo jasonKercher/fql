@@ -16,8 +16,15 @@ inlist* inlist_construct(inlist* self)
 
 void inlist_destroy(inlist* self)
 {
-	delete_if_exists_(vec, self->expressions);
 	delete_if_exists_(set, self->list_data);
+	if (self->expressions == NULL) {
+		return;
+	}
+	expression** it = vec_begin(self->expressions);
+	for (; it != vec_end(self->expressions); ++it) {
+		delete_(expression, *it);
+	}
+	delete_(vec, self->expressions);
 }
 
 void inlist_add_expression(inlist* self, expression* expr)

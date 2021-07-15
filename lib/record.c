@@ -118,9 +118,12 @@ string* record_generate_groupby_string(record* self)
 
 recgroup* recgroup_construct(recgroup* self, unsigned _fifo_idx)
 {
-	// NOTE: implicit memset 0 from fifo_construct
+	memset(self, 0, sizeof(*self));
 
-	/* I'm sorry. See header. */
+	/* recgroup struct is squeezed into 16
+	 * bytes because it used to be the main
+	 * type that passed through the fifos
+	 */
 	*((uint32_t*)self->_fifo_idx) = _fifo_idx;
 
 	self->records = new_t_(vec, record);
@@ -133,7 +136,7 @@ void recgroup_destroy(recgroup* self)
 	for (; it != vec_end(self->records); ++it) {
 		record_destroy(it);
 	}
-	vec_destroy(self->records);
+	delete_(vec, self->records);
 }
 
 /* fifo idx not directly accessible */
@@ -226,7 +229,7 @@ void recgroup_rec_add_front(recgroup* self, size_t n)
 
 record* recgroup_rec_pop(recgroup* self)
 {
-	record* back = vec_back(self->records);
+	record* back = vec_pop_back(self->records);
 	--self->_max_sources;
 	return back;
 }
