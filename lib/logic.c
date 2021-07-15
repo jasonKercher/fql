@@ -20,6 +20,19 @@ static logic_fn _logic_matrix[COMP_COUNT][FIELD_TYPE_COUNT] = {
         {&fql_logic_is_null, &fql_logic_is_null, &fql_logic_is_null},
 };
 
+static const char* _compare_strs[] = {
+        "=",
+        "!=",
+        ">",
+        ">=",
+        "<",
+        "<=",
+        " IN ",
+        " SUBIN ",
+        " LIKE ",
+        " ISNULL ",
+};
+
 logic* logic_construct(logic* self)
 {
 	*self = (logic) {
@@ -68,47 +81,20 @@ int logic_assign_process(logic* self, process* proc)
 		                                       self->expr[1]->field_type);
 	}
 	self->logic__ = _logic_matrix[self->comp_type][self->data_type];
+	if (self->logic__ == NULL) {
+		fprintf(stderr,
+		        "cannot apply comparison `%s' to type `%s'\n",
+		        _compare_strs[self->comp_type],
+		        field_description(self->data_type));
+		return FQL_FAIL;
+	}
 
 	if (proc == NULL) {
 		return FQL_GOOD;
 	}
 
 	expression_cat_description(self->expr[0], proc->plan_msg);
-	switch (self->comp_type) {
-	case COMP_EQ:
-		string_strcat(proc->plan_msg, " = ");
-		break;
-	case COMP_NE:
-		string_strcat(proc->plan_msg, " != ");
-		break;
-	case COMP_GT:
-		string_strcat(proc->plan_msg, " > ");
-		break;
-	case COMP_GE:
-		string_strcat(proc->plan_msg, " >= ");
-		break;
-	case COMP_LT:
-		string_strcat(proc->plan_msg, " < ");
-		break;
-	case COMP_LE:
-		string_strcat(proc->plan_msg, " <= ");
-		break;
-	case COMP_IN:
-		string_strcat(proc->plan_msg, " IN ");
-		break;
-	case COMP_LIKE:
-		try_(_precompile_like(self));
-		string_strcat(proc->plan_msg, " LIKE ");
-		break;
-	case COMP_NULL:
-		string_strcat(proc->plan_msg, " NULL ");
-		break;
-	case COMP_NOT_SET:
-		string_strcat(proc->plan_msg, " <no comparison> ");
-		break;
-	default:
-		break;
-	}
+	string_strcat(proc->plan_msg, _compare_strs[self->comp_type]);
 	if (self->in_data != NULL) {
 		inlist_cat_description(self->in_data, proc->plan_msg);
 	} else {
@@ -206,7 +192,7 @@ unsigned logicgroup_get_condition_count(logicgroup* lg)
 
 /* essentially the same as logicgroup_eval.
  * All logic is assumed true except the one provided.
- * the point is to determine if that self MUST be
+ * the point is to determine if that logic MUST be
  * true for the group to evaluate to true. I believe
  * ignoring negation here is correct. The purpose
  * being, if it must be true, it is a candidate for
