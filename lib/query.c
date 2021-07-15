@@ -125,7 +125,7 @@ int _add_switchcase_expression(query* self, expression* expr)
 		break;
 	case SWITCH_STATIC_CMP:
 		sc->state = SWITCH_VALUE;
-	case SWITCH_LOGIC_GROUP:
+	case SWITCH_LOGIC_GROUP: /* FALL THROUGH ON PURPOSE */
 		_add_logic_expression(self, expr);
 	}
 	return FQL_GOOD;
@@ -625,6 +625,9 @@ void query_exit_search(query* self)
 		}
 
 		_assign_logic(self, lg);
+		if (self->logic_mode != LOGIC_CASE) {
+			self->logic_mode = LOGIC_UNDEFINED;
+		}
 	}
 }
 

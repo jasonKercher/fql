@@ -98,6 +98,7 @@ expression* expression_copy(const struct expression* src)
 
 	dest->expr = src->expr;
 	dest->field = src->field;
+	dest->field_type = src->field_type;
 
 	return dest;
 }

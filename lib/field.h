@@ -5,7 +5,9 @@
 #include "util/stringy.h"
 #include "util/stringview.h"
 
-/** data type **/
+/* The order here is important...
+ * No touchy touchy
+ */
 #define FIELD_TYPE_COUNT 3
 enum field_type {
 	FIELD_UNDEFINED = -1,
