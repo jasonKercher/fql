@@ -93,8 +93,12 @@ int logic_assign_process(logic* self, process* proc)
 		return FQL_GOOD;
 	}
 
+	if (self->comp_type == COMP_LIKE) {
+		try_(_precompile_like(self));
+	}
 	expression_cat_description(self->expr[0], proc->plan_msg);
 	string_strcat(proc->plan_msg, _compare_strs[self->comp_type]);
+
 	if (self->in_data != NULL) {
 		inlist_cat_description(self->in_data, proc->plan_msg);
 	} else {
