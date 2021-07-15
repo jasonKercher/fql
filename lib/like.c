@@ -17,6 +17,7 @@ void like_destroy(like* self)
 	for (; it != vec_end(&self->ranges); ++it) {
 		string_destroy(it);
 	}
+	vec_destroy(&self->ranges);
 	string_destroy(&self->like_buffer);
 	string_destroy(&self->regex_buffer);
 	if (self->regex != NULL) {
