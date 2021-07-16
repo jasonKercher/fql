@@ -1147,9 +1147,7 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 
 	/* As we loop through union queries, we want to
 	 * also verify that we have the same number of
-	 * fields. I don't really care about types to
-	 * be completely honest. Maybe that can be an
-	 * addition to strict mode... TODO
+	 * expressions.
 	 */
 	enum io main_io_type = op_get_schema(aquery->op)->io_type;
 
@@ -1162,6 +1160,9 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 			return FQL_FAIL;
 		}
 	}
+
+	/* We need to resolve final types for each expression */
+	try_(op_resolve_final_types(aquery->op));
 
 	return FQL_GOOD;
 }

@@ -1,5 +1,6 @@
 #include "fqlselect.h"
 #include "csv.h"
+#include "field.h"
 #include "fql.h"
 #include "misc.h"
 #include "group.h"
@@ -12,6 +13,7 @@
 #include "process.h"
 #include "util/stringy.h"
 #include "util/util.h"
+#include "writer.h"
 
 int _select_record(fqlselect*, struct recgroup*);
 int _select_record_api(fqlselect*, struct recgroup*);
@@ -29,11 +31,14 @@ fqlselect* fqlselect_construct(fqlselect* self)
 	        NULL,            /* writer */
 	        NULL,            /* list_data */
 	        NULL,            /* const_dest */
-	        NULL,            /* union_expression_vecs */
+	        NULL,            /* union_selects */
 	        NULL,            /* _selection_exprs */
 	        &_select_record, /* select__ */
 	        0,               /* offset */
+	        0,               /* rows_affected */
+	        0,               /* top_count */
 	        0,               /* rownum */
+	        false,           /* is_const */
 	};
 
 	self->_selection_exprs = self->schema->expressions;
@@ -46,7 +51,7 @@ void fqlselect_destroy(fqlselect* self)
 	if (self == NULL) {
 		return;
 	}
-	//queue_free(&self->union_expression_vecs);
+	//queue_free(&self->union_selects);
 	delete_if_exists_(writer, self->writer);
 	delete_(schema, self->schema);
 }
@@ -184,6 +189,71 @@ int fqlselect_resolve_type_from_subquery(expression* expr)
 	}
 	try_(fqlselect_resolve_type_from_subquery(*subexpr));
 	expr->field_type = (*subexpr)->field_type;
+
+	return FQL_GOOD;
+}
+
+int _convert_expression(expression** expr, enum field_type new_type)
+{
+	if ((*expr)->expr != EXPR_CONST) {
+		/* lol - this is probably wrong */
+		(*expr)->field_type = new_type;
+		return FQL_GOOD;
+	}
+
+	switch (new_type) {
+	case FIELD_INT: {
+		long num = 0;
+		try_(expression_get_int(&num, *expr, NULL));
+		break;
+	}
+	case FIELD_FLOAT: {
+		double num = 0;
+		try_(expression_get_float(&num, *expr, NULL));
+		break;
+	}
+	case FIELD_STRING: {
+		return FQL_FAIL;
+	}
+	default:
+		return FQL_FAIL;
+	}
+
+	return FQL_GOOD;
+}
+
+/* Unions have the ability to change the types of
+ * the parent select. For example, the following
+ * query should fail:
+ *
+ * SELECT 'A' AS foo UNION ALL SELECT 1
+ *
+ * The correct type of column foo is int!
+ */
+int fqlselect_resolve_final_types(fqlselect* self)
+{
+	if (self->union_selects == NULL) {
+		return FQL_GOOD;
+	}
+
+	vec* expr_vec = self->schema->expressions;
+
+	queue* union_node = self->union_selects;
+	for (; union_node; union_node = union_node->next) {
+		fqlselect* union_select = union_node->data;
+		vec* union_expr_vec = union_select->schema->expressions;
+		unsigned i = 0;
+		for (; i < expr_vec->size; ++i) {
+			expression** expr1 = vec_at(expr_vec, i);
+			expression** expr2 = vec_at(union_expr_vec, i);
+			enum field_type type1 = (*expr1)->field_type;
+			enum field_type type2 = (*expr2)->field_type;
+			enum field_type new_type = field_determine_type(type1, type2);
+			if (new_type != type1) {
+				try_(_convert_expression(*expr1, new_type));
+			}
+		}
+	}
 
 	return FQL_GOOD;
 }
@@ -330,11 +400,24 @@ int fqlselect_writer_init(fqlselect* self, query* query, struct fql_handle* fql)
 
 int fqlselect_next_union(fqlselect* self)
 {
-	if (self->union_expression_vecs == NULL) {
+	if (self->union_selects == NULL) {
 		return 0;
 	}
 
-	self->_selection_exprs = queue_dequeue(&self->union_expression_vecs);
+	fqlselect* union_select = queue_dequeue(&self->union_selects);
+	self->_selection_exprs = union_select->schema->expressions;
+	self->is_const = union_select->is_const;
+	self->rows_affected = 0;
+
+	/* Change output types to match the original select */
+	unsigned i = 0;
+	for (; i < self->_selection_exprs->size; ++i) {
+		expression** union_expr = vec_at(self->_selection_exprs, i);
+		expression** org_expr = vec_at(self->schema->expressions, i);
+		(*union_expr)->field_type = (*org_expr)->field_type;
+	}
+
+
 	return 1;
 }
 

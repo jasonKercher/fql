@@ -91,12 +91,14 @@ TESTS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
 	check_read$(EXEEXT) check_logic$(EXEEXT) check_join$(EXEEXT) \
 	check_subquery$(EXEEXT) check_group$(EXEEXT) \
 	check_having$(EXEEXT) check_order$(EXEEXT) check_top$(EXEEXT) \
-	check_difficult$(EXEEXT) check_failure$(EXEEXT)
+	check_union$(EXEEXT) check_difficult$(EXEEXT) \
+	check_failure$(EXEEXT)
 check_PROGRAMS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
 	check_read$(EXEEXT) check_logic$(EXEEXT) check_join$(EXEEXT) \
 	check_subquery$(EXEEXT) check_group$(EXEEXT) \
 	check_having$(EXEEXT) check_order$(EXEEXT) check_top$(EXEEXT) \
-	check_difficult$(EXEEXT) check_failure$(EXEEXT)
+	check_union$(EXEEXT) check_difficult$(EXEEXT) \
+	check_failure$(EXEEXT)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -200,6 +202,13 @@ check_top_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_top_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_top_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+am_check_union_OBJECTS = check_union-check_common.$(OBJEXT) \
+	check_union-check_union.$(OBJEXT)
+check_union_OBJECTS = $(am_check_union_OBJECTS)
+check_union_DEPENDENCIES = $(top_builddir)/lib/libfql.la
+check_union_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_union_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -237,7 +246,9 @@ am__depfiles_remade = ./$(DEPDIR)/check_constants-check_common.Po \
 	./$(DEPDIR)/check_subquery-check_common.Po \
 	./$(DEPDIR)/check_subquery-check_subquery.Po \
 	./$(DEPDIR)/check_top-check_common.Po \
-	./$(DEPDIR)/check_top-check_top.Po
+	./$(DEPDIR)/check_top-check_top.Po \
+	./$(DEPDIR)/check_union-check_common.Po \
+	./$(DEPDIR)/check_union-check_union.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -262,13 +273,15 @@ SOURCES = $(check_constants_SOURCES) $(check_difficult_SOURCES) \
 	$(check_hashmap_SOURCES) $(check_having_SOURCES) \
 	$(check_join_SOURCES) $(check_logic_SOURCES) \
 	$(check_order_SOURCES) $(check_read_SOURCES) \
-	$(check_subquery_SOURCES) $(check_top_SOURCES)
+	$(check_subquery_SOURCES) $(check_top_SOURCES) \
+	$(check_union_SOURCES)
 DIST_SOURCES = $(check_constants_SOURCES) $(check_difficult_SOURCES) \
 	$(check_failure_SOURCES) $(check_group_SOURCES) \
 	$(check_hashmap_SOURCES) $(check_having_SOURCES) \
 	$(check_join_SOURCES) $(check_logic_SOURCES) \
 	$(check_order_SOURCES) $(check_read_SOURCES) \
-	$(check_subquery_SOURCES) $(check_top_SOURCES)
+	$(check_subquery_SOURCES) $(check_top_SOURCES) \
+	$(check_union_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -685,6 +698,12 @@ check_top_SOURCES = $(top_builddir)/lib/include/fql.h \
 
 check_top_CFLAGS = @CHECK_CFLAGS@
 check_top_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+check_union_SOURCES = $(top_builddir)/lib/include/fql.h \
+			check_common.h check_common.c \
+			check_union.c
+
+check_union_CFLAGS = @CHECK_CFLAGS@
+check_union_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 check_difficult_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_common.h check_common.c \
 			check_difficult.c
@@ -788,6 +807,10 @@ check_top$(EXEEXT): $(check_top_OBJECTS) $(check_top_DEPENDENCIES) $(EXTRA_check
 	@rm -f check_top$(EXEEXT)
 	$(AM_V_CCLD)$(check_top_LINK) $(check_top_OBJECTS) $(check_top_LDADD) $(LIBS)
 
+check_union$(EXEEXT): $(check_union_OBJECTS) $(check_union_DEPENDENCIES) $(EXTRA_check_union_DEPENDENCIES) 
+	@rm -f check_union$(EXEEXT)
+	$(AM_V_CCLD)$(check_union_LINK) $(check_union_OBJECTS) $(check_union_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -817,6 +840,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_subquery-check_subquery.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_top-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_top-check_top.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_union-check_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_union-check_union.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -1167,6 +1192,34 @@ check_top-check_top.obj: check_top.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_top_CFLAGS) $(CFLAGS) -c -o check_top-check_top.obj `if test -f 'check_top.c'; then $(CYGPATH_W) 'check_top.c'; else $(CYGPATH_W) '$(srcdir)/check_top.c'; fi`
 
+check_union-check_common.o: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_union_CFLAGS) $(CFLAGS) -MT check_union-check_common.o -MD -MP -MF $(DEPDIR)/check_union-check_common.Tpo -c -o check_union-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_union-check_common.Tpo $(DEPDIR)/check_union-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_union-check_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_union_CFLAGS) $(CFLAGS) -c -o check_union-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+
+check_union-check_common.obj: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_union_CFLAGS) $(CFLAGS) -MT check_union-check_common.obj -MD -MP -MF $(DEPDIR)/check_union-check_common.Tpo -c -o check_union-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_union-check_common.Tpo $(DEPDIR)/check_union-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_union-check_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_union_CFLAGS) $(CFLAGS) -c -o check_union-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+
+check_union-check_union.o: check_union.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_union_CFLAGS) $(CFLAGS) -MT check_union-check_union.o -MD -MP -MF $(DEPDIR)/check_union-check_union.Tpo -c -o check_union-check_union.o `test -f 'check_union.c' || echo '$(srcdir)/'`check_union.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_union-check_union.Tpo $(DEPDIR)/check_union-check_union.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_union.c' object='check_union-check_union.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_union_CFLAGS) $(CFLAGS) -c -o check_union-check_union.o `test -f 'check_union.c' || echo '$(srcdir)/'`check_union.c
+
+check_union-check_union.obj: check_union.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_union_CFLAGS) $(CFLAGS) -MT check_union-check_union.obj -MD -MP -MF $(DEPDIR)/check_union-check_union.Tpo -c -o check_union-check_union.obj `if test -f 'check_union.c'; then $(CYGPATH_W) 'check_union.c'; else $(CYGPATH_W) '$(srcdir)/check_union.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_union-check_union.Tpo $(DEPDIR)/check_union-check_union.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_union.c' object='check_union-check_union.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_union_CFLAGS) $(CFLAGS) -c -o check_union-check_union.obj `if test -f 'check_union.c'; then $(CYGPATH_W) 'check_union.c'; else $(CYGPATH_W) '$(srcdir)/check_union.c'; fi`
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -1436,6 +1489,13 @@ check_top.log: check_top$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+check_union.log: check_union$(EXEEXT)
+	@p='check_union$(EXEEXT)'; \
+	b='check_union'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 check_difficult.log: check_difficult$(EXEEXT)
 	@p='check_difficult$(EXEEXT)'; \
 	b='check_difficult'; \
@@ -1566,6 +1626,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/check_subquery-check_subquery.Po
 	-rm -f ./$(DEPDIR)/check_top-check_common.Po
 	-rm -f ./$(DEPDIR)/check_top-check_top.Po
+	-rm -f ./$(DEPDIR)/check_union-check_common.Po
+	-rm -f ./$(DEPDIR)/check_union-check_union.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1634,6 +1696,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/check_subquery-check_subquery.Po
 	-rm -f ./$(DEPDIR)/check_top-check_common.Po
 	-rm -f ./$(DEPDIR)/check_top-check_top.Po
+	-rm -f ./$(DEPDIR)/check_union-check_common.Po
+	-rm -f ./$(DEPDIR)/check_union-check_union.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

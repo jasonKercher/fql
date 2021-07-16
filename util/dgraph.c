@@ -129,6 +129,11 @@ int _assume_roots(dgraph* self)
 	return self->_roots->size;
 }
 
+unsigned dgraph_root_count(dgraph* self)
+{
+	return self->_roots->size;
+}
+
 vec* dgraph_get_roots(dgraph* self)
 {
 	if (self->_roots_good) {

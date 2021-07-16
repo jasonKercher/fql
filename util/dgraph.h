@@ -39,6 +39,7 @@ void dgraph_consume(struct dgraph* dest, struct dgraph* src);
 
 void* dgraph_remove(struct dgraph*, struct dnode**);
 
+unsigned dgraph_root_count(struct dgraph*);
 struct vec* dgraph_get_roots(struct dgraph*);
 void dgraph_traverse_reset(struct dgraph*);
 struct dnode* dgraph_traverse(struct dgraph*);

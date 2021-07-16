@@ -456,13 +456,10 @@ int query_exit_union(query* self, query* union_query)
 	 * from the union's select. Since we are
 	 * tracking the vector itself, it will
 	 * still be correct after the all the
-	 * schemas have resolved.
+	 * schemas have resolved. select assumed.
 	 */
-	vec* union_exprs = op_get_expressions(union_query->op);
-
-	/* select can be assumed here */
 	fqlselect* select = self->op;
-	queue_enqueue(&select->union_expression_vecs, union_exprs);
+	queue_enqueue(&select->union_selects, union_query->op);
 
 	return FQL_GOOD;
 }

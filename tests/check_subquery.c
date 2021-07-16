@@ -287,7 +287,7 @@ START_TEST(test_subquery_source_const)
 	/* Some lax rules here compared to SQL Server...
 	 * No alias really necessary on 7 or subquery
 	 */
-	plan_count = fql_make_plans(fql, "select * from (select 7)");
+	plan_count = fql_make_plans(fql, "select * from (select 7)x");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -302,7 +302,7 @@ START_TEST(test_subquery_source_const)
 	ck_assert_int_eq(rows, 0);
 	ck_assert_int_eq(fql_field_count(fql), 0);
 
-	plan_count = fql_make_plans(fql, "select '6' + t from (select 7 t)");
+	plan_count = fql_make_plans(fql, "select '6' + t from (select 7 t)x");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -317,7 +317,7 @@ START_TEST(test_subquery_source_const)
 	ck_assert_int_eq(rows, 0);
 	ck_assert_int_eq(fql_field_count(fql), 0);
 
-	plan_count = fql_make_plans(fql, "select '6' + t from (select '7' t)");
+	plan_count = fql_make_plans(fql, "select '6' + t from (select '7' t)x");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -344,7 +344,7 @@ START_TEST(test_subquery_source_read)
 	//c1519b0d	c8	87082
 	plan_count = fql_make_plans(
 	        fql,
-	        "select * from (select bar from t1 where foo = 'c1519b0d')");
+	        "select * from (select bar from t1 where foo = 'c1519b0d')x");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -361,7 +361,7 @@ START_TEST(test_subquery_source_read)
 
 	plan_count = fql_make_plans(
 	        fql,
-	        "select shnt, bar from (select left(foo, 1) shnt, * from t1)");
+	        "select shnt, bar from (select left(foo, 1) shnt, * from t1) x");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -426,8 +426,8 @@ START_TEST(test_subquery_source_nested)
 	                            "select shnt from (                           "
 	                            "  select bar shnt from (                     "
 	                            "    select * from t1 where right(baz, 2) = 82"
-	                            "  )                                          "
-	                            ")                                            ");
+	                            "  ) x                                        "
+	                            ") x                                          ");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);

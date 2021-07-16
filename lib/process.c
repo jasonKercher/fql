@@ -80,6 +80,12 @@ void process_activate(process* self, plan* plan, unsigned fifo_size)
 		self->fifo_in[self->root_fifo] = self->root_ref;
 	}
 
+	if (self->action__ == &fql_select) {
+		fqlselect* select = self->proc_data;
+		select->is_const = self->is_const;
+		select->top_count = self->top_count;
+	}
+
 	dnode** it = vec_begin(self->union_end_nodes);
 	for (; it != vec_end(self->union_end_nodes); ++it) {
 		process* select_proc = (*it)->data;
@@ -145,10 +151,6 @@ void process_enable(process* self)
  */
 int _exec_one_pass(plan* plan, dgraph* proc_graph)
 {
-	if (plan->rows_affected >= 1 && plan->is_const) {
-		return 0;
-	}
-
 	dnode* proc_node = NULL;
 	process* self = NULL;
 	int run_count = 0;
@@ -208,9 +210,9 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		if (self->wait_for_in0) {
 			++run_count;
 		}
-		if (self->rows_affected >= self->top_count) {
-			process_disable(self);
-		}
+		//if (self->rows_affected >= self->top_count) {
+		//	process_disable(self);
+		//}
 		if (proc_node == plan->op_true) {
 			plan->rows_affected = self->rows_affected;
 		}

@@ -26,10 +26,6 @@
  * where each node represents a process
  */
 
-int _build(query*, struct fql_handle*, dnode* entry, bool is_union);
-void _print_plan(plan*);
-void _activate_procs(plan* self);
-
 plan* plan_construct(plan* self, query* query, struct fql_handle* fql)
 {
 	*self = (plan) {
@@ -90,8 +86,12 @@ void plan_destroy(void* generic_plan)
 	delete_(fifo, self->root);
 }
 
+int _build(query*, struct fql_handle*, dnode* entry, bool is_union);
+void _print_plan(plan*);
+void _activate_procs(plan* self);
 int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg);
 void _check_all_for_special_expression(plan* self, process* proc, vec* expressions);
+
 void _check_for_special_expression(plan* self, process* proc, expression* expr)
 {
 	if (expr == NULL) {
@@ -199,6 +199,9 @@ int _logicgroup_process(plan* self,
 	logic_proc->proc_data = lg;
 	try_(_logic_to_process(self, logic_proc, lg));
 	dnode* logic_node = dgraph_add_data(self->processes, logic_proc);
+	//if (dgraph_root_count(self->processes) == 0) {
+	//	logic_node->is_root = true;
+	//}
 
 	/* If we are dealing with join logic that
 	 * has been optimized to a hash join, the
@@ -457,16 +460,28 @@ void _operation(plan* self, query* query, dnode* entry, bool is_union)
 	                                  self->op_true->data,
 	                                  op_get_expressions(query->op));
 
+	//if (dgraph_root_count(self->processes) == 0) {
+	//	self->op_true->is_root = true;
+	//}
+
 	/* Current no longer matters. After operation, we
 	 * do order where current DOES matter... BUT
 	 * if we are in a union we should not encounter
 	 * ORDER BY...
 	 */
 	if (is_union) {
-		self->current = prev;
-		return;
+		process* prev_proc = prev->data;
+		if (!prev_proc->is_passive) {
+			self->current = prev;
+			return;
+		}
 	}
-	op_apply_process(query, self, (entry != NULL));
+	op_apply_process(query, self, (is_union || entry != NULL));
+
+	if (query->orderby != NULL) {
+		process* select_proc = self->op_true->data;
+		select_proc->top_count = -1;
+	}
 	if (entry == NULL) {
 		return;
 	}
@@ -487,10 +502,12 @@ int _union(plan* self, query* aquery, struct fql_handle* fql)
 		try_(_build(*it, fql, NULL, true));
 		plan* union_plan = (*it)->plan;
 		vec_push_back(select_proc->union_end_nodes, &union_plan->current);
-		process* union_proc = union_plan->op_true->data;
+		process* union_proc = union_plan->op_false->data;
 		union_proc->is_passive = true;
-		union_proc = union_plan->op_false->data;
-		union_proc->is_passive = true;
+		if (!union_plan->is_const) {
+			union_proc = union_plan->op_true->data;
+			union_proc->is_passive = true;
+		}
 		dgraph_consume(self->processes, union_plan->processes);
 		union_plan->processes = NULL;
 	}
@@ -510,6 +527,9 @@ void _order(plan* self, query* query)
 	order_proc->action__ = &fql_orderby;
 	order_proc->proc_data = query->orderby;
 	order_proc->wait_for_in0_end = true;
+	if (!vec_empty(query->unions)) {
+		order_proc->top_count = -1;
+	}
 	order_cat_description(query->orderby, order_proc);
 	dnode* order_node = dgraph_add_data(self->processes, order_proc);
 	self->current->out[0] = order_node;
@@ -633,6 +653,18 @@ void _mark_roots_const(vec* roots)
 	}
 }
 
+bool _all_roots_are_const(vec* roots)
+{
+	dnode** it = vec_begin(roots);
+	for (; it != vec_end(roots); ++it) {
+		process* proc = (*it)->data;
+		if (!proc->is_const) {
+			return false;
+		}
+	}
+	return true;
+}
+
 int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 {
 	/* Loop through constant value subqueries and
@@ -652,6 +684,8 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 	_group(self, aquery);
 	try_(_having(self, aquery));
 	_operation(self, aquery, entry, is_union);
+	_clear_passive(self);
+	dgraph_get_roots(self->processes);
 	try_(_union(self, aquery, fql));
 	_order(self, aquery);
 
@@ -659,6 +693,7 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 	//_print_plan(self);
 
 	_clear_passive(self);
+	dgraph_get_roots(self->processes);
 
 	if (vec_empty(self->processes->nodes)) {
 		process* entry_proc = entry->data;
@@ -666,7 +701,6 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 		return FQL_GOOD;
 	}
 
-	dgraph_get_roots(self->processes);
 	/* Loop through constant value subqueries again,
 	 * but this time, consume all process nodes into
 	 * current plan.
@@ -681,6 +715,8 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 	if (vec_empty(aquery->sources)) {
 		_mark_roots_const(self->processes->_roots);
 	}
+
+	self->is_const = _all_roots_are_const(self->processes->_roots);
 
 	if (aquery->query_id != 0) { /* is subquery */
 		return FQL_GOOD;
@@ -705,7 +741,7 @@ int build_plans(struct fql_handle* fql)
 	return FQL_GOOD;
 }
 
-void _expr_sep(int n)
+void _col_sep(int n)
 {
 	for (; n > 0; --n) {
 		fputc(' ', stderr);
@@ -732,20 +768,20 @@ void _print_plan(plan* self)
 
 	/* Print Header */
 	fputs("NODE", stderr);
-	_expr_sep(max_len - strlen("NODE"));
+	_col_sep(max_len - strlen("NODE"));
 	fputs("BRANCH 0", stderr);
-	_expr_sep(max_len - strlen("BRANCH 0"));
+	_col_sep(max_len - strlen("BRANCH 0"));
 	fputs("BRANCH 1\n", stderr);
 
 	int i = 0;
 	for (i = 0; i < max_len; ++i) {
 		fputc('=', stderr);
 	}
-	_expr_sep(0);
+	_col_sep(0);
 	for (i = 0; i < max_len; ++i) {
 		fputc('=', stderr);
 	}
-	_expr_sep(0);
+	_col_sep(0);
 	for (i = 0; i < max_len; ++i) {
 		fputc('=', stderr);
 	}
@@ -757,7 +793,7 @@ void _print_plan(plan* self)
 		process* proc = (*it)->data;
 		int len = proc->plan_msg->size;
 		fputs(proc->plan_msg->data, stderr);
-		_expr_sep(max_len - len);
+		_col_sep(max_len - len);
 		len = 0;
 
 		if ((*it)->out[0] != NULL) {
@@ -765,7 +801,7 @@ void _print_plan(plan* self)
 			len = proc->plan_msg->size;
 			fputs(proc->plan_msg->data, stderr);
 		}
-		_expr_sep(max_len - len);
+		_col_sep(max_len - len);
 
 		if ((*it)->out[1] != NULL) {
 			proc = (*it)->out[1]->data;
@@ -821,14 +857,9 @@ void _activate_procs(plan* self)
 	vec* node_vec = self->processes->nodes;
 	dnode** nodes = vec_begin(node_vec);
 
-	dnode** root_node = vec_begin(self->processes->_roots);
-	process* first_root = (*root_node)->data;
-
-	if (first_root->is_const) {
-		self->is_const = true;
+	if (self->is_const) {
 		fifo_advance(self->root);
 	} else {
-		self->is_const = false;
 		fifo_set_full(self->root);
 	}
 

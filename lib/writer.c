@@ -60,6 +60,9 @@ int writer_open(writer* self, const char* file_name)
 
 int writer_close(writer* self)
 {
+	if (self == NULL) {
+		return FQL_GOOD;
+	}
 	switch (self->type) {
 	case IO_LIBCSV:
 		if (csv_writer_close(self->writer_data) == CSV_FAIL) {

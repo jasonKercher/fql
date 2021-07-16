@@ -19,11 +19,14 @@ struct fqlselect {
 	struct writer* writer;
 	set* list_data;
 	struct expression* const_dest;
-	struct queue* union_expression_vecs;
+	struct queue* union_selects;
 	struct vec* _selection_exprs;
 	select_fn select__;
 	size_t offset;
+	size_t rows_affected;
+	size_t top_count;
 	unsigned rownum;
+	bool is_const;
 };
 typedef struct fqlselect fqlselect;
 
@@ -40,6 +43,7 @@ void fqlselect_apply_process(struct query*, struct fql_plan*, bool);
 void fqlselect_apply_expression_alias(struct fqlselect*, const char* alias);
 int fqlselect_set_as_inlist(struct fqlselect*, struct inlist*);
 int fqlselect_resolve_type_from_subquery(struct expression*);
+int fqlselect_resolve_final_types(struct fqlselect*);
 int fqlselect_writer_init(struct fqlselect*, struct query*, struct fql_handle*);
 int fqlselect_next_union(struct fqlselect*);
 void fqlselect_preop(struct fqlselect*, struct query*);

@@ -41,6 +41,7 @@ schema* op_get_schema(enum op* self)
 		fqlselect* select = (fqlselect*)self;
 		return select->schema;
 	}
+
 	default:
 		return NULL;
 	}
@@ -97,6 +98,16 @@ void op_apply_process(query* query, plan* plan, bool is_subquery)
 		fqlselect_apply_process(query, plan, is_subquery);
 		break;
 	default:;
+	}
+}
+
+int op_resolve_final_types(enum op* self)
+{
+	switch (*self) {
+	case OP_SELECT:
+		return fqlselect_resolve_final_types((fqlselect*)self);
+	default:;
+		return FQL_FAIL;
 	}
 }
 

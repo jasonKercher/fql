@@ -225,10 +225,13 @@ int fql_logic(process* proc)
 			fifo_add(out_true, rg_iter);
 		} else if (out_false != NULL) {
 			fifo_add(out_false, rg_iter);
-		} else if (proc->is_const) {
-			process_disable(proc);
 		} else {
 			_recycle(proc, rg_iter);
+		}
+
+		if (proc->is_const) {
+			process_disable(proc);
+			break;
 		}
 	}
 	fifo_update(in);
@@ -358,23 +361,32 @@ int fql_select(process* proc)
 	unsigned iters = 0;
 	recgroup** rg_iter = fifo_begin(in);
 	for (; iters++ < proc->max_recs_iter && rg_iter != fifo_end(in)
-	       && (!out || fifo_receivable(out)) && proc->rows_affected < proc->top_count;
+	       && (!out || fifo_receivable(out))
+	       && select->rows_affected < select->top_count;
 	     rg_iter = fifo_iter(in)) {
 		ret = try_(select->select__(select, *rg_iter));
 
+		++proc->rows_affected;
+		++select->rows_affected;
+
 		if (out) {
 			fifo_add(out, rg_iter);
-		} else {
+		} else if (!select->is_const) {
 			_recycle(proc, rg_iter);
-			++proc->rows_affected;
 		}
 
-		if (proc->is_const) {
+		if (select->is_const) {
 			proc->wait_for_in0 = false;
 			break;
 		}
 	}
+
+
 	fifo_update(in);
+
+	if (select->rows_affected >= select->top_count) {
+		proc->wait_for_in0 = false;
+	}
 	return ret;
 }
 
@@ -386,7 +398,11 @@ int fql_orderby(process* proc)
 		if (!order->sorted) {
 			try_(order_sort(order));
 		}
-		return order->select__(order, proc);
+		int ret = try_(order->select__(order, proc));
+		if (proc->rows_affected >= proc->top_count) {
+			process_disable(proc);
+		}
+		return ret;
 	}
 
 	unsigned iters = 0;
