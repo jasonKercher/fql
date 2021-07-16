@@ -30,9 +30,6 @@ int fql_read(process* proc)
 
 	recgroup** rg_iter = fifo_begin(in);
 	for (; rg_iter != fifo_end(in) && fifo_receivable(out); rg_iter = fifo_iter(in)) {
-		recgroup_resize(*rg_iter, 1);
-		//record* rec = recgroup_rec_at(rg_iter, 0);
-
 		switch (reader->get_record__(reader, *rg_iter)) {
 		case FQL_GOOD:
 			//rec->ref_count = 0;

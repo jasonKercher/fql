@@ -132,9 +132,11 @@ recgroup* recgroup_construct(recgroup* self, unsigned _fifo_idx)
 
 void recgroup_destroy(recgroup* self)
 {
-	record* it = vec_begin(self->records);
-	for (; it != vec_end(self->records); ++it) {
-		record_destroy(it);
+	unsigned i = 0;
+	/* READ passed back of records is correct */
+	for (; i < self->_max_sources; ++i) {
+		record* rec = vec_at(self->records, i);
+		record_destroy(rec);
 	}
 	delete_(vec, self->records);
 }
@@ -209,9 +211,13 @@ record* recgroup_rec_add_one(recgroup* self)
 
 record* recgroup_rec_add_one_front(recgroup* self)
 {
-	record* new_rec = vec_add_one_front(self->records);
-
-	if (self->records->size > self->_max_sources) {
+	if (self->records->size < self->_max_sources) {
+		/**** WRONG *****/
+		record* recycled_rec = vec_end(self->records);
+		record rec_cpy = *recycled_rec;
+		vec_insert_one(self->records, vec_begin(self->records), &rec_cpy);
+	} else {
+		record* new_rec = vec_add_one_front(self->records);
 		record_construct(new_rec);
 		++self->_max_sources;
 	}

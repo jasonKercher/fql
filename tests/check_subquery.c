@@ -422,13 +422,12 @@ START_TEST(test_subquery_source_nested)
 
 	//8ab25d8f	f8	75882
 	//c1519b0d	c8	87082
-	plan_count =
-	        fql_make_plans(fql,
-	                       "select shnt from (           "
-	                       "  select bar shnt from (     "
-	                       "    select * from t1 where right(baz, 2) = 82"
-	                       "  )                          "
-	                       ")                            ");
+	plan_count = fql_make_plans(fql,
+	                            "select shnt from (                           "
+	                            "  select bar shnt from (                     "
+	                            "    select * from t1 where right(baz, 2) = 82"
+	                            "  )                                          "
+	                            ")                                            ");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
