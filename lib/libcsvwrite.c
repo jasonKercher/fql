@@ -5,9 +5,9 @@
 #include "misc.h"
 #include "util/stringview.h"
 
-int libcsv_write_record(void* writer_data, vec* expr_vec, recgroup* rg, FILE* outstream)
+int libcsv_write_record(writer* writer, vec* expr_vec, recgroup* rg, FILE* outstream)
 {
-	csv_writer* handle = writer_data;
+	csv_writer* handle = writer->writer_data;
 
 	FILE* store_stream = NULL;
 	if (outstream == NULL) {
@@ -38,6 +38,9 @@ int libcsv_write_record(void* writer_data, vec* expr_vec, recgroup* rg, FILE* ou
 			len += csv_write_field(handle, &field);
 			handle->quotes = quote_store;
 		} else {
+			if (writer->strict && exprs[i]->field_type != FIELD_STRING) {
+				try_(expression_type_check(exprs[i], rg));
+			}
 			try_(expression_get_stringview(&sv, exprs[i], rg));
 			struct csv_field field = {sv.data, sv.len};
 			len += csv_write_field(handle, &field);

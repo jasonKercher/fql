@@ -151,12 +151,9 @@ const char* fixedwriter_get_tempname(fixedwriter* self)
 	return _get_filename(self);
 }
 
-int fixedwriter_write_record(void* writer_data,
-                             vec* expr_vec,
-                             recgroup* rg,
-                             FILE* outstream)
+int fixedwriter_write_record(writer* writer, vec* expr_vec, recgroup* rg, FILE* outstream)
 {
-	fixedwriter* self = writer_data;
+	fixedwriter* self = writer->writer_data;
 
 	FILE* store_stream = NULL;
 	if (outstream == NULL) {
@@ -176,6 +173,9 @@ int fixedwriter_write_record(void* writer_data,
 			record* rec = recgroup_rec_at(rg, exprs[i]->src_idx);
 			sv = rec->rec_ref;
 		} else {
+			if (writer->strict && exprs[i]->field_type != FIELD_STRING) {
+				try_(expression_type_check(exprs[i], rg));
+			}
 			try_(expression_get_stringview(&sv, exprs[i], rg));
 		}
 		fprintf(self->file, "%.*s", sv.len, sv.data);

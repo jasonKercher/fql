@@ -16,7 +16,7 @@ check_failure
 
 *.vgreport
 
-sample.sql
+run.sql
 
 *~
 

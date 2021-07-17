@@ -30,7 +30,6 @@ int analyze_query(struct fql_handle* fql)
 
 	if (myLexerErrorListener.getError()
 	    || myParserErrorListener.getError()) {
-		std::cerr << "Lexer/Listener error\n";
 		return 1;
 	}
 

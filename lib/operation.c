@@ -19,6 +19,18 @@ vec* op_get_expressions(void* self)
 	return NULL;
 }
 
+void op_set_top_count(enum op* self, size_t top_count)
+{
+	switch (*self) {
+	case OP_SELECT: {
+		fqlselect* select = (fqlselect*)self;
+		select->top_count = top_count;
+		break;
+	}
+	default:;
+	}
+}
+
 void op_preop(struct fql_handle* fql)
 {
 	query* query = fql->query_list->data;

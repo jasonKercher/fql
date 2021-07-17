@@ -399,7 +399,7 @@ int fql_orderby(process* proc)
 			try_(order_sort(order));
 		}
 		int ret = try_(order->select__(order, proc));
-		if (proc->rows_affected >= proc->top_count) {
+		if (proc->rows_affected >= order->top_count) {
 			process_disable(proc);
 		}
 		return ret;

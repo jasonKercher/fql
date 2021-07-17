@@ -56,6 +56,9 @@ void expression_link(struct expression* dest, struct expression* src);
 void expression_cat_description(struct expression*, string*);
 int expression_try_assign_source(struct expression*, struct table*);
 
+int expression_type_check(struct expression*, struct recgroup*);
+int expression_cast(struct expression*, enum field_type);
+
 /* data access */
 int expression_get_int(long*, struct expression*, struct recgroup*);
 int expression_get_float(double*, struct expression*, struct recgroup*);

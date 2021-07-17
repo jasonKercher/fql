@@ -1008,22 +1008,32 @@ int _group_validation(query* query, vec* exprs, bool loose_groups)
 	return FQL_GOOD;
 }
 
+/* Tie everything together and verify correctness. */
 int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 {
+	/* First let's resolve any subqueries that can be
+	 * classified as an expression.  They should be
+	 * constant value and aren't tied to parent query.
+	 */
 	vec* subqueries = aquery->subquery_const_vec;
 	query** query_iter = vec_begin(subqueries);
 	for (; query_iter != vec_end(subqueries); ++query_iter) {
-		_resolve_query(fql, *query_iter, union_io);
+		try_(_resolve_query(fql, *query_iter, union_io));
 	}
 
-	vec* sources = aquery->sources;
-
+	/* Next, we must resolve any TOP expressions */
 	if (aquery->top_expr != NULL) {
 		vec temp;
 		vec_construct_(&temp, expression*);
 		vec_push_back(&temp, &aquery->top_expr);
-		_assign_expressions_limited(&temp, NULL, 0, fql->props.strictness);
+		int ret = _assign_expressions_limited(&temp,
+		                                      NULL,
+		                                      0,
+		                                      fql->props.strictness);
 		vec_destroy(&temp);
+		if (ret == FQL_FAIL) {
+			return FQL_FAIL;
+		}
 		if (aquery->top_expr->expr != EXPR_CONST) {
 			fputs("Could not resolve top expression\n", stderr);
 			return FQL_FAIL;
@@ -1040,8 +1050,19 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 		delete_(expression, aquery->top_expr);
 	}
 
-	/* Oh this is fun.  Let's try to link and verify
-	 * _everything_. First, let's verify the sources
+	/* If there is an order by, make sure NOT to send top_count
+	 * to the operation. However, if there is a union, this does
+	 * not apply.  If there is a union, the top count belongs to
+	 * the operation (select can be assumed). The only goal is to
+	 * make sure ALL the selected records are ordered
+	 */
+	if (aquery->orderby != NULL && vec_empty(aquery->unions)) {
+		aquery->orderby->top_count = aquery->top_count;
+	} else {
+		op_set_top_count(aquery->op, aquery->top_count);
+	}
+
+	/* Now, we should verify that all sources
 	 * exist and populate schemas.  As we loop, we
 	 * resolve the expressions that are listed in join
 	 * clauses because of the following caveat:
@@ -1052,6 +1073,7 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	 * JOIN T3 ON T2.FOO = T3.FOO
 	 */
 	unsigned i = 0;
+	vec* sources = aquery->sources;
 	for (; i < sources->size; ++i) {
 		table* table = vec_at(aquery->sources, i);
 		try_(_resolve_source(fql, table, i));

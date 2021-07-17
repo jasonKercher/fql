@@ -202,6 +202,75 @@ int expression_try_assign_source(expression* self, table* table)
 	return exprs->size;
 }
 
+int expression_type_check(expression* self, recgroup* rg)
+{
+	switch (self->field_type) {
+	case FIELD_INT: {
+		long num = 0;
+		try_(expression_get_int(&num, self, rg));
+		break;
+	}
+	case FIELD_FLOAT: {
+		double num = 0;
+		try_(expression_get_float(&num, self, rg));
+		break;
+	}
+	case FIELD_STRING: /* Not sure how this could fail */
+		break;
+	default:
+		return FQL_FAIL;
+	}
+	return FQL_GOOD;
+}
+
+int expression_cast(expression* self, enum field_type new_type)
+{
+	if (self->field_type == new_type) {
+		return FQL_GOOD;
+	}
+
+	if (self->expr != EXPR_CONST) {
+		/* lol - this is probably wrong */
+		self->field_type = new_type;
+		return FQL_GOOD;
+	}
+
+	switch (new_type) {
+	case FIELD_INT: {
+		long num = 0;
+		try_(expression_get_int(&num, self, NULL));
+		self->field_type = new_type;
+		self->field.i = num;
+		break;
+	}
+	case FIELD_FLOAT: {
+		double num = 0;
+		try_(expression_get_float(&num, self, NULL));
+		self->field_type = new_type;
+		self->field.f = num;
+		break;
+	}
+	case FIELD_STRING: {
+		stringview sv;
+		try_(expression_get_stringview(&sv, self, NULL));
+
+		/* This is redundant because of the current behavior
+		 * of expression_get_stringview, but in case that ever
+		 * changes... We do the redundant thing...
+		 */
+		string_strncpy(&self->buf, sv.data, sv.len);
+		self->field.s = &self->buf;
+
+		return FQL_FAIL;
+	}
+	default:
+		return FQL_FAIL;
+	}
+
+	return FQL_GOOD;
+}
+
+
 /* TODO: field_to_xx functions should only be called once.
  *       After which we should be able to assume the correct
  *       type. The best way to handle this would be to set

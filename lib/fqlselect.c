@@ -36,7 +36,7 @@ fqlselect* fqlselect_construct(fqlselect* self)
 	        &_select_record, /* select__ */
 	        0,               /* offset */
 	        0,               /* rows_affected */
-	        0,               /* top_count */
+	        -1,              /* top_count */
 	        0,               /* rownum */
 	        false,           /* is_const */
 	};
@@ -193,35 +193,6 @@ int fqlselect_resolve_type_from_subquery(expression* expr)
 	return FQL_GOOD;
 }
 
-int _convert_expression(expression** expr, enum field_type new_type)
-{
-	if ((*expr)->expr != EXPR_CONST) {
-		/* lol - this is probably wrong */
-		(*expr)->field_type = new_type;
-		return FQL_GOOD;
-	}
-
-	switch (new_type) {
-	case FIELD_INT: {
-		long num = 0;
-		try_(expression_get_int(&num, *expr, NULL));
-		break;
-	}
-	case FIELD_FLOAT: {
-		double num = 0;
-		try_(expression_get_float(&num, *expr, NULL));
-		break;
-	}
-	case FIELD_STRING: {
-		return FQL_FAIL;
-	}
-	default:
-		return FQL_FAIL;
-	}
-
-	return FQL_GOOD;
-}
-
 /* Unions have the ability to change the types of
  * the parent select. For example, the following
  * query should fail:
@@ -250,7 +221,10 @@ int fqlselect_resolve_final_types(fqlselect* self)
 			enum field_type type2 = (*expr2)->field_type;
 			enum field_type new_type = field_determine_type(type1, type2);
 			if (new_type != type1) {
-				try_(_convert_expression(*expr1, new_type));
+				try_(expression_cast(*expr1, new_type));
+			}
+			if (new_type != type2) {
+				try_(expression_cast(*expr2, new_type));
 			}
 		}
 	}
@@ -361,7 +335,8 @@ int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 int fqlselect_writer_init(fqlselect* self, query* query, struct fql_handle* fql)
 {
 	if (!query->union_id) {
-		self->writer = new_(writer, self->schema->write_io_type);
+		self->writer =
+		        new_(writer, self->schema->write_io_type, fql->props.strictness);
 	}
 
 	if (!query->union_id && query->into_table_name) {
@@ -406,17 +381,9 @@ int fqlselect_next_union(fqlselect* self)
 
 	fqlselect* union_select = queue_dequeue(&self->union_selects);
 	self->_selection_exprs = union_select->schema->expressions;
+	self->top_count = union_select->top_count;
 	self->is_const = union_select->is_const;
 	self->rows_affected = 0;
-
-	/* Change output types to match the original select */
-	unsigned i = 0;
-	for (; i < self->_selection_exprs->size; ++i) {
-		expression** union_expr = vec_at(self->_selection_exprs, i);
-		expression** org_expr = vec_at(self->schema->expressions, i);
-		(*union_expr)->field_type = (*org_expr)->field_type;
-	}
-
 
 	return 1;
 }
@@ -456,12 +423,9 @@ void fqlselect_preop(fqlselect* self, query* query)
 
 	writer* writer = self->writer;
 	if (query->orderby != NULL) {
-		writer->write_record__(writer->writer_data,
-		                       &header,
-		                       NULL,
-		                       query->orderby->out_file);
+		writer->write_record__(writer, &header, NULL, query->orderby->out_file);
 	} else {
-		writer->write_record__(writer->writer_data, &header, NULL, NULL);
+		writer->write_record__(writer, &header, NULL, NULL);
 	}
 
 	it = vec_begin(&header);
@@ -477,7 +441,7 @@ int _select_record(fqlselect* self, recgroup* rg)
 	writer* writer = self->writer;
 	vec* expr_vec = self->_selection_exprs;
 
-	int ret = writer->write_record__(writer->writer_data, expr_vec, rg, NULL);
+	int ret = writer->write_record__(writer, expr_vec, rg, NULL);
 
 	if (ret == FQL_FAIL || rg == NULL) {
 		return ret;

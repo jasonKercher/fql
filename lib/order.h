@@ -26,6 +26,7 @@ struct order {
 	struct _entry* entry_iter;
 	char* mmap;
 	size_t file_size;
+	size_t top_count;
 	int fd;
 	bool sorted;
 };

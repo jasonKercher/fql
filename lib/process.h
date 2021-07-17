@@ -24,7 +24,6 @@ struct process {
 	struct vec* union_end_nodes;  /* nodes that will re-link for union */
 	struct queue* queued_results; /* list of additional input fifos */
 	size_t rows_affected;         /* if process is true proc, track this */
-	size_t top_count;             /* If process is true proc, use this */
 	size_t max_recs_iter;         /* Max recs allowed per iteration */
 	short in_src_count;           /* number of input sources at this step */
 	short out_src_count;          /* number of output sources at this step */

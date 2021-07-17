@@ -478,10 +478,10 @@ void _operation(plan* self, query* query, dnode* entry, bool is_union)
 	}
 	op_apply_process(query, self, (is_union || entry != NULL));
 
-	if (query->orderby != NULL) {
-		process* select_proc = self->op_true->data;
-		select_proc->top_count = -1;
-	}
+	//if (query->orderby != NULL) {
+	//	process* select_proc = self->op_true->data;
+	//	select_proc->top_count = -1;
+	//}
 	if (entry == NULL) {
 		return;
 	}
@@ -502,11 +502,11 @@ int _union(plan* self, query* aquery, struct fql_handle* fql)
 		try_(_build(*it, fql, NULL, true));
 		plan* union_plan = (*it)->plan;
 		vec_push_back(select_proc->union_end_nodes, &union_plan->current);
-		process* union_proc = union_plan->op_false->data;
-		union_proc->is_passive = true;
+		//process* union_proc = union_plan->op_false->data;
+		//union_proc->is_passive = true;
 		if (!union_plan->is_const) {
-			union_proc = union_plan->op_true->data;
-			union_proc->is_passive = true;
+			process* union_true = union_plan->op_true->data;
+			union_true->is_passive = true;
 		}
 		dgraph_consume(self->processes, union_plan->processes);
 		union_plan->processes = NULL;
@@ -527,9 +527,9 @@ void _order(plan* self, query* query)
 	order_proc->action__ = &fql_orderby;
 	order_proc->proc_data = query->orderby;
 	order_proc->wait_for_in0_end = true;
-	if (!vec_empty(query->unions)) {
-		order_proc->top_count = -1;
-	}
+	//if (!vec_empty(query->unions)) {
+	//	query->orderby->top_count = -1;
+	//}
 	order_cat_description(query->orderby, order_proc);
 	dnode* order_node = dgraph_add_data(self->processes, order_proc);
 	self->current->out[0] = order_node;

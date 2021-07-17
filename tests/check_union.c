@@ -53,7 +53,7 @@ START_TEST(test_union_const)
 	ck_assert_int_eq(fql_field_count(fql), 0);
 
 
-	plan_count = fql_make_plans(fql, "select foo from t1 union all select 1");
+	plan_count = fql_make_plans(fql, "select foo from t1 union all select '1'");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -88,7 +88,7 @@ START_TEST(test_union_const)
 	ck_assert_int_eq(fql_field_count(fql), 0);
 
 
-	plan_count = fql_make_plans(fql, "select 1 union all select foo from t1");
+	plan_count = fql_make_plans(fql, "select '1' union all select foo from t1");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -97,7 +97,7 @@ START_TEST(test_union_const)
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 1);
 	ck_assert_int_eq(fields[0].type, FQL_STRING);
-	ck_assert_int_eq(fields[0].data.i, 1);
+	ck_assert_str_eq(fields[0].data.s, "1");
 
 	rows = fql_step(fql, &fields);
 	ck_assert_str_eq(fields[0].data.s, "44b72d44");
@@ -131,86 +131,14 @@ START_TEST(test_union_distinct)
 	int field_count = 0;
 	int rows = 0;
 
-	plan_count = fql_make_plans(fql, "select distinct bar from t3");
-	ck_assert_int_eq(plan_count, 1);
-
-	field_count = fql_field_count(fql);
-	ck_assert_int_eq(field_count, 1);
-
-	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(rows, 1);
-	ck_assert_int_eq(fields[0].type, FQL_STRING);
-	ck_assert_str_eq(fields[0].data.s, "ae");
-	rows = fql_step(fql, &fields);
-	ck_assert_str_eq(fields[0].data.s, "cd");
-	rows = fql_step(fql, &fields);
-	ck_assert_str_eq(fields[0].data.s, "e0");
-	rows = fql_step(fql, &fields);
-	ck_assert_str_eq(fields[0].data.s, "fb");
-
-	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(rows, 0);
-	ck_assert_int_eq(fql_field_count(fql), 0);
-
-	/* Identical to distinct */
-	plan_count = fql_make_plans(fql, "select bar from t3 group by bar");
-	ck_assert_int_eq(plan_count, 1);
-
-	field_count = fql_field_count(fql);
-	ck_assert_int_eq(field_count, 1);
-
-	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(rows, 1);
-	ck_assert_int_eq(fields[0].type, FQL_STRING);
-	ck_assert_str_eq(fields[0].data.s, "ae");
-	rows = fql_step(fql, &fields);
-	ck_assert_str_eq(fields[0].data.s, "cd");
-	rows = fql_step(fql, &fields);
-	ck_assert_str_eq(fields[0].data.s, "e0");
-	rows = fql_step(fql, &fields);
-	ck_assert_str_eq(fields[0].data.s, "fb");
-
-	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(rows, 0);
-	ck_assert_int_eq(fql_field_count(fql), 0);
-}
-END_TEST
-
-START_TEST(test_union_complex_unions)
-{
-	struct fql_field* fields = NULL;
-	int plan_count = 0;
-	int field_count = 0;
-	int rows = 0;
-
-	plan_count = fql_make_plans(fql, "select len(bar)+'1' from t3 group by bar");
-	ck_assert_int_eq(plan_count, 1);
-
-	field_count = fql_field_count(fql);
-	ck_assert_int_eq(field_count, 1);
-
-	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(rows, 1);
-	ck_assert_int_eq(fields[0].type, FQL_INT);
-	ck_assert_int_eq(fields[0].data.i, 3);
-	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 3);
-	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 3);
-	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 3);
-
-	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(rows, 0);
-	ck_assert_int_eq(fql_field_count(fql), 0);
-
-	/* Turns out SQL Server isn't smart enough to put this
-	 * one together. Of course, I don't know what sort of
-	 * smooth brain would even write something so dumb...
+	/* Make sure distinct only applies to the first 
+	 * query T3 has non-unique values for bar, we 
+	 * should get ALL the values
 	 */
-	plan_count = fql_make_plans(fql, "select baz + 2"
-			                 " from t3"
-					 " group by baz + (4 * 3) / 6");
+	plan_count = fql_make_plans(fql,
+	                            "select distinct bar from t1 "
+	                            "union all                   "
+	                            "select bar from t3          ");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -218,25 +146,88 @@ START_TEST(test_union_complex_unions)
 
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 1);
-	ck_assert_int_eq(fields[0].type, FQL_INT);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "70");
 
-	ck_assert_int_eq(fields[0].data.i, 7793);
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 19077);
+	ck_assert_str_eq(fields[0].data.s, "cb");
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 83148);
+	ck_assert_str_eq(fields[0].data.s, "5f");
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 19952);
+	ck_assert_str_eq(fields[0].data.s, "f8");
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 95936);
+	ck_assert_str_eq(fields[0].data.s, "6c");
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 38040);
+	ck_assert_str_eq(fields[0].data.s, "b0");
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 185939);
+	ck_assert_str_eq(fields[0].data.s, "1e");
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 45492);
+	ck_assert_str_eq(fields[0].data.s, "c8");
 	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(fields[0].data.i, 143029);
+	ck_assert_str_eq(fields[0].data.s, "ae");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "ae");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "cd");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "cd");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "cd");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "e0");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "ae");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "fb");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "fb");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "fb");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+
+
+	/* Now, apply distinct to second query */
+	plan_count = fql_make_plans(fql,
+	                            "select bar from t1          "
+	                            "union all                   "
+	                            "select distinct bar from t3 ");
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+	ck_assert_str_eq(fields[0].data.s, "70");
+
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "cb");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "5f");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "f8");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "6c");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "b0");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "1e");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "c8");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "ae");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "ae");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "cd");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "e0");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "fb");
 
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 0);
@@ -244,14 +235,17 @@ START_TEST(test_union_complex_unions)
 }
 END_TEST
 
-START_TEST(test_union_aggregate)
+START_TEST(test_union_top)
 {
 	struct fql_field* fields = NULL;
 	int plan_count = 0;
 	int field_count = 0;
 	int rows = 0;
 
-	plan_count = fql_make_plans(fql, "select count(*) from t3");
+	plan_count = fql_make_plans(fql,
+	                            "select top 2 foo from t1 "
+	                            "union all                "
+	                            "select top 3 foo from t3 ");
 	ck_assert_int_eq(plan_count, 1);
 
 	field_count = fql_field_count(fql);
@@ -259,34 +253,17 @@ START_TEST(test_union_aggregate)
 
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 1);
-	ck_assert_int_eq(fields[0].type, FQL_INT);
-	ck_assert_int_eq(fields[0].data.i, 9);
-
-	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(rows, 0);
-	ck_assert_int_eq(fql_field_count(fql), 0);
-
-	plan_count = fql_make_plans(fql, "select bar, count(*) from t3 group by bar");
-	ck_assert_int_eq(plan_count, 1);
-
-	field_count = fql_field_count(fql);
-	ck_assert_int_eq(field_count, 2);
-
-	rows = fql_step(fql, &fields);
-	ck_assert_int_eq(rows, 1);
 	ck_assert_int_eq(fields[0].type, FQL_STRING);
-	ck_assert_int_eq(fields[1].type, FQL_INT);
-	ck_assert_str_eq(fields[0].data.s, "ae");
-	ck_assert_int_eq(fields[1].data.i, 2);
+
+	ck_assert_str_eq(fields[0].data.s, "44b72d44");
 	rows = fql_step(fql, &fields);
-	ck_assert_str_eq(fields[0].data.s, "cd");
-	ck_assert_int_eq(fields[1].data.i, 3);
+	ck_assert_str_eq(fields[0].data.s, "b8e63822");
 	rows = fql_step(fql, &fields);
-	ck_assert_str_eq(fields[0].data.s, "e0");
-	ck_assert_int_eq(fields[1].data.i, 1);
+	ck_assert_str_eq(fields[0].data.s, "6Ed156a7");
 	rows = fql_step(fql, &fields);
-	ck_assert_str_eq(fields[0].data.s, "fb");
-	ck_assert_int_eq(fields[1].data.i, 3);
+	ck_assert_str_eq(fields[0].data.s, "9f04f0a0");
+	rows = fql_step(fql, &fields);
+	ck_assert_str_eq(fields[0].data.s, "3c3cc25d");
 
 	rows = fql_step(fql, &fields);
 	ck_assert_int_eq(rows, 0);
@@ -303,9 +280,8 @@ Suite* fql_union_suite(void)
 	tcase_add_checked_fixture(tc_union, fql_setup, fql_teardown);
 
 	tcase_add_test(tc_union, test_union_const);
-	//tcase_add_test(tc_union, test_union_distinct);
-	//tcase_add_test(tc_union, test_union_complex_unions);
-	//tcase_add_test(tc_union, test_union_aggregate);
+	tcase_add_test(tc_union, test_union_distinct);
+	tcase_add_test(tc_union, test_union_top);
 
 	suite_add_tcase(s, tc_union);
 

@@ -37,7 +37,6 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        new_t_(vec, dnode*),          /* union_end_nodes */
 	        NULL,                         /* queued_results */
 	        0,                            /* rows_affected */
-	        plan->query->top_count,       /* top_count */
 	        -1,                           /* max_recs_iter */
 	        plan->source_count,           /* in_src_count */
 	        plan->source_count,           /* out_src_count */
@@ -83,7 +82,7 @@ void process_activate(process* self, plan* plan, unsigned fifo_size)
 	if (self->action__ == &fql_select) {
 		fqlselect* select = self->proc_data;
 		select->is_const = self->is_const;
-		select->top_count = self->top_count;
+		//select->top_count = self->top_count;
 	}
 
 	dnode** it = vec_begin(self->union_end_nodes);

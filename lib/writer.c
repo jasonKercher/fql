@@ -3,14 +3,15 @@
 #include "fql.h"
 #include "misc.h"
 
-writer* writer_construct(writer* self, enum io io)
+writer* writer_construct(writer* self, enum io io, int strict)
 {
 	*self = (writer) {
 	        io,                  /* type */
 	        NULL,                /* writer_data */
 	        NULL,                /* write_record__ */
 	        new_t_(vec, string), /* raw_rec */
-	        {0}                  /* file_name */
+	        {0},                 /* file_name */
+	        strict,              /* strict */
 	};
 
 	string_construct(&self->file_name);
@@ -156,14 +157,12 @@ void writer_assign(writer* self)
 {
 	switch (self->type) {
 	case IO_LIBCSV: {
-		csv_writer* data = csv_writer_new();
-		self->writer_data = data;
+		self->writer_data = csv_writer_new();
 		self->write_record__ = &libcsv_write_record;
 		break;
 	}
 	case IO_FIXED: {
-		fixedwriter* data = new_(fixedwriter);
-		self->writer_data = data;
+		self->writer_data = new_(fixedwriter);
 		self->write_record__ = &fixedwriter_write_record;
 		break;
 	}

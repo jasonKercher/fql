@@ -28,6 +28,8 @@ order* order_construct(order* self)
 	self->select__ = _order_select;
 	self->out_file = stdout;
 
+	self->top_count = -1;
+
 	vec_construct_(&self->expressions, expression*);
 	vec_construct_(&self->entries, struct _entry);
 	flex_construct(&self->order_data);
@@ -290,7 +292,7 @@ int _order_select_api(order* self, process* proc)
 int _order_select(order* self, process* proc)
 {
 	struct _entry* it = vec_begin(&self->entries);
-	for (; it != vec_end(&self->entries) && proc->rows_affected < proc->top_count;
+	for (; it != vec_end(&self->entries) && proc->rows_affected < self->top_count;
 	     ++it) {
 		fprintf(self->out_file, "%.*s", it->len, &self->mmap[it->offset]);
 		++proc->rows_affected;
