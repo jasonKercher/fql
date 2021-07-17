@@ -626,7 +626,7 @@ void query_exit_search(query* self)
 {
 	logicgroup* lg = stack_pop(&self->logic_stack);
 	if (self->logic_stack == NULL) {
-		if (vec_empty(self->joinable)) {
+		if (self->joinable && vec_empty(self->joinable)) {
 			delete_(vec, self->joinable);
 		} else {
 			lg->joinable = self->joinable;
