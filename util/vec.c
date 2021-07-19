@@ -57,7 +57,7 @@ void* vec_end(const vec* self)
 /** allocate alloc + 1 for iterator end **/
 void vec_reserve(vec* self, size_t alloc)
 {
-	if (self->_alloc > ++alloc) {
+	if (self->_alloc >= ++alloc) {
 		return;
 	}
 	void* new_dest_ = realloc(self->data, alloc * self->_elem_size);

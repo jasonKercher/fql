@@ -87,6 +87,7 @@ void query_destroy(query* self)
 	}
 	delete_(vec, self->unions);
 	delete_(vec, self->subquery_const_vec);
+	free_if_exists_(self->into_table_name);
 }
 
 /* only here for address */
@@ -321,7 +322,7 @@ int query_set_top_count(query* self, const char* count_str)
 
 int query_set_into_table(query* self, const char* table_name)
 {
-	self->into_table_name = strdup(table_name);
+	self->into_table_name = table_name;
 	return FQL_GOOD;
 }
 

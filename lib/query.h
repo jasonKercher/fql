@@ -125,7 +125,7 @@ struct query {
 	struct vec* subquery_const_vec;
 	struct expression* top_expr;
 	struct vec* unions;
-	char* into_table_name;
+	const char* into_table_name;
 	size_t top_count;
 	int union_id;
 	int query_id;

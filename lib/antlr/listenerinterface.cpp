@@ -339,6 +339,9 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 		free_(token);
 		break;
 	case TOK_INTO_TABLE:
+		/* No need to free here, into_table_name
+		 * is now owned by the query.
+		 */
 		ret = query_set_into_table(_query, token);
 		if (ret) {
 			_walker->set_walking(false);
