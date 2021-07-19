@@ -48,7 +48,6 @@ query* query_construct(query* self, int id)
 	        NULL, /* function_stack */
 	        NULL, /* switchcase_stack */
 
-	        //0, /* in_aggregate */
 	        0, /* in_bracket_expression */
 
 	        MODE_UNDEFINED,  /* mode */
@@ -75,6 +74,7 @@ void query_destroy(query* self)
 	delete_if_exists_(logicgroup, self->having);
 	delete_if_exists_(order, self->orderby);
 	delete_if_exists_(expression, self->top_expr);
+	delete_if_exists_(vec, self->joinable);
 
 	query** q_it = vec_begin(self->subquery_const_vec);
 	for (; q_it != vec_end(self->subquery_const_vec); ++q_it) {
@@ -126,7 +126,9 @@ int _add_switchcase_expression(query* self, expression* expr)
 		break;
 	case SWITCH_STATIC_CMP:
 		sc->state = SWITCH_VALUE;
-	case SWITCH_LOGIC_GROUP: /* FALL THROUGH ON PURPOSE */
+		try_(_add_logic_expression(self, expr));
+		break;
+	case SWITCH_LOGIC_GROUP:
 		try_(_add_logic_expression(self, expr));
 	}
 	return FQL_GOOD;
@@ -487,7 +489,6 @@ int query_enter_operator(query* self, enum scalar_function op)
 
 void query_exit_function(query* self)
 {
-	//expression* expr = stack_pop(&self->function_stack);
 	stack_pop(&self->function_stack);
 }
 
@@ -506,9 +507,11 @@ int query_enter_case_expression(query* self)
 	new_sc->return_mode = self->mode;
 	new_sc->return_logic_mode = self->logic_mode;
 	new_sc->return_logic_stack = self->logic_stack;
+	new_sc->return_joinable = self->joinable;
 	self->logic_mode = LOGIC_CASE;
 	self->mode = MODE_CASE;
 	self->logic_stack = NULL;
+	self->joinable = NULL;
 	return FQL_GOOD;
 }
 
@@ -518,6 +521,7 @@ int query_exit_case_expression(query* self)
 	self->mode = sc->return_mode;
 	self->logic_mode = sc->return_logic_mode;
 	self->logic_stack = sc->return_logic_stack;
+	self->joinable = sc->return_joinable;
 	return FQL_GOOD;
 }
 

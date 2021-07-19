@@ -71,6 +71,7 @@ bool schema_eq(const schema* s1, const schema* s2)
 void schema_add_expression(schema* self, expression* expr, int src_idx)
 {
 	expr->src_idx = src_idx;
+	expr->index = self->expressions->size;
 	vec_push_back(self->expressions, &expr);
 }
 
@@ -905,6 +906,7 @@ int _op_find_group(compositemap* expr_map, expression* expr, vec* key, bool loos
 		}
 		expr->src_idx = 0;
 		expr->data_source = *result;
+		expr->field_type = (*result)->field_type;
 		expr->expr = EXPR_GROUPING;
 		return FQL_GOOD;
 	}
@@ -988,7 +990,7 @@ int _map_groups(struct fql_handle* fql, query* query)
 	return FQL_GOOD;
 }
 
-int _group_validation(query* query, vec* exprs, bool loose_groups)
+int _group_validation(query* query, vec* exprs, vec* op_exprs, bool loose_groups)
 {
 	compositemap* expr_map = query->groupby->expr_map;
 	vec key;
@@ -996,6 +998,10 @@ int _group_validation(query* query, vec* exprs, bool loose_groups)
 	expression** it = vec_begin(exprs);
 	for (; it != vec_end(exprs); ++it) {
 		if ((*it)->expr == EXPR_GROUPING) {
+			expression** matched = vec_at(op_exprs, (*it)->index);
+			(*it)->src_idx = 0;
+			(*it)->data_source = (*matched)->data_source;
+			(*it)->field_type = (*matched)->field_type;
 			continue;
 		}
 		if (_op_find_group(expr_map, *it, &key, loose_groups)) {
@@ -1147,11 +1153,12 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 		 * we must re-resolve each operation,
 		 * HAVING and ORDER BY expression to a group.
 		 */
-		try_(_group_validation(aquery, op_exprs, fql->props.loose_groups));
+		try_(_group_validation(aquery, op_exprs, NULL, fql->props.loose_groups));
 
 		if (having_exprs) {
 			try_(_group_validation(aquery,
 			                       having_exprs,
+			                       NULL,
 			                       fql->props.loose_groups));
 		}
 
@@ -1159,7 +1166,22 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 		if (order_exprs) {
 			try_(_group_validation(aquery,
 			                       order_exprs,
+			                       op_exprs,
 			                       fql->props.loose_groups));
+		}
+	} else if (aquery->orderby) {
+		/* This is normally handled in _op_find_group,
+		 * but if there is no GROUP BY, just assign the
+		 * pre-resolved ORDER BY expressions.
+		 */
+		expression** it = vec_begin(order_exprs);
+		for (; it != vec_end(order_exprs); ++it) {
+			if ((*it)->expr != EXPR_GROUPING) {
+				continue;
+			}
+			expression** matched = vec_at(op_exprs, (*it)->index);
+			(*it)->data_source = (*matched)->data_source;
+			(*it)->field_type = (*matched)->field_type;
 		}
 	}
 

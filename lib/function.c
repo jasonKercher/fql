@@ -259,7 +259,9 @@ int function_validate(function* self)
 	return FQL_FAIL;
 }
 
-void function_add_expression(function* self, void* expr)
+void function_add_expression(function* self, void* generic_expr)
 {
+	expression* expr = generic_expr;
+	expr->index = self->args->size;
 	vec_push_back(self->args, &expr);
 }

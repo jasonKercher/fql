@@ -3,6 +3,7 @@
 #include "record.h"
 #include "logic.h"
 #include "misc.h"
+#include "util/util.h"
 
 switchcase* switchcase_construct(switchcase* self)
 {
@@ -16,8 +17,19 @@ switchcase* switchcase_construct(switchcase* self)
 
 void switchcase_destroy(switchcase* self)
 {
+	logicgroup** lg_iter = vec_begin(&self->tests);
+	for (; lg_iter != vec_end(&self->tests); ++lg_iter) {
+		delete_(logicgroup, *lg_iter);
+	}
 	vec_destroy(&self->tests);
+
+	expression** expr_iter = vec_begin(&self->values);
+	for (; expr_iter != vec_end(&self->values); ++expr_iter) {
+		delete_(expression, *expr_iter);
+	}
 	vec_destroy(&self->values);
+
+	delete_if_exists_(expression, self->static_expr);
 }
 
 void switchcase_add_value(switchcase* self, const expression* expr)
@@ -34,8 +46,20 @@ void switchcase_add_logicgroup(switchcase* self, logicgroup* lg)
 
 int switchcase_resolve_type(switchcase* self, expression* expr)
 {
-	expression** first_val = vec_begin(&self->values);
-	expr->field_type = (*first_val)->field_type;
+	expression** it = vec_begin(&self->values);
+	expr->field_type = (*it)->field_type;
+
+	for (; it != vec_end(&self->values); ++it) {
+		enum field_type new_type =
+		        field_determine_type(expr->field_type, (*it)->field_type);
+		if (expr->field_type != new_type) {
+			try_(expression_cast(expr, new_type));
+		}
+		if ((*it)->field_type != new_type) {
+			try_(expression_cast(*it, new_type));
+		}
+	}
+
 	return FQL_GOOD;
 }
 

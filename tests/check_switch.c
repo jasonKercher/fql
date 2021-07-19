@@ -16,6 +16,29 @@ ff5487af,f4,75882
 f99b9313,22,229701
 */
 
+void assert_select_string(const char* query_string, const char* EXPECTED_VALUE)
+{
+	int plan_count = fql_make_plans(fql, query_string);
+
+	struct fql_field* fields = NULL;
+	int field_count = 0;
+	int rows = 0;
+
+	ck_assert_int_eq(plan_count, 1);
+
+	field_count = fql_field_count(fql);
+	ck_assert_int_eq(field_count, 1);
+
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 1);
+	ck_assert_int_eq(fields[0].type, FQL_STRING);
+
+	ck_assert_str_eq(fields[0].data.s, EXPECTED_VALUE);
+	rows = fql_step(fql, &fields);
+	ck_assert_int_eq(rows, 0);
+	ck_assert_int_eq(fql_field_count(fql), 0);
+}
+
 void assert_select_int(const char* query_string, long EXPECTED_VALUE)
 {
 	int plan_count = fql_make_plans(fql, query_string);
@@ -85,6 +108,24 @@ START_TEST(test_switch_in_logic)
 }
 END_TEST
 
+/* Case statements use the same precedence as logic and implicit casts
+ * to determine type. These rules are applied across all possible
+ * resulting expressions.
+ */
+START_TEST(test_switch_type_resolution)
+{
+	assert_select_int("select case when 'x' = 'y' then 1 else '2' end", 2);
+	assert_select_int("select case when 'x' = 'x' then '2' else 1 end", 2);
+
+	assert_select_string("select case when 1=1 then '2' else '3' end", "2");
+	assert_select_int("select case 'a'          "
+	                  "    when 'b' then '5'    "
+	                  "    when 'x' then 2      "
+	                  "    when 'a' then '1' end",
+	                  1);
+}
+END_TEST
+
 Suite* fql_switch_suite(void)
 {
 	Suite* s;
@@ -95,6 +136,7 @@ Suite* fql_switch_suite(void)
 
 	tcase_add_test(tc_switch, test_switch_const);
 	tcase_add_test(tc_switch, test_switch_in_logic);
+	tcase_add_test(tc_switch, test_switch_type_resolution);
 
 	suite_add_tcase(s, tc_switch);
 

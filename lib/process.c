@@ -31,6 +31,7 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        NULL,                         /* root_ref */
 	        {NULL, NULL},                 /* fifo_in */
 	        {NULL, NULL},                 /* fifo_out */
+	        NULL,                         /* org_fifo_in0 */
 	        NULL,                         /* proc_data */
 	        string_from_char_ptr(action), /* plan_msg */
 	        NULL,                         /* wait_list */
@@ -60,8 +61,8 @@ void process_node_free(dnode* proc_node)
 
 void process_destroy(process* self, bool is_root)
 {
-	if (self->fifo_in[0] != NULL && self->fifo_in[0] != self->root_ref) {
-		delete_(fifo, self->fifo_in[0]);
+	if (self->org_fifo_in0 != NULL && self->org_fifo_in0 != self->root_ref) {
+		delete_(fifo, self->org_fifo_in0);
 	}
 	if (self->fifo_in[1] != NULL && self->fifo_in[1] != self->root_ref) {
 		delete_(fifo, self->fifo_in[1]);
@@ -69,6 +70,7 @@ void process_destroy(process* self, bool is_root)
 	delete_if_exists_(vec, self->wait_list);
 	delete_(vec, self->union_end_nodes);
 	delete_(string, self->plan_msg);
+	queue_free_func(&self->queued_results, &fifo_free);
 }
 
 void process_activate(process* self, plan* plan, unsigned fifo_size)
@@ -82,7 +84,6 @@ void process_activate(process* self, plan* plan, unsigned fifo_size)
 	if (self->action__ == &fql_select) {
 		fqlselect* select = self->proc_data;
 		select->is_const = self->is_const;
-		//select->top_count = self->top_count;
 	}
 
 	dnode** it = vec_begin(self->union_end_nodes);
@@ -95,6 +96,7 @@ void process_activate(process* self, plan* plan, unsigned fifo_size)
 
 	if (self->fifo_in[0] == NULL) {
 		self->fifo_in[0] = new_t_(fifo, recgroup, fifo_size);
+		self->org_fifo_in0 = self->fifo_in[0];
 		/* NOTE: GROUP BY hack. a constant query expression
 		 *       containing a group by essentially has 2 roots.
 		 *       We just give in[0] a nudge (like a root).

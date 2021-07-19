@@ -37,6 +37,7 @@ typedef struct fifo fifo;
 
 struct fifo* fifo_construct(struct fifo*, size_t elem_size, unsigned buf_size);
 #define fifo_construct_(this_, T_, n_) fifo_construct(this_, sizeof(T_), n_)
+void fifo_free(void*);
 void fifo_destroy(struct fifo*);
 
 void fifo_set_open(struct fifo*, int);

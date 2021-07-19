@@ -73,8 +73,10 @@ void expression_destroy(void* generic_expr)
 		delete_(function, self->field.fn);
 		break;
 	case EXPR_AGGREGATE:
-		/* TODO - this will double delete ?? */
 		delete_(aggregate, self->field.agg);
+		break;
+	case EXPR_SWITCH_CASE:
+		delete_(switchcase, self->field.sc);
 		break;
 	default:;
 	}
@@ -268,6 +270,15 @@ int expression_cast(expression* self, enum field_type new_type)
 	}
 
 	return FQL_GOOD;
+}
+
+void expression_update_indicies(vec* expr_vec)
+{
+	unsigned i = 0;
+	expression** exprs = vec_begin(expr_vec);
+	for (; i < expr_vec->size; ++i) {
+		exprs[i]->index = i;
+	}
 }
 
 

@@ -8,20 +8,9 @@ fifo* fifo_construct(fifo* self, size_t elem_size, unsigned buf_size)
 	if (buf_size <= 1) {
 		buf_size = 2;
 	}
-	*self = (fifo) {
-	        new_(vec, elem_size), /* buf */
-	        {0},                  /* head_mutex */
-	        {0},                  /* tail_mutex */
-	        {0},                  /* open_mutex */
-	        {0},                  /* cond_add */
-	        {0},                  /* cond_get */
-	        {0},                  /* cond_work */
-	        0,                    /* head */
-	        0,                    /* tail */
-	        0,                    /* _iter_head */
-	        0,                    /* input_count */
-	        true                  /* is_open */
-	};
+	memset(self, 0, sizeof(*self));
+	self->buf = new_(vec, elem_size);
+	self->is_open = true;
 
 	vec_resize_and_zero(self->buf, buf_size);
 
@@ -44,6 +33,12 @@ void fifo_destroy(fifo* self)
 	pthread_cond_destroy(&self->cond_add);
 	pthread_cond_destroy(&self->cond_get);
 	pthread_cond_destroy(&self->cond_work);
+}
+
+void fifo_free(void* self)
+{
+	fifo_destroy(self);
+	free_(self);
 }
 
 void fifo_set_open(fifo* self, int is_open)

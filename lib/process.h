@@ -18,6 +18,7 @@ struct process {
 	struct fifo* root_ref;        /* Reference to plan-wide root-records */
 	struct fifo* fifo_in[2];      /* input record fifos */
 	struct fifo* fifo_out[2];     /* output record fifos */
+	struct fifo* org_fifo_in0;    /* Used to avoid memory leak with UNION */
 	void* proc_data;              /* process specific data */
 	string* plan_msg;             /* message that prints with plan */
 	struct vec* wait_list;        /* list of fifos that we wait for */

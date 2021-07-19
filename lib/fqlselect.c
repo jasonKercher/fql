@@ -166,6 +166,8 @@ void _expand_asterisks(query* query, bool force_expansion)
 		--i;
 	}
 
+	expression_update_indicies(expr_vec);
+
 	if (self->writer == NULL) {
 		return;
 	}

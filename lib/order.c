@@ -131,7 +131,8 @@ int order_preresolve_expressions(order* self, fqlselect* select)
 			expression_link(*it, *result);
 			continue;
 		}
-		expression_link(*it, (*result)->data_source);
+		(*it)->index = (*result)->index;
+		//expression_link(*it, *result);
 		(*it)->expr = EXPR_GROUPING;
 	}
 
@@ -151,6 +152,7 @@ int order_add_expression(order* self, expression* expr)
 		delete_(expression, expr);
 		return FQL_GOOD;
 	}
+	expr->index = self->expressions.size;
 	vec_push_back(&self->expressions, &expr);
 	return FQL_GOOD;
 }
