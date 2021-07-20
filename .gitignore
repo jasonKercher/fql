@@ -8,6 +8,8 @@ check_read
 check_join
 check_subquery
 check_group
+check_union
+check_switch
 check_having
 check_order
 check_top
