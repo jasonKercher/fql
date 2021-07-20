@@ -192,16 +192,10 @@ int _logicgroup_process(plan* self,
                         bool is_from_having)
 {
 	process* logic_proc = new_(process, "", self);
-	//if (is_from_having) {
-	//	logic_proc->root_group = &self->query->groupby->_roots;
-	//}
 	logic_proc->action__ = &fql_logic;
 	logic_proc->proc_data = lg;
 	try_(_logic_to_process(self, logic_proc, lg));
 	dnode* logic_node = dgraph_add_data(self->processes, logic_proc);
-	//if (dgraph_root_count(self->processes) == 0) {
-	//	logic_node->is_root = true;
-	//}
 
 	/* If we are dealing with join logic that
 	 * has been optimized to a hash join, the
@@ -288,14 +282,9 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 	} else {
 		from_proc = new_(process, "subquery select", self);
 		from_proc->action__ = &fql_read;
-		//from_proc->root_fifo = 1;
 		from_node = dgraph_add_data(self->processes, from_proc);
-		//from_node->is_root = true;
 		try_(_build(table_iter->subquery, fql, from_node, false));
 		plan* subquery_plan = table_iter->subquery->plan;
-		//process* sub_true_proc = subquery_plan->op_true->data;
-		//fqlselect* sub_select = sub_true_proc->proc_data;
-		//from_proc->proc_data = sub_select;
 		dgraph_consume(self->processes, subquery_plan->processes);
 		subquery_plan->processes = NULL;
 	}
@@ -426,9 +415,6 @@ void _group(plan* self, query* query)
 
 	if (query->distinct) {
 		process* group_proc = new_(process, "DISTINCT ", self);
-		//if (query->groupby) {
-		//	group_proc->root_group = &query->groupby->_roots;
-		//}
 		group_proc->action__ = &fql_distinct;
 		group_proc->proc_data = query->distinct;
 		group_cat_description(query->distinct, group_proc);
@@ -452,17 +438,9 @@ void _operation(plan* self, query* query, dnode* entry, bool is_union)
 	dnode* prev = self->current;
 	prev->out[0] = self->op_true;
 	self->current = self->op_true;
-	//if (query->groupby) {
-	//	process* true_proc = self->op_true->data;
-	//	true_proc->root_group = &query->groupby->_roots;
-	//}
 	_check_all_for_special_expression(self,
 	                                  self->op_true->data,
 	                                  op_get_expressions(query->op));
-
-	//if (dgraph_root_count(self->processes) == 0) {
-	//	self->op_true->is_root = true;
-	//}
 
 	/* Current no longer matters. After operation, we
 	 * do order where current DOES matter... BUT
@@ -470,6 +448,8 @@ void _operation(plan* self, query* query, dnode* entry, bool is_union)
 	 * ORDER BY...
 	 */
 	if (is_union) {
+		process* false_proc = self->op_false->data;
+		false_proc->is_passive = true;
 		process* prev_proc = prev->data;
 		if (!prev_proc->is_passive) {
 			self->current = prev;
@@ -478,10 +458,6 @@ void _operation(plan* self, query* query, dnode* entry, bool is_union)
 	}
 	op_apply_process(query, self, (is_union || entry != NULL));
 
-	//if (query->orderby != NULL) {
-	//	process* select_proc = self->op_true->data;
-	//	select_proc->top_count = -1;
-	//}
 	if (entry == NULL) {
 		return;
 	}
@@ -502,8 +478,6 @@ int _union(plan* self, query* aquery, struct fql_handle* fql)
 		try_(_build(*it, fql, NULL, true));
 		plan* union_plan = (*it)->plan;
 		vec_push_back(select_proc->union_end_nodes, &union_plan->current);
-		//process* union_proc = union_plan->op_false->data;
-		//union_proc->is_passive = true;
 		if (!union_plan->is_const) {
 			process* union_true = union_plan->op_true->data;
 			union_true->is_passive = true;
@@ -520,16 +494,10 @@ void _order(plan* self, query* query)
 		return;
 	}
 	process* order_proc = new_(process, "ORDER BY ", self);
-	//if (query->groupby) {
-	//	order_proc->root_group = &query->groupby->_roots;
-	//}
 	_check_all_for_special_expression(self, order_proc, &query->orderby->expressions);
 	order_proc->action__ = &fql_orderby;
 	order_proc->proc_data = query->orderby;
 	order_proc->wait_for_in0_end = true;
-	//if (!vec_empty(query->unions)) {
-	//	query->orderby->top_count = -1;
-	//}
 	order_cat_description(query->orderby, order_proc);
 	dnode* order_node = dgraph_add_data(self->processes, order_proc);
 	self->current->out[0] = order_node;
@@ -724,7 +692,6 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 	_activate_procs(self);
 	_make_pipes(self);
 	_update_pipes(self->processes);
-	//_union2(self, aquery);
 
 	return FQL_GOOD;
 }

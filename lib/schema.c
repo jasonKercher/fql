@@ -496,7 +496,6 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		table->schema = select->schema;
 		self = table->schema;
 		table->reader->type = IO_SUBQUERY;
-		//table->reader->reader_data = select;
 	} else {
 		/* if we've made it this far, we want to try
 		 * and determine schema by reading the top
@@ -559,7 +558,6 @@ int _evaluate_if_const(expression* expr)
 
 	union field new_field;
 	if (expr->field_type == FIELD_STRING) {
-		//new_field.s = &func->ret_buf;
 		new_field.s = &expr->buf;
 		string_clear(new_field.s);
 	}
@@ -857,10 +855,6 @@ int _map_expression(vec* key, expression* expr)
 		for (; it != vec_end(&expr->field.sc->values); ++it) {
 			try_(_map_expression(key, *it));
 		}
-		//logicgroup** lg_iter = vec_begin(&expr->field.sc->tests);
-		//for (; lg_iter != vec_end(&expr->field.sc->tests); ++lg_iter) {
-		//	try_(_map_case_expression(key, *lg_iter));
-		//}
 
 		type_sv.data = (void*)&_switchcase_end;
 		vec_push_back(key, &type_sv); /* SIGNIFY CASE EXPRESSION END */
