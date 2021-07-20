@@ -22,9 +22,11 @@ const char* _help =
 
         "This is a text processing program using SQL (Transact-SQL specifically).\n\n"
 
-        "If no file argument is provided, queries are read from stdin. Files are\n"
-        "referenced as tables in the query via a priority list. For example, given\n"
-        "the following query: 'select * from t1', we match files on these rules:\n\n"
+        "If no file argument is provided, queries are read from stdin. Text input\n"
+        "is assumed to be UTF-8 encoded. Files are referenced as tables in the\n"
+        "query via a priority list. For example:\n"
+        "select * from t1\n"
+        "We try to resolve t1 in the following order:\n\n"
 
         "    RULE                   EXAMPLE MATCHES\n"
         "    exact match            t1\n"
@@ -43,7 +45,7 @@ const char* _help =
         " -d, --dry-run          validate and build a plan, but do not execute\n"
         " -h, --no-header        for default schema, do not print a header\n"
         //" -H, --add-header       for no-header delimited, add a header\n"
-        " -L, --summarize        allow selection of outside of grouping.\n"
+        " -L, --summarize        allow SELECTion outside of groups.\n"
         //" -o, --overwrite        creation of tables can overwrite existing files\n"
         " -O, --override         allow processing of unsupported language features\n"
         " -p, --print            print the processing plan\n"
@@ -94,7 +96,6 @@ int main(int argc, char** argv)
 
 	static struct option long_options[] = {
 	        /* long option, (no) arg, 0, short option */
-	        //{"verbose", no_argument, 0, 'v'},
 	        {"api", no_argument, 0, 'A'},
 	        {"char-as-byte", no_argument, 0, 'b'},
 	        {"cartesian", no_argument, 0, 'C'},

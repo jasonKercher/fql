@@ -1198,7 +1198,7 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	unsigned expected = fqlselect_get_field_count(aquery->op);
 	query_iter = vec_begin(aquery->unions);
 	for (; query_iter != vec_end(aquery->unions); ++query_iter) {
-		_resolve_query(fql, *query_iter, main_io_type);
+		try_(_resolve_query(fql, *query_iter, main_io_type));
 		if (expected != fqlselect_get_field_count((*query_iter)->op)) {
 			fputs("UNION query schema mis-match\n", stderr);
 			return FQL_FAIL;
