@@ -4,7 +4,6 @@
 
 #include "fql.h"
 #include "query.h"
-//#include "expression.h"
 #include "util/util.h"
 
 /** Utility functions **/
@@ -90,8 +89,7 @@ void ListenerInterface::exitSelect_list_elem(TSqlParser::Select_list_elemContext
 {
 	if (_on_asterisk) {
 		if (query_add_asterisk(_query, _table_name)) {
-			_return_code = FQL_FAIL;
-			_walker->set_walking(false);
+			_set_failure();
 		}
 		_on_asterisk = false;
 	}
@@ -150,14 +148,12 @@ void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx)
 		error_token = "REMOTE";
 	} else if (!ctx->JOIN()) {
 		std::cerr << "Keyword `JOIN' expected but not found\n";
-		_return_code = FQL_FAIL;
-		_walker->set_walking(false);
+		_set_failure();
 	}
 
 	if (!error_token.empty()) {
 		std::cerr << "Keyword `" << error_token << "' currently not supported\n";
-		_return_code = FQL_FAIL;
-		_walker->set_walking(false);
+		_set_failure();
 	}
 
 	if (ctx->LEFT()) {
@@ -275,8 +271,7 @@ void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx)
 		_find_replace(new_str, "''", "'");
 	}
 	if (query_add_constant(_query, new_str.c_str(), new_str.length())) {
-		_walker->set_walking(false);
-		_return_code = FQL_FAIL;
+		_set_failure();
 	}
 }
 void ListenerInterface::exitConstant(TSqlParser::ConstantContext * ctx) { }
@@ -288,16 +283,14 @@ void ListenerInterface::enterUnary_operator_expression(TSqlParser::Unary_operato
 {
 	if (ctx->MINUS()) {
 		if (query_enter_operator(_query, SCALAR_OP_UNARY_MINUS)) {
-			_return_code = FQL_FAIL;
-			_walker->set_walking(false);
+			_set_failure();
 		}
 		return;
 	}
 
 	if (ctx->BIT_NOT()) {
 		if (query_enter_operator(_query, SCALAR_OP_UNARY_BIT_NOT)) {
-			_return_code = FQL_FAIL;
-			_walker->set_walking(false);
+			_set_failure();
 		}
 	}
 }
@@ -322,13 +315,10 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 
 	char* token = strdup(new_str.c_str());
 
-	int ret = 0;
-
 	switch (_tok_type) {
 	case TOK_COLUMN_NAME:
 		if (query_add_expression(_query, token, _table_name)) {
-			_walker->set_walking(false);
-			_return_code = FQL_FAIL;
+			_set_failure();
 		}
 		/* consume table designation */
 		_table_name[0] = '\0';
@@ -342,10 +332,8 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 		/* No need to free here, into_table_name
 		 * is now owned by the query.
 		 */
-		ret = query_set_into_table(_query, token);
-		if (ret) {
-			_walker->set_walking(false);
-			_return_code = FQL_FAIL;
+		if (query_set_into_table(_query, token)) {
+			_set_failure();
 		}
 		break;
 	case TOK_TABLE_NAME:
@@ -357,6 +345,12 @@ void ListenerInterface::enterId(TSqlParser::IdContext * ctx)
 		break;
 	case TOK_TABLE_ALIAS:
 		strncpy_(_table_alias, token, TABLE_NAME_MAX);
+		free_(token);
+		break;
+	case TOK_DATA_TYPE:
+		if (query_apply_data_type(_query, token)) {
+			_set_failure();
+		}
 		free_(token);
 		break;
 	default:
@@ -393,7 +387,7 @@ void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_na
 	if (ctx->ABS())        fn = SCALAR_ABS;
 	if (ctx->ASCII())      fn = SCALAR_ASCII;
 	if (ctx->CEILING())    fn = SCALAR_CEILING;
-	if (ctx->CHAR())       fn = SCALAR_CHAR;
+	//if (ctx->CHAR())       fn = SCALAR_CHAR;
 	if (ctx->CHARINDEX())  fn = SCALAR_CHARINDEX;
 	if (ctx->CHECKSUM())   fn = SCALAR_CHECKSUM;
 	if (ctx->DATALENGTH()) fn = SCALAR_DATALENGTH;
@@ -421,11 +415,8 @@ void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_na
 	if (ctx->USER_NAME())  fn = SCALAR_USER_NAME;
 	if (ctx->YEAR())       fn = SCALAR_YEAR;
 
-	int ret = query_enter_function(_query, fn, _fql->props.char_as_byte);
-
-	if (ret) {
-		_walker->set_walking(false);
-		_return_code = ret;
+	if (query_enter_function(_query, fn, _fql->props.char_as_byte)) {
+		_set_failure();
 	}
 }
 void ListenerInterface::exitScalar_function_name(TSqlParser::Scalar_function_nameContext * ctx) { }
@@ -433,10 +424,8 @@ void ListenerInterface::exitScalar_function_name(TSqlParser::Scalar_function_nam
 void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContext * ctx)
 {
 	_query->mode = MODE_SELECT;
-	int ret = query_init_op(_query);
-	if (ret) {
-		_return_code = ret;
-		_walker->set_walking(false);
+	if (query_init_op(_query)) {
+		_set_failure();
 	}
 }
 
@@ -482,6 +471,12 @@ void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx)
 void ListenerInterface::enterPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { }
 void ListenerInterface::exitPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { }
 
+void ListenerInterface::enterData_type(TSqlParser::Data_typeContext * ctx)
+{
+	_tok_type = TOK_DATA_TYPE;
+}
+void ListenerInterface::exitData_type(TSqlParser::Data_typeContext * ctx) { }
+
 void ListenerInterface::enterBracket_expression(TSqlParser::Bracket_expressionContext * ctx)
 {
 	_query->in_bracket_expression = true;
@@ -514,8 +509,7 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 		break;
 	default:
 		std::cerr << "Unexpected mode for subquery\n";
-		_return_code = FQL_FAIL;
-		_walker->set_walking(false);
+		_set_failure();
 		return;
 	}
 
@@ -545,8 +539,7 @@ void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContex
 			 */
 			if (!_query->groupby) {
 				std::cerr << "HAVING without GROUP BY\n";
-				_walker->set_walking(false);
-				_return_code = FQL_FAIL;
+				_set_failure();
 			}
 		}
 	}
@@ -613,8 +606,7 @@ void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_w
 {
 	if (_fql->props.loose_groups) {
 		std::cerr << "Cannot use aggregates with loose groups\n";
-		_return_code = FQL_FAIL;
-		_walker->set_walking(false);
+		_set_failure();
 		return;
 	}
 
@@ -637,8 +629,7 @@ void ListenerInterface::enterAggregate_windowed_function(TSqlParser::Aggregate_w
 	else if (ctx->VARP())         fn = AGG_VARP;
 
 	if (query_enter_aggregate(_query, fn)) {
-		_return_code = FQL_FAIL;
-		_walker->set_walking(false);
+		_set_failure();
 	}
 	//_query->in_aggregate = true;
 }
@@ -722,15 +713,12 @@ void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx)
 {
 	if (!ctx->ALL()) {
 		std::cerr << "UNION without ALL is currently not supported\n";
-		_return_code = FQL_FAIL;
-		_walker->set_walking(false);
+		_set_failure();
 	}
 
 	query* union_query = query_new(++_query_id);
-	int ret = query_enter_union(_query, union_query);
-	if (ret) {
-		_return_code = ret;
-		_walker->set_walking(false);
+	if (query_enter_union(_query, union_query)) {
+		_set_failure();
 	}
 
 	_query = union_query;
@@ -744,6 +732,14 @@ void ListenerInterface::exitSql_union(TSqlParser::Sql_unionContext * ctx)
 	_query = (query*)_query_stack->data;
 	query_exit_union(_query, union_query);
 }
+
+void ListenerInterface::enterCAST(TSqlParser::CASTContext * ctx)
+{
+	if (query_enter_function(_query, SCALAR_CAST, _fql->props.char_as_byte)) {
+		_set_failure();
+	}
+}
+void ListenerInterface::exitCAST(TSqlParser::CASTContext * ctx) { }
 
 /* Every Rule Operations */
 
@@ -762,8 +758,7 @@ void ListenerInterface::enterEveryRule(antlr4::ParserRuleContext * ctx)
 			std::cerr << "\nCAUTION: Overriding the above warnings! Results may be incorrect!\n";
 		} else {
 			std::cerr << "\nTerminated: Use -O to Override at your own risk.\n";
-			_return_code = FQL_FAIL;
-			_walker->set_walking(false);
+			_set_failure();
 		}
 	}
 }
@@ -777,10 +772,15 @@ void ListenerInterface::exitEveryRule(antlr4::ParserRuleContext * ctx)
 /**
  * Not Implemented
  */
-
 void ListenerInterface::_no_impl(const std::string& text, int rule_idx)
 {
 	_error_tokens.push_back(text + " ( " + _rule_names[rule_idx] + " )");
+}
+
+void ListenerInterface::_set_failure()
+{
+	_return_code = FQL_FAIL;
+	_walker->set_walking(false);
 }
 
 void ListenerInterface::enterDdl_clause(TSqlParser::Ddl_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
@@ -1221,9 +1221,6 @@ void ListenerInterface::exitBulk_option(TSqlParser::Bulk_optionContext * ctx) { 
 void ListenerInterface::enterBINARY_CHECKSUM(TSqlParser::BINARY_CHECKSUMContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitBINARY_CHECKSUM(TSqlParser::BINARY_CHECKSUMContext * ctx) { }
 
-void ListenerInterface::enterCAST(TSqlParser::CASTContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitCAST(TSqlParser::CASTContext * ctx) { }
-
 void ListenerInterface::enterCONVERT(TSqlParser::CONVERTContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitCONVERT(TSqlParser::CONVERTContext * ctx) { }
 
@@ -1430,9 +1427,6 @@ void ListenerInterface::exitQueue_id(TSqlParser::Queue_idContext * ctx) { }
 
 void ListenerInterface::enterSend_conversation(TSqlParser::Send_conversationContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitSend_conversation(TSqlParser::Send_conversationContext * ctx) { }
-
-void ListenerInterface::enterData_type(TSqlParser::Data_typeContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitData_type(TSqlParser::Data_typeContext * ctx) { }
 
 void ListenerInterface::enterDefault_value(TSqlParser::Default_valueContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitDefault_value(TSqlParser::Default_valueContext * ctx) { }

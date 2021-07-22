@@ -20,6 +20,7 @@ class ListenerInterface : public TSqlParserBaseListener {
 		TOK_TABLE_NAME,
 		TOK_TABLE_SOURCE,
 		TOK_TABLE_ALIAS,
+		TOK_DATA_TYPE,
 	};
 
 	std::vector<std::string> _error_tokens;
@@ -47,6 +48,7 @@ class ListenerInterface : public TSqlParserBaseListener {
 	enum tok_type _tok_type;
 	bool _on_asterisk = false;
 
+	void _set_failure();
 	void _no_impl(const std::string&, int);
 
       public:

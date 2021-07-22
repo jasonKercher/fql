@@ -22,13 +22,13 @@ static scalar_fn _scalar_ops[OPERATOR_COUNT][FIELD_TYPE_COUNT] = {
         {&fql_op_unary_minus_i, &fql_op_unary_minus_f, NULL}};
 
 static const char* _scalar_str[] = {
-        "PLUS",      "MINUS",   "MULTIPY",       "DIVIDE",      "MODULE",     "BIT_OR",
-        "BIT_AND",   "BIT_XOR", "UNARY_BIT_NOT", "UNARY_MINUS", "ABS",        "ASCII",
-        "CEILING",   "CHAR",    "CHARINDEX",     "CHECKSUM",    "DATALENGTH", "DAY",
-        "FLOOR",     "ISDATE",  "ISNUMERIC",     "LEFT",        "LEN",        "LOWER",
-        "LTRIM",     "MONTH",   "NCHAR",         "PATINDEX",    "RAND",       "REPLACE",
-        "RIGHT",     "ROUND",   "RTRIM",         "SIGN",        "SPACE",      "STR",
-        "SUBSTRING", "UPPER",   "USER_NAME",     "YEAR",
+        "PLUS",    "MINUS",     "MULTIPY",       "DIVIDE",      "MODULE",   "BIT_OR",
+        "BIT_AND", "BIT_XOR",   "UNARY_BIT_NOT", "UNARY_MINUS", "ABS",      "ASCII",
+        "CAST",    "CEILING",   "CHAR",          "CHARINDEX",   "CHECKSUM", "DATALENGTH",
+        "DAY",     "FLOOR",     "ISDATE",        "ISNUMERIC",   "LEFT",     "LEN",
+        "LOWER",   "LTRIM",     "MONTH",         "NCHAR",       "PATINDEX", "RAND",
+        "REPLACE", "RIGHT",     "ROUND",         "RTRIM",       "SIGN",     "SPACE",
+        "STR",     "SUBSTRING", "UPPER",         "USER_NAME",   "YEAR",
 };
 
 int _not_implemented(function* self, union field* f, recgroup* unused)
@@ -88,6 +88,7 @@ function* function_construct(function* self,
 	case SCALAR_ABS:
 	case SCALAR_ASCII:
 	case SCALAR_CEILING:
+	case SCALAR_CAST:
 	case SCALAR_CHAR:
 	case SCALAR_DAY:
 	case SCALAR_FLOOR:

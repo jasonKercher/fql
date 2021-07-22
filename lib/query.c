@@ -355,21 +355,6 @@ int query_exit_aggregate(query* self)
 	return FQL_GOOD;
 }
 
-int _add_function(query* self, function* func, enum field_type type)
-{
-	expression* expr = new_(expression, EXPR_FUNCTION, func, "");
-	expr->field_type = type;
-
-	if (_distribute_expression(self, expr)) {
-		fprintf(stderr,
-		        "unhandled function: %s\n",
-		        function_get_name(func));
-		return FQL_FAIL;
-	}
-	stack_push(&self->function_stack, expr);
-	return FQL_GOOD;
-}
-
 int query_init_op(query* self)
 {
 	switch (self->mode) {
@@ -458,12 +443,25 @@ int query_exit_union(query* self, query* union_query)
 	/* We need to track the expression vector
 	 * from the union's select. Since we are
 	 * tracking the vector itself, it will
-	 * still be correct after the all the
-	 * schemas have resolved. select assumed.
+	 * still be correct after all the schemas
+	 * have resolved. select assumed...
 	 */
 	fqlselect* select = self->op;
 	queue_enqueue(&select->union_selects, union_query->op);
 
+	return FQL_GOOD;
+}
+
+int _add_function(query* self, function* func, enum field_type type)
+{
+	expression* expr = new_(expression, EXPR_FUNCTION, func, "");
+	expr->field_type = type;
+
+	if (_distribute_expression(self, expr)) {
+		fprintf(stderr, "unhandled function: %s\n", function_get_name(func));
+		return FQL_FAIL;
+	}
+	stack_push(&self->function_stack, expr);
 	return FQL_GOOD;
 }
 
@@ -485,6 +483,33 @@ int query_enter_operator(query* self, enum scalar_function op)
 	enum field_type type = FIELD_UNDEFINED;
 	function* func = new_(function, op, &type, true);
 	try_(_add_function(self, func, FIELD_UNDEFINED));
+	return FQL_GOOD;
+}
+
+int query_apply_data_type(query* self, const char* type_str)
+{
+	expression* cast_expr = self->function_stack->data;
+	if (istring_eq(type_str, "int") || istring_eq(type_str, "bigint")
+	    || istring_eq(type_str, "tinyint") || istring_eq(type_str, "smallint")) {
+		cast_expr->field.fn->call__ = &fql_cast_int;
+		cast_expr->field_type = FIELD_INT;
+	} else if (istring_eq(type_str, "bit")) {
+		cast_expr->field.fn->call__ = &fql_cast_bit;
+		cast_expr->field_type = FIELD_INT;
+	} else if (istring_eq(type_str, "float") || istring_eq(type_str, "real")) {
+		cast_expr->field.fn->call__ = &fql_cast_float;
+		cast_expr->field_type = FIELD_FLOAT;
+	} else if (istring_eq(type_str, "varchar") || istring_eq(type_str, "nvarchar")
+	           || istring_eq(type_str, "text") || istring_eq(type_str, "ntext")) {
+		cast_expr->field.fn->call__ = &fql_cast_string;
+		cast_expr->field_type = FIELD_STRING;
+	} else if (istring_eq(type_str, "char") || istring_eq(type_str, "nchar")) {
+		cast_expr->field.fn->call__ = &fql_cast_char;
+		cast_expr->field_type = FIELD_STRING;
+	} else {
+		fprintf(stderr, "Type not implemented: `%s'\n", type_str);
+		return FQL_FAIL;
+	}
 	return FQL_GOOD;
 }
 

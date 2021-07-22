@@ -196,12 +196,12 @@ int fql_set_out_std(struct fql_handle* fql, const char* std)
 
 void fql_set_in_delim(struct fql_handle* fql, const char* delim)
 {
-	strncpy_(fql->props.in_delim, delim, 32);
+	strncpy_(fql->props.in_delim, delim, DELIM_LEN_MAX);
 }
 
 void fql_set_out_delim(struct fql_handle* fql, const char* delim)
 {
-	strncpy_(fql->props.out_delim, delim, 32);
+	strncpy_(fql->props.out_delim, delim, DELIM_LEN_MAX);
 	fql->props._out_delim_set = true;
 }
 

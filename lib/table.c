@@ -91,7 +91,7 @@ void table_destroy(table* self)
 	delete_if_exists_(query, self->subquery);
 }
 
-int table_resolve_schema(table* self)
+int table_resolve_schema(table* self, struct fql_handle* fql)
 {
 	reader* reader = self->reader;
 	const char* delim = NULL;
@@ -117,7 +117,11 @@ int table_resolve_schema(table* self)
 		return FQL_FAIL;
 	}
 
-	strncpy_(self->schema->delimiter, delim, DELIM_LEN_MAX);
+	//if (fql->props.in_delim[0]) {
+	//	schema_set_delim(self->schema, fql->props.in_delim);
+	//} else {
+	schema_set_delim(self->schema, delim);
+	//}
 	return FQL_GOOD;
 }
 

@@ -36,6 +36,9 @@ enum aggregate_function {
 	AGG_VARP,
 };
 
+/* The order here is important...
+ * see function.c
+ */
 enum scalar_function {
 	SCALAR_UNDEFINED = -1,
 	SCALAR_OP_PLUS,
@@ -50,6 +53,7 @@ enum scalar_function {
 	SCALAR_OP_UNARY_MINUS,
 	SCALAR_ABS,
 	SCALAR_ASCII,
+	SCALAR_CAST, /* */
 	SCALAR_CEILING,
 	SCALAR_CHAR,
 	SCALAR_CHARINDEX,
@@ -176,11 +180,12 @@ void query_exit_in_statement(struct query*);
 void query_assign_in_subquery(struct query*, struct query*);
 void query_add_subquery_const(struct query*, struct query*);
 void query_set_order_desc(struct query*);
+int query_apply_data_type(struct query*, const char*);
 
 int query_enter_union(struct query*, struct query*);
 int query_exit_union(struct query*, struct query*);
 
-int query_enter_function(struct query*, enum scalar_function, int);
+int query_enter_function(struct query*, enum scalar_function, int char_as_byte);
 void query_exit_function(struct query*);
 int query_enter_operator(struct query*, enum scalar_function op);
 

@@ -71,7 +71,27 @@ int _get_rev_byte_count(const char* s, unsigned limit)
 	return -i + 1;
 }
 
-/** ret is assumed to be of the correct type **/
+
+int fql_cast_int(function* fn, union field* ret, recgroup* rg)
+{
+	return FQL_FAIL;
+}
+int fql_cast_bit(function* fn, union field* ret, recgroup* rg)
+{
+	return FQL_FAIL;
+}
+int fql_cast_float(function* fn, union field* ret, recgroup* rg)
+{
+	return FQL_FAIL;
+}
+int fql_cast_string(function* fn, union field* ret, recgroup* rg)
+{
+	return FQL_FAIL;
+}
+int fql_cast_char(function* fn, union field* ret, recgroup* rg)
+{
+	return FQL_FAIL;
+}
 
 int fql_len(function* fn, union field* ret, recgroup* rg)
 {

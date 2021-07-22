@@ -35,6 +35,13 @@ int function_validate(struct function*);
 void function_add_expression(struct function* func, void* col);
 int function_op_resolve(function* func, enum field_type*);
 
+/* cast function list */
+int fql_cast_int(struct function*, union field* ret, struct recgroup*);
+int fql_cast_bit(struct function*, union field* ret, struct recgroup*);
+int fql_cast_float(struct function*, union field* ret, struct recgroup*);
+int fql_cast_string(struct function*, union field* ret, struct recgroup*);
+int fql_cast_char(struct function*, union field* ret, struct recgroup*);
+
 /* scalar functions list */
 int fql_len(struct function*, union field* ret, struct recgroup*);
 int fql_datalength(struct function*, union field* ret, struct recgroup*);

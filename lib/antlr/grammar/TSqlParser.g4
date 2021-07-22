@@ -1596,7 +1596,7 @@ scalar_function_name
     | ABS
     | ASCII
     | CEILING
-    | CHAR
+    //| CHAR
     | CHARINDEX
     | CHECKSUM
     | DATALENGTH

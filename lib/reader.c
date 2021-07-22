@@ -46,6 +46,9 @@ int reader_assign(reader* self, table* table, struct fql_handle* fql)
 	case IO_LIBCSV: {
 		csv_reader* csv = csv_reader_new();
 		csv->quotes = fql->props.in_std;
+		if (fql->props.in_delim[0]) {
+			csv_reader_set_delim(csv, fql->props.in_delim);
+		}
 		self->reader_data = csv;
 		self->free__ = &libcsv_free;
 		self->get_record__ = &libcsv_get_record;

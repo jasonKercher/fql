@@ -1083,7 +1083,7 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	for (; i < sources->size; ++i) {
 		table* table = vec_at(aquery->sources, i);
 		try_(_resolve_source(fql, table, i));
-		try_(table_resolve_schema(table));
+		try_(table_resolve_schema(table, fql));
 
 		if (union_io != IO_UNDEFINED) {
 			op_get_schema(aquery->op)->write_io_type = union_io;
