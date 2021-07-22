@@ -1,17 +1,20 @@
 #include "writer.h"
+#include "fqlhandle.h"
 #include <csv.h>
 #include "fql.h"
 #include "misc.h"
 
-writer* writer_construct(writer* self, enum io io, int strict)
+void _assign(writer*, struct fql_handle*);
+
+writer* writer_construct(writer* self, enum io io, struct fql_handle* fql)
 {
 	*self = (writer) {
-	        io,                  /* type */
-	        NULL,                /* writer_data */
-	        NULL,                /* write_record__ */
-	        new_t_(vec, string), /* raw_rec */
-	        {0},                 /* file_name */
-	        strict,              /* strict */
+	        io,                    /* type */
+	        NULL,                  /* writer_data */
+	        NULL,                  /* write_record__ */
+	        new_t_(vec, string),   /* raw_rec */
+	        {0},                   /* file_name */
+	        fql->props.strictness, /* strict */
 	};
 
 	string_construct(&self->file_name);
@@ -19,7 +22,7 @@ writer* writer_construct(writer* self, enum io io, int strict)
 	/* TODO: this should not be here. this should
 	 *       be dependant on output schema
 	 */
-	writer_assign(self);
+	_assign(self, fql);
 
 	return self;
 }
@@ -41,6 +44,26 @@ void writer_destroy(writer* self)
 		string_destroy(s);
 	}
 	delete_(vec, self->raw_rec);
+}
+
+void _assign(writer* self, struct fql_handle* fql)
+{
+	switch (self->type) {
+	case IO_LIBCSV: {
+		csv_writer* csv = csv_writer_new();
+		csv->quotes = fql->props.out_std;
+		self->writer_data = csv;
+		self->write_record__ = &libcsv_write_record;
+		break;
+	}
+	case IO_FIXED: {
+		self->writer_data = new_(fixedwriter);
+		self->write_record__ = &fixedwriter_write_record;
+		break;
+	}
+	default:
+		fprintf(stderr, "%d: unknown write_type\n", self->type);
+	}
 }
 
 int writer_open(writer* self, const char* file_name)
@@ -148,24 +171,6 @@ void writer_set_rec_terminator(writer* self, const char* term)
 	}
 	case IO_FIXED: /* no record terminator for this */
 		break;
-	default:
-		fprintf(stderr, "%d: unknown write_type\n", self->type);
-	}
-}
-
-void writer_assign(writer* self)
-{
-	switch (self->type) {
-	case IO_LIBCSV: {
-		self->writer_data = csv_writer_new();
-		self->write_record__ = &libcsv_write_record;
-		break;
-	}
-	case IO_FIXED: {
-		self->writer_data = new_(fixedwriter);
-		self->write_record__ = &fixedwriter_write_record;
-		break;
-	}
 	default:
 		fprintf(stderr, "%d: unknown write_type\n", self->type);
 	}

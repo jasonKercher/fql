@@ -37,6 +37,7 @@ schema* schema_construct(schema* self)
 	        IO_UNDEFINED,             /* io_type */
 	        IO_UNDEFINED,             /* write_io_type */
 	        true,                     /* is_default */
+	        false,                    /* delim_is_set */
 	};
 
 	return self;
@@ -55,6 +56,12 @@ void schema_destroy(void* generic_schema)
 	delete_if_exists_(string, self->name);
 	delete_if_exists_(string, self->schema_path);
 	delete_if_exists_(multimap, self->expr_map);
+}
+
+void schema_set_delim(schema* self, const char* delim)
+{
+	strncpy_(self->delimiter, delim, DELIM_LEN_MAX);
+	self->delim_is_set = true;
 }
 
 bool schema_eq(const schema* s1, const schema* s2)
@@ -105,9 +112,8 @@ void schema_preflight(schema* self)
 		multimap_set(self->expr_map, expr[i]->alias.data, &expr[i]);
 	}
 
-	if (self->delimiter[0] == '\0') {
-		self->delimiter[0] = ',';
-		self->delimiter[1] = '\0';
+	if (!self->delim_is_set) {
+		schema_set_delim(self, ",");
 	}
 
 	if (self->rec_terminator[0] == '\0') {
@@ -508,7 +514,7 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 			table->reader->type = IO_LIBCSV;
 		}
 	}
-	try_(reader_assign(table->reader, table));
+	try_(reader_assign(table->reader, table, fql));
 
 	switch (table->reader->type) {
 	case IO_FIXED:
@@ -1211,7 +1217,7 @@ int schema_resolve(struct fql_handle* fql)
 	for (; query_node; query_node = query_node->next) {
 		query* query = query_node->data;
 
-		if (fql->props.out_delim[0]) {
+		if (fql->props._out_delim_set) {
 			op_set_delim(query->op, fql->props.out_delim);
 		}
 

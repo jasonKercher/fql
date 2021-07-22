@@ -75,7 +75,7 @@ unsigned fqlselect_get_field_count(fqlselect* self)
 
 void fqlselect_set_delim(fqlselect* self, const char* delim)
 {
-	strncpy_(self->schema->delimiter, delim, DELIM_LEN_MAX);
+	schema_set_delim(self->schema, delim);
 }
 
 void fqlselect_set_rec_terminator(fqlselect* self, const char* term)
@@ -86,13 +86,15 @@ void fqlselect_set_rec_terminator(fqlselect* self, const char* term)
 void fqlselect_set_schema(fqlselect* self, const schema* src_schema)
 {
 	if (src_schema == NULL) {
-		fqlselect_set_delim(self, ",");
+		if (!self->schema->delim_is_set) {
+			fqlselect_set_delim(self, ",");
+		}
 		self->schema->io_type = IO_LIBCSV;
 		self->schema->write_io_type = IO_LIBCSV;
 		self->schema->is_default = true;
 		return;
 	}
-	if (!self->schema->delimiter[0]) {
+	if (!self->schema->delim_is_set) {
 		fqlselect_set_delim(self, src_schema->delimiter);
 	}
 	self->schema->io_type = src_schema->io_type;
@@ -337,8 +339,7 @@ int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 int fqlselect_writer_init(fqlselect* self, query* query, struct fql_handle* fql)
 {
 	if (!query->union_id) {
-		self->writer =
-		        new_(writer, self->schema->write_io_type, fql->props.strictness);
+		self->writer = new_(writer, self->schema->write_io_type, fql);
 	}
 
 	if (!query->union_id && query->into_table_name) {

@@ -186,8 +186,6 @@ void fql_set_loose_groups(struct fql_handle* fql, int);
  *
  * TODO: Currently no-op because input order
  *       cannot be broken (on paper anyway).
- *       However, This should be implemented
- *       for UNIONs.
  */
 void fql_set_stable(struct fql_handle* fql, int);
 
@@ -196,6 +194,12 @@ void fql_set_stable(struct fql_handle* fql, int);
  * of Unix style LF only.
  */
 void fql_set_crlf_output(struct fql_handle* fql, int);
+
+/**
+ * Set input/output settings for text qualifying
+ */
+int fql_set_in_std(struct fql_handle* fql, const char*);
+int fql_set_out_std(struct fql_handle* fql, const char*);
 
 /** executing **/
 

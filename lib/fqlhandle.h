@@ -3,6 +3,8 @@
 
 #ifdef __cplusplus
 extern "C" {
+#else
+#include <stdbool.h>
 #endif
 
 struct fql_handle {
@@ -16,20 +18,23 @@ struct fql_handle {
 		char out_delim[32];
 		char rec_terminator[32];
 		int pipe_factor;
-		int dry_run;
-		int force_cartesian;
-		int overwrite;
-		int override_warnings;
-		int print_header;
-		int add_header;
-		int print_plan;
-		int threading;
-		int verbose;
-		int parse_only;
-		int char_as_byte;
+		int in_std;
+		int out_std;
 		int strictness;
-		int loose_groups;
-		int stable;
+		bool dry_run;
+		bool force_cartesian;
+		bool overwrite;
+		bool override_warnings;
+		bool print_header;
+		bool add_header;
+		bool print_plan;
+		bool threading;
+		bool verbose;
+		bool parse_only;
+		bool char_as_byte;
+		bool loose_groups;
+		bool stable;
+		bool _out_delim_set;
 	} props;
 };
 

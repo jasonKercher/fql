@@ -16,6 +16,8 @@
 #define SCHEMA_ARG      0x83
 #define STABLE_ARG      0x84
 #define STRICT_ARG      0x85
+#define IN_STD_ARG      0x86
+#define OUT_STD_ARG     0x87
 
 const char* _help =
         "\nUsage fql -[bCdhHOpv] [-sS delim] [--strict] [file.sql]\n\n"
@@ -55,6 +57,8 @@ const char* _help =
         " -S, --out-delim arg    for delimited, speficy seperator for SELECT\n"
         //" -t, --thread           Utilize pthreads to run processes in parallel\n"
         " -v, --verbose          print additional information to stderr\n"
+        " --in-std arg           for delimited, set input standard. see below...\n"
+        " --out-std arg          for delimited, set output standard. see below...\n"
         " --parse-only           just run the parser and output the steps\n"
         " --stable               preserve input order\n"
         " --schema arg           set a schema as default\n"
@@ -64,7 +68,15 @@ const char* _help =
         "Strict mode will only allow exact matches to files to be used as tables.\n"
         "It will also throw errors if you try to select foo from a file with 2:\n"
         "foo,bar,foo\n"
-        "a,b,c\n";
+        "a,b,c\n\n"
+
+        "Valid values for --in-std and --out-std, include ALL, RFC4180, WEAK, NONE\n"
+        "NONE - Assume no text qualification.\n"
+        "WEAK - Allow embedded quotes without duplication. No extra white space.\n"
+        "RFC4180 (default) - The most flexible \"standard\" for delimited files.\n"
+        "ALL - Quote every field. This option has no effect on input.\n\n"
+
+        "More info: https://www.ietf.org/rfc/rfc4180.txt\n";
 
 void _parse_args(struct fql_handle* handle, int c);
 void _print_field(struct fql_field* field);
@@ -113,6 +125,8 @@ int main(int argc, char** argv)
 	        {"verbose", no_argument, 0, 'v'},
 	        {"crlf", no_argument, 0, 'W'},
 	        {"help", no_argument, 0, HELP_ARG},
+	        {"in-std", required_argument, 0, IN_STD_ARG},
+	        {"out-std", required_argument, 0, OUT_STD_ARG},
 	        {"parse-only", no_argument, 0, PARSE_ONLY_ARG},
 	        {"schema-path", required_argument, 0, SCHEMA_PATH_ARG},
 	        {"schema", required_argument, 0, SCHEMA_ARG},
@@ -126,6 +140,10 @@ int main(int argc, char** argv)
 	char opt_string[64] = "AbCdhHLOpP:s:S:tvW";
 	char* opt_iter = opt_string + strlen(opt_string) - 1;
 	*++opt_iter = HELP_ARG;
+	*++opt_iter = IN_STD_ARG;
+	*++opt_iter = ':';
+	*++opt_iter = OUT_STD_ARG;
+	*++opt_iter = ':';
 	*++opt_iter = PARSE_ONLY_ARG;
 	*++opt_iter = SCHEMA_PATH_ARG;
 	*++opt_iter = ':';
@@ -322,7 +340,17 @@ void _parse_args(struct fql_handle* handle, int c)
 	case HELP_ARG: /* --help */
 		puts(_help);
 		exit(EXIT_SUCCESS);
-	case PARSE_ONLY_ARG:
+	case IN_STD_ARG: /* --in-std */
+		if (fql_set_in_std(handle, optarg) == FQL_FAIL) {
+			exit(EXIT_FAILURE);
+		}
+		break;
+	case OUT_STD_ARG: /* --out-std */
+		if (fql_set_out_std(handle, optarg) == FQL_FAIL) {
+			exit(EXIT_FAILURE);
+		}
+		break;
+	case PARSE_ONLY_ARG: /* --parse-only */
 		fql_set_parse_only(handle, 1);
 		break;
 	case SCHEMA_PATH_ARG: /* --schema-path */

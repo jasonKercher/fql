@@ -40,11 +40,13 @@ void reader_destroy(reader* self)
 	}
 }
 
-int reader_assign(reader* self, table* table)
+int reader_assign(reader* self, table* table, struct fql_handle* fql)
 {
 	switch (self->type) {
-	case IO_LIBCSV:
-		self->reader_data = csv_reader_new();
+	case IO_LIBCSV: {
+		csv_reader* csv = csv_reader_new();
+		csv->quotes = fql->props.in_std;
+		self->reader_data = csv;
 		self->free__ = &libcsv_free;
 		self->get_record__ = &libcsv_get_record;
 		self->get_record_at__ = &libcsv_get_record_at;
@@ -55,6 +57,7 @@ int reader_assign(reader* self, table* table)
 			return FQL_FAIL;
 		}
 		return FQL_GOOD;
+	}
 	case IO_FIXED:
 		self->reader_data = new_(fixedreader, table->schema->expressions);
 		self->free__ = &fixedreader_free;

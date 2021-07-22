@@ -18,6 +18,7 @@ struct schema {
 	enum io io_type;
 	enum io write_io_type;
 	bool is_default;
+	bool delim_is_set;
 };
 typedef struct schema schema;
 
@@ -33,6 +34,8 @@ struct query;
 
 struct schema* schema_construct(struct schema*);
 void schema_destroy(void*);
+
+void schema_set_delim(struct schema*, const char*);
 
 bool schema_eq(const struct schema*, const struct schema*);
 

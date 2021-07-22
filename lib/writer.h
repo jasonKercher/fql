@@ -9,6 +9,7 @@
 typedef struct csv_writer csv_writer;
 typedef struct csv_record csv_record;
 
+struct fql_handle;
 struct writer;
 
 int libcsv_write_record(struct writer*, struct vec*, struct recgroup*, FILE*);
@@ -43,7 +44,7 @@ struct writer {
 };
 typedef struct writer writer;
 
-struct writer* writer_construct(struct writer*, enum io, int strict);
+struct writer* writer_construct(struct writer*, enum io, struct fql_handle*);
 void writer_destroy(struct writer*);
 
 int writer_open(struct writer* self, const char* file_name);
@@ -54,6 +55,5 @@ const char* writer_get_tempname(struct writer*);
 
 void writer_set_delimiter(struct writer*, const char*);
 void writer_set_rec_terminator(struct writer*, const char*);
-void writer_assign(struct writer*);
 
 #endif /* WRTIER_H */

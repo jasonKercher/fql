@@ -12,6 +12,7 @@
 struct table;
 struct reader;
 struct fqlselect;
+struct fql_handle;
 
 typedef int (*read_fn)(struct reader*, struct recgroup*);
 typedef int (*read_at_fn)(struct reader*, struct recgroup*, const char*);
@@ -35,7 +36,7 @@ typedef struct reader reader;
 struct reader* reader_construct(struct reader*);
 void reader_destroy(struct reader*);
 
-int reader_assign(struct reader*, struct table*);
+int reader_assign(struct reader*, struct table*, struct fql_handle*);
 size_t reader_get_file_size(struct reader*);
 
 

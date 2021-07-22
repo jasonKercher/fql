@@ -41,6 +41,9 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	                "",                  /* out_delim */
 	                "",                  /* rec_terminator */
 	                PIPE_FACTOR_DEFAULT, /* pipe_factor */
+	                QUOTE_RFC4180,       /* in_quotes */
+	                QUOTE_RFC4180,       /* out_quotes */
+	                0,                   /* strictness */
 	                false,               /* dry_run */
 	                false,               /* force_cartesian */
 	                false,               /* overwrite */
@@ -52,9 +55,9 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	                false,               /* verbose */
 	                false,               /* parse_only */
 	                false,               /* char_as_byte */
-	                false,               /* strictness */
 	                false,               /* loose_groups */
 	                false,               /* stable */
+	                false,               /* _out_delim_set */
 	        }                            /* props */
 	};
 	return fql;
@@ -151,6 +154,46 @@ void fql_set_print_plan(struct fql_handle* fql, int print_plan)
 	fql->props.print_plan = print_plan;
 }
 
+int fql_set_in_std(struct fql_handle* fql, const char* std)
+{
+	if (istring_eq(std, "ALL")) {
+		fql->props.in_std = QUOTE_ALL;
+	} else if (istring_eq(std, "WEAK")) {
+		fql->props.in_std = QUOTE_WEAK;
+	} else if (istring_eq(std, "NONE")) {
+		fql->props.in_std = QUOTE_NONE;
+	} else if (istring_eq(std, "RFC4180")) {
+		fql->props.in_std = QUOTE_RFC4180;
+	} else {
+		fprintf(stderr,
+		        "Invalid quote option: %s\n"
+		        "Options: NONE, WEAK, RFC4180, ALL\n",
+		        std);
+		return FQL_FAIL;
+	}
+	return FQL_GOOD;
+}
+
+int fql_set_out_std(struct fql_handle* fql, const char* std)
+{
+	if (istring_eq(std, "ALL")) {
+		fql->props.out_std = QUOTE_ALL;
+	} else if (istring_eq(std, "WEAK")) {
+		fql->props.out_std = QUOTE_WEAK;
+	} else if (istring_eq(std, "NONE")) {
+		fql->props.out_std = QUOTE_NONE;
+	} else if (istring_eq(std, "RFC4180")) {
+		fql->props.out_std = QUOTE_RFC4180;
+	} else {
+		fprintf(stderr,
+		        "Invalid quote option: %s\n"
+		        "Options: NONE, WEAK, RFC4180, ALL\n",
+		        std);
+		return FQL_FAIL;
+	}
+	return FQL_GOOD;
+}
+
 void fql_set_in_delim(struct fql_handle* fql, const char* delim)
 {
 	strncpy_(fql->props.in_delim, delim, 32);
@@ -159,6 +202,7 @@ void fql_set_in_delim(struct fql_handle* fql, const char* delim)
 void fql_set_out_delim(struct fql_handle* fql, const char* delim)
 {
 	strncpy_(fql->props.out_delim, delim, 32);
+	fql->props._out_delim_set = true;
 }
 
 void fql_set_record_terminator(struct fql_handle* fql, const char* term)
