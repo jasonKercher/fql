@@ -58,844 +58,731 @@ class ListenerInterface : public TSqlParserBaseListener {
 	int get_return_code();
 
 
+	virtual void enterTsql_file(TSqlParser::Tsql_fileContext * /*ctx*/) override;
+	virtual void exitTsql_file(TSqlParser::Tsql_fileContext * /*ctx*/) override;
 
-	/* Not yet implemented */
-	void enterTsql_file(TSqlParser::Tsql_fileContext * /*ctx*/) override;
-	void exitTsql_file(TSqlParser::Tsql_fileContext * /*ctx*/) override;
+	virtual void enterBatch(TSqlParser::BatchContext * /*ctx*/) override;
+	virtual void exitBatch(TSqlParser::BatchContext * /*ctx*/) override;
 
-	void enterBatch(TSqlParser::BatchContext * /*ctx*/) override;
-	void exitBatch(TSqlParser::BatchContext * /*ctx*/) override;
+	virtual void enterBatch_level_statement(TSqlParser::Batch_level_statementContext * /*ctx*/) override;
+	virtual void exitBatch_level_statement(TSqlParser::Batch_level_statementContext * /*ctx*/) override;
 
-	void enterSql_clauses(TSqlParser::Sql_clausesContext * /*ctx*/) override;
-	void exitSql_clauses(TSqlParser::Sql_clausesContext * /*ctx*/) override;
+	virtual void enterSql_clauses(TSqlParser::Sql_clausesContext * /*ctx*/) override;
+	virtual void exitSql_clauses(TSqlParser::Sql_clausesContext * /*ctx*/) override;
 
-	void enterSql_clause(TSqlParser::Sql_clauseContext * /*ctx*/) override;
-	void exitSql_clause(TSqlParser::Sql_clauseContext * /*ctx*/) override;
+	virtual void enterDml_clause(TSqlParser::Dml_clauseContext * /*ctx*/) override;
+	virtual void exitDml_clause(TSqlParser::Dml_clauseContext * /*ctx*/) override;
 
-	void enterDml_clause(TSqlParser::Dml_clauseContext * /*ctx*/) override;
-	void exitDml_clause(TSqlParser::Dml_clauseContext * /*ctx*/) override;
+	virtual void enterDdl_clause(TSqlParser::Ddl_clauseContext * /*ctx*/) override;
+	virtual void exitDdl_clause(TSqlParser::Ddl_clauseContext * /*ctx*/) override;
 
-	void enterDdl_clause(TSqlParser::Ddl_clauseContext * /*ctx*/) override;
-	void exitDdl_clause(TSqlParser::Ddl_clauseContext * /*ctx*/) override;
+	virtual void enterCfl_statement(TSqlParser::Cfl_statementContext * /*ctx*/) override;
+	virtual void exitCfl_statement(TSqlParser::Cfl_statementContext * /*ctx*/) override;
 
-	void enterCfl_statement(TSqlParser::Cfl_statementContext * /*ctx*/) override;
-	void exitCfl_statement(TSqlParser::Cfl_statementContext * /*ctx*/) override;
+	virtual void enterBlock_statement(TSqlParser::Block_statementContext * /*ctx*/) override;
+	virtual void exitBlock_statement(TSqlParser::Block_statementContext * /*ctx*/) override;
 
-	void enterBlock_statement(TSqlParser::Block_statementContext * /*ctx*/) override;
-	void exitBlock_statement(TSqlParser::Block_statementContext * /*ctx*/) override;
+	virtual void enterBreak_statement(TSqlParser::Break_statementContext * /*ctx*/) override;
+	virtual void exitBreak_statement(TSqlParser::Break_statementContext * /*ctx*/) override;
 
-	void enterBreak_statement(TSqlParser::Break_statementContext * /*ctx*/) override;
-	void exitBreak_statement(TSqlParser::Break_statementContext * /*ctx*/) override;
+	virtual void enterContinue_statement(TSqlParser::Continue_statementContext * /*ctx*/) override;
+	virtual void exitContinue_statement(TSqlParser::Continue_statementContext * /*ctx*/) override;
 
-	void enterContinue_statement(TSqlParser::Continue_statementContext * /*ctx*/) override;
-	void exitContinue_statement(TSqlParser::Continue_statementContext * /*ctx*/) override;
+	virtual void enterGoto_statement(TSqlParser::Goto_statementContext * /*ctx*/) override;
+	virtual void exitGoto_statement(TSqlParser::Goto_statementContext * /*ctx*/) override;
 
-	void enterGoto_statement(TSqlParser::Goto_statementContext * /*ctx*/) override;
-	void exitGoto_statement(TSqlParser::Goto_statementContext * /*ctx*/) override;
+	virtual void enterReturn_statement(TSqlParser::Return_statementContext * /*ctx*/) override;
+	virtual void exitReturn_statement(TSqlParser::Return_statementContext * /*ctx*/) override;
 
-	void enterReturn_statement(TSqlParser::Return_statementContext * /*ctx*/) override;
-	void exitReturn_statement(TSqlParser::Return_statementContext * /*ctx*/) override;
+	virtual void enterIf_statement(TSqlParser::If_statementContext * /*ctx*/) override;
+	virtual void exitIf_statement(TSqlParser::If_statementContext * /*ctx*/) override;
 
-	void enterIf_statement(TSqlParser::If_statementContext * /*ctx*/) override;
-	void exitIf_statement(TSqlParser::If_statementContext * /*ctx*/) override;
+	virtual void enterThrow_statement(TSqlParser::Throw_statementContext * /*ctx*/) override;
+	virtual void exitThrow_statement(TSqlParser::Throw_statementContext * /*ctx*/) override;
 
-	void enterThrow_statement(TSqlParser::Throw_statementContext * /*ctx*/) override;
-	void exitThrow_statement(TSqlParser::Throw_statementContext * /*ctx*/) override;
+	virtual void enterThrow_error_number(TSqlParser::Throw_error_numberContext * /*ctx*/) override;
+	virtual void exitThrow_error_number(TSqlParser::Throw_error_numberContext * /*ctx*/) override;
 
-	void enterThrow_error_number(TSqlParser::Throw_error_numberContext * /*ctx*/) override;
-	void exitThrow_error_number(TSqlParser::Throw_error_numberContext * /*ctx*/) override;
+	virtual void enterThrow_message(TSqlParser::Throw_messageContext * /*ctx*/) override;
+	virtual void exitThrow_message(TSqlParser::Throw_messageContext * /*ctx*/) override;
 
-	void enterThrow_message(TSqlParser::Throw_messageContext * /*ctx*/) override;
-	void exitThrow_message(TSqlParser::Throw_messageContext * /*ctx*/) override;
+	virtual void enterThrow_state(TSqlParser::Throw_stateContext * /*ctx*/) override;
+	virtual void exitThrow_state(TSqlParser::Throw_stateContext * /*ctx*/) override;
 
-	void enterThrow_state(TSqlParser::Throw_stateContext * /*ctx*/) override;
-	void exitThrow_state(TSqlParser::Throw_stateContext * /*ctx*/) override;
+	virtual void enterTry_catch_statement(TSqlParser::Try_catch_statementContext * /*ctx*/) override;
+	virtual void exitTry_catch_statement(TSqlParser::Try_catch_statementContext * /*ctx*/) override;
 
-	void enterTry_catch_statement(TSqlParser::Try_catch_statementContext * /*ctx*/) override;
-	void exitTry_catch_statement(TSqlParser::Try_catch_statementContext * /*ctx*/) override;
+	virtual void enterWhile_statement(TSqlParser::While_statementContext * /*ctx*/) override;
+	virtual void exitWhile_statement(TSqlParser::While_statementContext * /*ctx*/) override;
 
-	void enterWaitfor_statement(TSqlParser::Waitfor_statementContext * /*ctx*/) override;
-	void exitWaitfor_statement(TSqlParser::Waitfor_statementContext * /*ctx*/) override;
+	virtual void enterPrint_statement(TSqlParser::Print_statementContext * /*ctx*/) override;
+	virtual void exitPrint_statement(TSqlParser::Print_statementContext * /*ctx*/) override;
 
-	void enterWhile_statement(TSqlParser::While_statementContext * /*ctx*/) override;
-	void exitWhile_statement(TSqlParser::While_statementContext * /*ctx*/) override;
+	virtual void enterRaiseerror_statement(TSqlParser::Raiseerror_statementContext * /*ctx*/) override;
+	virtual void exitRaiseerror_statement(TSqlParser::Raiseerror_statementContext * /*ctx*/) override;
 
-	void enterPrint_statement(TSqlParser::Print_statementContext * /*ctx*/) override;
-	void exitPrint_statement(TSqlParser::Print_statementContext * /*ctx*/) override;
+	virtual void enterEmpty_statement(TSqlParser::Empty_statementContext * /*ctx*/) override;
+	virtual void exitEmpty_statement(TSqlParser::Empty_statementContext * /*ctx*/) override;
 
-	void enterRaiseerror_statement(TSqlParser::Raiseerror_statementContext * /*ctx*/) override;
-	void exitRaiseerror_statement(TSqlParser::Raiseerror_statementContext * /*ctx*/) override;
+	virtual void enterAnother_statement(TSqlParser::Another_statementContext * /*ctx*/) override;
+	virtual void exitAnother_statement(TSqlParser::Another_statementContext * /*ctx*/) override;
 
-	void enterEmpty_statement(TSqlParser::Empty_statementContext * /*ctx*/) override;
-	void exitEmpty_statement(TSqlParser::Empty_statementContext * /*ctx*/) override;
+	virtual void enterEntity_to(TSqlParser::Entity_toContext * /*ctx*/) override;
+	virtual void exitEntity_to(TSqlParser::Entity_toContext * /*ctx*/) override;
 
-	void enterAnother_statement(TSqlParser::Another_statementContext * /*ctx*/) override;
-	void exitAnother_statement(TSqlParser::Another_statementContext * /*ctx*/) override;
+	virtual void enterColon_colon(TSqlParser::Colon_colonContext * /*ctx*/) override;
+	virtual void exitColon_colon(TSqlParser::Colon_colonContext * /*ctx*/) override;
 
-	void enterDrop_aggregate(TSqlParser::Drop_aggregateContext * /*ctx*/) override;
-	void exitDrop_aggregate(TSqlParser::Drop_aggregateContext * /*ctx*/) override;
+	virtual void enterClass_type(TSqlParser::Class_typeContext * /*ctx*/) override;
+	virtual void exitClass_type(TSqlParser::Class_typeContext * /*ctx*/) override;
 
-	void enterEntity_to(TSqlParser::Entity_toContext * /*ctx*/) override;
-	void exitEntity_to(TSqlParser::Entity_toContext * /*ctx*/) override;
+	virtual void enterClass_type_for_sql_database(TSqlParser::Class_type_for_sql_databaseContext * /*ctx*/) override;
+	virtual void exitClass_type_for_sql_database(TSqlParser::Class_type_for_sql_databaseContext * /*ctx*/) override;
 
-	void enterColon_colon(TSqlParser::Colon_colonContext * /*ctx*/) override;
-	void exitColon_colon(TSqlParser::Colon_colonContext * /*ctx*/) override;
+	virtual void enterClass_type_for_azure_dw(TSqlParser::Class_type_for_azure_dwContext * /*ctx*/) override;
+	virtual void exitClass_type_for_azure_dw(TSqlParser::Class_type_for_azure_dwContext * /*ctx*/) override;
 
-	void enterClass_type(TSqlParser::Class_typeContext * /*ctx*/) override;
-	void exitClass_type(TSqlParser::Class_typeContext * /*ctx*/) override;
+	virtual void enterClass_type_for_parallel_dw(TSqlParser::Class_type_for_parallel_dwContext * /*ctx*/) override;
+	virtual void exitClass_type_for_parallel_dw(TSqlParser::Class_type_for_parallel_dwContext * /*ctx*/) override;
 
-	void enterClass_type_for_sql_database(TSqlParser::Class_type_for_sql_databaseContext * /*ctx*/) override;
-	void exitClass_type_for_sql_database(TSqlParser::Class_type_for_sql_databaseContext * /*ctx*/) override;
+	virtual void enterLock_table(TSqlParser::Lock_tableContext * /*ctx*/) override;
+	virtual void exitLock_table(TSqlParser::Lock_tableContext * /*ctx*/) override;
 
-	void enterClass_type_for_parallel_dw(TSqlParser::Class_type_for_parallel_dwContext * /*ctx*/) override;
-	void exitClass_type_for_parallel_dw(TSqlParser::Class_type_for_parallel_dwContext * /*ctx*/) override;
+	virtual void enterTruncate_table(TSqlParser::Truncate_tableContext * /*ctx*/) override;
+	virtual void exitTruncate_table(TSqlParser::Truncate_tableContext * /*ctx*/) override;
 
-	void enterLock_table(TSqlParser::Lock_tableContext * /*ctx*/) override;
-	void exitLock_table(TSqlParser::Lock_tableContext * /*ctx*/) override;
+	virtual void enterAlter_sequence(TSqlParser::Alter_sequenceContext * /*ctx*/) override;
+	virtual void exitAlter_sequence(TSqlParser::Alter_sequenceContext * /*ctx*/) override;
 
-	void enterTruncate_table(TSqlParser::Truncate_tableContext * /*ctx*/) override;
-	void exitTruncate_table(TSqlParser::Truncate_tableContext * /*ctx*/) override;
+	virtual void enterCreate_sequence(TSqlParser::Create_sequenceContext * /*ctx*/) override;
+	virtual void exitCreate_sequence(TSqlParser::Create_sequenceContext * /*ctx*/) override;
 
-	void enterEvent_session_predicate_expression(TSqlParser::Event_session_predicate_expressionContext * /*ctx*/) override;
-	void exitEvent_session_predicate_expression(TSqlParser::Event_session_predicate_expressionContext * /*ctx*/) override;
+	virtual void enterMerge_statement(TSqlParser::Merge_statementContext * /*ctx*/) override;
+	virtual void exitMerge_statement(TSqlParser::Merge_statementContext * /*ctx*/) override;
 
-	void enterEvent_session_predicate_factor(TSqlParser::Event_session_predicate_factorContext * /*ctx*/) override;
-	void exitEvent_session_predicate_factor(TSqlParser::Event_session_predicate_factorContext * /*ctx*/) override;
+	virtual void enterWhen_matches(TSqlParser::When_matchesContext * /*ctx*/) override;
+	virtual void exitWhen_matches(TSqlParser::When_matchesContext * /*ctx*/) override;
 
-	void enterEvent_session_predicate_leaf(TSqlParser::Event_session_predicate_leafContext * /*ctx*/) override;
-	void exitEvent_session_predicate_leaf(TSqlParser::Event_session_predicate_leafContext * /*ctx*/) override;
+	virtual void enterMerge_matched(TSqlParser::Merge_matchedContext * /*ctx*/) override;
+	virtual void exitMerge_matched(TSqlParser::Merge_matchedContext * /*ctx*/) override;
 
-	void enterAlter_schema_sql(TSqlParser::Alter_schema_sqlContext * /*ctx*/) override;
-	void exitAlter_schema_sql(TSqlParser::Alter_schema_sqlContext * /*ctx*/) override;
+	virtual void enterMerge_not_matched(TSqlParser::Merge_not_matchedContext * /*ctx*/) override;
+	virtual void exitMerge_not_matched(TSqlParser::Merge_not_matchedContext * /*ctx*/) override;
 
-	void enterCreate_schema(TSqlParser::Create_schemaContext * /*ctx*/) override;
-	void exitCreate_schema(TSqlParser::Create_schemaContext * /*ctx*/) override;
+	virtual void enterDelete_statement(TSqlParser::Delete_statementContext * /*ctx*/) override;
+	virtual void exitDelete_statement(TSqlParser::Delete_statementContext * /*ctx*/) override;
 
-	void enterCreate_xml_schema_collection(TSqlParser::Create_xml_schema_collectionContext * /*ctx*/) override;
-	void exitCreate_xml_schema_collection(TSqlParser::Create_xml_schema_collectionContext * /*ctx*/) override;
+	virtual void enterDelete_statement_from(TSqlParser::Delete_statement_fromContext * /*ctx*/) override;
+	virtual void exitDelete_statement_from(TSqlParser::Delete_statement_fromContext * /*ctx*/) override;
 
-	void enterCreate_queue(TSqlParser::Create_queueContext * /*ctx*/) override;
-	void exitCreate_queue(TSqlParser::Create_queueContext * /*ctx*/) override;
+	virtual void enterInsert_statement(TSqlParser::Insert_statementContext * /*ctx*/) override;
+	virtual void exitInsert_statement(TSqlParser::Insert_statementContext * /*ctx*/) override;
 
-	void enterQueue_settings(TSqlParser::Queue_settingsContext * /*ctx*/) override;
-	void exitQueue_settings(TSqlParser::Queue_settingsContext * /*ctx*/) override;
+	virtual void enterInsert_statement_value(TSqlParser::Insert_statement_valueContext * /*ctx*/) override;
+	virtual void exitInsert_statement_value(TSqlParser::Insert_statement_valueContext * /*ctx*/) override;
 
-	void enterAlter_queue(TSqlParser::Alter_queueContext * /*ctx*/) override;
-	void exitAlter_queue(TSqlParser::Alter_queueContext * /*ctx*/) override;
+	virtual void enterSelect_statement_standalone(TSqlParser::Select_statement_standaloneContext * /*ctx*/) override;
+	virtual void exitSelect_statement_standalone(TSqlParser::Select_statement_standaloneContext * /*ctx*/) override;
 
-	void enterQueue_action(TSqlParser::Queue_actionContext * /*ctx*/) override;
-	void exitQueue_action(TSqlParser::Queue_actionContext * /*ctx*/) override;
+	virtual void enterSelect_statement(TSqlParser::Select_statementContext * /*ctx*/) override;
+	virtual void exitSelect_statement(TSqlParser::Select_statementContext * /*ctx*/) override;
 
-	void enterQueue_rebuild_options(TSqlParser::Queue_rebuild_optionsContext * /*ctx*/) override;
-	void exitQueue_rebuild_options(TSqlParser::Queue_rebuild_optionsContext * /*ctx*/) override;
+	virtual void enterTime(TSqlParser::TimeContext * /*ctx*/) override;
+	virtual void exitTime(TSqlParser::TimeContext * /*ctx*/) override;
 
-	void enterConversation_statement(TSqlParser::Conversation_statementContext * /*ctx*/) override;
-	void exitConversation_statement(TSqlParser::Conversation_statementContext * /*ctx*/) override;
+	virtual void enterUpdate_statement(TSqlParser::Update_statementContext * /*ctx*/) override;
+	virtual void exitUpdate_statement(TSqlParser::Update_statementContext * /*ctx*/) override;
 
-	void enterMessage_statement(TSqlParser::Message_statementContext * /*ctx*/) override;
-	void exitMessage_statement(TSqlParser::Message_statementContext * /*ctx*/) override;
+	virtual void enterOutput_clause(TSqlParser::Output_clauseContext * /*ctx*/) override;
+	virtual void exitOutput_clause(TSqlParser::Output_clauseContext * /*ctx*/) override;
 
-	void enterMerge_statement(TSqlParser::Merge_statementContext * /*ctx*/) override;
-	void exitMerge_statement(TSqlParser::Merge_statementContext * /*ctx*/) override;
+	virtual void enterOutput_dml_list_elem(TSqlParser::Output_dml_list_elemContext * /*ctx*/) override;
+	virtual void exitOutput_dml_list_elem(TSqlParser::Output_dml_list_elemContext * /*ctx*/) override;
 
-	void enterMerge_matched(TSqlParser::Merge_matchedContext * /*ctx*/) override;
-	void exitMerge_matched(TSqlParser::Merge_matchedContext * /*ctx*/) override;
+	virtual void enterCreate_or_alter_procedure(TSqlParser::Create_or_alter_procedureContext * /*ctx*/) override;
+	virtual void exitCreate_or_alter_procedure(TSqlParser::Create_or_alter_procedureContext * /*ctx*/) override;
 
-	void enterMerge_not_matched(TSqlParser::Merge_not_matchedContext * /*ctx*/) override;
-	void exitMerge_not_matched(TSqlParser::Merge_not_matchedContext * /*ctx*/) override;
+	virtual void enterCreate_or_alter_function(TSqlParser::Create_or_alter_functionContext * /*ctx*/) override;
+	virtual void exitCreate_or_alter_function(TSqlParser::Create_or_alter_functionContext * /*ctx*/) override;
 
-	void enterDelete_statement(TSqlParser::Delete_statementContext * /*ctx*/) override;
-	void exitDelete_statement(TSqlParser::Delete_statementContext * /*ctx*/) override;
+	virtual void enterFunc_body_returns_select(TSqlParser::Func_body_returns_selectContext * /*ctx*/) override;
+	virtual void exitFunc_body_returns_select(TSqlParser::Func_body_returns_selectContext * /*ctx*/) override;
 
-	void enterDelete_statement_from(TSqlParser::Delete_statement_fromContext * /*ctx*/) override;
-	void exitDelete_statement_from(TSqlParser::Delete_statement_fromContext * /*ctx*/) override;
+	virtual void enterFunc_body_returns_table(TSqlParser::Func_body_returns_tableContext * /*ctx*/) override;
+	virtual void exitFunc_body_returns_table(TSqlParser::Func_body_returns_tableContext * /*ctx*/) override;
 
-	void enterInsert_statement(TSqlParser::Insert_statementContext * /*ctx*/) override;
-	void exitInsert_statement(TSqlParser::Insert_statementContext * /*ctx*/) override;
+	virtual void enterFunc_body_returns_scalar(TSqlParser::Func_body_returns_scalarContext * /*ctx*/) override;
+	virtual void exitFunc_body_returns_scalar(TSqlParser::Func_body_returns_scalarContext * /*ctx*/) override;
 
-	void enterInsert_statement_value(TSqlParser::Insert_statement_valueContext * /*ctx*/) override;
-	void exitInsert_statement_value(TSqlParser::Insert_statement_valueContext * /*ctx*/) override;
+	virtual void enterProcedure_param(TSqlParser::Procedure_paramContext * /*ctx*/) override;
+	virtual void exitProcedure_param(TSqlParser::Procedure_paramContext * /*ctx*/) override;
 
-	void enterReceive_statement(TSqlParser::Receive_statementContext * /*ctx*/) override;
-	void exitReceive_statement(TSqlParser::Receive_statementContext * /*ctx*/) override;
+	virtual void enterProcedure_option(TSqlParser::Procedure_optionContext * /*ctx*/) override;
+	virtual void exitProcedure_option(TSqlParser::Procedure_optionContext * /*ctx*/) override;
 
-	void enterSelect_statement(TSqlParser::Select_statementContext * /*ctx*/) override;
-	void exitSelect_statement(TSqlParser::Select_statementContext * /*ctx*/) override;
+	virtual void enterFunction_option(TSqlParser::Function_optionContext * /*ctx*/) override;
+	virtual void exitFunction_option(TSqlParser::Function_optionContext * /*ctx*/) override;
 
-	void enterTime(TSqlParser::TimeContext * /*ctx*/) override;
-	void exitTime(TSqlParser::TimeContext * /*ctx*/) override;
+	virtual void enterCreate_table(TSqlParser::Create_tableContext * /*ctx*/) override;
+	virtual void exitCreate_table(TSqlParser::Create_tableContext * /*ctx*/) override;
 
-	void enterUpdate_statement(TSqlParser::Update_statementContext * /*ctx*/) override;
-	void exitUpdate_statement(TSqlParser::Update_statementContext * /*ctx*/) override;
+	virtual void enterTable_options(TSqlParser::Table_optionsContext * /*ctx*/) override;
+	virtual void exitTable_options(TSqlParser::Table_optionsContext * /*ctx*/) override;
 
-	void enterOutput_clause(TSqlParser::Output_clauseContext * /*ctx*/) override;
-	void exitOutput_clause(TSqlParser::Output_clauseContext * /*ctx*/) override;
+	virtual void enterAlter_table(TSqlParser::Alter_tableContext * /*ctx*/) override;
+	virtual void exitAlter_table(TSqlParser::Alter_tableContext * /*ctx*/) override;
 
-	void enterOutput_dml_list_elem(TSqlParser::Output_dml_list_elemContext * /*ctx*/) override;
-	void exitOutput_dml_list_elem(TSqlParser::Output_dml_list_elemContext * /*ctx*/) override;
+	virtual void enterDatabase_optionspec(TSqlParser::Database_optionspecContext * /*ctx*/) override;
+	virtual void exitDatabase_optionspec(TSqlParser::Database_optionspecContext * /*ctx*/) override;
 
-	void enterOutput_column_name(TSqlParser::Output_column_nameContext * /*ctx*/) override;
-	void exitOutput_column_name(TSqlParser::Output_column_nameContext * /*ctx*/) override;
+	virtual void enterCursor_option(TSqlParser::Cursor_optionContext * /*ctx*/) override;
+	virtual void exitCursor_option(TSqlParser::Cursor_optionContext * /*ctx*/) override;
 
-	void enterCreate_database(TSqlParser::Create_databaseContext * /*ctx*/) override;
-	void exitCreate_database(TSqlParser::Create_databaseContext * /*ctx*/) override;
+	virtual void enterDrop_procedure(TSqlParser::Drop_procedureContext * /*ctx*/) override;
+	virtual void exitDrop_procedure(TSqlParser::Drop_procedureContext * /*ctx*/) override;
 
-	void enterCreate_index(TSqlParser::Create_indexContext * /*ctx*/) override;
-	void exitCreate_index(TSqlParser::Create_indexContext * /*ctx*/) override;
+	virtual void enterDrop_function(TSqlParser::Drop_functionContext * /*ctx*/) override;
+	virtual void exitDrop_function(TSqlParser::Drop_functionContext * /*ctx*/) override;
 
-	void enterCreate_or_alter_procedure(TSqlParser::Create_or_alter_procedureContext * /*ctx*/) override;
-	void exitCreate_or_alter_procedure(TSqlParser::Create_or_alter_procedureContext * /*ctx*/) override;
+	virtual void enterDrop_table(TSqlParser::Drop_tableContext * /*ctx*/) override;
+	virtual void exitDrop_table(TSqlParser::Drop_tableContext * /*ctx*/) override;
 
-	void enterCreate_or_alter_function(TSqlParser::Create_or_alter_functionContext * /*ctx*/) override;
-	void exitCreate_or_alter_function(TSqlParser::Create_or_alter_functionContext * /*ctx*/) override;
+	virtual void enterDeclare_statement(TSqlParser::Declare_statementContext * /*ctx*/) override;
+	virtual void exitDeclare_statement(TSqlParser::Declare_statementContext * /*ctx*/) override;
 
-	void enterFunc_body_returns_select(TSqlParser::Func_body_returns_selectContext * /*ctx*/) override;
-	void exitFunc_body_returns_select(TSqlParser::Func_body_returns_selectContext * /*ctx*/) override;
+	virtual void enterCursor_statement(TSqlParser::Cursor_statementContext * /*ctx*/) override;
+	virtual void exitCursor_statement(TSqlParser::Cursor_statementContext * /*ctx*/) override;
 
-	void enterFunc_body_returns_table(TSqlParser::Func_body_returns_tableContext * /*ctx*/) override;
-	void exitFunc_body_returns_table(TSqlParser::Func_body_returns_tableContext * /*ctx*/) override;
+	virtual void enterKill_statement(TSqlParser::Kill_statementContext * /*ctx*/) override;
+	virtual void exitKill_statement(TSqlParser::Kill_statementContext * /*ctx*/) override;
 
-	void enterFunc_body_returns_scalar(TSqlParser::Func_body_returns_scalarContext * /*ctx*/) override;
-	void exitFunc_body_returns_scalar(TSqlParser::Func_body_returns_scalarContext * /*ctx*/) override;
+	virtual void enterKill_process(TSqlParser::Kill_processContext * /*ctx*/) override;
+	virtual void exitKill_process(TSqlParser::Kill_processContext * /*ctx*/) override;
 
-	void enterProcedure_param(TSqlParser::Procedure_paramContext * /*ctx*/) override;
-	void exitProcedure_param(TSqlParser::Procedure_paramContext * /*ctx*/) override;
+	virtual void enterKill_query_notification(TSqlParser::Kill_query_notificationContext * /*ctx*/) override;
+	virtual void exitKill_query_notification(TSqlParser::Kill_query_notificationContext * /*ctx*/) override;
 
-	void enterProcedure_option(TSqlParser::Procedure_optionContext * /*ctx*/) override;
-	void exitProcedure_option(TSqlParser::Procedure_optionContext * /*ctx*/) override;
+	virtual void enterExecute_statement(TSqlParser::Execute_statementContext * /*ctx*/) override;
+	virtual void exitExecute_statement(TSqlParser::Execute_statementContext * /*ctx*/) override;
 
-	void enterFunction_option(TSqlParser::Function_optionContext * /*ctx*/) override;
-	void exitFunction_option(TSqlParser::Function_optionContext * /*ctx*/) override;
+	virtual void enterExecute_body_batch(TSqlParser::Execute_body_batchContext * /*ctx*/) override;
+	virtual void exitExecute_body_batch(TSqlParser::Execute_body_batchContext * /*ctx*/) override;
 
-	void enterCreate_table(TSqlParser::Create_tableContext * /*ctx*/) override;
-	void exitCreate_table(TSqlParser::Create_tableContext * /*ctx*/) override;
+	virtual void enterExecute_body(TSqlParser::Execute_bodyContext * /*ctx*/) override;
+	virtual void exitExecute_body(TSqlParser::Execute_bodyContext * /*ctx*/) override;
 
-	void enterTable_options(TSqlParser::Table_optionsContext * /*ctx*/) override;
-	void exitTable_options(TSqlParser::Table_optionsContext * /*ctx*/) override;
+	virtual void enterExecute_statement_arg(TSqlParser::Execute_statement_argContext * /*ctx*/) override;
+	virtual void exitExecute_statement_arg(TSqlParser::Execute_statement_argContext * /*ctx*/) override;
 
-	void enterCreate_view(TSqlParser::Create_viewContext * /*ctx*/) override;
-	void exitCreate_view(TSqlParser::Create_viewContext * /*ctx*/) override;
+	virtual void enterExecute_statement_arg_named(TSqlParser::Execute_statement_arg_namedContext * /*ctx*/) override;
+	virtual void exitExecute_statement_arg_named(TSqlParser::Execute_statement_arg_namedContext * /*ctx*/) override;
 
-	void enterView_attribute(TSqlParser::View_attributeContext * /*ctx*/) override;
-	void exitView_attribute(TSqlParser::View_attributeContext * /*ctx*/) override;
+	virtual void enterExecute_statement_arg_unnamed(TSqlParser::Execute_statement_arg_unnamedContext * /*ctx*/) override;
+	virtual void exitExecute_statement_arg_unnamed(TSqlParser::Execute_statement_arg_unnamedContext * /*ctx*/) override;
 
-	void enterAlter_table(TSqlParser::Alter_tableContext * /*ctx*/) override;
-	void exitAlter_table(TSqlParser::Alter_tableContext * /*ctx*/) override;
+	virtual void enterExecute_parameter(TSqlParser::Execute_parameterContext * /*ctx*/) override;
+	virtual void exitExecute_parameter(TSqlParser::Execute_parameterContext * /*ctx*/) override;
 
-	void enterCursor_option(TSqlParser::Cursor_optionContext * /*ctx*/) override;
-	void exitCursor_option(TSqlParser::Cursor_optionContext * /*ctx*/) override;
+	virtual void enterExecute_var_string(TSqlParser::Execute_var_stringContext * /*ctx*/) override;
+	virtual void exitExecute_var_string(TSqlParser::Execute_var_stringContext * /*ctx*/) override;
 
-	void enterTarget_recovery_time_option(TSqlParser::Target_recovery_time_optionContext * /*ctx*/) override;
-	void exitTarget_recovery_time_option(TSqlParser::Target_recovery_time_optionContext * /*ctx*/) override;
+	virtual void enterAlgorithm(TSqlParser::AlgorithmContext * /*ctx*/) override;
+	virtual void exitAlgorithm(TSqlParser::AlgorithmContext * /*ctx*/) override;
 
-	void enterTermination(TSqlParser::TerminationContext * /*ctx*/) override;
-	void exitTermination(TSqlParser::TerminationContext * /*ctx*/) override;
+	virtual void enterSet_statement(TSqlParser::Set_statementContext * /*ctx*/) override;
+	virtual void exitSet_statement(TSqlParser::Set_statementContext * /*ctx*/) override;
 
-	void enterDrop_index(TSqlParser::Drop_indexContext * /*ctx*/) override;
-	void exitDrop_index(TSqlParser::Drop_indexContext * /*ctx*/) override;
+	virtual void enterTransaction_statement(TSqlParser::Transaction_statementContext * /*ctx*/) override;
+	virtual void exitTransaction_statement(TSqlParser::Transaction_statementContext * /*ctx*/) override;
 
-	void enterDrop_relational_or_xml_or_spatial_index(TSqlParser::Drop_relational_or_xml_or_spatial_indexContext * /*ctx*/) override;
-	void exitDrop_relational_or_xml_or_spatial_index(TSqlParser::Drop_relational_or_xml_or_spatial_indexContext * /*ctx*/) override;
+	virtual void enterGo_batch_statement(TSqlParser::Go_batch_statementContext * /*ctx*/) override;
+	virtual void exitGo_batch_statement(TSqlParser::Go_batch_statementContext * /*ctx*/) override;
 
-	void enterDrop_backward_compatible_index(TSqlParser::Drop_backward_compatible_indexContext * /*ctx*/) override;
-	void exitDrop_backward_compatible_index(TSqlParser::Drop_backward_compatible_indexContext * /*ctx*/) override;
+	virtual void enterGo_statement(TSqlParser::Go_statementContext * /*ctx*/) override;
+	virtual void exitGo_statement(TSqlParser::Go_statementContext * /*ctx*/) override;
 
-	void enterDrop_procedure(TSqlParser::Drop_procedureContext * /*ctx*/) override;
-	void exitDrop_procedure(TSqlParser::Drop_procedureContext * /*ctx*/) override;
+	virtual void enterUse_statement(TSqlParser::Use_statementContext * /*ctx*/) override;
+	virtual void exitUse_statement(TSqlParser::Use_statementContext * /*ctx*/) override;
 
-	void enterDrop_function(TSqlParser::Drop_functionContext * /*ctx*/) override;
-	void exitDrop_function(TSqlParser::Drop_functionContext * /*ctx*/) override;
+	virtual void enterShutdown_statement(TSqlParser::Shutdown_statementContext * /*ctx*/) override;
+	virtual void exitShutdown_statement(TSqlParser::Shutdown_statementContext * /*ctx*/) override;
 
-	void enterDrop_table(TSqlParser::Drop_tableContext * /*ctx*/) override;
-	void exitDrop_table(TSqlParser::Drop_tableContext * /*ctx*/) override;
+	virtual void enterDbcc_special(TSqlParser::Dbcc_specialContext * /*ctx*/) override;
+	virtual void exitDbcc_special(TSqlParser::Dbcc_specialContext * /*ctx*/) override;
 
-	void enterDrop_view(TSqlParser::Drop_viewContext * /*ctx*/) override;
-	void exitDrop_view(TSqlParser::Drop_viewContext * /*ctx*/) override;
+	virtual void enterDbcc_clause(TSqlParser::Dbcc_clauseContext * /*ctx*/) override;
+	virtual void exitDbcc_clause(TSqlParser::Dbcc_clauseContext * /*ctx*/) override;
 
-	void enterCreate_type(TSqlParser::Create_typeContext * /*ctx*/) override;
-	void exitCreate_type(TSqlParser::Create_typeContext * /*ctx*/) override;
+	virtual void enterDbcc_command(TSqlParser::Dbcc_commandContext * /*ctx*/) override;
+	virtual void exitDbcc_command(TSqlParser::Dbcc_commandContext * /*ctx*/) override;
 
-	void enterDrop_type(TSqlParser::Drop_typeContext * /*ctx*/) override;
-	void exitDrop_type(TSqlParser::Drop_typeContext * /*ctx*/) override;
+	virtual void enterDbcc_options(TSqlParser::Dbcc_optionsContext * /*ctx*/) override;
+	virtual void exitDbcc_options(TSqlParser::Dbcc_optionsContext * /*ctx*/) override;
 
-	void enterRowset_function_limited(TSqlParser::Rowset_function_limitedContext * /*ctx*/) override;
-	void exitRowset_function_limited(TSqlParser::Rowset_function_limitedContext * /*ctx*/) override;
+	virtual void enterExecute_clause(TSqlParser::Execute_clauseContext * /*ctx*/) override;
+	virtual void exitExecute_clause(TSqlParser::Execute_clauseContext * /*ctx*/) override;
 
-	void enterOpenquery(TSqlParser::OpenqueryContext * /*ctx*/) override;
-	void exitOpenquery(TSqlParser::OpenqueryContext * /*ctx*/) override;
+	virtual void enterDeclare_local(TSqlParser::Declare_localContext * /*ctx*/) override;
+	virtual void exitDeclare_local(TSqlParser::Declare_localContext * /*ctx*/) override;
 
-	void enterOpendatasource(TSqlParser::OpendatasourceContext * /*ctx*/) override;
-	void exitOpendatasource(TSqlParser::OpendatasourceContext * /*ctx*/) override;
+	virtual void enterTable_type_definition(TSqlParser::Table_type_definitionContext * /*ctx*/) override;
+	virtual void exitTable_type_definition(TSqlParser::Table_type_definitionContext * /*ctx*/) override;
 
-	void enterDeclare_statement(TSqlParser::Declare_statementContext * /*ctx*/) override;
-	void exitDeclare_statement(TSqlParser::Declare_statementContext * /*ctx*/) override;
+	virtual void enterColumn_def_table_constraints(TSqlParser::Column_def_table_constraintsContext * /*ctx*/) override;
+	virtual void exitColumn_def_table_constraints(TSqlParser::Column_def_table_constraintsContext * /*ctx*/) override;
 
-	void enterCursor_statement(TSqlParser::Cursor_statementContext * /*ctx*/) override;
-	void exitCursor_statement(TSqlParser::Cursor_statementContext * /*ctx*/) override;
+	virtual void enterColumn_def_table_constraint(TSqlParser::Column_def_table_constraintContext * /*ctx*/) override;
+	virtual void exitColumn_def_table_constraint(TSqlParser::Column_def_table_constraintContext * /*ctx*/) override;
 
-	void enterKill_statement(TSqlParser::Kill_statementContext * /*ctx*/) override;
-	void exitKill_statement(TSqlParser::Kill_statementContext * /*ctx*/) override;
+	virtual void enterColumn_definition(TSqlParser::Column_definitionContext * /*ctx*/) override;
+	virtual void exitColumn_definition(TSqlParser::Column_definitionContext * /*ctx*/) override;
 
-	void enterKill_process(TSqlParser::Kill_processContext * /*ctx*/) override;
-	void exitKill_process(TSqlParser::Kill_processContext * /*ctx*/) override;
+	virtual void enterColumn_constraint(TSqlParser::Column_constraintContext * /*ctx*/) override;
+	virtual void exitColumn_constraint(TSqlParser::Column_constraintContext * /*ctx*/) override;
 
-	void enterKill_query_notification(TSqlParser::Kill_query_notificationContext * /*ctx*/) override;
-	void exitKill_query_notification(TSqlParser::Kill_query_notificationContext * /*ctx*/) override;
+	virtual void enterTable_constraint(TSqlParser::Table_constraintContext * /*ctx*/) override;
+	virtual void exitTable_constraint(TSqlParser::Table_constraintContext * /*ctx*/) override;
 
-	void enterKill_stats_job(TSqlParser::Kill_stats_jobContext * /*ctx*/) override;
-	void exitKill_stats_job(TSqlParser::Kill_stats_jobContext * /*ctx*/) override;
+	virtual void enterIndex_options(TSqlParser::Index_optionsContext * /*ctx*/) override;
+	virtual void exitIndex_options(TSqlParser::Index_optionsContext * /*ctx*/) override;
 
-	void enterExecute_statement(TSqlParser::Execute_statementContext * /*ctx*/) override;
-	void exitExecute_statement(TSqlParser::Execute_statementContext * /*ctx*/) override;
+	virtual void enterIndex_option(TSqlParser::Index_optionContext * /*ctx*/) override;
+	virtual void exitIndex_option(TSqlParser::Index_optionContext * /*ctx*/) override;
 
-	void enterExecute_body(TSqlParser::Execute_bodyContext * /*ctx*/) override;
-	void exitExecute_body(TSqlParser::Execute_bodyContext * /*ctx*/) override;
+	virtual void enterDeclare_cursor(TSqlParser::Declare_cursorContext * /*ctx*/) override;
+	virtual void exitDeclare_cursor(TSqlParser::Declare_cursorContext * /*ctx*/) override;
 
-	void enterExecute_statement_arg(TSqlParser::Execute_statement_argContext * /*ctx*/) override;
-	void exitExecute_statement_arg(TSqlParser::Execute_statement_argContext * /*ctx*/) override;
+	virtual void enterDeclare_set_cursor_common(TSqlParser::Declare_set_cursor_commonContext * /*ctx*/) override;
+	virtual void exitDeclare_set_cursor_common(TSqlParser::Declare_set_cursor_commonContext * /*ctx*/) override;
 
-	void enterExecute_var_string(TSqlParser::Execute_var_stringContext * /*ctx*/) override;
-	void exitExecute_var_string(TSqlParser::Execute_var_stringContext * /*ctx*/) override;
+	virtual void enterDeclare_set_cursor_common_partial(TSqlParser::Declare_set_cursor_common_partialContext * /*ctx*/) override;
+	virtual void exitDeclare_set_cursor_common_partial(TSqlParser::Declare_set_cursor_common_partialContext * /*ctx*/) override;
 
-	void enterSet_statement(TSqlParser::Set_statementContext * /*ctx*/) override;
-	void exitSet_statement(TSqlParser::Set_statementContext * /*ctx*/) override;
+	virtual void enterFetch_cursor(TSqlParser::Fetch_cursorContext * /*ctx*/) override;
+	virtual void exitFetch_cursor(TSqlParser::Fetch_cursorContext * /*ctx*/) override;
 
-	void enterTransaction_statement(TSqlParser::Transaction_statementContext * /*ctx*/) override;
-	void exitTransaction_statement(TSqlParser::Transaction_statementContext * /*ctx*/) override;
+	virtual void enterSet_special(TSqlParser::Set_specialContext * /*ctx*/) override;
+	virtual void exitSet_special(TSqlParser::Set_specialContext * /*ctx*/) override;
 
-	void enterGo_statement(TSqlParser::Go_statementContext * /*ctx*/) override;
-	void exitGo_statement(TSqlParser::Go_statementContext * /*ctx*/) override;
+	virtual void enterConstant_LOCAL_ID(TSqlParser::Constant_LOCAL_IDContext * /*ctx*/) override;
+	virtual void exitConstant_LOCAL_ID(TSqlParser::Constant_LOCAL_IDContext * /*ctx*/) override;
 
-	void enterUse_statement(TSqlParser::Use_statementContext * /*ctx*/) override;
-	void exitUse_statement(TSqlParser::Use_statementContext * /*ctx*/) override;
+	virtual void enterExpression(TSqlParser::ExpressionContext * /*ctx*/) override;
+	virtual void exitExpression(TSqlParser::ExpressionContext * /*ctx*/) override;
 
-	void enterSetuser_statement(TSqlParser::Setuser_statementContext * /*ctx*/) override;
-	void exitSetuser_statement(TSqlParser::Setuser_statementContext * /*ctx*/) override;
+	virtual void enterTime_zone(TSqlParser::Time_zoneContext * /*ctx*/) override;
+	virtual void exitTime_zone(TSqlParser::Time_zoneContext * /*ctx*/) override;
 
-	void enterReconfigure_statement(TSqlParser::Reconfigure_statementContext * /*ctx*/) override;
-	void exitReconfigure_statement(TSqlParser::Reconfigure_statementContext * /*ctx*/) override;
+	virtual void enterPrimitive_expression(TSqlParser::Primitive_expressionContext * /*ctx*/) override;
+	virtual void exitPrimitive_expression(TSqlParser::Primitive_expressionContext * /*ctx*/) override;
 
-	void enterShutdown_statement(TSqlParser::Shutdown_statementContext * /*ctx*/) override;
-	void exitShutdown_statement(TSqlParser::Shutdown_statementContext * /*ctx*/) override;
+	virtual void enterCase_expression(TSqlParser::Case_expressionContext * /*ctx*/) override;
+	virtual void exitCase_expression(TSqlParser::Case_expressionContext * /*ctx*/) override;
 
-	void enterDbcc_clause(TSqlParser::Dbcc_clauseContext * /*ctx*/) override;
-	void exitDbcc_clause(TSqlParser::Dbcc_clauseContext * /*ctx*/) override;
+	virtual void enterUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * /*ctx*/) override;
+	virtual void exitUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * /*ctx*/) override;
 
-	void enterDbcc_options(TSqlParser::Dbcc_optionsContext * /*ctx*/) override;
-	void exitDbcc_options(TSqlParser::Dbcc_optionsContext * /*ctx*/) override;
+	virtual void enterBracket_expression(TSqlParser::Bracket_expressionContext * /*ctx*/) override;
+	virtual void exitBracket_expression(TSqlParser::Bracket_expressionContext * /*ctx*/) override;
 
-	void enterExecute_clause(TSqlParser::Execute_clauseContext * /*ctx*/) override;
-	void exitExecute_clause(TSqlParser::Execute_clauseContext * /*ctx*/) override;
+	virtual void enterConstant_expression(TSqlParser::Constant_expressionContext * /*ctx*/) override;
+	virtual void exitConstant_expression(TSqlParser::Constant_expressionContext * /*ctx*/) override;
 
-	void enterDeclare_local(TSqlParser::Declare_localContext * /*ctx*/) override;
-	void exitDeclare_local(TSqlParser::Declare_localContext * /*ctx*/) override;
+	virtual void enterSubquery(TSqlParser::SubqueryContext * /*ctx*/) override;
+	virtual void exitSubquery(TSqlParser::SubqueryContext * /*ctx*/) override;
 
-	void enterTable_type_definition(TSqlParser::Table_type_definitionContext * /*ctx*/) override;
-	void exitTable_type_definition(TSqlParser::Table_type_definitionContext * /*ctx*/) override;
+	virtual void enterWith_expression(TSqlParser::With_expressionContext * /*ctx*/) override;
+	virtual void exitWith_expression(TSqlParser::With_expressionContext * /*ctx*/) override;
 
-	void enterXml_type_definition(TSqlParser::Xml_type_definitionContext * /*ctx*/) override;
-	void exitXml_type_definition(TSqlParser::Xml_type_definitionContext * /*ctx*/) override;
+	virtual void enterCommon_table_expression(TSqlParser::Common_table_expressionContext * /*ctx*/) override;
+	virtual void exitCommon_table_expression(TSqlParser::Common_table_expressionContext * /*ctx*/) override;
 
-	void enterXml_schema_collection(TSqlParser::Xml_schema_collectionContext * /*ctx*/) override;
-	void exitXml_schema_collection(TSqlParser::Xml_schema_collectionContext * /*ctx*/) override;
+	virtual void enterUpdate_elem(TSqlParser::Update_elemContext * /*ctx*/) override;
+	virtual void exitUpdate_elem(TSqlParser::Update_elemContext * /*ctx*/) override;
 
-	void enterColumn_def_table_constraints(TSqlParser::Column_def_table_constraintsContext * /*ctx*/) override;
-	void exitColumn_def_table_constraints(TSqlParser::Column_def_table_constraintsContext * /*ctx*/) override;
+	virtual void enterUpdate_elem_merge(TSqlParser::Update_elem_mergeContext * /*ctx*/) override;
+	virtual void exitUpdate_elem_merge(TSqlParser::Update_elem_mergeContext * /*ctx*/) override;
 
-	void enterColumn_def_table_constraint(TSqlParser::Column_def_table_constraintContext * /*ctx*/) override;
-	void exitColumn_def_table_constraint(TSqlParser::Column_def_table_constraintContext * /*ctx*/) override;
+	virtual void enterSearch_condition(TSqlParser::Search_conditionContext * /*ctx*/) override;
+	virtual void exitSearch_condition(TSqlParser::Search_conditionContext * /*ctx*/) override;
 
-	void enterColumn_definition(TSqlParser::Column_definitionContext * /*ctx*/) override;
-	void exitColumn_definition(TSqlParser::Column_definitionContext * /*ctx*/) override;
+	virtual void enterPredicate(TSqlParser::PredicateContext * /*ctx*/) override;
+	virtual void exitPredicate(TSqlParser::PredicateContext * /*ctx*/) override;
 
-	void enterMaterialized_column_definition(TSqlParser::Materialized_column_definitionContext * /*ctx*/) override;
-	void exitMaterialized_column_definition(TSqlParser::Materialized_column_definitionContext * /*ctx*/) override;
+	virtual void enterQuery_expression(TSqlParser::Query_expressionContext * /*ctx*/) override;
+	virtual void exitQuery_expression(TSqlParser::Query_expressionContext * /*ctx*/) override;
 
-	void enterColumn_constraint(TSqlParser::Column_constraintContext * /*ctx*/) override;
-	void exitColumn_constraint(TSqlParser::Column_constraintContext * /*ctx*/) override;
+	virtual void enterSql_union(TSqlParser::Sql_unionContext * /*ctx*/) override;
+	virtual void exitSql_union(TSqlParser::Sql_unionContext * /*ctx*/) override;
 
-	void enterTable_constraint(TSqlParser::Table_constraintContext * /*ctx*/) override;
-	void exitTable_constraint(TSqlParser::Table_constraintContext * /*ctx*/) override;
+	virtual void enterQuery_specification(TSqlParser::Query_specificationContext * /*ctx*/) override;
+	virtual void exitQuery_specification(TSqlParser::Query_specificationContext * /*ctx*/) override;
 
-	void enterOn_delete(TSqlParser::On_deleteContext * /*ctx*/) override;
-	void exitOn_delete(TSqlParser::On_deleteContext * /*ctx*/) override;
+	virtual void enterTop_clause(TSqlParser::Top_clauseContext * /*ctx*/) override;
+	virtual void exitTop_clause(TSqlParser::Top_clauseContext * /*ctx*/) override;
 
-	void enterOn_update(TSqlParser::On_updateContext * /*ctx*/) override;
-	void exitOn_update(TSqlParser::On_updateContext * /*ctx*/) override;
+	virtual void enterTop_percent(TSqlParser::Top_percentContext * /*ctx*/) override;
+	virtual void exitTop_percent(TSqlParser::Top_percentContext * /*ctx*/) override;
 
-	void enterIndex_options(TSqlParser::Index_optionsContext * /*ctx*/) override;
-	void exitIndex_options(TSqlParser::Index_optionsContext * /*ctx*/) override;
+	virtual void enterTop_count(TSqlParser::Top_countContext * /*ctx*/) override;
+	virtual void exitTop_count(TSqlParser::Top_countContext * /*ctx*/) override;
 
-	void enterIndex_option(TSqlParser::Index_optionContext * /*ctx*/) override;
-	void exitIndex_option(TSqlParser::Index_optionContext * /*ctx*/) override;
+	virtual void enterOrder_by_clause(TSqlParser::Order_by_clauseContext * /*ctx*/) override;
+	virtual void exitOrder_by_clause(TSqlParser::Order_by_clauseContext * /*ctx*/) override;
 
-	void enterDeclare_cursor(TSqlParser::Declare_cursorContext * /*ctx*/) override;
-	void exitDeclare_cursor(TSqlParser::Declare_cursorContext * /*ctx*/) override;
+	virtual void enterOrder_by_expression(TSqlParser::Order_by_expressionContext * /*ctx*/) override;
+	virtual void exitOrder_by_expression(TSqlParser::Order_by_expressionContext * /*ctx*/) override;
 
-	void enterDeclare_set_cursor_common(TSqlParser::Declare_set_cursor_commonContext * /*ctx*/) override;
-	void exitDeclare_set_cursor_common(TSqlParser::Declare_set_cursor_commonContext * /*ctx*/) override;
+	virtual void enterGroup_by_item(TSqlParser::Group_by_itemContext * /*ctx*/) override;
+	virtual void exitGroup_by_item(TSqlParser::Group_by_itemContext * /*ctx*/) override;
 
-	void enterDeclare_set_cursor_common_partial(TSqlParser::Declare_set_cursor_common_partialContext * /*ctx*/) override;
-	void exitDeclare_set_cursor_common_partial(TSqlParser::Declare_set_cursor_common_partialContext * /*ctx*/) override;
+	virtual void enterOption_clause(TSqlParser::Option_clauseContext * /*ctx*/) override;
+	virtual void exitOption_clause(TSqlParser::Option_clauseContext * /*ctx*/) override;
 
-	void enterFetch_cursor(TSqlParser::Fetch_cursorContext * /*ctx*/) override;
-	void exitFetch_cursor(TSqlParser::Fetch_cursorContext * /*ctx*/) override;
+	virtual void enterOption(TSqlParser::OptionContext * /*ctx*/) override;
+	virtual void exitOption(TSqlParser::OptionContext * /*ctx*/) override;
 
-	void enterSet_special(TSqlParser::Set_specialContext * /*ctx*/) override;
-	void exitSet_special(TSqlParser::Set_specialContext * /*ctx*/) override;
+	virtual void enterOptimize_for_arg(TSqlParser::Optimize_for_argContext * /*ctx*/) override;
+	virtual void exitOptimize_for_arg(TSqlParser::Optimize_for_argContext * /*ctx*/) override;
 
-	void enterConstant_LOCAL_ID(TSqlParser::Constant_LOCAL_IDContext * /*ctx*/) override;
-	void exitConstant_LOCAL_ID(TSqlParser::Constant_LOCAL_IDContext * /*ctx*/) override;
+	virtual void enterSelect_list(TSqlParser::Select_listContext * /*ctx*/) override;
+	virtual void exitSelect_list(TSqlParser::Select_listContext * /*ctx*/) override;
 
-	void enterExpression(TSqlParser::ExpressionContext * /*ctx*/) override;
-	void exitExpression(TSqlParser::ExpressionContext * /*ctx*/) override;
+	virtual void enterUdt_method_arguments(TSqlParser::Udt_method_argumentsContext * /*ctx*/) override;
+	virtual void exitUdt_method_arguments(TSqlParser::Udt_method_argumentsContext * /*ctx*/) override;
 
-	void enterPrimitive_expression(TSqlParser::Primitive_expressionContext * /*ctx*/) override;
-	void exitPrimitive_expression(TSqlParser::Primitive_expressionContext * /*ctx*/) override;
+	virtual void enterAsterisk(TSqlParser::AsteriskContext * /*ctx*/) override;
+	virtual void exitAsterisk(TSqlParser::AsteriskContext * /*ctx*/) override;
 
-	void enterCase_expression(TSqlParser::Case_expressionContext * /*ctx*/) override;
-	void exitCase_expression(TSqlParser::Case_expressionContext * /*ctx*/) override;
+	virtual void enterColumn_elem(TSqlParser::Column_elemContext * /*ctx*/) override;
+	virtual void exitColumn_elem(TSqlParser::Column_elemContext * /*ctx*/) override;
 
-	void enterUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * /*ctx*/) override;
-	void exitUnary_operator_expression(TSqlParser::Unary_operator_expressionContext * /*ctx*/) override;
+	virtual void enterUdt_elem(TSqlParser::Udt_elemContext * /*ctx*/) override;
+	virtual void exitUdt_elem(TSqlParser::Udt_elemContext * /*ctx*/) override;
 
-	void enterBracket_expression(TSqlParser::Bracket_expressionContext * /*ctx*/) override;
-	void exitBracket_expression(TSqlParser::Bracket_expressionContext * /*ctx*/) override;
+	virtual void enterExpression_elem(TSqlParser::Expression_elemContext * /*ctx*/) override;
+	virtual void exitExpression_elem(TSqlParser::Expression_elemContext * /*ctx*/) override;
 
-	void enterConstant_expression(TSqlParser::Constant_expressionContext * /*ctx*/) override;
-	void exitConstant_expression(TSqlParser::Constant_expressionContext * /*ctx*/) override;
+	virtual void enterSelect_list_elem(TSqlParser::Select_list_elemContext * /*ctx*/) override;
+	virtual void exitSelect_list_elem(TSqlParser::Select_list_elemContext * /*ctx*/) override;
 
-	void enterSubquery(TSqlParser::SubqueryContext * /*ctx*/) override;
-	void exitSubquery(TSqlParser::SubqueryContext * /*ctx*/) override;
+	virtual void enterTable_sources(TSqlParser::Table_sourcesContext * /*ctx*/) override;
+	virtual void exitTable_sources(TSqlParser::Table_sourcesContext * /*ctx*/) override;
 
-	void enterWith_expression(TSqlParser::With_expressionContext * /*ctx*/) override;
-	void exitWith_expression(TSqlParser::With_expressionContext * /*ctx*/) override;
+	virtual void enterTable_source(TSqlParser::Table_sourceContext * /*ctx*/) override;
+	virtual void exitTable_source(TSqlParser::Table_sourceContext * /*ctx*/) override;
 
-	void enterCommon_table_expression(TSqlParser::Common_table_expressionContext * /*ctx*/) override;
-	void exitCommon_table_expression(TSqlParser::Common_table_expressionContext * /*ctx*/) override;
+	virtual void enterTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * /*ctx*/) override;
+	virtual void exitTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * /*ctx*/) override;
 
-	void enterUpdate_elem(TSqlParser::Update_elemContext * /*ctx*/) override;
-	void exitUpdate_elem(TSqlParser::Update_elemContext * /*ctx*/) override;
+	virtual void enterTable_source_item(TSqlParser::Table_source_itemContext * /*ctx*/) override;
+	virtual void exitTable_source_item(TSqlParser::Table_source_itemContext * /*ctx*/) override;
 
-	void enterSearch_condition_list(TSqlParser::Search_condition_listContext * /*ctx*/) override;
-	void exitSearch_condition_list(TSqlParser::Search_condition_listContext * /*ctx*/) override;
+	virtual void enterSchema_declaration(TSqlParser::Schema_declarationContext * /*ctx*/) override;
+	virtual void exitSchema_declaration(TSqlParser::Schema_declarationContext * /*ctx*/) override;
 
-	void enterSearch_condition(TSqlParser::Search_conditionContext * /*ctx*/) override;
-	void exitSearch_condition(TSqlParser::Search_conditionContext * /*ctx*/) override;
+	virtual void enterColumn_declaration(TSqlParser::Column_declarationContext * /*ctx*/) override;
+	virtual void exitColumn_declaration(TSqlParser::Column_declarationContext * /*ctx*/) override;
 
-	void enterSearch_condition_and(TSqlParser::Search_condition_andContext * /*ctx*/) override;
-	void exitSearch_condition_and(TSqlParser::Search_condition_andContext * /*ctx*/) override;
+	virtual void enterChange_table(TSqlParser::Change_tableContext * /*ctx*/) override;
+	virtual void exitChange_table(TSqlParser::Change_tableContext * /*ctx*/) override;
 
-	void enterSearch_condition_not(TSqlParser::Search_condition_notContext * /*ctx*/) override;
-	void exitSearch_condition_not(TSqlParser::Search_condition_notContext * /*ctx*/) override;
+	virtual void enterChange_table_changes(TSqlParser::Change_table_changesContext * /*ctx*/) override;
+	virtual void exitChange_table_changes(TSqlParser::Change_table_changesContext * /*ctx*/) override;
 
-	void enterPredicate(TSqlParser::PredicateContext * /*ctx*/) override;
-	void exitPredicate(TSqlParser::PredicateContext * /*ctx*/) override;
+	virtual void enterChange_table_version(TSqlParser::Change_table_versionContext * /*ctx*/) override;
+	virtual void exitChange_table_version(TSqlParser::Change_table_versionContext * /*ctx*/) override;
 
-	void enterQuery_expression(TSqlParser::Query_expressionContext * /*ctx*/) override;
-	void exitQuery_expression(TSqlParser::Query_expressionContext * /*ctx*/) override;
+	virtual void enterJoin_part(TSqlParser::Join_partContext * /*ctx*/) override;
+	virtual void exitJoin_part(TSqlParser::Join_partContext * /*ctx*/) override;
 
-	void enterSql_union(TSqlParser::Sql_unionContext * /*ctx*/) override;
-	void exitSql_union(TSqlParser::Sql_unionContext * /*ctx*/) override;
+	virtual void enterJoin_on(TSqlParser::Join_onContext * /*ctx*/) override;
+	virtual void exitJoin_on(TSqlParser::Join_onContext * /*ctx*/) override;
 
-	void enterQuery_specification(TSqlParser::Query_specificationContext * /*ctx*/) override;
-	void exitQuery_specification(TSqlParser::Query_specificationContext * /*ctx*/) override;
+	virtual void enterCross_join(TSqlParser::Cross_joinContext * /*ctx*/) override;
+	virtual void exitCross_join(TSqlParser::Cross_joinContext * /*ctx*/) override;
 
-	void enterTop_clause(TSqlParser::Top_clauseContext * /*ctx*/) override;
-	void exitTop_clause(TSqlParser::Top_clauseContext * /*ctx*/) override;
+	virtual void enterApply_(TSqlParser::Apply_Context * /*ctx*/) override;
+	virtual void exitApply_(TSqlParser::Apply_Context * /*ctx*/) override;
 
-	void enterTop_percent(TSqlParser::Top_percentContext * /*ctx*/) override;
-	void exitTop_percent(TSqlParser::Top_percentContext * /*ctx*/) override;
+	virtual void enterPivot(TSqlParser::PivotContext * /*ctx*/) override;
+	virtual void exitPivot(TSqlParser::PivotContext * /*ctx*/) override;
 
-	void enterTop_count(TSqlParser::Top_countContext * /*ctx*/) override;
-	void exitTop_count(TSqlParser::Top_countContext * /*ctx*/) override;
+	virtual void enterUnpivot(TSqlParser::UnpivotContext * /*ctx*/) override;
+	virtual void exitUnpivot(TSqlParser::UnpivotContext * /*ctx*/) override;
 
-	void enterOrder_by_clause(TSqlParser::Order_by_clauseContext * /*ctx*/) override;
-	void exitOrder_by_clause(TSqlParser::Order_by_clauseContext * /*ctx*/) override;
+	virtual void enterPivot_clause(TSqlParser::Pivot_clauseContext * /*ctx*/) override;
+	virtual void exitPivot_clause(TSqlParser::Pivot_clauseContext * /*ctx*/) override;
 
-	void enterFor_clause(TSqlParser::For_clauseContext * /*ctx*/) override;
-	void exitFor_clause(TSqlParser::For_clauseContext * /*ctx*/) override;
+	virtual void enterUnpivot_clause(TSqlParser::Unpivot_clauseContext * /*ctx*/) override;
+	virtual void exitUnpivot_clause(TSqlParser::Unpivot_clauseContext * /*ctx*/) override;
 
-	void enterXml_common_directives(TSqlParser::Xml_common_directivesContext * /*ctx*/) override;
-	void exitXml_common_directives(TSqlParser::Xml_common_directivesContext * /*ctx*/) override;
+	virtual void enterFull_column_name_list(TSqlParser::Full_column_name_listContext * /*ctx*/) override;
+	virtual void exitFull_column_name_list(TSqlParser::Full_column_name_listContext * /*ctx*/) override;
 
-	void enterOrder_by_expression(TSqlParser::Order_by_expressionContext * /*ctx*/) override;
-	void exitOrder_by_expression(TSqlParser::Order_by_expressionContext * /*ctx*/) override;
+	virtual void enterTable_name_with_hint(TSqlParser::Table_name_with_hintContext * /*ctx*/) override;
+	virtual void exitTable_name_with_hint(TSqlParser::Table_name_with_hintContext * /*ctx*/) override;
 
-	void enterGroup_by_item(TSqlParser::Group_by_itemContext * /*ctx*/) override;
-	void exitGroup_by_item(TSqlParser::Group_by_itemContext * /*ctx*/) override;
+	virtual void enterBulk_option(TSqlParser::Bulk_optionContext * /*ctx*/) override;
+	virtual void exitBulk_option(TSqlParser::Bulk_optionContext * /*ctx*/) override;
 
-	void enterOption_clause(TSqlParser::Option_clauseContext * /*ctx*/) override;
-	void exitOption_clause(TSqlParser::Option_clauseContext * /*ctx*/) override;
+	virtual void enterDerived_table(TSqlParser::Derived_tableContext * /*ctx*/) override;
+	virtual void exitDerived_table(TSqlParser::Derived_tableContext * /*ctx*/) override;
 
-	void enterOption(TSqlParser::OptionContext * /*ctx*/) override;
-	void exitOption(TSqlParser::OptionContext * /*ctx*/) override;
+	virtual void enterRANKING_WINDOWED_FUNC(TSqlParser::RANKING_WINDOWED_FUNCContext * /*ctx*/) override;
+	virtual void exitRANKING_WINDOWED_FUNC(TSqlParser::RANKING_WINDOWED_FUNCContext * /*ctx*/) override;
 
-	void enterOptimize_for_arg(TSqlParser::Optimize_for_argContext * /*ctx*/) override;
-	void exitOptimize_for_arg(TSqlParser::Optimize_for_argContext * /*ctx*/) override;
+	virtual void enterAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * /*ctx*/) override;
+	virtual void exitAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * /*ctx*/) override;
 
-	void enterSelect_list(TSqlParser::Select_listContext * /*ctx*/) override;
-	void exitSelect_list(TSqlParser::Select_listContext * /*ctx*/) override;
+	virtual void enterANALYTIC_WINDOWED_FUNC(TSqlParser::ANALYTIC_WINDOWED_FUNCContext * /*ctx*/) override;
+	virtual void exitANALYTIC_WINDOWED_FUNC(TSqlParser::ANALYTIC_WINDOWED_FUNCContext * /*ctx*/) override;
 
-	void enterUdt_method_arguments(TSqlParser::Udt_method_argumentsContext * /*ctx*/) override;
-	void exitUdt_method_arguments(TSqlParser::Udt_method_argumentsContext * /*ctx*/) override;
+	virtual void enterBUILT_IN_FUNC(TSqlParser::BUILT_IN_FUNCContext * /*ctx*/) override;
+	virtual void exitBUILT_IN_FUNC(TSqlParser::BUILT_IN_FUNCContext * /*ctx*/) override;
 
-	void enterAsterisk(TSqlParser::AsteriskContext * /*ctx*/) override;
-	void exitAsterisk(TSqlParser::AsteriskContext * /*ctx*/) override;
+	virtual void enterSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * /*ctx*/) override;
+	virtual void exitSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * /*ctx*/) override;
 
-	void enterColumn_elem(TSqlParser::Column_elemContext * /*ctx*/) override;
-	void exitColumn_elem(TSqlParser::Column_elemContext * /*ctx*/) override;
+	virtual void enterPARTITION_FUNC(TSqlParser::PARTITION_FUNCContext * /*ctx*/) override;
+	virtual void exitPARTITION_FUNC(TSqlParser::PARTITION_FUNCContext * /*ctx*/) override;
 
-	void enterUdt_elem(TSqlParser::Udt_elemContext * /*ctx*/) override;
-	void exitUdt_elem(TSqlParser::Udt_elemContext * /*ctx*/) override;
+	virtual void enterPartition_function(TSqlParser::Partition_functionContext * /*ctx*/) override;
+	virtual void exitPartition_function(TSqlParser::Partition_functionContext * /*ctx*/) override;
 
-	void enterExpression_elem(TSqlParser::Expression_elemContext * /*ctx*/) override;
-	void exitExpression_elem(TSqlParser::Expression_elemContext * /*ctx*/) override;
+	virtual void enterBINARY_CHECKSUM(TSqlParser::BINARY_CHECKSUMContext * /*ctx*/) override;
+	virtual void exitBINARY_CHECKSUM(TSqlParser::BINARY_CHECKSUMContext * /*ctx*/) override;
 
-	void enterSelect_list_elem(TSqlParser::Select_list_elemContext * /*ctx*/) override;
-	void exitSelect_list_elem(TSqlParser::Select_list_elemContext * /*ctx*/) override;
+	virtual void enterCAST(TSqlParser::CASTContext * /*ctx*/) override;
+	virtual void exitCAST(TSqlParser::CASTContext * /*ctx*/) override;
 
-	void enterTable_sources(TSqlParser::Table_sourcesContext * /*ctx*/) override;
-	void exitTable_sources(TSqlParser::Table_sourcesContext * /*ctx*/) override;
+	virtual void enterTRY_CAST(TSqlParser::TRY_CASTContext * /*ctx*/) override;
+	virtual void exitTRY_CAST(TSqlParser::TRY_CASTContext * /*ctx*/) override;
 
-	void enterTable_source(TSqlParser::Table_sourceContext * /*ctx*/) override;
-	void exitTable_source(TSqlParser::Table_sourceContext * /*ctx*/) override;
+	virtual void enterCONVERT(TSqlParser::CONVERTContext * /*ctx*/) override;
+	virtual void exitCONVERT(TSqlParser::CONVERTContext * /*ctx*/) override;
 
-	void enterTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * /*ctx*/) override;
-	void exitTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * /*ctx*/) override;
+	virtual void enterCHECKSUM(TSqlParser::CHECKSUMContext * /*ctx*/) override;
+	virtual void exitCHECKSUM(TSqlParser::CHECKSUMContext * /*ctx*/) override;
 
-	void enterTable_source_item(TSqlParser::Table_source_itemContext * /*ctx*/) override;
-	void exitTable_source_item(TSqlParser::Table_source_itemContext * /*ctx*/) override;
+	virtual void enterCOALESCE(TSqlParser::COALESCEContext * /*ctx*/) override;
+	virtual void exitCOALESCE(TSqlParser::COALESCEContext * /*ctx*/) override;
 
-	void enterOpen_xml(TSqlParser::Open_xmlContext * /*ctx*/) override;
-	void exitOpen_xml(TSqlParser::Open_xmlContext * /*ctx*/) override;
+	virtual void enterCURRENT_TIMESTAMP(TSqlParser::CURRENT_TIMESTAMPContext * /*ctx*/) override;
+	virtual void exitCURRENT_TIMESTAMP(TSqlParser::CURRENT_TIMESTAMPContext * /*ctx*/) override;
 
-	void enterSchema_declaration(TSqlParser::Schema_declarationContext * /*ctx*/) override;
-	void exitSchema_declaration(TSqlParser::Schema_declarationContext * /*ctx*/) override;
+	virtual void enterCURRENT_USER(TSqlParser::CURRENT_USERContext * /*ctx*/) override;
+	virtual void exitCURRENT_USER(TSqlParser::CURRENT_USERContext * /*ctx*/) override;
 
-	void enterColumn_declaration(TSqlParser::Column_declarationContext * /*ctx*/) override;
-	void exitColumn_declaration(TSqlParser::Column_declarationContext * /*ctx*/) override;
+	virtual void enterDATEADD(TSqlParser::DATEADDContext * /*ctx*/) override;
+	virtual void exitDATEADD(TSqlParser::DATEADDContext * /*ctx*/) override;
 
-	void enterChange_table(TSqlParser::Change_tableContext * /*ctx*/) override;
-	void exitChange_table(TSqlParser::Change_tableContext * /*ctx*/) override;
+	virtual void enterDATEDIFF(TSqlParser::DATEDIFFContext * /*ctx*/) override;
+	virtual void exitDATEDIFF(TSqlParser::DATEDIFFContext * /*ctx*/) override;
 
-	void enterJoin_part(TSqlParser::Join_partContext * /*ctx*/) override;
-	void exitJoin_part(TSqlParser::Join_partContext * /*ctx*/) override;
+	virtual void enterDATENAME(TSqlParser::DATENAMEContext * /*ctx*/) override;
+	virtual void exitDATENAME(TSqlParser::DATENAMEContext * /*ctx*/) override;
 
-	void enterPivot_clause(TSqlParser::Pivot_clauseContext * /*ctx*/) override;
-	void exitPivot_clause(TSqlParser::Pivot_clauseContext * /*ctx*/) override;
+	virtual void enterDATEPART(TSqlParser::DATEPARTContext * /*ctx*/) override;
+	virtual void exitDATEPART(TSqlParser::DATEPARTContext * /*ctx*/) override;
 
-	void enterUnpivot_clause(TSqlParser::Unpivot_clauseContext * /*ctx*/) override;
-	void exitUnpivot_clause(TSqlParser::Unpivot_clauseContext * /*ctx*/) override;
+	virtual void enterGETDATE(TSqlParser::GETDATEContext * /*ctx*/) override;
+	virtual void exitGETDATE(TSqlParser::GETDATEContext * /*ctx*/) override;
 
-	void enterFull_column_name_list(TSqlParser::Full_column_name_listContext * /*ctx*/) override;
-	void exitFull_column_name_list(TSqlParser::Full_column_name_listContext * /*ctx*/) override;
+	virtual void enterGETUTCDATE(TSqlParser::GETUTCDATEContext * /*ctx*/) override;
+	virtual void exitGETUTCDATE(TSqlParser::GETUTCDATEContext * /*ctx*/) override;
 
-	void enterTable_name_with_hint(TSqlParser::Table_name_with_hintContext * /*ctx*/) override;
-	void exitTable_name_with_hint(TSqlParser::Table_name_with_hintContext * /*ctx*/) override;
+	virtual void enterIDENTITY(TSqlParser::IDENTITYContext * /*ctx*/) override;
+	virtual void exitIDENTITY(TSqlParser::IDENTITYContext * /*ctx*/) override;
 
-	void enterRowset_function(TSqlParser::Rowset_functionContext * /*ctx*/) override;
-	void exitRowset_function(TSqlParser::Rowset_functionContext * /*ctx*/) override;
+	virtual void enterMIN_ACTIVE_ROWVERSION(TSqlParser::MIN_ACTIVE_ROWVERSIONContext * /*ctx*/) override;
+	virtual void exitMIN_ACTIVE_ROWVERSION(TSqlParser::MIN_ACTIVE_ROWVERSIONContext * /*ctx*/) override;
 
-	void enterBulk_option(TSqlParser::Bulk_optionContext * /*ctx*/) override;
-	void exitBulk_option(TSqlParser::Bulk_optionContext * /*ctx*/) override;
+	virtual void enterNULLIF(TSqlParser::NULLIFContext * /*ctx*/) override;
+	virtual void exitNULLIF(TSqlParser::NULLIFContext * /*ctx*/) override;
 
-	void enterDerived_table(TSqlParser::Derived_tableContext * /*ctx*/) override;
-	void exitDerived_table(TSqlParser::Derived_tableContext * /*ctx*/) override;
+	virtual void enterSTUFF(TSqlParser::STUFFContext * /*ctx*/) override;
+	virtual void exitSTUFF(TSqlParser::STUFFContext * /*ctx*/) override;
 
-	void enterBINARY_CHECKSUM(TSqlParser::BINARY_CHECKSUMContext * /*ctx*/) override;
-	void exitBINARY_CHECKSUM(TSqlParser::BINARY_CHECKSUMContext * /*ctx*/) override;
+	virtual void enterSESSION_USER(TSqlParser::SESSION_USERContext * /*ctx*/) override;
+	virtual void exitSESSION_USER(TSqlParser::SESSION_USERContext * /*ctx*/) override;
 
-	void enterCAST(TSqlParser::CASTContext * /*ctx*/) override;
-	void exitCAST(TSqlParser::CASTContext * /*ctx*/) override;
+	virtual void enterSYSTEM_USER(TSqlParser::SYSTEM_USERContext * /*ctx*/) override;
+	virtual void exitSYSTEM_USER(TSqlParser::SYSTEM_USERContext * /*ctx*/) override;
 
-	void enterCONVERT(TSqlParser::CONVERTContext * /*ctx*/) override;
-	void exitCONVERT(TSqlParser::CONVERTContext * /*ctx*/) override;
+	virtual void enterUSER(TSqlParser::USERContext * /*ctx*/) override;
+	virtual void exitUSER(TSqlParser::USERContext * /*ctx*/) override;
 
-	void enterCHECKSUM(TSqlParser::CHECKSUMContext * /*ctx*/) override;
-	void exitCHECKSUM(TSqlParser::CHECKSUMContext * /*ctx*/) override;
+	virtual void enterISNULL(TSqlParser::ISNULLContext * /*ctx*/) override;
+	virtual void exitISNULL(TSqlParser::ISNULLContext * /*ctx*/) override;
 
-	void enterCOALESCE(TSqlParser::COALESCEContext * /*ctx*/) override;
-	void exitCOALESCE(TSqlParser::COALESCEContext * /*ctx*/) override;
+	virtual void enterIIF(TSqlParser::IIFContext * /*ctx*/) override;
+	virtual void exitIIF(TSqlParser::IIFContext * /*ctx*/) override;
 
-	void enterCURRENT_TIMESTAMP(TSqlParser::CURRENT_TIMESTAMPContext * /*ctx*/) override;
-	void exitCURRENT_TIMESTAMP(TSqlParser::CURRENT_TIMESTAMPContext * /*ctx*/) override;
+	virtual void enterSTRINGAGG(TSqlParser::STRINGAGGContext * /*ctx*/) override;
+	virtual void exitSTRINGAGG(TSqlParser::STRINGAGGContext * /*ctx*/) override;
 
-	void enterCURRENT_USER(TSqlParser::CURRENT_USERContext * /*ctx*/) override;
-	void exitCURRENT_USER(TSqlParser::CURRENT_USERContext * /*ctx*/) override;
+	virtual void enterNodes_method(TSqlParser::Nodes_methodContext * /*ctx*/) override;
+	virtual void exitNodes_method(TSqlParser::Nodes_methodContext * /*ctx*/) override;
 
-	void enterDATEADD(TSqlParser::DATEADDContext * /*ctx*/) override;
-	void exitDATEADD(TSqlParser::DATEADDContext * /*ctx*/) override;
+	virtual void enterSwitch_section(TSqlParser::Switch_sectionContext * /*ctx*/) override;
+	virtual void exitSwitch_section(TSqlParser::Switch_sectionContext * /*ctx*/) override;
 
-	void enterDATEDIFF(TSqlParser::DATEDIFFContext * /*ctx*/) override;
-	void exitDATEDIFF(TSqlParser::DATEDIFFContext * /*ctx*/) override;
+	virtual void enterSwitch_search_condition_section(TSqlParser::Switch_search_condition_sectionContext * /*ctx*/) override;
+	virtual void exitSwitch_search_condition_section(TSqlParser::Switch_search_condition_sectionContext * /*ctx*/) override;
 
-	void enterDATENAME(TSqlParser::DATENAMEContext * /*ctx*/) override;
-	void exitDATENAME(TSqlParser::DATENAMEContext * /*ctx*/) override;
+	virtual void enterAs_column_alias(TSqlParser::As_column_aliasContext * /*ctx*/) override;
+	virtual void exitAs_column_alias(TSqlParser::As_column_aliasContext * /*ctx*/) override;
 
-	void enterDATEPART(TSqlParser::DATEPARTContext * /*ctx*/) override;
-	void exitDATEPART(TSqlParser::DATEPARTContext * /*ctx*/) override;
+	virtual void enterAs_table_alias(TSqlParser::As_table_aliasContext * /*ctx*/) override;
+	virtual void exitAs_table_alias(TSqlParser::As_table_aliasContext * /*ctx*/) override;
 
-	void enterGETDATE(TSqlParser::GETDATEContext * /*ctx*/) override;
-	void exitGETDATE(TSqlParser::GETDATEContext * /*ctx*/) override;
+	virtual void enterTable_alias(TSqlParser::Table_aliasContext * /*ctx*/) override;
+	virtual void exitTable_alias(TSqlParser::Table_aliasContext * /*ctx*/) override;
 
-	void enterGETUTCDATE(TSqlParser::GETUTCDATEContext * /*ctx*/) override;
-	void exitGETUTCDATE(TSqlParser::GETUTCDATEContext * /*ctx*/) override;
+	virtual void enterWith_table_hints(TSqlParser::With_table_hintsContext * /*ctx*/) override;
+	virtual void exitWith_table_hints(TSqlParser::With_table_hintsContext * /*ctx*/) override;
 
-	void enterIDENTITY(TSqlParser::IDENTITYContext * /*ctx*/) override;
-	void exitIDENTITY(TSqlParser::IDENTITYContext * /*ctx*/) override;
+	virtual void enterInsert_with_table_hints(TSqlParser::Insert_with_table_hintsContext * /*ctx*/) override;
+	virtual void exitInsert_with_table_hints(TSqlParser::Insert_with_table_hintsContext * /*ctx*/) override;
 
-	void enterMIN_ACTIVE_ROWVERSION(TSqlParser::MIN_ACTIVE_ROWVERSIONContext * /*ctx*/) override;
-	void exitMIN_ACTIVE_ROWVERSION(TSqlParser::MIN_ACTIVE_ROWVERSIONContext * /*ctx*/) override;
+	virtual void enterTable_hint(TSqlParser::Table_hintContext * /*ctx*/) override;
+	virtual void exitTable_hint(TSqlParser::Table_hintContext * /*ctx*/) override;
 
-	void enterNULLIF(TSqlParser::NULLIFContext * /*ctx*/) override;
-	void exitNULLIF(TSqlParser::NULLIFContext * /*ctx*/) override;
+	virtual void enterIndex_value(TSqlParser::Index_valueContext * /*ctx*/) override;
+	virtual void exitIndex_value(TSqlParser::Index_valueContext * /*ctx*/) override;
 
-	void enterSTUFF(TSqlParser::STUFFContext * /*ctx*/) override;
-	void exitSTUFF(TSqlParser::STUFFContext * /*ctx*/) override;
+	virtual void enterColumn_alias_list(TSqlParser::Column_alias_listContext * /*ctx*/) override;
+	virtual void exitColumn_alias_list(TSqlParser::Column_alias_listContext * /*ctx*/) override;
 
-	void enterSESSION_USER(TSqlParser::SESSION_USERContext * /*ctx*/) override;
-	void exitSESSION_USER(TSqlParser::SESSION_USERContext * /*ctx*/) override;
+	virtual void enterColumn_alias(TSqlParser::Column_aliasContext * /*ctx*/) override;
+	virtual void exitColumn_alias(TSqlParser::Column_aliasContext * /*ctx*/) override;
 
-	void enterSYSTEM_USER(TSqlParser::SYSTEM_USERContext * /*ctx*/) override;
-	void exitSYSTEM_USER(TSqlParser::SYSTEM_USERContext * /*ctx*/) override;
+	virtual void enterTable_value_constructor(TSqlParser::Table_value_constructorContext * /*ctx*/) override;
+	virtual void exitTable_value_constructor(TSqlParser::Table_value_constructorContext * /*ctx*/) override;
 
-	void enterISNULL(TSqlParser::ISNULLContext * /*ctx*/) override;
-	void exitISNULL(TSqlParser::ISNULLContext * /*ctx*/) override;
+	virtual void enterExpression_list(TSqlParser::Expression_listContext * /*ctx*/) override;
+	virtual void exitExpression_list(TSqlParser::Expression_listContext * /*ctx*/) override;
 
-	void enterXML_DATA_TYPE_FUNC(TSqlParser::XML_DATA_TYPE_FUNCContext * /*ctx*/) override;
-	void exitXML_DATA_TYPE_FUNC(TSqlParser::XML_DATA_TYPE_FUNCContext * /*ctx*/) override;
+	virtual void enterRanking_windowed_function(TSqlParser::Ranking_windowed_functionContext * /*ctx*/) override;
+	virtual void exitRanking_windowed_function(TSqlParser::Ranking_windowed_functionContext * /*ctx*/) override;
 
-	void enterIFF(TSqlParser::IFFContext * /*ctx*/) override;
-	void exitIFF(TSqlParser::IFFContext * /*ctx*/) override;
+	virtual void enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * /*ctx*/) override;
+	virtual void exitAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * /*ctx*/) override;
 
-	void enterRANKING_WINDOWED_FUNC(TSqlParser::RANKING_WINDOWED_FUNCContext * /*ctx*/) override;
-	void exitRANKING_WINDOWED_FUNC(TSqlParser::RANKING_WINDOWED_FUNCContext * /*ctx*/) override;
+	virtual void enterAnalytic_windowed_function(TSqlParser::Analytic_windowed_functionContext * /*ctx*/) override;
+	virtual void exitAnalytic_windowed_function(TSqlParser::Analytic_windowed_functionContext * /*ctx*/) override;
 
-	void enterAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * /*ctx*/) override;
-	void exitAGGREGATE_WINDOWED_FUNC(TSqlParser::AGGREGATE_WINDOWED_FUNCContext * /*ctx*/) override;
+	virtual void enterAll_distinct_expression(TSqlParser::All_distinct_expressionContext * /*ctx*/) override;
+	virtual void exitAll_distinct_expression(TSqlParser::All_distinct_expressionContext * /*ctx*/) override;
 
-	void enterANALYTIC_WINDOWED_FUNC(TSqlParser::ANALYTIC_WINDOWED_FUNCContext * /*ctx*/) override;
-	void exitANALYTIC_WINDOWED_FUNC(TSqlParser::ANALYTIC_WINDOWED_FUNCContext * /*ctx*/) override;
+	virtual void enterOver_clause(TSqlParser::Over_clauseContext * /*ctx*/) override;
+	virtual void exitOver_clause(TSqlParser::Over_clauseContext * /*ctx*/) override;
 
-	void enterSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * /*ctx*/) override;
-	void exitSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * /*ctx*/) override;
+	virtual void enterRow_or_range_clause(TSqlParser::Row_or_range_clauseContext * /*ctx*/) override;
+	virtual void exitRow_or_range_clause(TSqlParser::Row_or_range_clauseContext * /*ctx*/) override;
 
-	void enterSTRINGAGG(TSqlParser::STRINGAGGContext * /*ctx*/) override;
-	void exitSTRINGAGG(TSqlParser::STRINGAGGContext * /*ctx*/) override;
+	virtual void enterWindow_frame_extent(TSqlParser::Window_frame_extentContext * /*ctx*/) override;
+	virtual void exitWindow_frame_extent(TSqlParser::Window_frame_extentContext * /*ctx*/) override;
 
-	void enterXml_data_type_methods(TSqlParser::Xml_data_type_methodsContext * /*ctx*/) override;
-	void exitXml_data_type_methods(TSqlParser::Xml_data_type_methodsContext * /*ctx*/) override;
+	virtual void enterWindow_frame_bound(TSqlParser::Window_frame_boundContext * /*ctx*/) override;
+	virtual void exitWindow_frame_bound(TSqlParser::Window_frame_boundContext * /*ctx*/) override;
 
-	void enterValue_method(TSqlParser::Value_methodContext * /*ctx*/) override;
-	void exitValue_method(TSqlParser::Value_methodContext * /*ctx*/) override;
+	virtual void enterWindow_frame_preceding(TSqlParser::Window_frame_precedingContext * /*ctx*/) override;
+	virtual void exitWindow_frame_preceding(TSqlParser::Window_frame_precedingContext * /*ctx*/) override;
 
-	void enterQuery_method(TSqlParser::Query_methodContext * /*ctx*/) override;
-	void exitQuery_method(TSqlParser::Query_methodContext * /*ctx*/) override;
+	virtual void enterWindow_frame_following(TSqlParser::Window_frame_followingContext * /*ctx*/) override;
+	virtual void exitWindow_frame_following(TSqlParser::Window_frame_followingContext * /*ctx*/) override;
 
-	void enterExist_method(TSqlParser::Exist_methodContext * /*ctx*/) override;
-	void exitExist_method(TSqlParser::Exist_methodContext * /*ctx*/) override;
+	virtual void enterEntity_name(TSqlParser::Entity_nameContext * /*ctx*/) override;
+	virtual void exitEntity_name(TSqlParser::Entity_nameContext * /*ctx*/) override;
 
-	void enterModify_method(TSqlParser::Modify_methodContext * /*ctx*/) override;
-	void exitModify_method(TSqlParser::Modify_methodContext * /*ctx*/) override;
+	virtual void enterEntity_name_for_azure_dw(TSqlParser::Entity_name_for_azure_dwContext * /*ctx*/) override;
+	virtual void exitEntity_name_for_azure_dw(TSqlParser::Entity_name_for_azure_dwContext * /*ctx*/) override;
 
-	void enterNodes_method(TSqlParser::Nodes_methodContext * /*ctx*/) override;
-	void exitNodes_method(TSqlParser::Nodes_methodContext * /*ctx*/) override;
+	virtual void enterEntity_name_for_parallel_dw(TSqlParser::Entity_name_for_parallel_dwContext * /*ctx*/) override;
+	virtual void exitEntity_name_for_parallel_dw(TSqlParser::Entity_name_for_parallel_dwContext * /*ctx*/) override;
 
-	void enterSwitch_section(TSqlParser::Switch_sectionContext * /*ctx*/) override;
-	void exitSwitch_section(TSqlParser::Switch_sectionContext * /*ctx*/) override;
+	virtual void enterFull_table_name(TSqlParser::Full_table_nameContext * /*ctx*/) override;
+	virtual void exitFull_table_name(TSqlParser::Full_table_nameContext * /*ctx*/) override;
 
-	void enterSwitch_search_condition_section(TSqlParser::Switch_search_condition_sectionContext * /*ctx*/) override;
-	void exitSwitch_search_condition_section(TSqlParser::Switch_search_condition_sectionContext * /*ctx*/) override;
+	virtual void enterTable_name(TSqlParser::Table_nameContext * /*ctx*/) override;
+	virtual void exitTable_name(TSqlParser::Table_nameContext * /*ctx*/) override;
 
-	void enterAs_column_alias(TSqlParser::As_column_aliasContext * /*ctx*/) override;
-	void exitAs_column_alias(TSqlParser::As_column_aliasContext * /*ctx*/) override;
+	virtual void enterSimple_name(TSqlParser::Simple_nameContext * /*ctx*/) override;
+	virtual void exitSimple_name(TSqlParser::Simple_nameContext * /*ctx*/) override;
 
-	void enterAs_table_alias(TSqlParser::As_table_aliasContext * /*ctx*/) override;
-	void exitAs_table_alias(TSqlParser::As_table_aliasContext * /*ctx*/) override;
+	virtual void enterFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * /*ctx*/) override;
+	virtual void exitFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * /*ctx*/) override;
 
-	void enterTable_alias(TSqlParser::Table_aliasContext * /*ctx*/) override;
-	void exitTable_alias(TSqlParser::Table_aliasContext * /*ctx*/) override;
+	virtual void enterFunc_proc_name_database_schema(TSqlParser::Func_proc_name_database_schemaContext * /*ctx*/) override;
+	virtual void exitFunc_proc_name_database_schema(TSqlParser::Func_proc_name_database_schemaContext * /*ctx*/) override;
 
-	void enterWith_table_hints(TSqlParser::With_table_hintsContext * /*ctx*/) override;
-	void exitWith_table_hints(TSqlParser::With_table_hintsContext * /*ctx*/) override;
+	virtual void enterFunc_proc_name_server_database_schema(TSqlParser::Func_proc_name_server_database_schemaContext * /*ctx*/) override;
+	virtual void exitFunc_proc_name_server_database_schema(TSqlParser::Func_proc_name_server_database_schemaContext * /*ctx*/) override;
 
-	void enterInsert_with_table_hints(TSqlParser::Insert_with_table_hintsContext * /*ctx*/) override;
-	void exitInsert_with_table_hints(TSqlParser::Insert_with_table_hintsContext * /*ctx*/) override;
+	virtual void enterDdl_object(TSqlParser::Ddl_objectContext * /*ctx*/) override;
+	virtual void exitDdl_object(TSqlParser::Ddl_objectContext * /*ctx*/) override;
 
-	void enterTable_hint(TSqlParser::Table_hintContext * /*ctx*/) override;
-	void exitTable_hint(TSqlParser::Table_hintContext * /*ctx*/) override;
+	virtual void enterFull_column_name(TSqlParser::Full_column_nameContext * /*ctx*/) override;
+	virtual void exitFull_column_name(TSqlParser::Full_column_nameContext * /*ctx*/) override;
 
-	void enterIndex_value(TSqlParser::Index_valueContext * /*ctx*/) override;
-	void exitIndex_value(TSqlParser::Index_valueContext * /*ctx*/) override;
+	virtual void enterColumn_name_list_with_order(TSqlParser::Column_name_list_with_orderContext * /*ctx*/) override;
+	virtual void exitColumn_name_list_with_order(TSqlParser::Column_name_list_with_orderContext * /*ctx*/) override;
 
-	void enterColumn_alias_list(TSqlParser::Column_alias_listContext * /*ctx*/) override;
-	void exitColumn_alias_list(TSqlParser::Column_alias_listContext * /*ctx*/) override;
+	virtual void enterInsert_column_name_list(TSqlParser::Insert_column_name_listContext * /*ctx*/) override;
+	virtual void exitInsert_column_name_list(TSqlParser::Insert_column_name_listContext * /*ctx*/) override;
 
-	void enterColumn_alias(TSqlParser::Column_aliasContext * /*ctx*/) override;
-	void exitColumn_alias(TSqlParser::Column_aliasContext * /*ctx*/) override;
+	virtual void enterInsert_column_id(TSqlParser::Insert_column_idContext * /*ctx*/) override;
+	virtual void exitInsert_column_id(TSqlParser::Insert_column_idContext * /*ctx*/) override;
 
-	void enterTable_value_constructor(TSqlParser::Table_value_constructorContext * /*ctx*/) override;
-	void exitTable_value_constructor(TSqlParser::Table_value_constructorContext * /*ctx*/) override;
+	virtual void enterColumn_name_list(TSqlParser::Column_name_listContext * /*ctx*/) override;
+	virtual void exitColumn_name_list(TSqlParser::Column_name_listContext * /*ctx*/) override;
 
-	void enterExpression_list(TSqlParser::Expression_listContext * /*ctx*/) override;
-	void exitExpression_list(TSqlParser::Expression_listContext * /*ctx*/) override;
+	virtual void enterCursor_name(TSqlParser::Cursor_nameContext * /*ctx*/) override;
+	virtual void exitCursor_name(TSqlParser::Cursor_nameContext * /*ctx*/) override;
 
-	void enterRanking_windowed_function(TSqlParser::Ranking_windowed_functionContext * /*ctx*/) override;
-	void exitRanking_windowed_function(TSqlParser::Ranking_windowed_functionContext * /*ctx*/) override;
+	virtual void enterOn_off(TSqlParser::On_offContext * /*ctx*/) override;
+	virtual void exitOn_off(TSqlParser::On_offContext * /*ctx*/) override;
 
-	void enterAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * /*ctx*/) override;
-	void exitAggregate_windowed_function(TSqlParser::Aggregate_windowed_functionContext * /*ctx*/) override;
+	virtual void enterNull_notnull(TSqlParser::Null_notnullContext * /*ctx*/) override;
+	virtual void exitNull_notnull(TSqlParser::Null_notnullContext * /*ctx*/) override;
 
-	void enterAnalytic_windowed_function(TSqlParser::Analytic_windowed_functionContext * /*ctx*/) override;
-	void exitAnalytic_windowed_function(TSqlParser::Analytic_windowed_functionContext * /*ctx*/) override;
+	virtual void enterNull_or_default(TSqlParser::Null_or_defaultContext * /*ctx*/) override;
+	virtual void exitNull_or_default(TSqlParser::Null_or_defaultContext * /*ctx*/) override;
 
-	void enterAll_distinct_expression(TSqlParser::All_distinct_expressionContext * /*ctx*/) override;
-	void exitAll_distinct_expression(TSqlParser::All_distinct_expressionContext * /*ctx*/) override;
+	virtual void enterScalar_function_name(TSqlParser::Scalar_function_nameContext * /*ctx*/) override;
+	virtual void exitScalar_function_name(TSqlParser::Scalar_function_nameContext * /*ctx*/) override;
 
-	void enterOver_clause(TSqlParser::Over_clauseContext * /*ctx*/) override;
-	void exitOver_clause(TSqlParser::Over_clauseContext * /*ctx*/) override;
+	virtual void enterData_type(TSqlParser::Data_typeContext * /*ctx*/) override;
+	virtual void exitData_type(TSqlParser::Data_typeContext * /*ctx*/) override;
 
-	void enterRow_or_range_clause(TSqlParser::Row_or_range_clauseContext * /*ctx*/) override;
-	void exitRow_or_range_clause(TSqlParser::Row_or_range_clauseContext * /*ctx*/) override;
+	virtual void enterDefault_value(TSqlParser::Default_valueContext * /*ctx*/) override;
+	virtual void exitDefault_value(TSqlParser::Default_valueContext * /*ctx*/) override;
 
-	void enterWindow_frame_extent(TSqlParser::Window_frame_extentContext * /*ctx*/) override;
-	void exitWindow_frame_extent(TSqlParser::Window_frame_extentContext * /*ctx*/) override;
+	virtual void enterConstant(TSqlParser::ConstantContext * /*ctx*/) override;
+	virtual void exitConstant(TSqlParser::ConstantContext * /*ctx*/) override;
 
-	void enterWindow_frame_bound(TSqlParser::Window_frame_boundContext * /*ctx*/) override;
-	void exitWindow_frame_bound(TSqlParser::Window_frame_boundContext * /*ctx*/) override;
+	virtual void enterSign(TSqlParser::SignContext * /*ctx*/) override;
+	virtual void exitSign(TSqlParser::SignContext * /*ctx*/) override;
 
-	void enterWindow_frame_preceding(TSqlParser::Window_frame_precedingContext * /*ctx*/) override;
-	void exitWindow_frame_preceding(TSqlParser::Window_frame_precedingContext * /*ctx*/) override;
+	virtual void enterKeyword(TSqlParser::KeywordContext * /*ctx*/) override;
+	virtual void exitKeyword(TSqlParser::KeywordContext * /*ctx*/) override;
 
-	void enterWindow_frame_following(TSqlParser::Window_frame_followingContext * /*ctx*/) override;
-	void exitWindow_frame_following(TSqlParser::Window_frame_followingContext * /*ctx*/) override;
+	virtual void enterId_(TSqlParser::Id_Context * /*ctx*/) override;
+	virtual void exitId_(TSqlParser::Id_Context * /*ctx*/) override;
 
-	void enterCreate_database_option(TSqlParser::Create_database_optionContext * /*ctx*/) override;
-	void exitCreate_database_option(TSqlParser::Create_database_optionContext * /*ctx*/) override;
+	virtual void enterSimple_id(TSqlParser::Simple_idContext * /*ctx*/) override;
+	virtual void exitSimple_id(TSqlParser::Simple_idContext * /*ctx*/) override;
 
-	void enterDatabase_filestream_option(TSqlParser::Database_filestream_optionContext * /*ctx*/) override;
-	void exitDatabase_filestream_option(TSqlParser::Database_filestream_optionContext * /*ctx*/) override;
+	virtual void enterId_or_string(TSqlParser::Id_or_stringContext * /*ctx*/) override;
+	virtual void exitId_or_string(TSqlParser::Id_or_stringContext * /*ctx*/) override;
 
-	void enterDatabase_file_spec(TSqlParser::Database_file_specContext * /*ctx*/) override;
-	void exitDatabase_file_spec(TSqlParser::Database_file_specContext * /*ctx*/) override;
+	virtual void enterComparison_operator(TSqlParser::Comparison_operatorContext * /*ctx*/) override;
+	virtual void exitComparison_operator(TSqlParser::Comparison_operatorContext * /*ctx*/) override;
 
-	void enterFile_group(TSqlParser::File_groupContext * /*ctx*/) override;
-	void exitFile_group(TSqlParser::File_groupContext * /*ctx*/) override;
-
-	void enterFile_spec(TSqlParser::File_specContext * /*ctx*/) override;
-	void exitFile_spec(TSqlParser::File_specContext * /*ctx*/) override;
-
-	void enterEntity_name(TSqlParser::Entity_nameContext * /*ctx*/) override;
-	void exitEntity_name(TSqlParser::Entity_nameContext * /*ctx*/) override;
-
-	void enterEntity_name_for_azure_dw(TSqlParser::Entity_name_for_azure_dwContext * /*ctx*/) override;
-	void exitEntity_name_for_azure_dw(TSqlParser::Entity_name_for_azure_dwContext * /*ctx*/) override;
-
-	void enterEntity_name_for_parallel_dw(TSqlParser::Entity_name_for_parallel_dwContext * /*ctx*/) override;
-	void exitEntity_name_for_parallel_dw(TSqlParser::Entity_name_for_parallel_dwContext * /*ctx*/) override;
-
-	void enterFull_table_name(TSqlParser::Full_table_nameContext * /*ctx*/) override;
-	void exitFull_table_name(TSqlParser::Full_table_nameContext * /*ctx*/) override;
-
-	void enterTable_name(TSqlParser::Table_nameContext * /*ctx*/) override;
-	void exitTable_name(TSqlParser::Table_nameContext * /*ctx*/) override;
-
-	void enterSimple_name(TSqlParser::Simple_nameContext * /*ctx*/) override;
-	void exitSimple_name(TSqlParser::Simple_nameContext * /*ctx*/) override;
-
-	void enterFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * /*ctx*/) override;
-	void exitFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * /*ctx*/) override;
-
-	void enterFunc_proc_name_database_schema(TSqlParser::Func_proc_name_database_schemaContext * /*ctx*/) override;
-	void exitFunc_proc_name_database_schema(TSqlParser::Func_proc_name_database_schemaContext * /*ctx*/) override;
-
-	void enterFunc_proc_name_server_database_schema(TSqlParser::Func_proc_name_server_database_schemaContext * /*ctx*/) override;
-	void exitFunc_proc_name_server_database_schema(TSqlParser::Func_proc_name_server_database_schemaContext * /*ctx*/) override;
-
-	void enterDdl_object(TSqlParser::Ddl_objectContext * /*ctx*/) override;
-	void exitDdl_object(TSqlParser::Ddl_objectContext * /*ctx*/) override;
-
-	void enterFull_column_name(TSqlParser::Full_column_nameContext * /*ctx*/) override;
-	void exitFull_column_name(TSqlParser::Full_column_nameContext * /*ctx*/) override;
-
-	void enterColumn_name_list_with_order(TSqlParser::Column_name_list_with_orderContext * /*ctx*/) override;
-	void exitColumn_name_list_with_order(TSqlParser::Column_name_list_with_orderContext * /*ctx*/) override;
-
-	void enterColumn_name_list(TSqlParser::Column_name_listContext * /*ctx*/) override;
-	void exitColumn_name_list(TSqlParser::Column_name_listContext * /*ctx*/) override;
-
-	void enterCursor_name(TSqlParser::Cursor_nameContext * /*ctx*/) override;
-	void exitCursor_name(TSqlParser::Cursor_nameContext * /*ctx*/) override;
-
-	void enterOn_off(TSqlParser::On_offContext * /*ctx*/) override;
-	void exitOn_off(TSqlParser::On_offContext * /*ctx*/) override;
-
-	void enterClustered(TSqlParser::ClusteredContext * /*ctx*/) override;
-	void exitClustered(TSqlParser::ClusteredContext * /*ctx*/) override;
-
-	void enterNull_notnull(TSqlParser::Null_notnullContext * /*ctx*/) override;
-	void exitNull_notnull(TSqlParser::Null_notnullContext * /*ctx*/) override;
-
-	void enterNull_or_default(TSqlParser::Null_or_defaultContext * /*ctx*/) override;
-	void exitNull_or_default(TSqlParser::Null_or_defaultContext * /*ctx*/) override;
-
-	void enterScalar_function_name(TSqlParser::Scalar_function_nameContext * /*ctx*/) override;
-	void exitScalar_function_name(TSqlParser::Scalar_function_nameContext * /*ctx*/) override;
-
-	void enterBegin_conversation_timer(TSqlParser::Begin_conversation_timerContext * /*ctx*/) override;
-	void exitBegin_conversation_timer(TSqlParser::Begin_conversation_timerContext * /*ctx*/) override;
-
-	void enterBegin_conversation_dialog(TSqlParser::Begin_conversation_dialogContext * /*ctx*/) override;
-	void exitBegin_conversation_dialog(TSqlParser::Begin_conversation_dialogContext * /*ctx*/) override;
-
-	void enterContract_name(TSqlParser::Contract_nameContext * /*ctx*/) override;
-	void exitContract_name(TSqlParser::Contract_nameContext * /*ctx*/) override;
-
-	void enterService_name(TSqlParser::Service_nameContext * /*ctx*/) override;
-	void exitService_name(TSqlParser::Service_nameContext * /*ctx*/) override;
-
-	void enterEnd_conversation(TSqlParser::End_conversationContext * /*ctx*/) override;
-	void exitEnd_conversation(TSqlParser::End_conversationContext * /*ctx*/) override;
-
-	void enterWaitfor_conversation(TSqlParser::Waitfor_conversationContext * /*ctx*/) override;
-	void exitWaitfor_conversation(TSqlParser::Waitfor_conversationContext * /*ctx*/) override;
-
-	void enterGet_conversation(TSqlParser::Get_conversationContext * /*ctx*/) override;
-	void exitGet_conversation(TSqlParser::Get_conversationContext * /*ctx*/) override;
-
-	void enterQueue_id(TSqlParser::Queue_idContext * /*ctx*/) override;
-	void exitQueue_id(TSqlParser::Queue_idContext * /*ctx*/) override;
-
-	void enterSend_conversation(TSqlParser::Send_conversationContext * /*ctx*/) override;
-	void exitSend_conversation(TSqlParser::Send_conversationContext * /*ctx*/) override;
-
-	void enterData_type(TSqlParser::Data_typeContext * /*ctx*/) override;
-	void exitData_type(TSqlParser::Data_typeContext * /*ctx*/) override;
-
-	void enterDefault_value(TSqlParser::Default_valueContext * /*ctx*/) override;
-	void exitDefault_value(TSqlParser::Default_valueContext * /*ctx*/) override;
-
-	void enterConstant(TSqlParser::ConstantContext * /*ctx*/) override;
-	void exitConstant(TSqlParser::ConstantContext * /*ctx*/) override;
-
-	void enterSign(TSqlParser::SignContext * /*ctx*/) override;
-	void exitSign(TSqlParser::SignContext * /*ctx*/) override;
-
-	void enterId(TSqlParser::IdContext * /*ctx*/) override;
-	void exitId(TSqlParser::IdContext * /*ctx*/) override;
-
-	void enterSimple_id(TSqlParser::Simple_idContext * /*ctx*/) override;
-	void exitSimple_id(TSqlParser::Simple_idContext * /*ctx*/) override;
-
-	void enterComparison_operator(TSqlParser::Comparison_operatorContext * /*ctx*/) override;
-	void exitComparison_operator(TSqlParser::Comparison_operatorContext * /*ctx*/) override;
-
-	void enterAssignment_operator(TSqlParser::Assignment_operatorContext * /*ctx*/) override;
-	void exitAssignment_operator(TSqlParser::Assignment_operatorContext * /*ctx*/) override;
-
-	void enterFile_size(TSqlParser::File_sizeContext * /*ctx*/) override;
-	void exitFile_size(TSqlParser::File_sizeContext * /*ctx*/) override;
+	virtual void enterAssignment_operator(TSqlParser::Assignment_operatorContext * /*ctx*/) override;
+	virtual void exitAssignment_operator(TSqlParser::Assignment_operatorContext * /*ctx*/) override;
 
 };
 

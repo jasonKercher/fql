@@ -134,7 +134,7 @@ void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemConte
 void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx)
 {
 	std::string error_token = "";
-	if (ctx->APPLY()) {
+	if (ctx->apply_()) {
 		error_token = "APPLY";
 	} else if (ctx->MERGE()) {
 		error_token = "MERGE";
