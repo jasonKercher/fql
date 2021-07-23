@@ -1,5 +1,5 @@
 
-// Generated from TSqlParser.g4 by ANTLR 4.7.2
+// Generated from TSqlParser.g4 by ANTLR 4.9.2
 
 #pragma once
 
@@ -12,90 +12,96 @@
 class  TSqlParser : public antlr4::Parser {
 public:
   enum {
-    ADD = 1, ALL = 2, ALTER = 3, AND = 4, ANY = 5, AS = 6, ASC = 7, AUTHORIZATION = 8, 
-    BACKSLASH = 9, BEGIN = 10, BETWEEN = 11, BREAK = 12, BY = 13, CASE = 14, 
-    CHECK = 15, CLOSE = 16, COALESCE = 17, COLLATE = 18, COLUMN = 19, COMMIT = 20, 
-    COMPUTE = 21, CONSTRAINT = 22, CONTINUE = 23, CONVERT = 24, CREATE = 25, 
-    CROSS = 26, CURRENT = 27, CURRENT_DATE = 28, CURRENT_TIME = 29, CURRENT_TIMESTAMP = 30, 
-    CURRENT_USER = 31, CURSOR = 32, DATABASE = 33, DBCC = 34, DEALLOCATE = 35, 
-    DECLARE = 36, DEFAULT = 37, DELETE = 38, DESC = 39, DISTINCT = 40, DISTRIBUTED = 41, 
-    DOUBLE = 42, DOUBLE_BACK_SLASH = 43, DOUBLE_FORWARD_SLASH = 44, DROP = 45, 
-    ELSE = 46, END = 47, ESCAPE = 48, EXCEPT = 49, EXECUTE = 50, EXISTS = 51, 
-    FETCH = 52, FOR = 53, FOREIGN = 54, FROM = 55, FULL = 56, FUNCTION = 57, 
-    GOTO = 58, GROUP = 59, HAVING = 60, HOLDLOCK = 61, IDENTITY = 62, IDENTITY_INSERT = 63, 
-    IF = 64, IN = 65, INDEX = 66, INNER = 67, INSERT = 68, INTERSECT = 69, 
-    INTO = 70, IS = 71, JOIN = 72, KEY = 73, KILL = 74, LEFT = 75, LIKE = 76, 
-    MERGE = 77, NOT = 78, NULL_ = 79, NULLIF = 80, OF = 81, OFF = 82, ON = 83, 
-    OPEN = 84, OPTION = 85, OR = 86, ORDER = 87, OUTER = 88, OVER = 89, 
-    PERCENT = 90, PIVOT = 91, PLAN = 92, PRECISION = 93, PRIMARY = 94, PRINT = 95, 
-    PROC = 96, PROCEDURE = 97, RAISERROR = 98, READ = 99, REFERENCES = 100, 
-    REPLICATION = 101, RETURN = 102, REVERT = 103, RIGHT = 104, ROLLBACK = 105, 
-    ROWCOUNT = 106, ROWGUIDCOL = 107, SAVE = 108, SCHEMA = 109, SELECT = 110, 
-    SESSION_USER = 111, SET = 112, SHUTDOWN = 113, SOME = 114, SYSTEM_USER = 115, 
-    TABLE = 116, THEN = 117, TO = 118, TOP = 119, TRAN = 120, TRANSACTION = 121, 
-    TRUNCATE = 122, UNION = 123, UNIQUE = 124, UNPIVOT = 125, UPDATE = 126, 
-    USE = 127, USER = 128, VALUES = 129, VARYING = 130, WHEN = 131, WHERE = 132, 
-    WHILE = 133, WITH = 134, WITHIN = 135, DOLLAR_PARTITION = 136, ABSOLUTE = 137, 
-    AT_KEYWORD = 138, ACTION = 139, AES_128 = 140, AES_192 = 141, AES_256 = 142, 
-    ALGORITHM = 143, ANSI_NULLS = 144, ANSI_PADDING = 145, ANSI_WARNINGS = 146, 
-    APPLY = 147, ARITHABORT = 148, AUTO = 149, AVG = 150, BIGINT = 151, 
-    BINARY_KEYWORD = 152, BINARY_BASE64 = 153, BINARY_CHECKSUM = 154, CALLER = 155, 
-    CAST = 156, TRY_CAST = 157, CATCH = 158, CHECKSUM = 159, CHECKSUM_AGG = 160, 
-    COMMITTED = 161, CONCAT = 162, CONCAT_NULL_YIELDS_NULL = 163, COUNT = 164, 
-    COUNT_BIG = 165, CUME_DIST = 166, CURSOR_CLOSE_ON_COMMIT = 167, CURSOR_DEFAULT = 168, 
-    DATA = 169, DATEADD = 170, DATEDIFF = 171, DATENAME = 172, DATEPART = 173, 
-    DAYS = 174, DEFAULT_DOUBLE_QUOTE = 175, DELAYED_DURABILITY = 176, DELETED = 177, 
-    DENSE_RANK = 178, DES = 179, DESCRIPTION = 180, DESX = 181, DISABLE = 182, 
-    DYNAMIC = 183, ELEMENTS = 184, EMPTY = 185, ENCRYPTION = 186, EXCLUSIVE = 187, 
-    FAST = 188, FAST_FORWARD = 189, FIRST = 190, FIRST_VALUE = 191, FOLLOWING = 192, 
-    FORCE = 193, FORCED = 194, FORWARD_ONLY = 195, GETDATE = 196, GETUTCDATE = 197, 
-    GLOBAL = 198, GO_BATCH = 199, GO = 200, GROUPING = 201, GROUPING_ID = 202, 
-    HASH = 203, HIGH = 204, HOURS = 205, IDENTITY_VALUE = 206, INCLUDE_NULL_VALUES = 207, 
-    INPUT = 208, INSENSITIVE = 209, INSERTED = 210, INT = 211, ISOLATION = 212, 
-    KEEP = 213, KEEPFIXED = 214, KEYSET = 215, LAG = 216, LAST = 217, LAST_VALUE = 218, 
-    LEAD = 219, LEVEL = 220, LOCAL = 221, LOCATION = 222, LOCK = 223, LOCK_ESCALATION = 224, 
-    LOOP = 225, LOW = 226, MANUAL = 227, MARK = 228, MAX = 229, MAXDOP = 230, 
-    MAXRECURSION = 231, MIN = 232, MIN_ACTIVE_ROWVERSION = 233, MINUTES = 234, 
-    MODE = 235, NEXT = 236, NO = 237, NOCOUNT = 238, NODES = 239, NOEXPAND = 240, 
-    NOWAIT = 241, NTILE = 242, NUMANODE = 243, NUMERIC_ROUNDABORT = 244, 
-    OBJECT = 245, OFFSET = 246, ONLINE = 247, ONLY = 248, OPTIMISTIC = 249, 
-    OPTIMIZE = 250, OUT = 251, OUTPUT = 252, OWNER = 253, PARAMETERIZATION = 254, 
-    PARTITION = 255, PARTITIONS = 256, PERCENT_RANK = 257, PERCENTILE_CONT = 258, 
-    PERCENTILE_DISC = 259, PRECEDING = 260, PRIOR = 261, QUERY = 262, QUOTED_IDENTIFIER = 263, 
-    RANGE = 264, RANK = 265, RC2 = 266, RC4 = 267, RC4_128 = 268, READ_ONLY = 269, 
-    READONLY = 270, REBUILD = 271, RECOMPILE = 272, RELATIVE = 273, REMOTE = 274, 
-    REPEATABLE = 275, ROBUST = 276, ROW = 277, ROW_NUMBER = 278, ROWGUID = 279, 
-    ROWS = 280, SCHEMABINDING = 281, SCROLL = 282, SCROLL_LOCKS = 283, SECONDS = 284, 
-    SELF = 285, SEMI_SENSITIVE = 286, SEQUENCE = 287, SERIALIZABLE = 288, 
-    SETERROR = 289, SHARE = 290, SIMPLE = 291, SIZE = 292, SMALLINT = 293, 
-    SNAPSHOT = 294, SPATIAL_WINDOW_MAX_CELLS = 295, STATIC = 296, STATUSONLY = 297, 
-    STDEV = 298, STDEVP = 299, STRING_AGG = 300, STUFF = 301, SUBSCRIPTION = 302, 
-    SUM = 303, TEXTIMAGE_ON = 304, THROW = 305, TIES = 306, TIME = 307, 
-    TINYINT = 308, TRIPLE_DES = 309, TRIPLE_DES_3KEY = 310, TRY = 311, TWO_DIGIT_YEAR_CUTOFF = 312, 
-    TYPE = 313, TYPE_WARNING = 314, UNBOUNDED = 315, UNCOMMITTED = 316, 
-    UNKNOWN = 317, UOW = 318, USING = 319, VAR = 320, VARBINARY_KEYWORD = 321, 
-    VARP = 322, WAIT = 323, WORK = 324, ZONE = 325, DOLLAR_ACTION = 326, 
-    BLOCKING_HIERARCHY = 327, CACHE = 328, CALLED = 329, CHANGETABLE = 330, 
-    CHANGES = 331, CONNECTION = 332, CONTRACT = 333, CYCLE = 334, DATA_COMPRESSION = 335, 
-    DDL = 336, ERROR = 337, EVENT = 338, FORCESEEK = 339, IIF = 340, INCREMENT = 341, 
-    ISNULL = 342, LOG = 343, MATCHED = 344, MAXVALUE = 345, MINVALUE = 346, 
-    NOTIFICATION = 347, PERSISTED = 348, PREDICATE = 349, RESTART = 350, 
-    RETURNS = 351, SHRINKLOG = 352, SOURCE = 353, SQL = 354, STATE = 355, 
-    START = 356, TARGET = 357, WITHOUT = 358, VARCHAR = 359, NVARCHAR = 360, 
-    SPACE = 361, COMMENT = 362, LINE_COMMENT = 363, DOUBLE_QUOTE_ID = 364, 
-    SINGLE_QUOTE = 365, SQUARE_BRACKET_ID = 366, LOCAL_ID = 367, DECIMAL = 368, 
-    ID = 369, STRING = 370, BINARY = 371, FLOAT = 372, REAL = 373, EQUAL = 374, 
-    GREATER = 375, LESS = 376, EXCLAMATION = 377, PLUS_ASSIGN = 378, MINUS_ASSIGN = 379, 
-    MULT_ASSIGN = 380, DIV_ASSIGN = 381, MOD_ASSIGN = 382, AND_ASSIGN = 383, 
-    XOR_ASSIGN = 384, OR_ASSIGN = 385, DOUBLE_BAR = 386, DOT = 387, UNDERLINE = 388, 
-    AT = 389, SHARP = 390, DOLLAR = 391, LR_BRACKET = 392, RR_BRACKET = 393, 
-    COMMA = 394, SEMI = 395, COLON = 396, DOUBLE_COLON = 397, STAR = 398, 
-    DIVIDE = 399, MODULE = 400, PLUS = 401, MINUS = 402, BIT_NOT = 403, 
-    BIT_OR = 404, BIT_AND = 405, BIT_XOR = 406, ANSI_DEFAULTS = 407, ANSI_NULL_DFLT_OFF = 408, 
-    ANSI_NULL_DFLT_ON = 409, ARITHIGNORE = 410, FMTONLY = 411, FORCEPLAN = 412, 
-    IMPLICIT_TRANSACTIONS = 413, NOEXEC = 414, PARSEONLY = 415, REMOTE_PROC_TRANSACTIONS = 416, 
-    SHOWPLAN_ALL = 417, SHOWPLAN_TEXT = 418, SHOWPLAN_XML = 419, XACT_ABORT = 420, 
-    VERSION = 421, NTEXT = 422, TEXT = 423, NCHAR = 424, CHAR = 425
+    ABS = 1, ASCII = 2, CEILING = 3, CHAR = 4, CHARINDEX = 5, DATALENGTH = 6, 
+    DAY = 7, FLOOR = 8, ISDATE = 9, ISNUMERIC = 10, LEN = 11, LOWER = 12, 
+    LTRIM = 13, MONTH = 14, NCHAR = 15, PATINDEX = 16, RAND = 17, REPLACE = 18, 
+    ROUND = 19, RTRIM = 20, SIGN = 21, SPACE_fn = 22, STR = 23, SUBSTRING = 24, 
+    UPPER = 25, USER_NAME = 26, YEAR = 27, TEXT = 28, NTEXT = 29, ADD = 30, 
+    ALL = 31, ALTER = 32, AND = 33, ANY = 34, AS = 35, ASC = 36, AUTHORIZATION = 37, 
+    BACKSLASH = 38, BEGIN = 39, BETWEEN = 40, BREAK = 41, BY = 42, CASE = 43, 
+    CHECK = 44, CLOSE = 45, COALESCE = 46, COLLATE = 47, COLUMN = 48, COMMIT = 49, 
+    COMPUTE = 50, CONSTRAINT = 51, CONTINUE = 52, CONVERT = 53, CREATE = 54, 
+    CROSS = 55, CURRENT = 56, CURRENT_DATE = 57, CURRENT_TIME = 58, CURRENT_TIMESTAMP = 59, 
+    CURRENT_USER = 60, CURSOR = 61, DATABASE = 62, DBCC = 63, DEALLOCATE = 64, 
+    DECLARE = 65, DEFAULT = 66, DELETE = 67, DESC = 68, DISTINCT = 69, DISTRIBUTED = 70, 
+    DOUBLE = 71, DOUBLE_BACK_SLASH = 72, DOUBLE_FORWARD_SLASH = 73, DROP = 74, 
+    ELSE = 75, END = 76, ESCAPE = 77, EXCEPT = 78, EXECUTE = 79, EXISTS = 80, 
+    FETCH = 81, FOR = 82, FOREIGN = 83, FROM = 84, FULL = 85, FUNCTION = 86, 
+    GOTO = 87, GROUP = 88, HAVING = 89, HOLDLOCK = 90, IDENTITY = 91, IDENTITY_INSERT = 92, 
+    IF = 93, IN = 94, INDEX = 95, INNER = 96, INSERT = 97, INTERSECT = 98, 
+    INTO = 99, IS = 100, JOIN = 101, KEY = 102, KILL = 103, LEFT = 104, 
+    LIKE = 105, MERGE = 106, NOT = 107, NULL_ = 108, NULLIF = 109, OF = 110, 
+    OFF = 111, ON = 112, OPEN = 113, OPTION = 114, OR = 115, ORDER = 116, 
+    OUTER = 117, OVER = 118, PERCENT = 119, PIVOT = 120, PLAN = 121, PRECISION = 122, 
+    PRIMARY = 123, PRINT = 124, PROC = 125, PROCEDURE = 126, RAISERROR = 127, 
+    READ = 128, REFERENCES = 129, REPLICATION = 130, RETURN = 131, REVERT = 132, 
+    RIGHT = 133, ROLLBACK = 134, ROWCOUNT = 135, ROWGUIDCOL = 136, SAVE = 137, 
+    SCHEMA = 138, SELECT = 139, SESSION_USER = 140, SET = 141, SHUTDOWN = 142, 
+    SOME = 143, SYSTEM_USER = 144, TABLE = 145, THEN = 146, TO = 147, TOP = 148, 
+    TRAN = 149, TRANSACTION = 150, TRUNCATE = 151, UNION = 152, UNIQUE = 153, 
+    UNPIVOT = 154, UPDATE = 155, USE = 156, USER = 157, VALUES = 158, VARYING = 159, 
+    WHEN = 160, WHERE = 161, WHILE = 162, WITH = 163, WITHIN = 164, DOLLAR_PARTITION = 165, 
+    ABSOLUTE = 166, AT_KEYWORD = 167, ACTION = 168, AES_128 = 169, AES_192 = 170, 
+    AES_256 = 171, ALGORITHM = 172, ANSI_NULLS = 173, ANSI_PADDING = 174, 
+    ANSI_WARNINGS = 175, APPLY = 176, ARITHABORT = 177, AUTO = 178, AVG = 179, 
+    BIGINT = 180, BINARY_KEYWORD = 181, BINARY_BASE64 = 182, BINARY_CHECKSUM = 183, 
+    CALLER = 184, CAST = 185, TRY_CAST = 186, CATCH = 187, CHECKSUM = 188, 
+    CHECKSUM_AGG = 189, COMMITTED = 190, CONCAT = 191, CONCAT_NULL_YIELDS_NULL = 192, 
+    COUNT = 193, COUNT_BIG = 194, CUME_DIST = 195, CURSOR_CLOSE_ON_COMMIT = 196, 
+    CURSOR_DEFAULT = 197, DATA = 198, DATEADD = 199, DATEDIFF = 200, DATENAME = 201, 
+    DATEPART = 202, DAYS = 203, DEFAULT_DOUBLE_QUOTE = 204, DELAYED_DURABILITY = 205, 
+    DELETED = 206, DENSE_RANK = 207, DES = 208, DESCRIPTION = 209, DESX = 210, 
+    DISABLE = 211, DYNAMIC = 212, ELEMENTS = 213, EMPTY = 214, ENCRYPTION = 215, 
+    EXCLUSIVE = 216, FAST = 217, FAST_FORWARD = 218, FIRST = 219, FIRST_VALUE = 220, 
+    FOLLOWING = 221, FORCE = 222, FORCED = 223, FORWARD_ONLY = 224, GETDATE = 225, 
+    GETUTCDATE = 226, GLOBAL = 227, GO_BATCH = 228, GO = 229, GROUPING = 230, 
+    GROUPING_ID = 231, HASH = 232, HIGH = 233, HOURS = 234, IDENTITY_VALUE = 235, 
+    INCLUDE_NULL_VALUES = 236, INPUT = 237, INSENSITIVE = 238, INSERTED = 239, 
+    INT = 240, ISOLATION = 241, KEEP = 242, KEEPFIXED = 243, KEYSET = 244, 
+    LAG = 245, LAST = 246, LAST_VALUE = 247, LEAD = 248, LEVEL = 249, LOCAL = 250, 
+    LOCATION = 251, LOCK = 252, LOCK_ESCALATION = 253, LOOP = 254, LOW = 255, 
+    MANUAL = 256, MARK = 257, MAX = 258, MAXDOP = 259, MAXRECURSION = 260, 
+    MIN = 261, MIN_ACTIVE_ROWVERSION = 262, MINUTES = 263, MODE = 264, NEXT = 265, 
+    NO = 266, NOCOUNT = 267, NODES = 268, NOEXPAND = 269, NOWAIT = 270, 
+    NTILE = 271, NUMANODE = 272, NUMERIC_ROUNDABORT = 273, OBJECT = 274, 
+    OFFSET = 275, ONLINE = 276, ONLY = 277, OPTIMISTIC = 278, OPTIMIZE = 279, 
+    OUT = 280, OUTPUT = 281, OWNER = 282, PARAMETERIZATION = 283, PARTITION = 284, 
+    PARTITIONS = 285, PERCENT_RANK = 286, PERCENTILE_CONT = 287, PERCENTILE_DISC = 288, 
+    PRECEDING = 289, PRIOR = 290, QUERY = 291, QUOTED_IDENTIFIER = 292, 
+    RANGE = 293, RANK = 294, RC2 = 295, RC4 = 296, RC4_128 = 297, READ_ONLY = 298, 
+    READONLY = 299, REBUILD = 300, RECOMPILE = 301, RELATIVE = 302, REMOTE = 303, 
+    REPEATABLE = 304, ROBUST = 305, ROW = 306, ROW_NUMBER = 307, ROWGUID = 308, 
+    ROWS = 309, SCHEMABINDING = 310, SCROLL = 311, SCROLL_LOCKS = 312, SECONDS = 313, 
+    SELF = 314, SEMI_SENSITIVE = 315, SEQUENCE = 316, SERIALIZABLE = 317, 
+    SETERROR = 318, SHARE = 319, SIMPLE = 320, SIZE = 321, SMALLINT = 322, 
+    SNAPSHOT = 323, SPATIAL_WINDOW_MAX_CELLS = 324, STATIC = 325, STATUSONLY = 326, 
+    STDEV = 327, STDEVP = 328, STRING_AGG = 329, STUFF = 330, SUBSCRIPTION = 331, 
+    SUM = 332, TEXTIMAGE_ON = 333, THROW = 334, TIES = 335, TIME = 336, 
+    TINYINT = 337, TRIPLE_DES = 338, TRIPLE_DES_3KEY = 339, TRY = 340, TWO_DIGIT_YEAR_CUTOFF = 341, 
+    TYPE = 342, TYPE_WARNING = 343, UNBOUNDED = 344, UNCOMMITTED = 345, 
+    UNKNOWN = 346, UOW = 347, USING = 348, VAR = 349, VARBINARY_KEYWORD = 350, 
+    VARP = 351, WAIT = 352, WORK = 353, ZONE = 354, DOLLAR_ACTION = 355, 
+    BLOCKING_HIERARCHY = 356, CACHE = 357, CALLED = 358, CHANGETABLE = 359, 
+    CHANGES = 360, CONNECTION = 361, CONTRACT = 362, CYCLE = 363, DATA_COMPRESSION = 364, 
+    DDL = 365, ERROR = 366, EVENT = 367, FORCESEEK = 368, IIF = 369, INCREMENT = 370, 
+    ISNULL = 371, LOG = 372, MATCHED = 373, MAXVALUE = 374, MINVALUE = 375, 
+    NOTIFICATION = 376, PERSISTED = 377, PREDICATE = 378, RESTART = 379, 
+    RETURNS = 380, SHRINKLOG = 381, SOURCE = 382, SQL = 383, STATE = 384, 
+    START = 385, TARGET = 386, WITHOUT = 387, VARCHAR = 388, NVARCHAR = 389, 
+    SPACE = 390, COMMENT = 391, LINE_COMMENT = 392, DOUBLE_QUOTE_ID = 393, 
+    SINGLE_QUOTE = 394, SQUARE_BRACKET_ID = 395, LOCAL_ID = 396, DECIMAL = 397, 
+    ID = 398, STRING = 399, BINARY = 400, FLOAT = 401, REAL = 402, EQUAL = 403, 
+    GREATER = 404, LESS = 405, EXCLAMATION = 406, PLUS_ASSIGN = 407, MINUS_ASSIGN = 408, 
+    MULT_ASSIGN = 409, DIV_ASSIGN = 410, MOD_ASSIGN = 411, AND_ASSIGN = 412, 
+    XOR_ASSIGN = 413, OR_ASSIGN = 414, DOUBLE_BAR = 415, DOT = 416, UNDERLINE = 417, 
+    AT = 418, SHARP = 419, DOLLAR = 420, LR_BRACKET = 421, RR_BRACKET = 422, 
+    COMMA = 423, SEMI = 424, COLON = 425, DOUBLE_COLON = 426, STAR = 427, 
+    DIVIDE = 428, MODULE = 429, PLUS = 430, MINUS = 431, BIT_NOT = 432, 
+    BIT_OR = 433, BIT_AND = 434, BIT_XOR = 435, ANSI_DEFAULTS = 436, ANSI_NULL_DFLT_OFF = 437, 
+    ANSI_NULL_DFLT_ON = 438, ARITHIGNORE = 439, FMTONLY = 440, FORCEPLAN = 441, 
+    IMPLICIT_TRANSACTIONS = 442, NOEXEC = 443, PARSEONLY = 444, REMOTE_PROC_TRANSACTIONS = 445, 
+    SHOWPLAN_ALL = 446, SHOWPLAN_TEXT = 447, SHOWPLAN_XML = 448, XACT_ABORT = 449, 
+    VERSION = 450
   };
 
   enum {
@@ -174,7 +180,7 @@ public:
     RuleAssignment_operator = 213
   };
 
-  TSqlParser(antlr4::TokenStream *input);
+  explicit TSqlParser(antlr4::TokenStream *input);
   ~TSqlParser();
 
   virtual std::string getGrammarFileName() const override;
@@ -688,8 +694,8 @@ public:
 
   class  Try_catch_statementContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Sql_clausesContext *try_clauses = nullptr;;
-    TSqlParser::Sql_clausesContext *catch_clauses = nullptr;;
+    TSqlParser::Sql_clausesContext *try_clauses = nullptr;
+    TSqlParser::Sql_clausesContext *catch_clauses = nullptr;
     Try_catch_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> BEGIN();
@@ -752,11 +758,11 @@ public:
 
   class  Raiseerror_statementContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *msg = nullptr;;
-    TSqlParser::Constant_LOCAL_IDContext *severity = nullptr;;
-    TSqlParser::Constant_LOCAL_IDContext *state = nullptr;;
-    antlr4::Token *formatstring = nullptr;;
-    antlr4::Token *argument = nullptr;;
+    antlr4::Token *msg = nullptr;
+    TSqlParser::Constant_LOCAL_IDContext *severity = nullptr;
+    TSqlParser::Constant_LOCAL_IDContext *state = nullptr;
+    antlr4::Token *formatstring = nullptr;
+    antlr4::Token *argument = nullptr;
     Raiseerror_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *RAISERROR();
@@ -906,7 +912,7 @@ public:
 
   class  Lock_tableContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *seconds = nullptr;;
+    antlr4::Token *seconds = nullptr;
     Lock_tableContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LOCK();
@@ -957,9 +963,9 @@ public:
 
   class  Alter_sequenceContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *schema_name = nullptr;;
-    TSqlParser::Id_Context *sequence_name = nullptr;;
-    antlr4::Token *sequnce_increment = nullptr;;
+    TSqlParser::Id_Context *schema_name = nullptr;
+    TSqlParser::Id_Context *sequence_name = nullptr;
+    antlr4::Token *sequnce_increment = nullptr;
     Alter_sequenceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ALTER();
@@ -989,8 +995,8 @@ public:
 
   class  Create_sequenceContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *schema_name = nullptr;;
-    TSqlParser::Id_Context *sequence_name = nullptr;;
+    TSqlParser::Id_Context *schema_name = nullptr;
+    TSqlParser::Id_Context *sequence_name = nullptr;
     Create_sequenceContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CREATE();
@@ -1125,7 +1131,7 @@ public:
 
   class  Delete_statementContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *cursor_var = nullptr;;
+    antlr4::Token *cursor_var = nullptr;
     Delete_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DELETE();
@@ -1161,7 +1167,7 @@ public:
 
   class  Delete_statement_fromContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *table_var = nullptr;;
+    antlr4::Token *table_var = nullptr;
     Delete_statement_fromContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Ddl_objectContext *ddl_object();
@@ -1265,7 +1271,7 @@ public:
 
   class  Update_statementContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *cursor_var = nullptr;;
+    antlr4::Token *cursor_var = nullptr;
     Update_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *UPDATE();
@@ -1342,8 +1348,8 @@ public:
 
   class  Create_or_alter_procedureContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *proc = nullptr;;
-    TSqlParser::Func_proc_name_schemaContext *procName = nullptr;;
+    antlr4::Token *proc = nullptr;
+    TSqlParser::Func_proc_name_schemaContext *procName = nullptr;
     Create_or_alter_procedureContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *AS();
@@ -1378,7 +1384,7 @@ public:
 
   class  Create_or_alter_functionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Func_proc_name_schemaContext *funcName = nullptr;;
+    TSqlParser::Func_proc_name_schemaContext *funcName = nullptr;
     Create_or_alter_functionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *FUNCTION();
@@ -1458,7 +1464,7 @@ public:
 
   class  Func_body_returns_scalarContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::ExpressionContext *ret = nullptr;;
+    TSqlParser::ExpressionContext *ret = nullptr;
     Func_body_returns_scalarContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *RETURNS();
@@ -1486,8 +1492,8 @@ public:
 
   class  Procedure_paramContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *type_schema = nullptr;;
-    TSqlParser::Default_valueContext *default_val = nullptr;;
+    TSqlParser::Id_Context *type_schema = nullptr;
+    TSqlParser::Default_valueContext *default_val = nullptr;
     Procedure_paramContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LOCAL_ID();
@@ -1596,9 +1602,9 @@ public:
 
   class  Alter_tableContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *constraint = nullptr;;
-    TSqlParser::Column_name_listContext *fk = nullptr;;
-    TSqlParser::Column_name_listContext *pk = nullptr;;
+    TSqlParser::Id_Context *constraint = nullptr;
+    TSqlParser::Column_name_listContext *fk = nullptr;
+    TSqlParser::Column_name_listContext *pk = nullptr;
     Alter_tableContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> ALTER();
@@ -1676,7 +1682,7 @@ public:
 
   class  Drop_procedureContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *proc = nullptr;;
+    antlr4::Token *proc = nullptr;
     Drop_procedureContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DROP();
@@ -1738,8 +1744,8 @@ public:
 
   class  Declare_statementContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Declare_localContext *declare_localContext = nullptr;;
-    std::vector<Declare_localContext *> loc;;
+    TSqlParser::Declare_localContext *declare_localContext = nullptr;
+    std::vector<Declare_localContext *> loc;
     Declare_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DECLARE();
@@ -1797,7 +1803,7 @@ public:
 
   class  Kill_processContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *session_id = nullptr;;
+    antlr4::Token *session_id = nullptr;
     Kill_processContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *UOW();
@@ -1815,7 +1821,7 @@ public:
 
   class  Kill_query_notificationContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *subscription_id = nullptr;;
+    antlr4::Token *subscription_id = nullptr;
     Kill_query_notificationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *QUERY();
@@ -1866,7 +1872,7 @@ public:
 
   class  Execute_bodyContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *return_status = nullptr;;
+    antlr4::Token *return_status = nullptr;
     Execute_bodyContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Func_proc_name_server_database_schemaContext *func_proc_name_server_database_schema();
@@ -1908,8 +1914,8 @@ public:
 
   class  Execute_statement_arg_namedContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *name = nullptr;;
-    TSqlParser::Execute_parameterContext *value = nullptr;;
+    antlr4::Token *name = nullptr;
+    TSqlParser::Execute_parameterContext *value = nullptr;
     Execute_statement_arg_namedContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *EQUAL();
@@ -1925,7 +1931,7 @@ public:
 
   class  Execute_statement_arg_unnamedContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Execute_parameterContext *value = nullptr;;
+    TSqlParser::Execute_parameterContext *value = nullptr;
     Execute_statement_arg_unnamedContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Execute_parameterContext *execute_parameter();
@@ -1994,7 +2000,7 @@ public:
 
   class  Set_statementContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *member_name = nullptr;;
+    TSqlParser::Id_Context *member_name = nullptr;
     Set_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *SET();
@@ -2056,7 +2062,7 @@ public:
 
   class  Go_batch_statementContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *count = nullptr;;
+    antlr4::Token *count = nullptr;
     Go_batch_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *GO_BATCH();
@@ -2071,7 +2077,7 @@ public:
 
   class  Go_statementContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *count = nullptr;;
+    antlr4::Token *count = nullptr;
     Go_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *GO();
@@ -2086,7 +2092,7 @@ public:
 
   class  Use_statementContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *database = nullptr;;
+    TSqlParser::Id_Context *database = nullptr;
     Use_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *USE();
@@ -2139,7 +2145,7 @@ public:
 
   class  Dbcc_clauseContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Dbcc_commandContext *name = nullptr;;
+    TSqlParser::Dbcc_commandContext *name = nullptr;
     Dbcc_clauseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DBCC();
@@ -2189,7 +2195,7 @@ public:
 
   class  Execute_clauseContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *clause = nullptr;;
+    antlr4::Token *clause = nullptr;
     Execute_clauseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *EXECUTE();
@@ -2271,9 +2277,9 @@ public:
 
   class  Column_definitionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *constraint = nullptr;;
-    antlr4::Token *seed = nullptr;;
-    antlr4::Token *increment = nullptr;;
+    TSqlParser::Id_Context *constraint = nullptr;
+    antlr4::Token *seed = nullptr;
+    antlr4::Token *increment = nullptr;
     Column_definitionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Id_Context *> id_();
@@ -2309,8 +2315,8 @@ public:
 
   class  Column_constraintContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *constraint = nullptr;;
-    TSqlParser::Column_name_listContext *pk = nullptr;;
+    TSqlParser::Id_Context *constraint = nullptr;
+    TSqlParser::Column_name_listContext *pk = nullptr;
     Column_constraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CHECK();
@@ -2341,9 +2347,9 @@ public:
 
   class  Table_constraintContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *constraint = nullptr;;
-    TSqlParser::Column_name_listContext *fk = nullptr;;
-    TSqlParser::Column_name_listContext *pk = nullptr;;
+    TSqlParser::Id_Context *constraint = nullptr;
+    TSqlParser::Column_name_listContext *fk = nullptr;
+    TSqlParser::Column_name_listContext *pk = nullptr;
     Table_constraintContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> LR_BRACKET();
@@ -2592,7 +2598,7 @@ public:
 
   class  ExpressionContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *op = nullptr;;
+    antlr4::Token *op = nullptr;
     ExpressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Primitive_expressionContext *primitive_expression();
@@ -2659,8 +2665,8 @@ public:
 
   class  Case_expressionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::ExpressionContext *caseExpr = nullptr;;
-    TSqlParser::ExpressionContext *elseExpr = nullptr;;
+    TSqlParser::ExpressionContext *caseExpr = nullptr;
+    TSqlParser::ExpressionContext *elseExpr = nullptr;
     Case_expressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CASE();
@@ -2682,7 +2688,7 @@ public:
 
   class  Unary_operator_expressionContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *op = nullptr;;
+    antlr4::Token *op = nullptr;
     Unary_operator_expressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *BIT_NOT();
@@ -2747,8 +2753,8 @@ public:
 
   class  With_expressionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Common_table_expressionContext *common_table_expressionContext = nullptr;;
-    std::vector<Common_table_expressionContext *> ctes;;
+    TSqlParser::Common_table_expressionContext *common_table_expressionContext = nullptr;
+    std::vector<Common_table_expressionContext *> ctes;
     With_expressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *WITH();
@@ -2766,9 +2772,9 @@ public:
 
   class  Common_table_expressionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *expression_name = nullptr;;
-    TSqlParser::Column_name_listContext *columns = nullptr;;
-    TSqlParser::Select_statementContext *cte_query = nullptr;;
+    TSqlParser::Id_Context *expression_name = nullptr;
+    TSqlParser::Column_name_listContext *columns = nullptr;
+    TSqlParser::Select_statementContext *cte_query = nullptr;
     Common_table_expressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *AS();
@@ -2789,8 +2795,8 @@ public:
 
   class  Update_elemContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *udt_column_name = nullptr;;
-    TSqlParser::Id_Context *method_name = nullptr;;
+    TSqlParser::Id_Context *udt_column_name = nullptr;
+    TSqlParser::Id_Context *method_name = nullptr;
     Update_elemContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LOCAL_ID();
@@ -2815,8 +2821,8 @@ public:
 
   class  Update_elem_mergeContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *udt_column_name = nullptr;;
-    TSqlParser::Id_Context *method_name = nullptr;;
+    TSqlParser::Id_Context *udt_column_name = nullptr;
+    TSqlParser::Id_Context *method_name = nullptr;
     Update_elem_mergeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     ExpressionContext *expression();
@@ -2893,8 +2899,8 @@ public:
 
   class  Query_expressionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Sql_unionContext *sql_unionContext = nullptr;;
-    std::vector<Sql_unionContext *> unions;;
+    TSqlParser::Sql_unionContext *sql_unionContext = nullptr;
+    std::vector<Sql_unionContext *> unions;
     Query_expressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Query_specificationContext *query_specification();
@@ -2914,8 +2920,8 @@ public:
 
   class  Sql_unionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Query_specificationContext *spec = nullptr;;
-    TSqlParser::Query_expressionContext *op = nullptr;;
+    TSqlParser::Query_specificationContext *spec = nullptr;
+    TSqlParser::Query_expressionContext *op = nullptr;
     Sql_unionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *UNION();
@@ -2936,16 +2942,16 @@ public:
 
   class  Query_specificationContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *allOrDistinct = nullptr;;
-    TSqlParser::Top_clauseContext *top = nullptr;;
-    TSqlParser::Select_listContext *columns = nullptr;;
-    TSqlParser::Table_nameContext *into = nullptr;;
-    TSqlParser::Table_sourcesContext *from = nullptr;;
-    TSqlParser::Search_conditionContext *where = nullptr;;
-    antlr4::Token *groupByAll = nullptr;;
-    TSqlParser::Group_by_itemContext *group_by_itemContext = nullptr;;
-    std::vector<Group_by_itemContext *> groupBys;;
-    TSqlParser::Search_conditionContext *having = nullptr;;
+    antlr4::Token *allOrDistinct = nullptr;
+    TSqlParser::Top_clauseContext *top = nullptr;
+    TSqlParser::Select_listContext *columns = nullptr;
+    TSqlParser::Table_nameContext *into = nullptr;
+    TSqlParser::Table_sourcesContext *from = nullptr;
+    TSqlParser::Search_conditionContext *where = nullptr;
+    antlr4::Token *groupByAll = nullptr;
+    TSqlParser::Group_by_itemContext *group_by_itemContext = nullptr;
+    std::vector<Group_by_itemContext *> groupBys;
+    TSqlParser::Search_conditionContext *having = nullptr;
     Query_specificationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *SELECT();
@@ -2995,8 +3001,8 @@ public:
 
   class  Top_percentContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *percent_constant = nullptr;;
-    TSqlParser::ExpressionContext *topper_expression = nullptr;;
+    antlr4::Token *percent_constant = nullptr;
+    TSqlParser::ExpressionContext *topper_expression = nullptr;
     Top_percentContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *PERCENT();
@@ -3016,8 +3022,8 @@ public:
 
   class  Top_countContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *count_constant = nullptr;;
-    TSqlParser::ExpressionContext *topcount_expression = nullptr;;
+    antlr4::Token *count_constant = nullptr;
+    TSqlParser::ExpressionContext *topcount_expression = nullptr;
     Top_countContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DECIMAL();
@@ -3034,13 +3040,13 @@ public:
 
   class  Order_by_clauseContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Order_by_expressionContext *order_by_expressionContext = nullptr;;
-    std::vector<Order_by_expressionContext *> order_bys;;
-    TSqlParser::ExpressionContext *offset_exp = nullptr;;
-    antlr4::Token *offset_rows = nullptr;;
-    antlr4::Token *fetch_offset = nullptr;;
-    TSqlParser::ExpressionContext *fetch_exp = nullptr;;
-    antlr4::Token *fetch_rows = nullptr;;
+    TSqlParser::Order_by_expressionContext *order_by_expressionContext = nullptr;
+    std::vector<Order_by_expressionContext *> order_bys;
+    TSqlParser::ExpressionContext *offset_exp = nullptr;
+    antlr4::Token *offset_rows = nullptr;
+    antlr4::Token *fetch_offset = nullptr;
+    TSqlParser::ExpressionContext *fetch_exp = nullptr;
+    antlr4::Token *fetch_rows = nullptr;
     Order_by_clauseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *ORDER();
@@ -3070,9 +3076,9 @@ public:
 
   class  Order_by_expressionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::ExpressionContext *order_by = nullptr;;
-    antlr4::Token *ascending = nullptr;;
-    antlr4::Token *descending = nullptr;;
+    TSqlParser::ExpressionContext *order_by = nullptr;
+    antlr4::Token *ascending = nullptr;
+    antlr4::Token *descending = nullptr;
     Order_by_expressionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     ExpressionContext *expression();
@@ -3101,8 +3107,8 @@ public:
 
   class  Option_clauseContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::OptionContext *optionContext = nullptr;;
-    std::vector<OptionContext *> options;;
+    TSqlParser::OptionContext *optionContext = nullptr;
+    std::vector<OptionContext *> options;
     Option_clauseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *OPTION();
@@ -3122,9 +3128,9 @@ public:
 
   class  OptionContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *number_rows = nullptr;;
-    antlr4::Token *number_of_processors = nullptr;;
-    antlr4::Token *number_recursion = nullptr;;
+    antlr4::Token *number_rows = nullptr;
+    antlr4::Token *number_of_processors = nullptr;
+    antlr4::Token *number_recursion = nullptr;
     OptionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *FAST();
@@ -3186,8 +3192,8 @@ public:
 
   class  Select_listContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Select_list_elemContext *select_list_elemContext = nullptr;;
-    std::vector<Select_list_elemContext *> selectElement;;
+    TSqlParser::Select_list_elemContext *select_list_elemContext = nullptr;
+    std::vector<Select_list_elemContext *> selectElement;
     Select_listContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Select_list_elemContext *> select_list_elem();
@@ -3204,8 +3210,8 @@ public:
 
   class  Udt_method_argumentsContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Execute_var_stringContext *execute_var_stringContext = nullptr;;
-    std::vector<Execute_var_stringContext *> argument;;
+    TSqlParser::Execute_var_stringContext *execute_var_stringContext = nullptr;
+    std::vector<Execute_var_stringContext *> argument;
     Udt_method_argumentsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LR_BRACKET();
@@ -3259,9 +3265,9 @@ public:
 
   class  Udt_elemContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *udt_column_name = nullptr;;
-    TSqlParser::Id_Context *non_static_attr = nullptr;;
-    TSqlParser::Id_Context *static_attr = nullptr;;
+    TSqlParser::Id_Context *udt_column_name = nullptr;
+    TSqlParser::Id_Context *non_static_attr = nullptr;
+    TSqlParser::Id_Context *static_attr = nullptr;
     Udt_elemContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DOT();
@@ -3280,10 +3286,10 @@ public:
 
   class  Expression_elemContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Column_aliasContext *leftAlias = nullptr;;
-    antlr4::Token *eq = nullptr;;
-    TSqlParser::ExpressionContext *leftAssignment = nullptr;;
-    TSqlParser::ExpressionContext *expressionAs = nullptr;;
+    TSqlParser::Column_aliasContext *leftAlias = nullptr;
+    antlr4::Token *eq = nullptr;
+    TSqlParser::ExpressionContext *leftAssignment = nullptr;
+    TSqlParser::ExpressionContext *expressionAs = nullptr;
     Expression_elemContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Column_aliasContext *column_alias();
@@ -3320,8 +3326,8 @@ public:
 
   class  Table_sourcesContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Table_sourceContext *table_sourceContext = nullptr;;
-    std::vector<Table_sourceContext *> source;;
+    TSqlParser::Table_sourceContext *table_sourceContext = nullptr;
+    std::vector<Table_sourceContext *> source;
     Table_sourcesContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Table_sourceContext *> table_source();
@@ -3354,8 +3360,8 @@ public:
 
   class  Table_source_item_joinedContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Join_partContext *join_partContext = nullptr;;
-    std::vector<Join_partContext *> joins;;
+    TSqlParser::Join_partContext *join_partContext = nullptr;
+    std::vector<Join_partContext *> joins;
     Table_source_item_joinedContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Table_source_itemContext *table_source_item();
@@ -3374,10 +3380,10 @@ public:
 
   class  Table_source_itemContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *loc_id = nullptr;;
-    antlr4::Token *loc_id_call = nullptr;;
-    TSqlParser::Function_callContext *loc_fcall = nullptr;;
-    TSqlParser::Function_callContext *oldstyle_fcall = nullptr;;
+    antlr4::Token *loc_id = nullptr;
+    antlr4::Token *loc_id_call = nullptr;
+    TSqlParser::Function_callContext *loc_fcall = nullptr;
+    TSqlParser::Function_callContext *oldstyle_fcall = nullptr;
     Table_source_itemContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Table_name_with_hintContext *table_name_with_hint();
@@ -3403,8 +3409,8 @@ public:
 
   class  Schema_declarationContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Column_declarationContext *column_declarationContext = nullptr;;
-    std::vector<Column_declarationContext *> xml_col;;
+    TSqlParser::Column_declarationContext *column_declarationContext = nullptr;
+    std::vector<Column_declarationContext *> xml_col;
     Schema_declarationContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Column_declarationContext *> column_declaration();
@@ -3450,8 +3456,8 @@ public:
 
   class  Change_table_changesContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Table_nameContext *changetable = nullptr;;
-    antlr4::Token *changesid = nullptr;;
+    TSqlParser::Table_nameContext *changetable = nullptr;
+    antlr4::Token *changesid = nullptr;
     Change_table_changesContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CHANGETABLE();
@@ -3473,9 +3479,9 @@ public:
 
   class  Change_table_versionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Table_nameContext *versiontable = nullptr;;
-    TSqlParser::Full_column_name_listContext *pk_columns = nullptr;;
-    TSqlParser::Select_listContext *pk_values = nullptr;;
+    TSqlParser::Table_nameContext *versiontable = nullptr;
+    TSqlParser::Full_column_name_listContext *pk_columns = nullptr;
+    TSqlParser::Select_listContext *pk_values = nullptr;
     Change_table_versionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *CHANGETABLE();
@@ -3514,12 +3520,12 @@ public:
 
   class  Join_onContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *inner = nullptr;;
-    antlr4::Token *join_type = nullptr;;
-    antlr4::Token *outer = nullptr;;
-    antlr4::Token *join_hint = nullptr;;
-    TSqlParser::Table_sourceContext *source = nullptr;;
-    TSqlParser::Search_conditionContext *cond = nullptr;;
+    antlr4::Token *inner = nullptr;
+    antlr4::Token *join_type = nullptr;
+    antlr4::Token *outer = nullptr;
+    antlr4::Token *join_hint = nullptr;
+    TSqlParser::Table_sourceContext *source = nullptr;
+    TSqlParser::Search_conditionContext *cond = nullptr;
     Join_onContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *JOIN();
@@ -3560,8 +3566,8 @@ public:
 
   class  Apply_Context : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *apply_style = nullptr;;
-    TSqlParser::Table_sourceContext *source = nullptr;;
+    antlr4::Token *apply_style = nullptr;
+    TSqlParser::Table_sourceContext *source = nullptr;
     Apply_Context(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *APPLY();
@@ -3627,7 +3633,7 @@ public:
 
   class  Unpivot_clauseContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::ExpressionContext *unpivot_exp = nullptr;;
+    TSqlParser::ExpressionContext *unpivot_exp = nullptr;
     Unpivot_clauseContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> LR_BRACKET();
@@ -3649,8 +3655,8 @@ public:
 
   class  Full_column_name_listContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Full_column_nameContext *full_column_nameContext = nullptr;;
-    std::vector<Full_column_nameContext *> column;;
+    TSqlParser::Full_column_nameContext *full_column_nameContext = nullptr;
+    std::vector<Full_column_nameContext *> column;
     Full_column_name_listContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Full_column_nameContext *> full_column_name();
@@ -3681,7 +3687,7 @@ public:
 
   class  Bulk_optionContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *bulk_option_value = nullptr;;
+    antlr4::Token *bulk_option_value = nullptr;
     Bulk_optionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     Id_Context *id_();
@@ -3786,8 +3792,8 @@ public:
 
   class  Partition_functionContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *database = nullptr;;
-    TSqlParser::Id_Context *func_name = nullptr;;
+    TSqlParser::Id_Context *database = nullptr;
+    TSqlParser::Id_Context *func_name = nullptr;
     Partition_functionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DOLLAR_PARTITION();
@@ -4165,9 +4171,9 @@ public:
 
   class  Nodes_methodContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *loc_id = nullptr;;
-    TSqlParser::Id_Context *value_id = nullptr;;
-    antlr4::Token *xquery = nullptr;;
+    antlr4::Token *loc_id = nullptr;
+    TSqlParser::Id_Context *value_id = nullptr;
+    antlr4::Token *xquery = nullptr;
     Nodes_methodContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *DOT();
@@ -4264,8 +4270,8 @@ public:
 
   class  With_table_hintsContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Table_hintContext *table_hintContext = nullptr;;
-    std::vector<Table_hintContext *> hint;;
+    TSqlParser::Table_hintContext *table_hintContext = nullptr;
+    std::vector<Table_hintContext *> hint;
     With_table_hintsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LR_BRACKET();
@@ -4285,8 +4291,8 @@ public:
 
   class  Insert_with_table_hintsContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Table_hintContext *table_hintContext = nullptr;;
-    std::vector<Table_hintContext *> hint;;
+    TSqlParser::Table_hintContext *table_hintContext = nullptr;
+    std::vector<Table_hintContext *> hint;
     Insert_with_table_hintsContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *WITH();
@@ -4351,8 +4357,8 @@ public:
 
   class  Column_alias_listContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Column_aliasContext *column_aliasContext = nullptr;;
-    std::vector<Column_aliasContext *> alias;;
+    TSqlParser::Column_aliasContext *column_aliasContext = nullptr;
+    std::vector<Column_aliasContext *> alias;
     Column_alias_listContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LR_BRACKET();
@@ -4385,8 +4391,8 @@ public:
 
   class  Table_value_constructorContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Expression_listContext *expression_listContext = nullptr;;
-    std::vector<Expression_listContext *> exps;;
+    TSqlParser::Expression_listContext *expression_listContext = nullptr;
+    std::vector<Expression_listContext *> exps;
     Table_value_constructorContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *VALUES();
@@ -4408,8 +4414,8 @@ public:
 
   class  Expression_listContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::ExpressionContext *expressionContext = nullptr;;
-    std::vector<ExpressionContext *> exp;;
+    TSqlParser::ExpressionContext *expressionContext = nullptr;
+    std::vector<ExpressionContext *> exp;
     Expression_listContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<ExpressionContext *> expression();
@@ -4446,8 +4452,8 @@ public:
 
   class  Aggregate_windowed_functionContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *agg_func = nullptr;;
-    antlr4::Token *cnt = nullptr;;
+    antlr4::Token *agg_func = nullptr;
+    antlr4::Token *cnt = nullptr;
     Aggregate_windowed_functionContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LR_BRACKET();
@@ -4633,10 +4639,10 @@ public:
 
   class  Entity_nameContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *server = nullptr;;
-    TSqlParser::Id_Context *database = nullptr;;
-    TSqlParser::Id_Context *schema = nullptr;;
-    TSqlParser::Id_Context *table = nullptr;;
+    TSqlParser::Id_Context *server = nullptr;
+    TSqlParser::Id_Context *database = nullptr;
+    TSqlParser::Id_Context *schema = nullptr;
+    TSqlParser::Id_Context *table = nullptr;
     Entity_nameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Id_Context *> id_();
@@ -4653,8 +4659,8 @@ public:
 
   class  Entity_name_for_azure_dwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *schema = nullptr;;
-    TSqlParser::Id_Context *object_name = nullptr;;
+    TSqlParser::Id_Context *schema = nullptr;
+    TSqlParser::Id_Context *object_name = nullptr;
     Entity_name_for_azure_dwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Id_Context *> id_();
@@ -4670,9 +4676,9 @@ public:
 
   class  Entity_name_for_parallel_dwContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *schema_database = nullptr;;
-    TSqlParser::Id_Context *schema = nullptr;;
-    TSqlParser::Id_Context *object_name = nullptr;;
+    TSqlParser::Id_Context *schema_database = nullptr;
+    TSqlParser::Id_Context *schema = nullptr;
+    TSqlParser::Id_Context *object_name = nullptr;
     Entity_name_for_parallel_dwContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Id_Context *> id_();
@@ -4688,10 +4694,10 @@ public:
 
   class  Full_table_nameContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *server = nullptr;;
-    TSqlParser::Id_Context *database = nullptr;;
-    TSqlParser::Id_Context *schema = nullptr;;
-    TSqlParser::Id_Context *table = nullptr;;
+    TSqlParser::Id_Context *server = nullptr;
+    TSqlParser::Id_Context *database = nullptr;
+    TSqlParser::Id_Context *schema = nullptr;
+    TSqlParser::Id_Context *table = nullptr;
     Full_table_nameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Id_Context *> id_();
@@ -4708,10 +4714,10 @@ public:
 
   class  Table_nameContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *database = nullptr;;
-    TSqlParser::Id_Context *schema = nullptr;;
-    TSqlParser::Id_Context *table = nullptr;;
-    antlr4::Token *blocking_hierarchy = nullptr;;
+    TSqlParser::Id_Context *database = nullptr;
+    TSqlParser::Id_Context *schema = nullptr;
+    TSqlParser::Id_Context *table = nullptr;
+    antlr4::Token *blocking_hierarchy = nullptr;
     Table_nameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Id_Context *> id_();
@@ -4729,8 +4735,8 @@ public:
 
   class  Simple_nameContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *schema = nullptr;;
-    TSqlParser::Id_Context *name = nullptr;;
+    TSqlParser::Id_Context *schema = nullptr;
+    TSqlParser::Id_Context *name = nullptr;
     Simple_nameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Id_Context *> id_();
@@ -4746,8 +4752,8 @@ public:
 
   class  Func_proc_name_schemaContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *schema = nullptr;;
-    TSqlParser::Id_Context *procedure = nullptr;;
+    TSqlParser::Id_Context *schema = nullptr;
+    TSqlParser::Id_Context *procedure = nullptr;
     Func_proc_name_schemaContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Id_Context *> id_();
@@ -4763,9 +4769,9 @@ public:
 
   class  Func_proc_name_database_schemaContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *database = nullptr;;
-    TSqlParser::Id_Context *schema = nullptr;;
-    TSqlParser::Id_Context *procedure = nullptr;;
+    TSqlParser::Id_Context *database = nullptr;
+    TSqlParser::Id_Context *schema = nullptr;
+    TSqlParser::Id_Context *procedure = nullptr;
     Func_proc_name_database_schemaContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> DOT();
@@ -4783,10 +4789,10 @@ public:
 
   class  Func_proc_name_server_database_schemaContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *server = nullptr;;
-    TSqlParser::Id_Context *database = nullptr;;
-    TSqlParser::Id_Context *schema = nullptr;;
-    TSqlParser::Id_Context *procedure = nullptr;;
+    TSqlParser::Id_Context *server = nullptr;
+    TSqlParser::Id_Context *database = nullptr;
+    TSqlParser::Id_Context *schema = nullptr;
+    TSqlParser::Id_Context *procedure = nullptr;
     Func_proc_name_server_database_schemaContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> DOT();
@@ -4818,10 +4824,10 @@ public:
 
   class  Full_column_nameContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *column_name = nullptr;;
-    TSqlParser::Id_Context *server = nullptr;;
-    TSqlParser::Id_Context *schema = nullptr;;
-    TSqlParser::Id_Context *tablename = nullptr;;
+    TSqlParser::Id_Context *column_name = nullptr;
+    TSqlParser::Id_Context *server = nullptr;
+    TSqlParser::Id_Context *schema = nullptr;
+    TSqlParser::Id_Context *tablename = nullptr;
     Full_column_nameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<antlr4::tree::TerminalNode *> DOT();
@@ -4860,8 +4866,8 @@ public:
 
   class  Insert_column_name_listContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Insert_column_idContext *insert_column_idContext = nullptr;;
-    std::vector<Insert_column_idContext *> col;;
+    TSqlParser::Insert_column_idContext *insert_column_idContext = nullptr;
+    std::vector<Insert_column_idContext *> col;
     Insert_column_name_listContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Insert_column_idContext *> insert_column_id();
@@ -4878,8 +4884,8 @@ public:
 
   class  Insert_column_idContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *id_Context = nullptr;;
-    std::vector<Id_Context *> ignore;;
+    TSqlParser::Id_Context *id_Context = nullptr;
+    std::vector<Id_Context *> ignore;
     Insert_column_idContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Id_Context *> id_();
@@ -4896,8 +4902,8 @@ public:
 
   class  Column_name_listContext : public antlr4::ParserRuleContext {
   public:
-    TSqlParser::Id_Context *id_Context = nullptr;;
-    std::vector<Id_Context *> col;;
+    TSqlParser::Id_Context *id_Context = nullptr;
+    std::vector<Id_Context *> col;
     Column_name_listContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     std::vector<Id_Context *> id_();
@@ -4982,6 +4988,33 @@ public:
     antlr4::tree::TerminalNode *LEFT();
     antlr4::tree::TerminalNode *BINARY_CHECKSUM();
     antlr4::tree::TerminalNode *CHECKSUM();
+    antlr4::tree::TerminalNode *ABS();
+    antlr4::tree::TerminalNode *ASCII();
+    antlr4::tree::TerminalNode *CEILING();
+    antlr4::tree::TerminalNode *CHAR();
+    antlr4::tree::TerminalNode *CHARINDEX();
+    antlr4::tree::TerminalNode *DATALENGTH();
+    antlr4::tree::TerminalNode *DAY();
+    antlr4::tree::TerminalNode *FLOOR();
+    antlr4::tree::TerminalNode *ISDATE();
+    antlr4::tree::TerminalNode *ISNUMERIC();
+    antlr4::tree::TerminalNode *LEN();
+    antlr4::tree::TerminalNode *LOWER();
+    antlr4::tree::TerminalNode *LTRIM();
+    antlr4::tree::TerminalNode *MONTH();
+    antlr4::tree::TerminalNode *NCHAR();
+    antlr4::tree::TerminalNode *PATINDEX();
+    antlr4::tree::TerminalNode *RAND();
+    antlr4::tree::TerminalNode *REPLACE();
+    antlr4::tree::TerminalNode *ROUND();
+    antlr4::tree::TerminalNode *RTRIM();
+    antlr4::tree::TerminalNode *SIGN();
+    antlr4::tree::TerminalNode *SPACE();
+    antlr4::tree::TerminalNode *STR();
+    antlr4::tree::TerminalNode *SUBSTRING();
+    antlr4::tree::TerminalNode *UPPER();
+    antlr4::tree::TerminalNode *USER_NAME();
+    antlr4::tree::TerminalNode *YEAR();
 
     virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
     virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
@@ -4992,14 +5025,14 @@ public:
 
   class  Data_typeContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *scaled = nullptr;;
-    TSqlParser::Id_Context *ext_type = nullptr;;
-    antlr4::Token *scale = nullptr;;
-    antlr4::Token *prec = nullptr;;
-    antlr4::Token *seed = nullptr;;
-    antlr4::Token *inc = nullptr;;
-    antlr4::Token *double_prec = nullptr;;
-    TSqlParser::Id_Context *unscaled_type = nullptr;;
+    antlr4::Token *scaled = nullptr;
+    TSqlParser::Id_Context *ext_type = nullptr;
+    antlr4::Token *scale = nullptr;
+    antlr4::Token *prec = nullptr;
+    antlr4::Token *seed = nullptr;
+    antlr4::Token *inc = nullptr;
+    antlr4::Token *double_prec = nullptr;
+    TSqlParser::Id_Context *unscaled_type = nullptr;
     Data_typeContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *LR_BRACKET();
@@ -5045,7 +5078,7 @@ public:
 
   class  ConstantContext : public antlr4::ParserRuleContext {
   public:
-    antlr4::Token *dollar = nullptr;;
+    antlr4::Token *dollar = nullptr;
     ConstantContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
     antlr4::tree::TerminalNode *STRING();

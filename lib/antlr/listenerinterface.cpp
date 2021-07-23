@@ -396,36 +396,66 @@ void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_na
 {
 	enum scalar_function fn = SCALAR_UNDEFINED;
 
-	//if (ctx->ABS())        fn = SCALAR_ABS;
-	//if (ctx->ASCII())      fn = SCALAR_ASCII;
-	//if (ctx->CEILING())    fn = SCALAR_CEILING;
-	//if (ctx->CHAR())       fn = SCALAR_CHAR;
-	//if (ctx->CHARINDEX())  fn = SCALAR_CHARINDEX;
-	if (ctx->CHECKSUM())   fn = SCALAR_CHECKSUM;
-	//if (ctx->DATALENGTH()) fn = SCALAR_DATALENGTH;
-	//if (ctx->DAY())        fn = SCALAR_DAY;
-	//if (ctx->FLOOR())      fn = SCALAR_FLOOR;
-	//if (ctx->ISDATE())     fn = SCALAR_ISDATE;
-	//if (ctx->ISNUMERIC())  fn = SCALAR_ISNUMERIC;
-	if (ctx->LEFT())       fn = SCALAR_LEFT;
-	//if (ctx->LEN())        fn = SCALAR_LEN;
-	//if (ctx->LOWER())      fn = SCALAR_LOWER;
-	//if (ctx->LTRIM())      fn = SCALAR_LTRIM;
-	//if (ctx->MONTH())      fn = SCALAR_MONTH;
-	//if (ctx->NCHAR())      fn = SCALAR_NCHAR;
-	//if (ctx->PATINDEX())   fn = SCALAR_PATINDEX;
-	//if (ctx->RAND())       fn = SCALAR_RAND;
-	//if (ctx->REPLACE())    fn = SCALAR_REPLACE;
-	if (ctx->RIGHT())      fn = SCALAR_RIGHT;
-	//if (ctx->ROUND())      fn = SCALAR_ROUND;
-	//if (ctx->RTRIM())      fn = SCALAR_RTRIM;
-	//if (ctx->SIGN())       fn = SCALAR_SIGN;
-	//if (ctx->SPACE())      fn = SCALAR_SPACE;
-	//if (ctx->STR())        fn = SCALAR_STR;
-	//if (ctx->SUBSTRING())  fn = SCALAR_SUBSTRING;
-	//if (ctx->UPPER())      fn = SCALAR_UPPER;
-	//if (ctx->USER_NAME())  fn = SCALAR_USER_NAME;
-	//if (ctx->YEAR())       fn = SCALAR_YEAR;
+	if (ctx->ABS())
+		fn = SCALAR_ABS;
+	if (ctx->ASCII())
+		fn = SCALAR_ASCII;
+	if (ctx->CEILING())
+		fn = SCALAR_CEILING;
+	if (ctx->CHAR())
+		fn = SCALAR_CHAR;
+	if (ctx->CHARINDEX())
+		fn = SCALAR_CHARINDEX;
+	if (ctx->CHECKSUM())
+		fn = SCALAR_CHECKSUM;
+	if (ctx->DATALENGTH())
+		fn = SCALAR_DATALENGTH;
+	if (ctx->DAY())
+		fn = SCALAR_DAY;
+	if (ctx->FLOOR())
+		fn = SCALAR_FLOOR;
+	if (ctx->ISDATE())
+		fn = SCALAR_ISDATE;
+	if (ctx->ISNUMERIC())
+		fn = SCALAR_ISNUMERIC;
+	if (ctx->LEFT())
+		fn = SCALAR_LEFT;
+	if (ctx->LEN())
+		fn = SCALAR_LEN;
+	if (ctx->LOWER())
+		fn = SCALAR_LOWER;
+	if (ctx->LTRIM())
+		fn = SCALAR_LTRIM;
+	if (ctx->MONTH())
+		fn = SCALAR_MONTH;
+	if (ctx->NCHAR())
+		fn = SCALAR_NCHAR;
+	if (ctx->PATINDEX())
+		fn = SCALAR_PATINDEX;
+	if (ctx->RAND())
+		fn = SCALAR_RAND;
+	if (ctx->REPLACE())
+		fn = SCALAR_REPLACE;
+	if (ctx->RIGHT())
+		fn = SCALAR_RIGHT;
+	if (ctx->ROUND())
+		fn = SCALAR_ROUND;
+	if (ctx->RTRIM())
+		fn = SCALAR_RTRIM;
+	if (ctx->SIGN())
+		fn = SCALAR_SIGN;
+	if (ctx->SPACE())
+		fn = SCALAR_SPACE;
+	if (ctx->STR())
+		fn = SCALAR_STR;
+	if (ctx->SUBSTRING())
+		fn = SCALAR_SUBSTRING;
+	if (ctx->UPPER())
+		fn = SCALAR_UPPER;
+	if (ctx->USER_NAME())
+		fn = SCALAR_USER_NAME;
+	if (ctx->YEAR())
+		fn = SCALAR_YEAR;
 
 	if (query_enter_function(_query, fn, _fql->props.char_as_byte)) {
 		_set_failure();

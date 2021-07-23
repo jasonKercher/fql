@@ -25,6 +25,39 @@ THE SOFTWARE.
 
 lexer grammar TSqlLexer;
 
+// Added some scalar function names
+ABS:                                   'ABS';
+ASCII:                                 'ASCII';
+CEILING:                               'CEILING';
+CHAR:                                  'CHAR';
+CHARINDEX:                             'CHARINDEX';
+DATALENGTH:                            'DATALENGTH';
+DAY:                                   'DAY';
+FLOOR:                                 'FLOOR';
+ISDATE:                                'ISDATE';
+ISNUMERIC:                             'ISNUMERIC';
+LEN:                                   'LEN';
+LOWER:                                 'LOWER';
+LTRIM:                                 'LTRIM';
+MONTH:                                 'MONTH';
+NCHAR:                                 'NCHAR';
+PATINDEX:                              'PATINDEX';
+RAND:                                  'RAND';
+REPLACE:                               'REPLACE';
+ROUND:                                 'ROUND';
+RTRIM:                                 'RTRIM';
+SIGN:                                  'SIGN';
+SPACE_fn:                              'SPACE';
+STR:                                   'STR';
+SUBSTRING:                             'SUBSTRING';
+UPPER:                                 'UPPER';
+USER_NAME:                             'USER_NAME';
+YEAR:                                  'YEAR';
+
+// Added Types
+TEXT:                                  'TEXT';
+NTEXT:                                 'NTEXT';
+
 // Basic keywords (from https://msdn.microsoft.com/en-us/library/ms189822.aspx)
 
 ADD:                                   'ADD';

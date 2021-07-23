@@ -1326,6 +1326,33 @@ scalar_function_name
     | LEFT
     | BINARY_CHECKSUM
     | CHECKSUM
+    | ABS
+    | ASCII
+    | CEILING
+    | CHAR
+    | CHARINDEX
+    | DATALENGTH
+    | DAY
+    | FLOOR
+    | ISDATE
+    | ISNUMERIC
+    | LEN
+    | LOWER
+    | LTRIM
+    | MONTH
+    | NCHAR
+    | PATINDEX
+    | RAND
+    | REPLACE
+    | ROUND
+    | RTRIM
+    | SIGN
+    | SPACE
+    | STR
+    | SUBSTRING
+    | UPPER
+    | USER_NAME
+    | YEAR
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187752.aspx
