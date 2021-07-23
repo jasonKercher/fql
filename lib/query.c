@@ -214,6 +214,7 @@ int query_add_expression(query* self, char* expr_name, const char* table_id)
 		fprintf(stderr, "unhandled COLUMN_NAME: %s\n", expr_name);
 		return FQL_FAIL;
 	}
+
 	return FQL_GOOD;
 }
 
@@ -400,11 +401,11 @@ void query_enter_in_statement(query* self)
 	self->mode = MODE_IN;
 }
 
-void query_exit_in_statement(query* self)
-{
-	logicgroup* lg = self->logic_stack->data;
-	self->mode = lg->condition->in_data->return_mode;
-}
+//void query_exit_in_statement(query* self)
+//{
+//	logicgroup* lg = self->logic_stack->data;
+//	self->mode = lg->condition->in_data->return_mode;
+//}
 
 
 void query_assign_in_subquery(query* self, query* subquery)
@@ -562,18 +563,16 @@ int query_enter_switch_section(query* self)
 	}
 
 	expression* static_expr_copy = expression_copy(sc->static_expr);
-	query_enter_search(self);
-	query_enter_search_and(self);
-	query_enter_search_not(self, false);
+	//query_enter_search(self);
+	//query_enter_search_and(self);
+	query_enter_predicate(self, 0, false);
 	_add_logic_expression(self, static_expr_copy);
-	query_set_logic_comparison(self, "=", false);
+	query_set_logic_comparison(self, "=");
 	return FQL_GOOD;
 }
 int query_exit_switch_section(query* self)
 {
-	query_exit_search_not(self);
-	query_exit_search_and(self);
-	query_exit_search(self);
+	query_exit_predicate(self, 0, false);
 	switchcase* sc = self->switchcase_stack->data;
 	sc->state = SWITCH_VALUE;
 	return FQL_GOOD;
@@ -591,16 +590,9 @@ int query_exit_switch_search(query* self)
 	return FQL_GOOD;
 }
 
-void query_set_logic_comparison(query* self, const char* op, int negation)
+void query_set_logic_comparison(query* self, const char* op)
 {
 	logicgroup* lg = self->logic_stack->data;
-	/* Check for negation first because standard
-	 * comparisons like = or > set the negation
-	 * in the enter_search_not function.
-	 */
-	if (negation) {
-		lg->negation = true;
-	}
 	logic* logic = lg->condition;
 	logic_set_comparison(logic, op);
 }
@@ -630,44 +622,45 @@ void _assign_logic(query* self, logicgroup* lg)
 logicgroup* _add_logic_item(query* self, enum logicgroup_type type)
 {
 	logicgroup* lg = new_(logicgroup, type);
-	logicgroup* parent = self->logic_stack->data;
-	vec_push_back(&parent->items, &lg);
+
+	if (self->logic_stack == NULL) {
+		if (self->mode != MODE_CASE) {
+			self->mode = MODE_SEARCH;
+		}
+		lg->expressions = new_t_(vec, expression*);
+		self->joinable = new_t_(vec, logic*);
+	} else {
+		logicgroup* parent = self->logic_stack->data;
+		if (parent->items[0] == NULL) {
+			parent->items[0] = lg;
+		} else {
+			parent->items[1] = lg;
+		}
+	}
 	stack_push(&self->logic_stack, lg);
 	return lg;
 }
 
-void query_enter_search(query* self)
+void _check_for_logic_exit(query* self, logicgroup* last)
 {
-	if (self->mode != MODE_CASE) {
-		self->mode = MODE_SEARCH;
-	}
-	if (self->logic_stack == NULL) {
-		logicgroup* lg = new_(logicgroup, LG_ROOT);
-		lg->expressions = new_t_(vec, expression*);
-		stack_push(&self->logic_stack, lg);
-		self->joinable = new_t_(vec, logic*);
-		return;
-	}
-
-	_add_logic_item(self, LG_ROOT);
-}
-
-void query_exit_search(query* self)
-{
-	logicgroup* lg = stack_pop(&self->logic_stack);
 	if (self->logic_stack == NULL) {
 		if (self->joinable && vec_empty(self->joinable)) {
 			delete_(vec, self->joinable);
 		} else {
-			lg->joinable = self->joinable;
+			last->joinable = self->joinable;
 			self->joinable = NULL;
 		}
 
-		_assign_logic(self, lg);
+		_assign_logic(self, last);
 		if (self->logic_mode != LOGIC_CASE) {
 			self->logic_mode = LOGIC_UNDEFINED;
 		}
 	}
+}
+
+void query_enter_search_or(query* self)
+{
+	_add_logic_item(self, LG_OR);
 }
 
 void query_enter_search_and(query* self)
@@ -675,29 +668,44 @@ void query_enter_search_and(query* self)
 	_add_logic_item(self, LG_AND);
 }
 
-void query_exit_search_and(query* self)
+void query_exit_search_item(query* self)
 {
+	_check_for_logic_exit(self, stack_pop(&self->logic_stack));
+}
+
+void query_enter_predicate(query* self, unsigned negation, bool in)
+{
+	logicgroup* lg = _add_logic_item(self, LG_PREDICATE);
+	lg->negation = (negation % 2);
+
+	if (in) {
+		query_enter_in_statement(self);
+	}
+}
+
+void query_exit_predicate(query* self, bool in, bool like)
+{
+	logicgroup* lg = self->logic_stack->data;
+	if (in) {
+		query_set_logic_comparison(self, "IN");
+		self->mode = lg->condition->in_data->return_mode;
+	} else if (like) {
+		query_set_logic_comparison(self, "LIKE");
+	}
+
 	stack_pop(&self->logic_stack);
-}
 
-void query_enter_search_not(query* self, int negation)
-{
-	logicgroup* lg = _add_logic_item(self, LG_NOT);
-	lg->negation = negation;
-}
-
-void query_exit_search_not(query* self)
-{
-	logicgroup* top = stack_pop(&self->logic_stack);
-
-	/* pre-requisite test for joinability
+	/* pre-requisite test for joinability:
 	 * A complete test for joinablity cannot occur
 	 * until all logic expressions have been resolved
 	 * to a source.
 	 */
-	if (top->condition != NULL && top->condition->comp_type == COMP_EQ
-	    && top->condition->expr[0]->expr != EXPR_CONST
-	    && top->condition->expr[1]->expr != EXPR_CONST) {
-		vec_push_back(self->joinable, &top->condition);
+	if (self->logic_mode != LOGIC_HAVING && lg->condition != NULL
+	    && lg->condition->comp_type == COMP_EQ
+	    && lg->condition->expr[0]->expr != EXPR_CONST
+	    && lg->condition->expr[1]->expr != EXPR_CONST) {
+		vec_push_back(self->joinable, &lg->condition);
 	}
+
+	_check_for_logic_exit(self, lg);
 }

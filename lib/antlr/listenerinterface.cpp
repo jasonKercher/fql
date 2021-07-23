@@ -139,19 +139,13 @@ void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx)
 	std::string error_token = "";
 	if (ctx->apply_()) {
 		error_token = "APPLY";
-		//} else if (ctx->MERGE()) {
-		//	error_token = "MERGE";
-		//} else if (ctx->PIVOT()) {
-		//	error_token = "PIVOT";
-		//} else if (ctx->UNPIVOT()) {
-		//	error_token = "UNPIVOT";
-		//} else if (ctx->LOOP()) {
-		//	error_token = "LOOP";
-		//} else if (ctx->REMOTE()) {
-		//	error_token = "REMOTE";
-		//} else if (!ctx->JOIN()) {
-		//	std::cerr << "Keyword `JOIN' expected but not found\n";
-		//	_set_failure();
+	} else if (ctx->pivot()) {
+		error_token = "PIVOT";
+	} else if (ctx->unpivot()) {
+		error_token = "UNPIVOT";
+	} else if (!ctx->join_on()) {
+		std::cerr << "Keyword `JOIN' expected but not found\n";
+		_set_failure();
 	}
 
 	if (!error_token.empty()) {
@@ -159,24 +153,31 @@ void ListenerInterface::enterJoin_part(TSqlParser::Join_partContext * ctx)
 		_set_failure();
 	}
 
-	//if (ctx->LEFT()) {
-	//	_query->join = JOIN_LEFT;
-	//} else if (ctx->RIGHT()) {
-	//	_query->join = JOIN_RIGHT;
-	//} else if (ctx->FULL()) {
-	//	_query->join = JOIN_FULL;
-	//} else if (ctx->CROSS()) {
-	//	_query->join = JOIN_CROSS;
-	//} else {
-	//	_query->join = JOIN_INNER;
-	//}
-
-	//_query->logic_mode = LOGIC_JOIN;
 }
 void ListenerInterface::exitJoin_part(TSqlParser::Join_partContext * ctx)
 {
+}
+
+
+void ListenerInterface::enterJoin_on(TSqlParser::Join_onContext* ctx)
+{
+	if (ctx->LEFT()) {
+		_query->join = JOIN_LEFT;
+	} else if (ctx->RIGHT()) {
+		_query->join = JOIN_RIGHT;
+	} else if (ctx->FULL()) {
+		_query->join = JOIN_FULL;
+	} else {
+		_query->join = JOIN_INNER;
+	}
+
+	_query->logic_mode = LOGIC_JOIN;
+}
+void ListenerInterface::exitJoin_on(TSqlParser::Join_onContext* ctx)
+{
 	_query->logic_mode = LOGIC_UNDEFINED;
 }
+
 
 void ListenerInterface::enterTable_name_with_hint(TSqlParser::Table_name_with_hintContext * ctx)
 {
@@ -219,9 +220,9 @@ void ListenerInterface::enterTable_name(TSqlParser::Table_nameContext * ctx)
 }
 void ListenerInterface::exitTable_name(TSqlParser::Table_nameContext * ctx)
 {
-	if (_tok_type == TOK_TABLE_NAME) {
-		_tok_type = TOK_COLUMN_NAME;
-	}
+	//if (_tok_type == TOK_TABLE_NAME) {
+	//	_tok_type = TOK_COLUMN_NAME;
+	//}
 }
 
 void ListenerInterface::enterFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * ctx) { }
@@ -238,7 +239,21 @@ void ListenerInterface::enterFull_column_name(TSqlParser::Full_column_nameContex
 	_tok_type = TOK_COLUMN_NAME;
 	_next_tok_type = TOK_TABLE_NAME;
 }
-void ListenerInterface::exitFull_column_name(TSqlParser::Full_column_nameContext * ctx) { }
+void ListenerInterface::exitFull_column_name(TSqlParser::Full_column_nameContext * ctx)
+{
+	char* column_name = (char*) stack_pop(&_column_stack);
+	if (_column_stack != NULL) {
+		char* table_name = (char*) stack_pop(&_column_stack);
+		if (query_add_expression(_query, column_name, table_name)) {
+			_set_failure();
+		}
+	} else {
+		if (query_add_expression(_query, column_name, "")) {
+			_set_failure();
+		}
+	}
+
+}
 
 void ListenerInterface::enterNull_notnull(TSqlParser::Null_notnullContext * ctx) { }
 void ListenerInterface::exitNull_notnull(TSqlParser::Null_notnullContext * ctx) { }
@@ -318,12 +333,8 @@ void ListenerInterface::enterId_(TSqlParser::Id_Context* ctx)
 
 	switch (_tok_type) {
 	case TOK_COLUMN_NAME:
-		if (query_add_expression(_query, token, _table_name)) {
-			_set_failure();
-		}
 		/* consume table designation */
-		_table_name[0] = '\0';
-		free_(token);
+		stack_push(&_column_stack, token);
 		break;
 	case TOK_COLUMN_ALIAS:
 		query_apply_expression_alias(_query, token);
@@ -366,7 +377,7 @@ void ListenerInterface::exitSimple_id(TSqlParser::Simple_idContext * ctx) { }
 
 void ListenerInterface::enterComparison_operator(TSqlParser::Comparison_operatorContext * ctx)
 {
-	query_set_logic_comparison(_query, ctx->getText().c_str(), false);
+	query_set_logic_comparison(_query, ctx->getText().c_str());
 }
 void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorContext * ctx)
 {
@@ -530,6 +541,9 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 
 void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContext * ctx)
 {
+	if (ctx->LR_BRACKET() && ctx->RR_BRACKET()) {
+		return;
+	}
 	if (_query->logic_mode == LOGIC_UNDEFINED) {
 		if (_query->expect_where && !_query->where) {
 			_query->logic_mode = LOGIC_WHERE;
@@ -544,49 +558,27 @@ void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContex
 			}
 		}
 	}
-	query_enter_search(_query);
+	if (ctx->AND()) {
+		query_enter_search_and(_query);
+	} else if (ctx->OR()) {
+		query_enter_search_or(_query);
+	}
 }
 void ListenerInterface::exitSearch_condition(TSqlParser::Search_conditionContext * ctx)
 {
-	query_exit_search(_query);
+	if (ctx->AND() || ctx->OR()) {
+		query_exit_search_item(_query);
+	}
 }
-
-//void ListenerInterface::enterSearch_condition_and(TSqlParser::Search_condition_andContext * ctx)
-//{
-//	query_enter_search_and(_query);
-//}
-//void ListenerInterface::exitSearch_condition_and(TSqlParser::Search_condition_andContext * ctx)
-//{
-//	query_exit_search_and(_query);
-//}
-//
-//void ListenerInterface::enterSearch_condition_not(TSqlParser::Search_condition_notContext * ctx)
-//{
-//	bool negation = (ctx->NOT() != NULL);
-//	query_enter_search_not(_query, negation);
-//}
-//void ListenerInterface::exitSearch_condition_not(TSqlParser::Search_condition_notContext * ctx)
-//{
-//	query_exit_search_not(_query);
-//}
 
 void ListenerInterface::enterPredicate(TSqlParser::PredicateContext * ctx)
 {
-	if (ctx->IN()) {
-		query_enter_in_statement(_query);
-	}
+	query_enter_predicate(_query, ctx->NOT().size(), (ctx->IN() != NULL));
 }
 
 void ListenerInterface::exitPredicate(TSqlParser::PredicateContext * ctx)
 {
-	//bool negation = (ctx->NOT());
-	bool negation = false;
-	if (ctx->IN()) {
-		query_set_logic_comparison(_query, "IN", negation);
-		query_exit_in_statement(_query);
-	} else if (ctx->LIKE()) {
-		query_set_logic_comparison(_query, "LIKE", negation);
-	}
+	query_exit_predicate(_query, (ctx->IN() != NULL), (ctx->LIKE() != NULL));
 }
 
 void ListenerInterface::enterQuery_expression(TSqlParser::Query_expressionContext * ctx) { }
@@ -1278,9 +1270,6 @@ void ListenerInterface::exitExecute_statement_arg_named(TSqlParser::Execute_stat
 
 void ListenerInterface::enterGo_batch_statement(TSqlParser::Go_batch_statementContext* ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitGo_batch_statement(TSqlParser::Go_batch_statementContext* ctx) { }
-
-void ListenerInterface::enterJoin_on(TSqlParser::Join_onContext* ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitJoin_on(TSqlParser::Join_onContext* ctx) { }
 
 void ListenerInterface::enterBUILT_IN_FUNC(TSqlParser::BUILT_IN_FUNCContext* ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitBUILT_IN_FUNC(TSqlParser::BUILT_IN_FUNCContext* ctx) { }

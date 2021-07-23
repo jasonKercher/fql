@@ -83,14 +83,14 @@ int like_to_regex(struct like*, const struct stringview);
 
 enum logicgroup_type {
 	LG_UNDEFINED = -1,
-	LG_ROOT,
 	LG_AND,
-	LG_NOT,
+	LG_OR,
+	LG_PREDICATE,
 };
 
 struct logicgroup {
 	enum logicgroup_type type;
-	struct vec items;    /* logicgroup* */
+	struct logicgroup* items[2];
 	struct vec* expressions; /* All expressions in group */
 	struct vec* joinable;
 	struct logic* join_logic;

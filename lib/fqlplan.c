@@ -147,13 +147,13 @@ int _subquery_inlist(plan* self, process* logic_proc, logicgroup* lg)
 int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 {
 	switch (lg->type) {
-	case LG_ROOT:
-		string_strcat(logic_proc->plan_msg, "(");
+	case LG_OR:
+		string_strcat(logic_proc->plan_msg, "OR(");
 		break;
 	case LG_AND:
 		string_strcat(logic_proc->plan_msg, "AND(");
 		break;
-	case LG_NOT:
+	case LG_PREDICATE:
 		if (lg->negation) {
 			string_strcat(logic_proc->plan_msg, "NOT(");
 		} else {
@@ -177,9 +177,12 @@ int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 		return FQL_FAIL;
 	}
 
-	logicgroup** it = vec_begin(&lg->items);
-	for (; it != vec_end(&lg->items); ++it) {
-		try_(_logic_to_process(self, logic_proc, *it));
+	if (lg->items[0] != NULL) {
+		try_(_logic_to_process(self, logic_proc, lg->items[0]));
+		string_strcat(logic_proc->plan_msg, ",");
+	}
+	if (lg->items[1] != NULL) {
+		try_(_logic_to_process(self, logic_proc, lg->items[1]));
 	}
 
 	string_strcat(logic_proc->plan_msg, ")");

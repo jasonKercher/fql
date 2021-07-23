@@ -147,52 +147,78 @@ void logic_set_comparison(logic* self, const char* op)
 
 /** LOGIC GROUP **/
 
-logicgroup* logicgroup_construct(logicgroup* lg, enum logicgroup_type type)
+logicgroup* logicgroup_construct(logicgroup* self, enum logicgroup_type type)
 {
-	*lg = (logicgroup) {
-	        type,  /* type */
-	        {0},   /* items */
-	        NULL,  /* expressions */
-	        NULL,  /* joinable */
-	        NULL,  /* join_logic */
-	        NULL,  /* condition */
-	        false, /* negation */
+	*self = (logicgroup) {
+	        type,         /* type */
+	        {NULL, NULL}, /* items */
+	        NULL,         /* expressions */
+	        NULL,         /* joinable */
+	        NULL,         /* join_logic */
+	        NULL,         /* condition */
+	        false,        /* negation */
 	};
 
-	vec_construct_(&lg->items, logicgroup*);
-
-	return lg;
+	return self;
 }
 
-void logicgroup_destroy(logicgroup* lg)
+void logicgroup_destroy(logicgroup* self)
 {
-	unsigned i = 0;
-	for (; i < lg->items.size; ++i) {
-		logicgroup** lg_item = vec_at(&lg->items, i);
-		delete_if_exists_(logic, (*lg_item)->condition);
-		delete_(logicgroup, *lg_item);
-	}
-	delete_if_exists_(vec, lg->joinable);
-	vec_destroy(&lg->items);
-	delete_if_exists_(vec, lg->expressions);
+	delete_if_exists_(logicgroup, self->items[0]);
+	delete_if_exists_(logicgroup, self->items[1]);
+	delete_if_exists_(logic, self->condition);
+	delete_if_exists_(vec, self->joinable);
+	delete_if_exists_(vec, self->expressions);
 }
 
-void _get_condition_count(logicgroup* lg, unsigned* count)
+void _get_condition_count(logicgroup* self, unsigned* count)
 {
-	if (lg->type == LG_NOT) {
+	if (self->type == LG_PREDICATE) {
 		++(*count);
 	}
-	logicgroup** it = vec_begin(&lg->items);
-	for (; it != vec_end(&lg->items); ++it) {
-		_get_condition_count(*it, count);
+	if (self->items[0] != NULL) {
+		_get_condition_count(self->items[0], count);
+	}
+	if (self->items[1] != NULL) {
+		_get_condition_count(self->items[1], count);
 	}
 }
 
-unsigned logicgroup_get_condition_count(logicgroup* lg)
+unsigned logicgroup_get_condition_count(logicgroup* self)
 {
 	unsigned count = 0;
-	_get_condition_count(lg, &count);
+	_get_condition_count(self, &count);
 	return count;
+}
+
+/* evaluate the logic expression.
+ * the skip argument is for logic that can
+ * be assumed true because it was evaluated
+ * prior to calling this function. Most likely
+ * the skip logic will be the evaluation of a
+ * hash join.
+ */
+int logicgroup_eval(logicgroup* self, recgroup* rg, logic* skip)
+{
+	if (self->type == LG_PREDICATE) {
+		if (self->condition == skip) {
+			return 1;
+		}
+		int ret = try_(self->condition->logic__(self->condition, rg));
+		if (self->negation) {
+			return !ret;
+		}
+		return ret;
+	}
+
+	int ret = 0;
+	ret = try_(logicgroup_eval(self->items[0], rg, skip));
+
+	/* Check for short circuit */
+	if ((self->type == LG_AND && !ret) || (self->type == LG_OR && ret)) {
+		return ret;
+	}
+	return logicgroup_eval(self->items[1], rg, skip);
 }
 
 /* essentially the same as logicgroup_eval.
@@ -203,62 +229,22 @@ unsigned logicgroup_get_condition_count(logicgroup* lg)
  * being, if it must be true, it is a candidate for
  * hash join logic.
  */
-int logic_can_be_false(logicgroup* lg, logic* check_logic)
+int logic_can_be_false(logicgroup* self, logic* check_logic)
 {
-	logicgroup** it = vec_begin(&lg->items);
-	if (lg->type == LG_NOT && lg->condition != NULL) {
-		if (lg->condition == check_logic) {
+	if (self->type == LG_PREDICATE) {
+		if (self->condition == check_logic) {
 			return 0;
 		}
 		return 1;
 	}
 
 	int ret = 0;
-	for (; it != vec_end(&lg->items); ++it) {
-		ret = logic_can_be_false(*it, check_logic);
-		if (ret == 0 && lg->type == LG_AND) {
-			return 0;
-		}
-		if (ret == 1 && (*it)->type == LG_AND) {
-			return 1;
-		}
-	}
-	return ret;
-}
+	ret = logic_can_be_false(self->items[0], check_logic);
 
-/* evaluate the logic expression.
- * the skip argument is for logic that can
- * be assumed true because it was evaluated
- * prior to calling this function. Most likely
- * the skip logic will be the evaluation of a
- * hash join.
- */
-int logicgroup_eval(logicgroup* lg, recgroup* rg, logic* skip)
-{
-	if (lg->type == LG_NOT && lg->condition != NULL) {
-		if (lg->condition == skip) {
-			return 1;
-		}
-		int ret = try_(lg->condition->logic__(lg->condition, rg));
-		if (lg->negation) {
-			return !ret;
-		}
+	/* Check for short circuit */
+	if ((self->type == LG_AND && !ret) || (self->type == LG_OR && ret)) {
 		return ret;
 	}
 
-	int ret = 0;
-	logicgroup** it = vec_begin(&lg->items);
-	for (; it != vec_end(&lg->items); ++it) {
-		ret = try_(logicgroup_eval(*it, rg, skip));
-		if (lg->negation) {
-			ret = !ret;
-		}
-		if (ret == 0 && lg->type == LG_AND) {
-			return 0;
-		}
-		if (ret == 1 && (*it)->type == LG_AND) {
-			return 1;
-		}
-	}
-	return ret;
+	return logic_can_be_false(self->items[1], check_logic);
 }

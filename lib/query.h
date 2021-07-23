@@ -3,6 +3,8 @@
 
 #ifdef __cplusplus
 extern "C" {
+#else
+#include <stdbool.h>
 #endif
 
 #include <stdlib.h>
@@ -176,7 +178,7 @@ int query_init_op(struct query*);
 void query_init_groupby(struct query*);
 int query_init_orderby(struct query*);
 void query_enter_in_statement(struct query*);
-void query_exit_in_statement(struct query*);
+//void query_exit_in_statement(struct query*);
 void query_assign_in_subquery(struct query*, struct query*);
 void query_add_subquery_const(struct query*, struct query*);
 void query_set_order_desc(struct query*);
@@ -197,13 +199,14 @@ int query_enter_switch_search(struct query*);
 int query_exit_switch_search(struct query*);
 
 /* search building functions */
-void query_set_logic_comparison(struct query*, const char*, int negation);
-void query_enter_search(struct query*);
-void query_exit_search(struct query*);
+void query_set_logic_comparison(struct query*, const char*);
+//void query_enter_search(struct query*);
+//void query_exit_search(struct query*, bool exit_and);
+void query_enter_search_or(struct query*);
 void query_enter_search_and(struct query*);
-void query_exit_search_and(struct query*);
-void query_enter_search_not(struct query*, int negation);
-void query_exit_search_not(struct query*);
+void query_exit_search_item(struct query*);
+void query_enter_predicate(struct query*, unsigned negation, bool in);
+void query_exit_predicate(struct query*, bool in, bool like);
 
 #ifdef __cplusplus
 }

@@ -10,6 +10,9 @@ public:
 	ParseOnly(const std::vector<std::string>&);
 	void enterEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
 	void exitEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
+
+	//virtual void enterSearch_condition(TSqlParser::Search_conditionContext * /*ctx*/) override;
+	//virtual void exitSearch_condition(TSqlParser::Search_conditionContext * /*ctx*/) override;
 };
 
 
