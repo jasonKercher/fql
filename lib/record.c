@@ -16,7 +16,6 @@ record* record_construct(record* self, unsigned idx)
 	        0,     /* select_len */
 	        0,     /* max_subquery_strings */
 	        0,     /* max_group_strings */
-	        false, /* is_ref */
 	};
 
 	vec_construct_(&self->fields, stringview);
@@ -47,6 +46,14 @@ void record_destroy(record* self)
 	}
 
 	vec_destroy(&self->fields);
+}
+
+void record_copy(record* self, const record* src)
+{
+	vec_clear(&self->fields);
+	vec_extend(&self->fields, &src->fields);
+
+	self->rec_ref = src->rec_ref;
 }
 
 void record_resize(record* self, unsigned size)
@@ -144,18 +151,6 @@ string* record_generate_groupby_string(record* self)
 //{
 //	return node_at(self->rec_list, idx)->data;
 //}
-//
-////void recgroup_rec_set_ref(recgroup* self, unsigned idx, const record* src)
-////{
-////	record* dest = recgroup_rec_at(self, idx);
-////
-////	vec_clear(&dest->fields);
-////	vec_extend(&dest->fields, &src->fields);
-////
-////	dest->rec_ref = src->rec_ref;
-////
-////	dest->is_ref = true;
-////}
 //
 //void recgroup_rec_push_back(recgroup* self, node* src)
 //{

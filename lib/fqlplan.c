@@ -81,7 +81,7 @@ void plan_destroy(void* generic_plan)
 	node* it = vec_begin(self->_root_data);
 	for (; it != vec_end(self->_root_data); ++it) {
 		delete_(record, it->data);
-		node_free(&it);
+		//node_free(&it);
 	}
 	delete_(vec, self->_root_data);
 	delete_(fifo, self->root);
@@ -815,12 +815,12 @@ void _activate_procs(plan* self)
 	unsigned root_size = fifo_base_size * pipe_count;
 
 	self->_root_data = new_t_(vec, node);
-	vec_resize(self->_root_data, root_size);
+	vec_resize_and_zero(self->_root_data, root_size);
 	self->root = new_t_(fifo, node*, root_size);
 
 	unsigned i = 0;
 	node* it = vec_begin(self->_root_data);
-	for (; it != vec_end(self->_root_data); ++it) {
+	for (; it != vec_end(self->_root_data); ++it, ++i) {
 		it->data = new_(record, i);
 		vec_set(self->root->buf, i, &it);
 	}

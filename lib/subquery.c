@@ -75,9 +75,8 @@ int subquery_get_record(reader* reader, node* rg)
 		}
 	}
 
-	record* dest = node_rec_add_one_front(rg);
+	record* dest = rg->data;
 	record_swap(dest, &self->copy_data);
-	node_resize(rg, 1);
 
 	return FQL_GOOD;
 }

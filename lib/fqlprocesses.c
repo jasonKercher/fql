@@ -75,11 +75,14 @@ int fql_cartesian_join(process* proc)
 		}
 
 		//node_rec_add_front(*iter_right, proc->out_src_count - 1);
-		node* left_rec_node = *iter_left;
+		node* left_rec_node = node_back(*iter_left);
 
-		for (; i < (*iter_left)->records->size; ++i) {
-			record* rec = node_rec_at(*iter_left, i);
-			node_rec_set_ref(*iter_right, i, rec);
+		for (; left_rec_node; left_rec_node = left_rec_node->prev) {
+			record* left_rec = left_rec_node->data;
+			node** fresh_node = fifo_get(proc->root_ref);
+			record* fresh_rec = (*fresh_node)->data;
+			record_copy(fresh_rec, left_rec);
+			node_push_import(iter_right, *fresh_node);
 		}
 		fifo_add(out, iter_right);
 	}
@@ -95,12 +98,11 @@ void _hash_join_right_side(process* proc, table* table, fifo* in_right)
 
 	node** rg_iter = fifo_begin(in_right);
 	for (; rg_iter != fifo_end(in_right); rg_iter = fifo_iter(in_right)) {
-		//node_rec_add_one_front(rg_iter);
-		//node_resize(rg_iter, proc->out_src_count);
-		node_rec_add_front(*rg_iter, proc->out_src_count - 1);
+		/* Oh my look how creative I am... */
+		(*rg_iter)->next = *rg_iter;
 		expression_get_stringview(&sv, hj->right_expr, *rg_iter);
 
-		record* rec = node_rec_back(*rg_iter);
+		record* rec = (*rg_iter)->data;
 		//record** rightrec = vec_back(rg_iter);
 		multimap_nset(hj->hash_data, sv.data, &rec->rec_ref.data, sv.len);
 
@@ -155,12 +157,6 @@ int fql_hash_join(process* proc)
 		return 1;
 	}
 
-	/* the right side read process killed itself
-	 * when left_rg_iter hit EOF. run left_rg_iter manually as no-op
-	 * here just to push records.
-	 */
-	process* right_side_read_proc = table->read_proc;
-
 	node** left_rg_iter = fifo_begin(in_left);
 	while (left_rg_iter != fifo_end(in_left) && fifo_receivable(out)) {
 
@@ -170,13 +166,12 @@ int fql_hash_join(process* proc)
 			left_rg_iter = fifo_iter(in_left);
 			continue;
 		}
-		fql_no_op(right_side_read_proc);
-		node** right_rg = fifo_get(proc->fifo_in[1]);
+		node** right_rg = fifo_get(proc->root_ref);
 
 		reader* reader = table->reader;
 
 		reader->get_record_at__(reader, *right_rg, right_location);
-		node_rec_add_front(*right_rg, proc->out_src_count - 1);
+		//node_rec_add_front(*right_rg, proc->out_src_count - 1);
 
 		/* If this is the last record match to the left
 		 * side, send the left side. Otherwise, insert
@@ -184,19 +179,19 @@ int fql_hash_join(process* proc)
 		 * send the right side.
 		 */
 		if (hj->recs == NULL) {
-			record* right_rec = node_rec_back(*right_rg);
-			node_rec_push_back(*left_rg_iter, right_rec);
-			node_rec_pop(*right_rg);
-
+			node_enqueue_import(left_rg_iter, *right_rg);
 			fifo_add(out, left_rg_iter);
 			left_rg_iter = fifo_iter(in_left);
-			//node_resize(*right_rg, 0);
-			_recycle(proc, right_rg);
 		} else {
-			unsigned i = 0;
-			for (; i < (*left_rg_iter)->records->size; ++i) {
-				record* leftrec = node_rec_at(*left_rg_iter, i);
-				node_rec_set_ref(*right_rg, i, leftrec);
+			/* same process as cartesian record copy */
+			node* left_rec_node = node_back(*left_rg_iter);
+
+			for (; left_rec_node; left_rec_node = left_rec_node->prev) {
+				record* left_rec = left_rec_node->data;
+				node** fresh_node = fifo_get(proc->root_ref);
+				record* fresh_rec = (*fresh_node)->data;
+				record_copy(fresh_rec, left_rec);
+				node_push_import(right_rg, *fresh_node);
 			}
 			fifo_add(out, right_rg);
 		}
