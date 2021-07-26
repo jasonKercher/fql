@@ -43,8 +43,8 @@ query* query_construct(query* self, int id)
 	        0,                   /* query_total */
 	        0,                   /* expect_where */
 
-	        NULL, /* logic_stack */
 	        NULL, /* joinable */
+	        NULL, /* logic_stack */
 	        NULL, /* function_stack */
 	        NULL, /* switchcase_stack */
 
@@ -103,7 +103,7 @@ int _add_logic_expression(query* self, expression* expr)
 		      stderr);
 		return FQL_FAIL;
 	}
-	logicgroup* lg = stack_bottom(self->logic_stack)->data;
+	logicgroup* lg = node_bottom(self->logic_stack)->data;
 	vec_push_back(lg->expressions, &expr);
 
 	lg = self->logic_stack->data;
@@ -268,12 +268,12 @@ int query_add_constant(query* self, const char* s, int len)
  * object->schema->database->server
  * we ignore database and server for now.
  */
-void query_add_source(query* self, stack** source_stack, const char* alias)
+void query_add_source(query* self, node** source_stack, const char* alias)
 {
-	char* table_name = stack_pop(source_stack);
-	char* schema_name = stack_pop(source_stack);
+	char* table_name = node_pop(source_stack);
+	char* schema_name = node_pop(source_stack);
 
-	stack_free_data(source_stack);
+	node_free_data(source_stack);
 	table* new_table = vec_add_one(self->sources);
 	table_construct(new_table,
 	                table_name,
@@ -448,7 +448,7 @@ int query_exit_union(query* self, query* union_query)
 	 * have resolved. select assumed...
 	 */
 	fqlselect* select = self->op;
-	queue_enqueue(&select->union_selects, union_query->op);
+	node_enqueue(&select->union_selects, union_query->op);
 
 	return FQL_GOOD;
 }
@@ -462,7 +462,7 @@ int _add_function(query* self, function* func, enum field_type type)
 		fprintf(stderr, "unhandled function: %s\n", function_get_name(func));
 		return FQL_FAIL;
 	}
-	stack_push(&self->function_stack, expr);
+	node_push(&self->function_stack, expr);
 	return FQL_GOOD;
 }
 
@@ -516,7 +516,7 @@ int query_apply_data_type(query* self, const char* type_str)
 
 void query_exit_function(query* self)
 {
-	stack_pop(&self->function_stack);
+	node_pop(&self->function_stack);
 }
 
 int query_enter_case_expression(query* self)
@@ -529,7 +529,7 @@ int query_enter_case_expression(query* self)
 		fputs("unhandled switch case\n", stderr);
 		return FQL_FAIL;
 	}
-	stack_push(&self->switchcase_stack, new_sc);
+	node_push(&self->switchcase_stack, new_sc);
 
 	new_sc->return_mode = self->mode;
 	new_sc->return_logic_mode = self->logic_mode;
@@ -544,7 +544,7 @@ int query_enter_case_expression(query* self)
 
 int query_exit_case_expression(query* self)
 {
-	switchcase* sc = stack_pop(&self->switchcase_stack);
+	switchcase* sc = node_pop(&self->switchcase_stack);
 	self->mode = sc->return_mode;
 	self->logic_mode = sc->return_logic_mode;
 	self->logic_stack = sc->return_logic_stack;
@@ -637,7 +637,7 @@ logicgroup* _add_logic_item(query* self, enum logicgroup_type type)
 			parent->items[1] = lg;
 		}
 	}
-	stack_push(&self->logic_stack, lg);
+	node_push(&self->logic_stack, lg);
 	return lg;
 }
 
@@ -670,7 +670,7 @@ void query_enter_search_and(query* self)
 
 void query_exit_search_item(query* self)
 {
-	_check_for_logic_exit(self, stack_pop(&self->logic_stack));
+	_check_for_logic_exit(self, node_pop(&self->logic_stack));
 }
 
 void query_enter_predicate(query* self, unsigned negation, bool in)
@@ -693,7 +693,7 @@ void query_exit_predicate(query* self, bool in, bool like)
 		query_set_logic_comparison(self, "LIKE");
 	}
 
-	stack_pop(&self->logic_stack);
+	node_pop(&self->logic_stack);
 
 	/* pre-requisite test for joinability:
 	 * A complete test for joinablity cannot occur

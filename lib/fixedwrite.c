@@ -151,7 +151,7 @@ const char* fixedwriter_get_tempname(fixedwriter* self)
 	return _get_filename(self);
 }
 
-int fixedwriter_write_record(writer* writer, vec* expr_vec, recgroup* rg, FILE* outstream)
+int fixedwriter_write_record(writer* writer, vec* expr_vec, node* rg, FILE* outstream)
 {
 	fixedwriter* self = writer->writer_data;
 
@@ -170,7 +170,7 @@ int fixedwriter_write_record(writer* writer, vec* expr_vec, recgroup* rg, FILE* 
 	for (; i < expr_vec->size; ++i) {
 		stringview sv;
 		if (exprs[i]->expr == EXPR_ASTERISK) {
-			record* rec = recgroup_rec_at(rg, exprs[i]->src_idx);
+			record* rec = node_data_at(rg, exprs[i]->src_idx);
 			sv = rec->rec_ref;
 		} else {
 			if (writer->strict && exprs[i]->field_type != FIELD_STRING) {

@@ -7,8 +7,7 @@
 #include "fqlhandle.h"
 #include "fqlimits.h"
 #include "query.h"
-#include "util/queue.h"
-#include "util/stack.h"
+#include "util/node.h"
 
 class ListenerInterface : public TSqlParserBaseListener {
       private:
@@ -29,12 +28,12 @@ class ListenerInterface : public TSqlParserBaseListener {
 	TreeWalker* _walker = NULL;
 
 	struct fql_handle* _fql = NULL;
-	struct stack* _query_stack = NULL;
-        struct query* _subquery = NULL;
+	struct node* _query_stack = NULL;
+	struct query* _subquery = NULL;
 	struct query* _query = NULL;
 
-	struct stack* _source_stack = NULL;
-	struct stack* _column_stack = NULL;
+	struct node* _source_stack = NULL;
+	struct node* _column_stack = NULL;
 
 	char _table_name[TABLE_NAME_MAX];
 	char _table_alias[TABLE_NAME_MAX];

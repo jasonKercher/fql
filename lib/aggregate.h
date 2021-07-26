@@ -21,7 +21,7 @@ struct aggregate;
 typedef int (*aggregate_fn)(struct aggregate*,
                             struct group*,
                             struct aggresult*,
-                            struct recgroup* rec);
+                            struct node* rec);
 
 struct aggregate {
 	aggregate_fn call__;
@@ -42,17 +42,17 @@ const char* aggregate_get_name(struct aggregate*);
 void aggregate_add_expression(struct aggregate*, struct expression*);
 int aggregate_resolve(struct aggregate*, struct expression*);
 
-int fql_count(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
+int fql_count(struct aggregate*, struct group*, struct aggresult*, struct node*);
 
-int fql_min_i(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
-int fql_min_f(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
-int fql_min_s(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
+int fql_min_i(struct aggregate*, struct group*, struct aggresult*, struct node*);
+int fql_min_f(struct aggregate*, struct group*, struct aggresult*, struct node*);
+int fql_min_s(struct aggregate*, struct group*, struct aggresult*, struct node*);
 
-int fql_max_i(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
-int fql_max_f(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
-int fql_max_s(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
+int fql_max_i(struct aggregate*, struct group*, struct aggresult*, struct node*);
+int fql_max_f(struct aggregate*, struct group*, struct aggresult*, struct node*);
+int fql_max_s(struct aggregate*, struct group*, struct aggresult*, struct node*);
 
-int fql_sum_i(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
-int fql_sum_f(struct aggregate*, struct group*, struct aggresult*, struct recgroup*);
+int fql_sum_i(struct aggregate*, struct group*, struct aggresult*, struct node*);
+int fql_sum_f(struct aggregate*, struct group*, struct aggresult*, struct node*);
 
 #endif /* AGGREGATE_H */

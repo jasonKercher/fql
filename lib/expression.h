@@ -56,14 +56,14 @@ void expression_link(struct expression* dest, struct expression* src);
 void expression_cat_description(struct expression*, string*);
 int expression_try_assign_source(struct expression*, struct table*);
 
-int expression_type_check(struct expression*, struct recgroup*);
+int expression_type_check(struct expression*, struct node*);
 int expression_cast(struct expression*, enum field_type);
 
 void expression_update_indicies(struct vec*);
 
 /* data access */
-int expression_get_int(long*, struct expression*, struct recgroup*);
-int expression_get_float(double*, struct expression*, struct recgroup*);
-int expression_get_stringview(struct stringview*, struct expression*, struct recgroup*);
+int expression_get_int(long*, struct expression*, struct node*);
+int expression_get_float(double*, struct expression*, struct node*);
+int expression_get_stringview(struct stringview*, struct expression*, struct node*);
 
 #endif /* COLUMN_H */

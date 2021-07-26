@@ -198,7 +198,7 @@ unsigned logicgroup_get_condition_count(logicgroup* self)
  * the skip logic will be the evaluation of a
  * hash join.
  */
-int logicgroup_eval(logicgroup* self, recgroup* rg, logic* skip)
+int logicgroup_eval(logicgroup* self, node* rg, logic* skip)
 {
 	if (self->type == LG_PREDICATE) {
 		if (self->condition == skip) {

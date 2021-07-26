@@ -31,7 +31,7 @@ static const char* _scalar_str[] = {
         "STR",     "SUBSTRING", "UPPER",         "USER_NAME",   "YEAR",
 };
 
-int _not_implemented(function* self, union field* f, recgroup* unused)
+int _not_implemented(function* self, union field* f, node* unused)
 {
 	fprintf(stderr, "function not implemented: %s\n", _scalar_str[self->type]);
 	return 0;

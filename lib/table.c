@@ -159,16 +159,17 @@ size_t _guess_row_count(table* self)
 	unsigned max_expr_store = reader->max_idx;
 	reader->max_idx = 0;
 
-	recgroup* rg = new_(recgroup, 0);
+	node rg = {0};
+	rg.data = new_(record, 0);
 
 	int i = 0;
 	for (; i < 10; ++i) {
-		if (reader->get_record__(reader, rg) != FQL_GOOD) {
+		if (reader->get_record__(reader, &rg) != FQL_GOOD) {
 			break;
 		}
 		/* ignore header */
 		if (i) {
-			record* rec = recgroup_rec_begin(rg);
+			record* rec = rg.data;
 			total_length += rec->rec_ref.len;
 		}
 	}
@@ -177,8 +178,7 @@ size_t _guess_row_count(table* self)
 		return HASH_JOIN_MIN_SIZE;
 	}
 
-	//record_destroy(&rec);
-	delete_(recgroup, rg);
+	delete_(record, rg.data);
 
 	reader->max_idx = max_expr_store;
 

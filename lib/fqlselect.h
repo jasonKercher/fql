@@ -4,13 +4,13 @@
 #include "query.h"
 #include "writer.h"
 #include "schema.h"
-#include "expression.h"
 #include "operation.h"
+#include "expression.h"
 
 struct record;
 struct fqlselect;
 struct inlist;
-typedef int (*select_fn)(struct fqlselect*, struct recgroup*);
+typedef int (*select_fn)(struct fqlselect*, struct node*);
 
 struct fqlselect {
 	enum op oper_type;
@@ -19,7 +19,7 @@ struct fqlselect {
 	struct writer* writer;
 	set* list_data;
 	struct expression* const_dest;
-	struct queue* union_selects;
+	struct node* union_selects;
 	struct vec* _selection_exprs;
 	select_fn select__;
 	size_t offset;

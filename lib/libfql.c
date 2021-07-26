@@ -8,10 +8,9 @@
 #include "process.h"
 #include "fqlplan.h"
 #include "fqlselect.h"
-#include "util/util.h"
 #include "util/vec.h"
-#include "util/stack.h"
-#include "util/queue.h"
+#include "util/util.h"
+#include "util/node.h"
 #include "antlr/antlr.h"
 
 #define PIPE_FACTOR_DEFAULT 16
@@ -301,13 +300,13 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 		}
 
 		query_free(query);
-		queue_dequeue(&fql->query_list);
+		node_dequeue(&fql->query_list);
 		if (ret == FQL_FAIL) {
 			break;
 		}
 	}
 	if (ret != FQL_GOOD) {
-		queue_free_func(&fql->query_list, query_free);
+		node_free_func(&fql->query_list, query_free);
 	}
 	return ret;
 }
@@ -351,10 +350,10 @@ int fql_make_plans(struct fql_handle* fql, const char* query_str)
 		print_plans(fql->query_list);
 	}
 
-	return queue_count(fql->query_list);
+	return node_count(fql->query_list);
 
 make_plans_fail:
-	queue_free_func(&fql->query_list, query_free);
+	node_free_func(&fql->query_list, query_free);
 	return FQL_FAIL;
 }
 
@@ -393,7 +392,7 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 		*fields = vec_begin(fql->api_vec);
 		return ret;
 	}
-	struct query* q = queue_dequeue(&fql->query_list);
+	struct query* q = node_dequeue(&fql->query_list);
 	query_free(q);
 	_free_api_strings(fql->api_vec);
 	vec_clear(fql->api_vec);

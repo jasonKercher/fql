@@ -35,7 +35,7 @@
 		}                                                         \
 	}
 
-int fql_logic_eq_i(logic* self, recgroup* rg)
+int fql_logic_eq_i(logic* self, node* rg)
 {
 	long n0 = 0;
 	long n1 = 0;
@@ -43,7 +43,7 @@ int fql_logic_eq_i(logic* self, recgroup* rg)
 	return (n0 == n1);
 }
 
-int fql_logic_eq_f(logic* self, recgroup* rg)
+int fql_logic_eq_f(logic* self, node* rg)
 {
 	double n0 = 0;
 	double n1 = 0;
@@ -51,14 +51,14 @@ int fql_logic_eq_f(logic* self, recgroup* rg)
 	return (n0 == n1);
 }
 
-int fql_logic_eq_s(logic* self, recgroup* rg)
+int fql_logic_eq_s(logic* self, node* rg)
 {
 	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
 	return (stringview_compare_nocase_rtrim(&sv0, &sv1) == 0);
 }
 
-int fql_logic_ne_i(logic* self, recgroup* rg)
+int fql_logic_ne_i(logic* self, node* rg)
 {
 	long n0 = 0;
 	long n1 = 0;
@@ -66,7 +66,7 @@ int fql_logic_ne_i(logic* self, recgroup* rg)
 	return (n0 != n1);
 }
 
-int fql_logic_ne_f(logic* self, recgroup* rg)
+int fql_logic_ne_f(logic* self, node* rg)
 {
 	double n0 = 0;
 	double n1 = 0;
@@ -74,14 +74,14 @@ int fql_logic_ne_f(logic* self, recgroup* rg)
 	return (n0 != n1);
 }
 
-int fql_logic_ne_s(logic* self, recgroup* rg)
+int fql_logic_ne_s(logic* self, node* rg)
 {
 	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
 	return (stringview_compare_nocase_rtrim(&sv0, &sv1) != 0);
 }
 
-int fql_logic_gt_i(logic* self, recgroup* rg)
+int fql_logic_gt_i(logic* self, node* rg)
 {
 	long n0 = 0;
 	long n1 = 0;
@@ -89,7 +89,7 @@ int fql_logic_gt_i(logic* self, recgroup* rg)
 	return (n0 > n1);
 }
 
-int fql_logic_gt_f(logic* self, recgroup* rg)
+int fql_logic_gt_f(logic* self, node* rg)
 {
 	double n0 = 0;
 	double n1 = 0;
@@ -97,14 +97,14 @@ int fql_logic_gt_f(logic* self, recgroup* rg)
 	return (n0 > n1);
 }
 
-int fql_logic_gt_s(logic* self, recgroup* rg)
+int fql_logic_gt_s(logic* self, node* rg)
 {
 	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
 	return (stringview_compare_nocase_rtrim(&sv0, &sv1) > 0);
 }
 
-int fql_logic_ge_i(logic* self, recgroup* rg)
+int fql_logic_ge_i(logic* self, node* rg)
 {
 	long n0 = 0;
 	long n1 = 0;
@@ -112,7 +112,7 @@ int fql_logic_ge_i(logic* self, recgroup* rg)
 	return (n0 >= n1);
 }
 
-int fql_logic_ge_f(logic* self, recgroup* rg)
+int fql_logic_ge_f(logic* self, node* rg)
 {
 	double n0 = 0;
 	double n1 = 0;
@@ -120,14 +120,14 @@ int fql_logic_ge_f(logic* self, recgroup* rg)
 	return (n0 >= n1);
 }
 
-int fql_logic_ge_s(logic* self, recgroup* rg)
+int fql_logic_ge_s(logic* self, node* rg)
 {
 	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
 	return (stringview_compare_nocase_rtrim(&sv0, &sv1) >= 0);
 }
 
-int fql_logic_lt_i(logic* self, recgroup* rg)
+int fql_logic_lt_i(logic* self, node* rg)
 {
 	long n0 = 0;
 	long n1 = 0;
@@ -135,7 +135,7 @@ int fql_logic_lt_i(logic* self, recgroup* rg)
 	return (n0 < n1);
 }
 
-int fql_logic_lt_f(logic* self, recgroup* rg)
+int fql_logic_lt_f(logic* self, node* rg)
 {
 	double n0 = 0;
 	double n1 = 0;
@@ -143,14 +143,14 @@ int fql_logic_lt_f(logic* self, recgroup* rg)
 	return (n0 < n1);
 }
 
-int fql_logic_lt_s(logic* self, recgroup* rg)
+int fql_logic_lt_s(logic* self, node* rg)
 {
 	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
 	return (stringview_compare_nocase_rtrim(&sv0, &sv1) < 0);
 }
 
-int fql_logic_le_i(logic* self, recgroup* rg)
+int fql_logic_le_i(logic* self, node* rg)
 {
 	long n0 = 0;
 	long n1 = 0;
@@ -158,7 +158,7 @@ int fql_logic_le_i(logic* self, recgroup* rg)
 	return (n0 <= n1);
 }
 
-int fql_logic_le_f(logic* self, recgroup* rg)
+int fql_logic_le_f(logic* self, node* rg)
 {
 	double n0 = 0;
 	double n1 = 0;
@@ -166,14 +166,14 @@ int fql_logic_le_f(logic* self, recgroup* rg)
 	return (n0 <= n1);
 }
 
-int fql_logic_le_s(logic* self, recgroup* rg)
+int fql_logic_le_s(logic* self, node* rg)
 {
 	stringview sv0, sv1;
 	get_stringviews(sv0, sv1);
 	return (stringview_compare_nocase_rtrim(&sv0, &sv1) <= 0);
 }
 
-int fql_logic_in_i(logic* self, recgroup* rg)
+int fql_logic_in_i(logic* self, node* rg)
 {
 	long n0 = 0;
 	try_(expression_get_int(&n0, self->expr[0], rg));
@@ -191,7 +191,7 @@ int fql_logic_in_i(logic* self, recgroup* rg)
 	return false;
 }
 
-int fql_logic_in_f(logic* self, recgroup* rg)
+int fql_logic_in_f(logic* self, node* rg)
 {
 	double n0 = 0;
 	try_(expression_get_float(&n0, self->expr[0], rg));
@@ -209,7 +209,7 @@ int fql_logic_in_f(logic* self, recgroup* rg)
 	return false;
 }
 
-int fql_logic_in_s(logic* self, recgroup* rg)
+int fql_logic_in_s(logic* self, node* rg)
 {
 	stringview sv0;
 	try_(expression_get_stringview(&sv0, self->expr[0], rg));
@@ -227,7 +227,7 @@ int fql_logic_in_s(logic* self, recgroup* rg)
 	return false;
 }
 
-int fql_logic_subin_i(logic* self, recgroup* rg)
+int fql_logic_subin_i(logic* self, node* rg)
 {
 	long n0 = 0;
 	try_(expression_get_int(&n0, self->expr[0], rg));
@@ -235,7 +235,7 @@ int fql_logic_subin_i(logic* self, recgroup* rg)
 	return set_nhas(self->in_data->list_data, (char*)&n0, sizeof(n0));
 }
 
-int fql_logic_subin_f(logic* self, recgroup* rg)
+int fql_logic_subin_f(logic* self, node* rg)
 {
 	double n0 = 0;
 	try_(expression_get_float(&n0, self->expr[0], rg));
@@ -243,7 +243,7 @@ int fql_logic_subin_f(logic* self, recgroup* rg)
 	return set_nhas(self->in_data->list_data, (char*)&n0, sizeof(n0));
 }
 
-int fql_logic_subin_s(logic* self, recgroup* rg)
+int fql_logic_subin_s(logic* self, node* rg)
 {
 	stringview sv0;
 	try_(expression_get_stringview(&sv0, self->expr[0], rg));
@@ -251,7 +251,7 @@ int fql_logic_subin_s(logic* self, recgroup* rg)
 	return set_nhas(self->in_data->list_data, sv0.data, sv0.len);
 }
 
-int fql_logic_like(logic* self, recgroup* rg)
+int fql_logic_like(logic* self, node* rg)
 {
 	stringview sv0;
 	try_(expression_get_stringview(&sv0, self->expr[0], rg));
@@ -274,7 +274,7 @@ int fql_logic_like(logic* self, recgroup* rg)
 	return true;
 }
 
-int fql_logic_is_null(logic* self, recgroup* rg)
+int fql_logic_is_null(logic* self, node* rg)
 {
 	fputs("logical NULL check not yet implemented\n", stderr);
 	return FQL_FAIL;

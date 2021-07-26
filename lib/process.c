@@ -70,7 +70,7 @@ void process_destroy(process* self, bool is_root)
 	delete_if_exists_(vec, self->wait_list);
 	delete_(vec, self->union_end_nodes);
 	delete_(string, self->plan_msg);
-	queue_free_func(&self->queued_results, &fifo_free);
+	node_free_func(&self->queued_results, &fifo_free);
 }
 
 void process_activate(process* self, plan* plan, unsigned fifo_size)
@@ -89,13 +89,13 @@ void process_activate(process* self, plan* plan, unsigned fifo_size)
 	dnode** it = vec_begin(self->union_end_nodes);
 	for (; it != vec_end(self->union_end_nodes); ++it) {
 		process* select_proc = (*it)->data;
-		select_proc->fifo_out[0] = new_t_(fifo, recgroup, fifo_size);
+		select_proc->fifo_out[0] = new_t_(fifo, node*, fifo_size);
 		select_proc->fifo_out[0]->input_count = 1;
-		queue_enqueue(&self->queued_results, select_proc->fifo_out[0]);
+		node_enqueue(&self->queued_results, select_proc->fifo_out[0]);
 	}
 
 	if (self->fifo_in[0] == NULL) {
-		self->fifo_in[0] = new_t_(fifo, recgroup, fifo_size);
+		self->fifo_in[0] = new_t_(fifo, node*, fifo_size);
 		self->org_fifo_in0 = self->fifo_in[0];
 		/* NOTE: GROUP BY hack. a constant query expression
 		 *       containing a group by essentially has 2 roots.
@@ -111,7 +111,7 @@ void process_activate(process* self, plan* plan, unsigned fifo_size)
 			fputs("Useless has_second_input\n", stderr);
 			return;
 		}
-		self->fifo_in[1] = new_t_(fifo, recgroup, fifo_size);
+		self->fifo_in[1] = new_t_(fifo, node*, fifo_size);
 	}
 }
 

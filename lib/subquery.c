@@ -6,7 +6,7 @@ subquery* subquery_construct(subquery* self, fqlselect* select)
 {
 	self->select = select;
 	/* basically just swap space */
-	record_construct(&self->copy_data);
+	record_construct(&self->copy_data, 0);
 
 	return self;
 }
@@ -24,9 +24,9 @@ void subquery_free(void* generic)
  *       until we've copied all stringviews to copy_data.
  *       Then, move that shit into dest afterward.
  */
-int subquery_get_record(reader* reader, recgroup* rg)
+int subquery_get_record(reader* reader, node* rg)
 {
-	//record* dest = recgroup_rec_at(rg, 0);
+	//record* dest = node_rec_at(rg, 0);
 
 	subquery* self = reader->reader_data;
 	vec* expressions = self->select->_selection_exprs;
@@ -75,16 +75,14 @@ int subquery_get_record(reader* reader, recgroup* rg)
 		}
 	}
 
-	record* dest = recgroup_rec_add_one_front(rg);
+	record* dest = node_rec_add_one_front(rg);
 	record_swap(dest, &self->copy_data);
-	recgroup_resize(rg, 1);
+	node_resize(rg, 1);
 
 	return FQL_GOOD;
 }
 
-int subquery_get_record_at(reader* unused_self,
-                           recgroup* unused_rg,
-                           const char* unused_loc)
+int subquery_get_record_at(reader* unused_self, node* unused_rg, const char* unused_loc)
 {
 	fputs("cannot seek through subquery\n", stderr);
 	return FQL_FAIL;

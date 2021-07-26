@@ -67,7 +67,7 @@ void group_cat_description(group* self, process* proc)
 	}
 }
 
-int _add_agg_result(group* self, recgroup* rg)
+int _add_agg_result(group* self, node* rg)
 {
 	aggregate** it = vec_begin(&self->aggregates);
 	for (; it != vec_end(&self->aggregates); ++it) {
@@ -82,7 +82,7 @@ int _add_agg_result(group* self, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int _update_agg_result(group* self, recgroup* rg, unsigned idx)
+int _update_agg_result(group* self, node* rg, unsigned idx)
 {
 	aggregate** it = vec_begin(&self->aggregates);
 	for (; it != vec_end(&self->aggregates); ++it) {
@@ -93,7 +93,7 @@ int _update_agg_result(group* self, recgroup* rg, unsigned idx)
 	return FQL_GOOD;
 }
 
-int group_record(group* self, recgroup* rg)
+int group_record(group* self, node* rg)
 {
 	size_t org_size = flex_size(&self->group_data);
 

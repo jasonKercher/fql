@@ -63,7 +63,7 @@ int switchcase_resolve_type(switchcase* self, expression* expr)
 	return FQL_GOOD;
 }
 
-int _logic_eval_idx(switchcase* self, recgroup* rg)
+int _logic_eval_idx(switchcase* self, node* rg)
 {
 	unsigned i = 0;
 	logicgroup** it = vec_begin(&self->tests);
@@ -87,7 +87,7 @@ int _logic_eval_idx(switchcase* self, recgroup* rg)
 	return -1;
 }
 
-int switchcase_eval_to_int(switchcase* self, long* ret, recgroup* rg)
+int switchcase_eval_to_int(switchcase* self, long* ret, node* rg)
 {
 	int val_idx = try_(_logic_eval_idx(self, rg));
 
@@ -102,7 +102,7 @@ int switchcase_eval_to_int(switchcase* self, long* ret, recgroup* rg)
 	return expression_get_int(ret, *val, rg);
 }
 
-int switchcase_eval_to_float(switchcase* self, double* ret, recgroup* rg)
+int switchcase_eval_to_float(switchcase* self, double* ret, node* rg)
 {
 	int val_idx = try_(_logic_eval_idx(self, rg));
 
@@ -117,7 +117,7 @@ int switchcase_eval_to_float(switchcase* self, double* ret, recgroup* rg)
 	return expression_get_float(ret, *val, rg);
 }
 
-int switchcase_eval_to_stringview(switchcase* self, stringview* ret, recgroup* rg)
+int switchcase_eval_to_stringview(switchcase* self, stringview* ret, node* rg)
 {
 	int val_idx = try_(_logic_eval_idx(self, rg));
 

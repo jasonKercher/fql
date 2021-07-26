@@ -3,7 +3,6 @@
 
 #include "fqlhandle.h"
 #include "fqlplan.h"
-#include "util/queue.h"
 
 struct schema;
 

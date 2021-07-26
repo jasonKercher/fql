@@ -33,7 +33,7 @@ plan* plan_construct(plan* self, query* query, struct fql_handle* fql)
 	        NULL,                    /* op_true */
 	        NULL,                    /* op_false */
 	        NULL,                    /* current */
-	        NULL,                    /* _recgroups */
+	        NULL,                    /* _root_data */
 	        NULL,                    /* root */
 	        query,                   /* query */
 	        0,                       /* rows_affected */
@@ -78,11 +78,12 @@ void plan_destroy(void* generic_plan)
 		return;
 	}
 
-	recgroup* it = vec_begin(self->_recgroups);
-	for (; it != vec_end(self->_recgroups); ++it) {
-		recgroup_destroy(it);
+	node* it = vec_begin(self->_root_data);
+	for (; it != vec_end(self->_root_data); ++it) {
+		delete_(record, it->data);
+		node_free(&it);
 	}
-	delete_(vec, self->_recgroups);
+	delete_(vec, self->_root_data);
 	delete_(fifo, self->root);
 }
 
@@ -514,12 +515,12 @@ void _order(plan* self, query* query)
  */
 void _clear_passive(plan* self)
 {
-	vec* node_vec = self->processes->nodes;
-	dnode** nodes = vec_begin(node_vec);
+	vec* procnode_vec = self->processes->nodes;
+	dnode** nodes = vec_begin(procnode_vec);
 
 	/* re-link nodes so passive ones get skipped during traversal */
 	unsigned i = 0;
-	for (; i < node_vec->size; ++i) {
+	for (; i < procnode_vec->size; ++i) {
 		/* Check branch 0 */
 		while (nodes[i]->out[0] != NULL) {
 			process* proc = nodes[i]->out[0]->data;
@@ -546,7 +547,7 @@ void _clear_passive(plan* self)
 	}
 
 	/* At this point, all passive nodes should be unreachable */
-	for (i = 0; i < node_vec->size;) {
+	for (i = 0; i < procnode_vec->size;) {
 		process* proc = nodes[i]->data;
 		if (proc->is_passive) {
 			delete_(process, proc, false);
@@ -591,10 +592,10 @@ void _update_pipes(dgraph* proc_graph)
  */
 void _make_pipes(plan* self)
 {
-	vec* node_vec = self->processes->nodes;
-	dnode** nodes = vec_begin(node_vec);
+	vec* procnode_vec = self->processes->nodes;
+	dnode** nodes = vec_begin(procnode_vec);
 
-	for (; nodes != vec_end(node_vec); ++nodes) {
+	for (; nodes != vec_end(procnode_vec); ++nodes) {
 		process* proc = (*nodes)->data;
 		if ((*nodes)->out[0] != NULL) {
 			process* proc0 = (*nodes)->out[0]->data;
@@ -701,7 +702,7 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 
 int build_plans(struct fql_handle* fql)
 {
-	queue* node = fql->query_list;
+	node* node = fql->query_list;
 
 	for (; node; node = node->next) {
 		query* query = node->data;
@@ -781,10 +782,10 @@ void _print_plan(plan* self)
 	fputs("\n", stderr);
 }
 
-void print_plans(queue* query_list)
+void print_plans(node* query_list)
 {
 	int i = 0;
-	queue* node = query_list;
+	node* node = query_list;
 	for (; node; node = node->next, ++i) {
 		query* query = query_list->data;
 		fprintf(stderr, "\nQUERY %d\n", ++i);
@@ -813,19 +814,19 @@ void _activate_procs(plan* self)
 	unsigned fifo_base_size = pipe_count * self->pipe_factor;
 	unsigned root_size = fifo_base_size * pipe_count;
 
-	self->_recgroups = new_t_(vec, recgroup);
-	vec_resize(self->_recgroups, root_size);
-	self->root = new_t_(fifo, recgroup*, root_size);
+	self->_root_data = new_t_(vec, node);
+	vec_resize(self->_root_data, root_size);
+	self->root = new_t_(fifo, node*, root_size);
 
 	unsigned i = 0;
-	for (; i < self->_recgroups->size; ++i) {
-		recgroup* rg = vec_at(self->_recgroups, i);
-		recgroup_construct(rg, i);
-		vec_set(self->root->buf, i, &rg);
+	node* it = vec_begin(self->_root_data);
+	for (; it != vec_end(self->_root_data); ++it) {
+		it->data = new_(record, i);
+		vec_set(self->root->buf, i, &it);
 	}
 
-	vec* node_vec = self->processes->nodes;
-	dnode** nodes = vec_begin(node_vec);
+	vec* procnode_vec = self->processes->nodes;
+	dnode** procnodes = vec_begin(procnode_vec);
 
 	if (self->is_const) {
 		fifo_advance(self->root);
@@ -839,24 +840,24 @@ void _activate_procs(plan* self)
 	 * This could all be done using the bottom loop,
 	 * but I unrolled a few for easier tracking.
 	 */
-	process_activate((*nodes)->data, self, fifo_base_size);
-	if (++nodes == vec_end(node_vec))
+	process_activate((*procnodes)->data, self, fifo_base_size);
+	if (++procnodes == vec_end(procnode_vec))
 		return;
-	process_activate((*nodes)->data, self, fifo_base_size);
-	if (++nodes == vec_end(node_vec))
+	process_activate((*procnodes)->data, self, fifo_base_size);
+	if (++procnodes == vec_end(procnode_vec))
 		return;
-	process_activate((*nodes)->data, self, fifo_base_size);
-	if (++nodes == vec_end(node_vec))
+	process_activate((*procnodes)->data, self, fifo_base_size);
+	if (++procnodes == vec_end(procnode_vec))
 		return;
-	process_activate((*nodes)->data, self, fifo_base_size);
-	if (++nodes == vec_end(node_vec))
+	process_activate((*procnodes)->data, self, fifo_base_size);
+	if (++procnodes == vec_end(procnode_vec))
 		return;
-	process_activate((*nodes)->data, self, fifo_base_size);
-	if (++nodes == vec_end(node_vec))
+	process_activate((*procnodes)->data, self, fifo_base_size);
+	if (++procnodes == vec_end(procnode_vec))
 		return;
-	process_activate((*nodes)->data, self, fifo_base_size);
+	process_activate((*procnodes)->data, self, fifo_base_size);
 
-	for (++nodes; nodes != vec_end(node_vec); ++nodes) {
-		process_activate((*nodes)->data, self, fifo_base_size);
+	for (++procnodes; procnodes != vec_end(procnode_vec); ++procnodes) {
+		process_activate((*procnodes)->data, self, fifo_base_size);
 	}
 }

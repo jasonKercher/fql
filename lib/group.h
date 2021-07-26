@@ -29,7 +29,7 @@ void distinct_destroy(struct group*);
 void group_add_expression(struct group*, struct expression*);
 void group_cat_description(struct group*, struct process*);
 
-int group_record(struct group*, struct recgroup* rec);
+int group_record(struct group*, struct node* rec);
 int group_dump_record(struct group* group, struct record* rec);
 
 #endif /* GROUP_H */

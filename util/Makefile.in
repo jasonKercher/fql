@@ -103,9 +103,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libutil_la_LIBADD =
-am_libutil_la_OBJECTS = libutil_la-util.lo libutil_la-stack.lo \
-	libutil_la-queue.lo libutil_la-hashmap.lo libutil_la-vec.lo \
-	libutil_la-flex.lo libutil_la-stringy.lo libutil_la-fifo.lo \
+am_libutil_la_OBJECTS = libutil_la-util.lo libutil_la-node.lo \
+	libutil_la-hashmap.lo libutil_la-vec.lo libutil_la-flex.lo \
+	libutil_la-stringy.lo libutil_la-fifo.lo \
 	libutil_la-stringview.lo libutil_la-dgraph.lo
 libutil_la_OBJECTS = $(am_libutil_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -134,8 +134,7 @@ am__depfiles_remade = ./$(DEPDIR)/libutil_la-dgraph.Plo \
 	./$(DEPDIR)/libutil_la-fifo.Plo \
 	./$(DEPDIR)/libutil_la-flex.Plo \
 	./$(DEPDIR)/libutil_la-hashmap.Plo \
-	./$(DEPDIR)/libutil_la-queue.Plo \
-	./$(DEPDIR)/libutil_la-stack.Plo \
+	./$(DEPDIR)/libutil_la-node.Plo \
 	./$(DEPDIR)/libutil_la-stringview.Plo \
 	./$(DEPDIR)/libutil_la-stringy.Plo \
 	./$(DEPDIR)/libutil_la-util.Plo ./$(DEPDIR)/libutil_la-vec.Plo
@@ -200,6 +199,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHECK_CFLAGS = @CHECK_CFLAGS@
 CHECK_LIBS = @CHECK_LIBS@
+CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -304,7 +304,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -316,8 +315,7 @@ top_srcdir = @top_srcdir@
 noinst_LTLIBRARIES = libutil.la
 libutil_la_CFLAGS = -Wextra -Wall
 libutil_la_SOURCES = util.h util.c \
-		stack.h stack.c \
-		queue.h queue.c \
+		node.h node.c \
 		hashmap.h hashmap.c \
 		vec.h vec.c \
 		flex.h flex.c \
@@ -384,8 +382,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-fifo.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-flex.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-hashmap.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-queue.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-stack.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-node.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-stringview.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-stringy.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libutil_la-util.Plo@am__quote@ # am--include-marker
@@ -425,19 +422,12 @@ libutil_la-util.lo: util.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-util.lo `test -f 'util.c' || echo '$(srcdir)/'`util.c
 
-libutil_la-stack.lo: stack.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-stack.lo -MD -MP -MF $(DEPDIR)/libutil_la-stack.Tpo -c -o libutil_la-stack.lo `test -f 'stack.c' || echo '$(srcdir)/'`stack.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-stack.Tpo $(DEPDIR)/libutil_la-stack.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='stack.c' object='libutil_la-stack.lo' libtool=yes @AMDEPBACKSLASH@
+libutil_la-node.lo: node.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-node.lo -MD -MP -MF $(DEPDIR)/libutil_la-node.Tpo -c -o libutil_la-node.lo `test -f 'node.c' || echo '$(srcdir)/'`node.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-node.Tpo $(DEPDIR)/libutil_la-node.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='node.c' object='libutil_la-node.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-stack.lo `test -f 'stack.c' || echo '$(srcdir)/'`stack.c
-
-libutil_la-queue.lo: queue.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-queue.lo -MD -MP -MF $(DEPDIR)/libutil_la-queue.Tpo -c -o libutil_la-queue.lo `test -f 'queue.c' || echo '$(srcdir)/'`queue.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libutil_la-queue.Tpo $(DEPDIR)/libutil_la-queue.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='queue.c' object='libutil_la-queue.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-queue.lo `test -f 'queue.c' || echo '$(srcdir)/'`queue.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -c -o libutil_la-node.lo `test -f 'node.c' || echo '$(srcdir)/'`node.c
 
 libutil_la-hashmap.lo: hashmap.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libutil_la_CFLAGS) $(CFLAGS) -MT libutil_la-hashmap.lo -MD -MP -MF $(DEPDIR)/libutil_la-hashmap.Tpo -c -o libutil_la-hashmap.lo `test -f 'hashmap.c' || echo '$(srcdir)/'`hashmap.c
@@ -623,8 +613,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libutil_la-fifo.Plo
 	-rm -f ./$(DEPDIR)/libutil_la-flex.Plo
 	-rm -f ./$(DEPDIR)/libutil_la-hashmap.Plo
-	-rm -f ./$(DEPDIR)/libutil_la-queue.Plo
-	-rm -f ./$(DEPDIR)/libutil_la-stack.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-node.Plo
 	-rm -f ./$(DEPDIR)/libutil_la-stringview.Plo
 	-rm -f ./$(DEPDIR)/libutil_la-stringy.Plo
 	-rm -f ./$(DEPDIR)/libutil_la-util.Plo
@@ -678,8 +667,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libutil_la-fifo.Plo
 	-rm -f ./$(DEPDIR)/libutil_la-flex.Plo
 	-rm -f ./$(DEPDIR)/libutil_la-hashmap.Plo
-	-rm -f ./$(DEPDIR)/libutil_la-queue.Plo
-	-rm -f ./$(DEPDIR)/libutil_la-stack.Plo
+	-rm -f ./$(DEPDIR)/libutil_la-node.Plo
 	-rm -f ./$(DEPDIR)/libutil_la-stringview.Plo
 	-rm -f ./$(DEPDIR)/libutil_la-stringy.Plo
 	-rm -f ./$(DEPDIR)/libutil_la-util.Plo

@@ -12,7 +12,7 @@ typedef struct csv_record csv_record;
 struct fql_handle;
 struct writer;
 
-int libcsv_write_record(struct writer*, struct vec*, struct recgroup*, FILE*);
+int libcsv_write_record(struct writer*, struct vec*, struct node*, FILE*);
 
 struct fixedwriter {
 	FILE* file;
@@ -30,9 +30,9 @@ int fixedwriter_close(struct fixedwriter*);
 FILE* fixedwriter_get_file(struct fixedwriter*);
 char* fixedwriter_take_filename(struct fixedwriter*);
 const char* fixedwriter_get_tempname(struct fixedwriter*);
-int fixedwriter_write_record(struct writer*, struct vec*, struct recgroup*, FILE*);
+int fixedwriter_write_record(struct writer*, struct vec*, struct node*, FILE*);
 
-typedef int (*write_fn)(struct writer*, struct vec*, struct recgroup*, FILE*);
+typedef int (*write_fn)(struct writer*, struct vec*, struct node*, FILE*);
 
 struct writer {
 	enum io type;

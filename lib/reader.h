@@ -14,8 +14,8 @@ struct reader;
 struct fqlselect;
 struct fql_handle;
 
-typedef int (*read_fn)(struct reader*, struct recgroup*);
-typedef int (*read_at_fn)(struct reader*, struct recgroup*, const char*);
+typedef int (*read_fn)(struct reader*, struct node*);
+typedef int (*read_at_fn)(struct reader*, struct node*, const char*);
 typedef int (*reset_fn)(struct reader*);
 
 struct reader {
@@ -53,8 +53,8 @@ typedef struct subquery subquery;
 
 struct subquery* subquery_construct(struct subquery*, struct fqlselect*);
 void subquery_free(void*);
-int subquery_get_record(struct reader*, struct recgroup*);
-int subquery_get_record_at(struct reader*, struct recgroup*, const char*);
+int subquery_get_record(struct reader*, struct node*);
+int subquery_get_record_at(struct reader*, struct node*, const char*);
 int subquery_reset(struct reader*);
 
 
@@ -71,8 +71,8 @@ typedef struct fixedreader fixedreader;
 struct fixedreader* fixedreader_construct(struct fixedreader*, struct vec* expressions);
 void fixedreader_free(void*);
 int fixedreader_open(struct reader*, const char* file_name);
-int fixedreader_get_record(struct reader*, struct recgroup*);
-int fixedreader_get_record_at(struct reader*, struct recgroup*, const char*);
+int fixedreader_get_record(struct reader*, struct node*);
+int fixedreader_get_record_at(struct reader*, struct node*, const char*);
 int fixedreader_reset(struct reader*);
 
 
@@ -82,8 +82,8 @@ int fixedreader_reset(struct reader*);
 typedef struct csv_reader csv_reader;
 
 void libcsv_free(void*);
-int libcsv_get_record(struct reader*, struct recgroup*);
-int libcsv_get_record_at(struct reader*, struct recgroup*, const char*);
+int libcsv_get_record(struct reader*, struct node*);
+int libcsv_get_record_at(struct reader*, struct node*, const char*);
 int libcsv_reset(struct reader*);
 
 #endif /* READER_H */

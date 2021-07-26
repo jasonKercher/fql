@@ -6,7 +6,7 @@
 #include "fqlplan.h"
 #include "util/stringy.h"
 #include "util/fifo.h"
-#include "util/queue.h"
+#include "util/node.h"
 #include "util/dgraph.h"
 
 struct process;
@@ -23,7 +23,7 @@ struct process {
 	string* plan_msg;             /* message that prints with plan */
 	struct vec* wait_list;        /* list of fifos that we wait for */
 	struct vec* union_end_nodes;  /* nodes that will re-link for union */
-	struct queue* queued_results; /* list of additional input fifos */
+	struct node* queued_results;  /* list of additional input fifos */
 	size_t rows_affected;         /* if process is true proc, track this */
 	size_t max_recs_iter;         /* Max recs allowed per iteration */
 	short in_src_count;           /* number of input sources at this step */

@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 #include "vec.h"
-#include "stack.h"
 #include "fifo.h"
 
 struct dnode {

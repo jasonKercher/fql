@@ -3,7 +3,7 @@
 #include "util/util.h"
 #include "util/stringview.h"
 
-record* record_construct(record* self)
+record* record_construct(record* self, unsigned idx)
 {
 	*self = (record) {
 	        {0},   /* fields */
@@ -12,6 +12,8 @@ record* record_construct(record* self)
 	        NULL,  /* libcsv_rec */
 	        {0},   /* rec_ref */
 	        0,     /* offset */
+	        idx,   /* rec_idx */
+	        0,     /* select_len */
 	        0,     /* max_subquery_strings */
 	        0,     /* max_group_strings */
 	        false, /* is_ref */
@@ -85,7 +87,7 @@ string* record_generate_subquery_string(record* self)
 		return ret;
 	}
 
-	unsigned i = (self->max_subquery_count) ? self->max_subquery_count : 0;
+	unsigned i = self->max_subquery_count;
 	for (; i < self->subquery_strings->size; ++i) {
 		string_construct(ret);
 	}
@@ -106,7 +108,7 @@ string* record_generate_groupby_string(record* self)
 		return ret;
 	}
 
-	unsigned i = (self->max_group_count) ? self->max_group_count : 0;
+	unsigned i = self->max_group_count;
 	for (; i < self->group_strings->size; ++i) {
 		string_construct(ret);
 	}
@@ -116,140 +118,56 @@ string* record_generate_groupby_string(record* self)
 	return ret;
 }
 
-recgroup* recgroup_construct(recgroup* self, unsigned _fifo_idx)
-{
-	memset(self, 0, sizeof(*self));
+//recgroup* recgroup_construct(recgroup* self, unsigned fifo_idx)
+//{
+//	*self = (recgroup) {
+//	        NULL,     /* rec_list */
+//	        0,        /* select_len */
+//	        fifo_idx, /* _fifo_idx */
+//	};
+//	return self;
+//}
 
-	/* recgroup struct is squeezed into 16
-	 * bytes because it used to be the main
-	 * type that passed through the fifos
-	 */
-	*((uint32_t*)self->_fifo_idx) = _fifo_idx;
-
-	self->records = new_t_(vec, record);
-	return self;
-}
-
-void recgroup_destroy(recgroup* self)
-{
-	unsigned i = 0;
-	/* READ passed back of records is correct */
-	for (; i < self->_max_sources; ++i) {
-		record* rec = vec_at(self->records, i);
-		record_destroy(rec);
-	}
-	delete_(vec, self->records);
-}
-
-/* fifo idx not directly accessible */
-uint32_t recgroup_get_idx(const recgroup* self)
-{
-	uint32_t idx = *(uint32_t*)self->_fifo_idx;
-	return idx & 0x00FFFFFF;
-}
-
-record* recgroup_rec_begin(const recgroup* self)
-{
-	return vec_at(self->records, 0);
-}
-
-record* recgroup_rec_back(const recgroup* self)
-{
-	return vec_at(self->records, self->records->size - 1);
-}
-
-record* recgroup_rec_at(const recgroup* self, unsigned idx)
-{
-	return vec_at(self->records, idx);
-}
-
-void recgroup_rec_set(recgroup* self, unsigned idx, const record* rec)
-{
-	vec_set(self->records, idx, rec);
-}
-
-void recgroup_rec_set_ref(recgroup* self, unsigned idx, const record* src)
-{
-	record* dest = recgroup_rec_at(self, idx);
-
-	vec_clear(&dest->fields);
-	vec_extend(&dest->fields, &src->fields);
-
-	dest->rec_ref = src->rec_ref;
-
-	dest->is_ref = true;
-}
-
-void recgroup_rec_push_back(recgroup* self, const record* src)
-{
-	vec_insert_at(self->records, self->records->size, src, 1);
-	++self->_max_sources;
-}
-
-
-void recgroup_resize(recgroup* self, unsigned size)
-{
-	vec_resize(self->records, size);
-	if (size <= self->_max_sources) {
-		return;
-	}
-
-	unsigned i = (self->_max_sources) ? self->_max_sources - 1 : 0;
-	for (; i < size; ++i) {
-		record* rec = vec_at(self->records, i);
-		record_construct(rec);
-	}
-
-	self->_max_sources = size;
-}
-
-record* recgroup_rec_add_one(recgroup* self)
-{
-	recgroup_resize(self, self->records->size + 1);
-	return recgroup_rec_back(self);
-}
-
-record* recgroup_rec_add_one_front(recgroup* self)
-{
-	if (self->records->size < self->_max_sources) {
-		/**** WRONG *****/
-		record* recycled_rec = vec_end(self->records);
-		record rec_cpy = *recycled_rec;
-		vec_insert_one(self->records, vec_begin(self->records), &rec_cpy);
-	} else {
-		record* new_rec = vec_add_one_front(self->records);
-		record_construct(new_rec);
-		++self->_max_sources;
-	}
-
-	return vec_begin(self->records);
-}
-
-void recgroup_rec_add_front(recgroup* self, size_t n)
-{
-	unsigned i = 0;
-	for (; i < n; ++i) {
-		recgroup_rec_add_one_front(self);
-	}
-}
-
-record* recgroup_rec_pop(recgroup* self)
-{
-	record* back = vec_pop_back(self->records);
-	--self->_max_sources;
-	return back;
-}
-
-void recgroup_clear_refs(recgroup* self)
-{
-	unsigned i = 0;
-	while (i < self->records->size) {
-		record* rec = vec_at(self->records, i);
-		if (rec->is_ref) {
-			vec_erase_at(self->records, i, 1);
-			--self->_max_sources;
-		} else {
-			++i;
-		}
-	}
-}
+//void recgroup_destroy(recgroup* _unused) { }
+//
+//record* recgroup_rec_begin(const recgroup* self)
+//{
+//	return node_at(self->rec_list, 0)->data;
+//}
+//
+//record* recgroup_rec_back(const recgroup* self)
+//{
+//	return node_back(self->rec_list)->data;
+//}
+//
+//record* recgroup_rec_at(const recgroup* self, unsigned idx)
+//{
+//	return node_at(self->rec_list, idx)->data;
+//}
+//
+////void recgroup_rec_set_ref(recgroup* self, unsigned idx, const record* src)
+////{
+////	record* dest = recgroup_rec_at(self, idx);
+////
+////	vec_clear(&dest->fields);
+////	vec_extend(&dest->fields, &src->fields);
+////
+////	dest->rec_ref = src->rec_ref;
+////
+////	dest->is_ref = true;
+////}
+//
+//void recgroup_rec_push_back(recgroup* self, node* src)
+//{
+//	node_enqueue_import(&self->rec_list, src);
+//}
+//
+//void recgroup_rec_push_front(recgroup* self, node* newnode)
+//{
+//	node_push_import(&self->rec_list, newnode);
+//}
+//
+//struct node* recgroup_rec_pop_back(recgroup* self)
+//{
+//	return node_dequeue_export(&self->rec_list);
+//}

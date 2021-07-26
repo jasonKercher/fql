@@ -5,7 +5,7 @@
 #include "misc.h"
 #include "util/stringview.h"
 
-int libcsv_write_record(writer* writer, vec* expr_vec, recgroup* rg, FILE* outstream)
+int libcsv_write_record(writer* writer, vec* expr_vec, node* rg, FILE* outstream)
 {
 	csv_writer* handle = writer->writer_data;
 
@@ -33,7 +33,7 @@ int libcsv_write_record(writer* writer, vec* expr_vec, recgroup* rg, FILE* outst
 		if (exprs[i]->expr == EXPR_ASTERISK) {
 			int quote_store = handle->quotes;
 			handle->quotes = QUOTE_NONE;
-			record* rec = recgroup_rec_at(rg, exprs[i]->src_idx);
+			record* rec = node_data_at(rg, exprs[i]->src_idx);
 			struct csv_field field = {rec->rec_ref.data, rec->rec_ref.len};
 			len += csv_write_field(handle, &field);
 			handle->quotes = quote_store;

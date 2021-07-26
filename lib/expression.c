@@ -204,7 +204,7 @@ int expression_try_assign_source(expression* self, table* table)
 	return exprs->size;
 }
 
-int expression_type_check(expression* self, recgroup* rg)
+int expression_type_check(expression* self, node* rg)
 {
 	switch (self->field_type) {
 	case FIELD_INT: {
@@ -287,7 +287,7 @@ void expression_update_indicies(vec* expr_vec)
  *       type. The best way to handle this would be to set
  *       the type during parsing.
  */
-int expression_get_int(long* ret, expression* self, recgroup* rg)
+int expression_get_int(long* ret, expression* self, node* rg)
 {
 	switch (self->expr) {
 	case EXPR_SWITCH_CASE:
@@ -297,7 +297,7 @@ int expression_get_int(long* ret, expression* self, recgroup* rg)
 		*ret = *self->rownum_ref;
 		return FQL_GOOD;
 	case EXPR_FULL_RECORD: {
-		record* rec = recgroup_rec_at(rg, self->src_idx);
+		record* rec = node_data_at(rg, self->src_idx);
 		stringview* sv = &rec->rec_ref;
 		string_copy_from_stringview(&self->buf, sv);
 		fail_if_(str2long(ret, self->buf.data));
@@ -307,7 +307,7 @@ int expression_get_int(long* ret, expression* self, recgroup* rg)
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
-		record* rec = recgroup_rec_at(rg, src_expr->src_idx);
+		record* rec = node_data_at(rg, src_expr->src_idx);
 		if (rec->fields.size <= src_expr->index) {
 			string_clear(&self->buf);
 			*ret = 0;
@@ -341,7 +341,7 @@ int expression_get_int(long* ret, expression* self, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int expression_get_float(double* ret, expression* self, recgroup* rg)
+int expression_get_float(double* ret, expression* self, node* rg)
 {
 	switch (self->expr) {
 	case EXPR_SWITCH_CASE:
@@ -351,7 +351,7 @@ int expression_get_float(double* ret, expression* self, recgroup* rg)
 		*ret = (double)*self->rownum_ref;
 		return FQL_GOOD;
 	case EXPR_FULL_RECORD: {
-		record* rec = recgroup_rec_at(rg, self->src_idx);
+		record* rec = node_data_at(rg, self->src_idx);
 		stringview* sv = &rec->rec_ref;
 		string_copy_from_stringview(&self->buf, sv);
 		fail_if_(str2double(ret, self->buf.data));
@@ -361,7 +361,7 @@ int expression_get_float(double* ret, expression* self, recgroup* rg)
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
-		record* rec = recgroup_rec_at(rg, src_expr->src_idx);
+		record* rec = node_data_at(rg, src_expr->src_idx);
 		if (rec->fields.size <= src_expr->index) {
 			string_clear(&self->buf);
 			*ret = 0;
@@ -395,14 +395,14 @@ int expression_get_float(double* ret, expression* self, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int expression_get_stringview(stringview* ret, expression* self, recgroup* rg)
+int expression_get_stringview(stringview* ret, expression* self, node* rg)
 {
 	switch (self->expr) {
 	case EXPR_SWITCH_CASE:
 		try_(switchcase_eval_to_stringview(self->field.sc, ret, rg));
 		return FQL_GOOD;
 	case EXPR_FULL_RECORD: {
-		record* rec = recgroup_rec_at(rg, self->src_idx);
+		record* rec = node_data_at(rg, self->src_idx);
 		*ret = rec->rec_ref;
 		return FQL_GOOD;
 	}
@@ -415,7 +415,7 @@ int expression_get_stringview(stringview* ret, expression* self, recgroup* rg)
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
-		record* rec = recgroup_rec_at(rg, src_expr->src_idx);
+		record* rec = node_data_at(rg, src_expr->src_idx);
 		if (rec->fields.size <= src_expr->index) {
 			string_clear(&self->buf);
 			ret->data = self->buf.data;

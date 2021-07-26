@@ -168,13 +168,13 @@ void order_cat_description(order* self, process* proc)
 	}
 }
 
-int order_add_record(order* self, recgroup* rg)
+int order_add_record(order* self, node* rg)
 {
-	record* top = recgroup_rec_at(rg, 0);
+	record* top = rg->data;
 	struct _entry entry = {
 	        flex_size(&self->order_data), /* idx */
 	        top->offset,                  /* offset */
-	        rg->select_len,               /* len */
+	        top->select_len,              /* len */
 	};
 
 	expression** exprs = vec_begin(&self->expressions);

@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <dirent.h>
 
-#include "queue.h"
+#include "util.h"
 
 int str2longbase(long* ret, const char* s, int base)
 {
@@ -184,10 +184,10 @@ char * strnstr(const char *s, const char *find, size_t slen)
 	return ((char *)s);
 }
 
-queue* dir_list_files(const char* dir)
+node* dir_list_files(const char* dir)
 {
-	/* read file names into queue */
-	queue* files = NULL;
+	/* read file names into node */
+	node* files = NULL;
 	DIR *dr;
 	struct dirent *en;
 
@@ -198,10 +198,9 @@ queue* dir_list_files(const char* dir)
 	}
 
 	while ((en = readdir(dr)) != NULL) {
-		queue_enqueue(&files, strdup(en->d_name));
+		node_enqueue(&files, strdup(en->d_name));
 	}
 	closedir(dr);
 
 	return files;
 }
-

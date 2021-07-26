@@ -3,13 +3,13 @@
 #include "misc.h"
 #include "util/util.h"
 
-int fql_count(aggregate* agg, group* group, struct aggresult* result, recgroup* rg)
+int fql_count(aggregate* agg, group* group, struct aggresult* result, node* rg)
 {
 	++result->data.i;
 	return FQL_GOOD;
 }
 
-int fql_min_i(aggregate* agg, group* group, struct aggresult* result, recgroup* rg)
+int fql_min_i(aggregate* agg, group* group, struct aggresult* result, node* rg)
 {
 	expression* col = *(expression**)vec_begin(agg->args);
 	long num = 0;
@@ -20,7 +20,7 @@ int fql_min_i(aggregate* agg, group* group, struct aggresult* result, recgroup* 
 	return FQL_GOOD;
 }
 
-int fql_min_f(aggregate* agg, group* group, struct aggresult* result, recgroup* rg)
+int fql_min_f(aggregate* agg, group* group, struct aggresult* result, node* rg)
 {
 	expression* col = *(expression**)vec_begin(agg->args);
 	double num = 0;
@@ -31,7 +31,7 @@ int fql_min_f(aggregate* agg, group* group, struct aggresult* result, recgroup* 
 	return FQL_GOOD;
 }
 
-int fql_min_s(aggregate* agg, group* group, struct aggresult* result, recgroup* rg)
+int fql_min_s(aggregate* agg, group* group, struct aggresult* result, node* rg)
 {
 	expression* col = *(expression**)vec_begin(agg->args);
 	stringview sv0 = {0};
@@ -45,7 +45,7 @@ int fql_min_s(aggregate* agg, group* group, struct aggresult* result, recgroup* 
 	return FQL_GOOD;
 }
 
-int fql_max_i(aggregate* agg, group* group, struct aggresult* result, recgroup* rg)
+int fql_max_i(aggregate* agg, group* group, struct aggresult* result, node* rg)
 {
 	expression* col = *(expression**)vec_begin(agg->args);
 	long num = 0;
@@ -56,7 +56,7 @@ int fql_max_i(aggregate* agg, group* group, struct aggresult* result, recgroup* 
 	return FQL_GOOD;
 }
 
-int fql_max_f(aggregate* agg, group* group, struct aggresult* result, recgroup* rg)
+int fql_max_f(aggregate* agg, group* group, struct aggresult* result, node* rg)
 {
 	expression* col = *(expression**)vec_begin(agg->args);
 	double num = 0;
@@ -67,7 +67,7 @@ int fql_max_f(aggregate* agg, group* group, struct aggresult* result, recgroup* 
 	return FQL_GOOD;
 }
 
-int fql_max_s(aggregate* agg, group* group, struct aggresult* result, recgroup* rg)
+int fql_max_s(aggregate* agg, group* group, struct aggresult* result, node* rg)
 {
 	expression* col = *(expression**)vec_begin(agg->args);
 	stringview sv0 = {0};
@@ -81,7 +81,7 @@ int fql_max_s(aggregate* agg, group* group, struct aggresult* result, recgroup* 
 	return FQL_GOOD;
 }
 
-int fql_sum_i(aggregate* agg, group* group, struct aggresult* result, recgroup* rg)
+int fql_sum_i(aggregate* agg, group* group, struct aggresult* result, node* rg)
 {
 	expression* col = *(expression**)vec_begin(agg->args);
 	long num = 0;
@@ -91,7 +91,7 @@ int fql_sum_i(aggregate* agg, group* group, struct aggresult* result, recgroup* 
 	return FQL_GOOD;
 }
 
-int fql_sum_f(aggregate* agg, group* group, struct aggresult* result, recgroup* rg)
+int fql_sum_f(aggregate* agg, group* group, struct aggresult* result, node* rg)
 {
 	expression* col = *(expression**)vec_begin(agg->args);
 	double num = 0;

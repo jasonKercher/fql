@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 struct fql_handle {
-	struct queue* query_list;
+	struct node* query_list;
 	struct vec* api_vec;
 	char* query_str;
 	struct {

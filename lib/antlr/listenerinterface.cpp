@@ -241,9 +241,9 @@ void ListenerInterface::enterFull_column_name(TSqlParser::Full_column_nameContex
 }
 void ListenerInterface::exitFull_column_name(TSqlParser::Full_column_nameContext * ctx)
 {
-	char* column_name = (char*) stack_pop(&_column_stack);
+	char* column_name = (char*) node_pop(&_column_stack);
 	if (_column_stack != NULL) {
-		char* table_name = (char*) stack_pop(&_column_stack);
+		char* table_name = (char*) node_pop(&_column_stack);
 		if (query_add_expression(_query, column_name, table_name)) {
 			_set_failure();
 		}
@@ -267,13 +267,13 @@ void ListenerInterface::exitBatch(TSqlParser::BatchContext * ctx) { }
 void ListenerInterface::enterSql_clauses(TSqlParser::Sql_clausesContext* ctx)
 {
 	_query = query_new(0);
-	queue_enqueue(&_fql->query_list, _query);
-	stack_push(&_query_stack, _query);
+	node_enqueue(&_fql->query_list, _query);
+	node_push(&_query_stack, _query);
 }
 void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext* ctx)
 {
 	_query->query_total = _query_id + 1;
-	stack_free(&_query_stack);
+	node_free(&_query_stack);
 }
 
 
@@ -334,7 +334,7 @@ void ListenerInterface::enterId_(TSqlParser::Id_Context* ctx)
 	switch (_tok_type) {
 	case TOK_COLUMN_NAME:
 		/* consume table designation */
-		stack_push(&_column_stack, token);
+		node_push(&_column_stack, token);
 		break;
 	case TOK_COLUMN_ALIAS:
 		query_apply_expression_alias(_query, token);
@@ -353,7 +353,7 @@ void ListenerInterface::enterId_(TSqlParser::Id_Context* ctx)
 		free_(token);
 		break;
 	case TOK_TABLE_SOURCE:
-		stack_push(&_source_stack, token);
+		node_push(&_source_stack, token);
 		break;
 	case TOK_TABLE_ALIAS:
 		strncpy_(_table_alias, token, TABLE_NAME_MAX);
@@ -534,7 +534,7 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 	 * If it is, this is a sub-query
 	 */
 	query* subquery = query_new(++_query_id);
-	stack_push(&_query_stack, subquery);
+	node_push(&_query_stack, subquery);
 
 	/* subquery as constant */
 	if (_query->in_bracket_expression) {
@@ -560,7 +560,7 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 }
 void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 {
-	_subquery = (struct query*) stack_pop(&_query_stack);
+	_subquery = (struct query*) node_pop(&_query_stack);
 	_query = (struct query*) _query_stack->data;
 
 	/* subquery as constant */
@@ -745,13 +745,13 @@ void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx)
 	}
 
 	_query = union_query;
-	stack_push(&_query_stack, _query);
+	node_push(&_query_stack, _query);
 	_query->mode = MODE_SELECT;
 }
 
 void ListenerInterface::exitSql_union(TSqlParser::Sql_unionContext * ctx)
 {
-	query* union_query = (query*)stack_pop(&_query_stack);
+	query* union_query = (query*)node_pop(&_query_stack);
 	_query = (query*)_query_stack->data;
 	query_exit_union(_query, union_query);
 }

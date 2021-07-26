@@ -7,7 +7,7 @@
 struct logicgroup;
 struct expression;
 struct stringview;
-struct recgroup;
+struct node;
 
 enum switch_state {
 	SWITCH_STATIC,
@@ -20,7 +20,7 @@ struct switchcase {
 	struct vec tests;
 	struct vec values;
 	struct expression* static_expr;
-	struct stack* return_logic_stack;
+	struct node* return_logic_stack;
 	struct vec* return_joinable;
 	enum switch_state state;
 	enum mode return_mode;
@@ -35,10 +35,8 @@ void switchcase_add_value(struct switchcase*, const struct expression*);
 void switchcase_add_logicgroup(struct switchcase*, struct logicgroup*);
 int switchcase_resolve_type(struct switchcase*, struct expression*);
 
-int switchcase_eval_to_int(struct switchcase*, long* ret, struct recgroup*);
-int switchcase_eval_to_float(struct switchcase*, double* ret, struct recgroup*);
-int switchcase_eval_to_stringview(struct switchcase*,
-                                  struct stringview*,
-                                  struct recgroup*);
+int switchcase_eval_to_int(struct switchcase*, long* ret, struct node*);
+int switchcase_eval_to_float(struct switchcase*, double* ret, struct node*);
+int switchcase_eval_to_stringview(struct switchcase*, struct stringview*, struct node*);
 
 #endif  /* SWITCHCASE_H */

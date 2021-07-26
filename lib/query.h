@@ -141,10 +141,10 @@ struct query {
 	/* all the variables below are temporaries for
 	 * tracking the query as antlr traverses it
 	 */
-	struct stack* logic_stack;      /* used to build logic groups */
 	struct vec* joinable;           /* denotes a joinable condition */
-	struct stack* function_stack;   /* track function nesting */
-	struct stack* switchcase_stack; /* track casestatement nesting */
+	struct node* logic_stack;       /* used to build logic groups */
+	struct node* function_stack;    /* track function nesting */
+	struct node* switchcase_stack;  /* track casestatement nesting */
 
 	int in_bracket_expression; /* boolean for whether we are in a
 	                            * bracket expression or not
@@ -165,7 +165,7 @@ void query_free(void*);
 int query_add_constant(struct query*, const char*, int);
 int query_add_expression(struct query*, char*, const char* table);
 int query_add_asterisk(struct query*, const char* table);
-void query_add_source(struct query*, struct stack**, const char*);
+void query_add_source(struct query*, struct node**, const char*);
 void query_add_subquery_source(struct query*, struct query*, const char*);
 void query_apply_table_alias(struct query*, const char*);
 void query_apply_expression_alias(struct query*, const char*);

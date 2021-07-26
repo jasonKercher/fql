@@ -72,28 +72,28 @@ int _get_rev_byte_count(const char* s, unsigned limit)
 }
 
 
-int fql_cast_int(function* fn, union field* ret, recgroup* rg)
+int fql_cast_int(function* fn, union field* ret, node* rg)
 {
 	return FQL_FAIL;
 }
-int fql_cast_bit(function* fn, union field* ret, recgroup* rg)
+int fql_cast_bit(function* fn, union field* ret, node* rg)
 {
 	return FQL_FAIL;
 }
-int fql_cast_float(function* fn, union field* ret, recgroup* rg)
+int fql_cast_float(function* fn, union field* ret, node* rg)
 {
 	return FQL_FAIL;
 }
-int fql_cast_string(function* fn, union field* ret, recgroup* rg)
+int fql_cast_string(function* fn, union field* ret, node* rg)
 {
 	return FQL_FAIL;
 }
-int fql_cast_char(function* fn, union field* ret, recgroup* rg)
+int fql_cast_char(function* fn, union field* ret, node* rg)
 {
 	return FQL_FAIL;
 }
 
-int fql_len(function* fn, union field* ret, recgroup* rg)
+int fql_len(function* fn, union field* ret, node* rg)
 {
 	expression** arg = vec_begin(fn->args);
 	stringview sv;
@@ -120,7 +120,7 @@ int fql_len(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_datalength(function* fn, union field* ret, recgroup* rg)
+int fql_datalength(function* fn, union field* ret, node* rg)
 {
 	expression** arg = vec_begin(fn->args);
 	switch ((*arg)->field_type) {
@@ -144,7 +144,7 @@ int fql_datalength(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_left(function* fn, union field* ret, recgroup* rg)
+int fql_left(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	stringview sv;
@@ -176,7 +176,7 @@ int fql_left(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_right(function* fn, union field* ret, recgroup* rg)
+int fql_right(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	stringview sv;
@@ -209,7 +209,7 @@ int fql_right(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_substring(function* fn, union field* ret, recgroup* rg)
+int fql_substring(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	stringview sv;
@@ -258,7 +258,7 @@ int fql_substring(function* fn, union field* ret, recgroup* rg)
 }
 
 /* opertor functions */
-int fql_op_plus_i(function* fn, union field* ret, recgroup* rg)
+int fql_op_plus_i(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
@@ -271,7 +271,7 @@ int fql_op_plus_i(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_plus_f(function* fn, union field* ret, recgroup* rg)
+int fql_op_plus_f(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	double n0 = 0;
@@ -284,7 +284,7 @@ int fql_op_plus_f(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_plus_s(function* fn, union field* ret, recgroup* rg)
+int fql_op_plus_s(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	stringview s0;
@@ -298,7 +298,7 @@ int fql_op_plus_s(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_minus_i(function* fn, union field* ret, recgroup* rg)
+int fql_op_minus_i(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
@@ -311,7 +311,7 @@ int fql_op_minus_i(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_minus_f(function* fn, union field* ret, recgroup* rg)
+int fql_op_minus_f(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	double n0 = 0;
@@ -324,7 +324,7 @@ int fql_op_minus_f(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_mult_i(function* fn, union field* ret, recgroup* rg)
+int fql_op_mult_i(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
@@ -337,7 +337,7 @@ int fql_op_mult_i(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_mult_f(function* fn, union field* ret, recgroup* rg)
+int fql_op_mult_f(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	double n0 = 0;
@@ -350,7 +350,7 @@ int fql_op_mult_f(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_divi_i(function* fn, union field* ret, recgroup* rg)
+int fql_op_divi_i(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
@@ -368,7 +368,7 @@ int fql_op_divi_i(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_divi_f(function* fn, union field* ret, recgroup* rg)
+int fql_op_divi_f(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	double n0 = 0;
@@ -386,7 +386,7 @@ int fql_op_divi_f(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_mod_i(function* fn, union field* ret, recgroup* rg)
+int fql_op_mod_i(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
@@ -399,7 +399,7 @@ int fql_op_mod_i(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_or(function* fn, union field* ret, recgroup* rg)
+int fql_op_bit_or(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
@@ -412,7 +412,7 @@ int fql_op_bit_or(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_and(function* fn, union field* ret, recgroup* rg)
+int fql_op_bit_and(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
@@ -425,7 +425,7 @@ int fql_op_bit_and(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_xor(function* fn, union field* ret, recgroup* rg)
+int fql_op_bit_xor(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
@@ -438,7 +438,7 @@ int fql_op_bit_xor(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_bit_not(function* fn, union field* ret, recgroup* rg)
+int fql_op_bit_not(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
@@ -449,7 +449,7 @@ int fql_op_bit_not(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_unary_minus_i(function* fn, union field* ret, recgroup* rg)
+int fql_op_unary_minus_i(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
@@ -465,7 +465,7 @@ int fql_op_unary_minus_i(function* fn, union field* ret, recgroup* rg)
 	return FQL_GOOD;
 }
 
-int fql_op_unary_minus_f(function* fn, union field* ret, recgroup* rg)
+int fql_op_unary_minus_f(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	double n0 = 0;

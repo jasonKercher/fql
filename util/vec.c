@@ -129,8 +129,8 @@ void* vec_add_one(vec* self)
 
 void* vec_add_one_front(vec* self)
 {
+	size_t move_bytes = self->_elem_size * (self->_alloc - 1);
 	vec_add_one(self);
-	size_t move_bytes = self->_elem_size * self->size;
 
 	memmove((char*)self->data + self->_elem_size, self->data, move_bytes);
 	return vec_begin(self);
@@ -167,7 +167,8 @@ void vec_extend(vec* dest, const vec* src)
 void vec_insert_one(vec* self, void* pos, const void* src)
 {
 	vec_add_one(self);
-	size_t move_bytes = self->_elem_size * (self->size - vec_get_idx_(self, pos));
+	size_t move_bytes =
+	        self->_elem_size * ((self->_alloc - 1) - vec_get_idx_(self, pos));
 
 	memmove((char*)pos + self->_elem_size, pos, move_bytes);
 	memcpy(pos, src, self->_elem_size);
@@ -185,7 +186,7 @@ void vec_insert(vec* self, void* pos, const void* begin, const void* back)
 	size_t idx = vec_get_idx_(self, pos);
 	size_t iter_size = vec_iter_size_(self, begin, back);
 	size_t iter_bytes = self->_elem_size * iter_size;
-	size_t move_bytes = self->_elem_size * ((self->size + 1) - idx);
+	size_t move_bytes = self->_elem_size * (self->_alloc - idx - iter_size);
 	vec_resize(self, self->size + iter_size);
 
 	pos = vec_at(self, idx);
@@ -208,7 +209,7 @@ void vec_erase_at(vec* self, size_t index, size_t len)
 
 void vec_erase(vec* self, void* begin, void* back)
 {
-	size_t bytes = (char*)vec_end(self) - (const char*)back;
+	size_t bytes = (const char*)vec_at(self, self->_alloc - 1) - (const char*)back;
 	self->size -= vec_iter_size_(self, begin, back);
 	memmove(begin, (char*)back + self->_elem_size, bytes);
 }

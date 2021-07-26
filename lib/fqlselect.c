@@ -7,20 +7,21 @@
 #include "order.h"
 #include "logic.h"
 #include "query.h"
+#include "writer.h"
 #include "reader.h"
-#include "expression.h"
 #include "schema.h"
 #include "process.h"
+#include "expression.h"
 #include "util/stringy.h"
 #include "util/util.h"
-#include "writer.h"
+#include "util/node.h"
 
-int _select_record(fqlselect*, struct recgroup*);
-int _select_record_api(fqlselect*, struct recgroup*);
-int _select_record_order_api(fqlselect*, struct recgroup*);
-int _select_record_to_list(fqlselect*, struct recgroup*);
-int _select_record_to_const(fqlselect*, struct recgroup*);
-int _select_subquery(fqlselect*, struct recgroup*);
+int _select_record(fqlselect*, struct node*);
+int _select_record_api(fqlselect*, struct node*);
+int _select_record_order_api(fqlselect*, struct node*);
+int _select_record_to_list(fqlselect*, struct node*);
+int _select_record_to_const(fqlselect*, struct node*);
+int _select_subquery(fqlselect*, struct node*);
 
 fqlselect* fqlselect_construct(fqlselect* self)
 {
@@ -51,7 +52,7 @@ void fqlselect_destroy(fqlselect* self)
 	if (self == NULL) {
 		return;
 	}
-	//queue_free(&self->union_selects);
+	//node_free(&self->union_selects);
 	delete_if_exists_(writer, self->writer);
 	delete_(schema, self->schema);
 }
@@ -213,7 +214,7 @@ int fqlselect_resolve_final_types(fqlselect* self)
 
 	vec* expr_vec = self->schema->expressions;
 
-	queue* union_node = self->union_selects;
+	node* union_node = self->union_selects;
 	for (; union_node; union_node = union_node->next) {
 		fqlselect* union_select = union_node->data;
 		vec* union_expr_vec = union_select->schema->expressions;
@@ -382,7 +383,7 @@ int fqlselect_next_union(fqlselect* self)
 		return 0;
 	}
 
-	fqlselect* union_select = queue_dequeue(&self->union_selects);
+	fqlselect* union_select = node_dequeue(&self->union_selects);
 	self->_selection_exprs = union_select->schema->expressions;
 	self->top_count = union_select->top_count;
 	self->is_const = union_select->is_const;
@@ -438,7 +439,7 @@ void fqlselect_preop(fqlselect* self, query* query)
 	vec_destroy(&header);
 }
 
-int _select_record(fqlselect* self, recgroup* rg)
+int _select_record(fqlselect* self, node* rg)
 {
 	++self->rownum;
 	writer* writer = self->writer;
@@ -453,16 +454,16 @@ int _select_record(fqlselect* self, recgroup* rg)
 	/* pass offset information along
 	 * in the top record
 	 */
-	record* rec = recgroup_rec_at(rg, 0);
+	record* rec = rg->data;
 	rec->offset = self->offset;
-	rg->select_len = ret;
+	rec->select_len = ret;
 
 	self->offset += ret;
 
 	return ret;
 }
 
-int _select_record_api(fqlselect* self, struct recgroup* rg)
+int _select_record_api(fqlselect* self, struct node* rg)
 {
 	++self->rownum;
 	vec* expr_vec = self->_selection_exprs;
@@ -493,7 +494,7 @@ int _select_record_api(fqlselect* self, struct recgroup* rg)
 	return 1;
 }
 
-int _select_record_order_api(fqlselect* self, struct recgroup* rg)
+int _select_record_order_api(fqlselect* self, struct node* rg)
 {
 	++self->rownum;
 	FILE* order_input = writer_get_file(self->writer);
@@ -529,14 +530,14 @@ int _select_record_order_api(fqlselect* self, struct recgroup* rg)
 		default:;
 		}
 	}
-	record* rec = recgroup_rec_at(rg, 0);
+	record* rec = rg->data;
 	rec->offset = self->offset;
 	self->offset += len;
 
 	return 1;
 }
 
-int _select_record_to_list(fqlselect* self, recgroup* rg)
+int _select_record_to_list(fqlselect* self, node* rg)
 {
 	++self->rownum;
 	set* list = self->list_data;
@@ -568,7 +569,7 @@ int _select_record_to_list(fqlselect* self, recgroup* rg)
 	}
 }
 
-int _select_record_to_const(fqlselect* self, recgroup* rg)
+int _select_record_to_const(fqlselect* self, node* rg)
 {
 	//bool fail_if_on_result = (self->const_dest->expr == EXPR_CONST) {
 	++self->rownum;
@@ -612,7 +613,7 @@ int _select_record_to_const(fqlselect* self, recgroup* rg)
  * to take advantage of the fact that fql_select will
  * move through all unions via fqlselect_next_union.
  */
-int _select_subquery(fqlselect* self, recgroup* rg)
+int _select_subquery(fqlselect* self, node* rg)
 {
 	++self->rownum;
 	return FQL_GOOD;

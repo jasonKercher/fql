@@ -138,8 +138,8 @@ int _fuzzy_resolve_file(string* dest, const string* input, int strictness)
 	char* dir = dirname(dirdata.data);
 	char* base = basename(basedata.data);
 
-	queue* files = dir_list_files(dir);
-	queue* node = files;
+	node* files = dir_list_files(dir);
+	node* node = files;
 
 	int matches = 0;
 	/* match exact */
@@ -210,14 +210,14 @@ int _fuzzy_resolve_file(string* dest, const string* input, int strictness)
 	        dir);
 
 fuzzy_file_match_fail:
-	queue_free_data(&files);
+	node_free_data(&files);
 	string_destroy(&file_noext);
 	string_destroy(&basedata);
 	string_destroy(&dirdata);
 	return FQL_FAIL;
 
 fuzzy_file_match_success:
-	queue_free_data(&files);
+	node_free_data(&files);
 	string_destroy(&basedata);
 	string_destroy(&dirdata);
 	string_destroy(&file_noext);
@@ -526,15 +526,17 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	default:;
 	}
 
-	recgroup* rg = new_(recgroup, 0);
+	//node* rg = new_(node, 0);
+	node rg = {0};
+	rg.data = new_(record, 0);
 	table->reader->max_idx = INT_MAX;
-	table->reader->get_record__(table->reader, rg);
+	table->reader->get_record__(table->reader, &rg);
 	table->reader->max_idx = 0;
 
 	/* redundant if default schema */
 	table->reader->reset__(table->reader);
 
-	record* rec = recgroup_rec_begin(rg);
+	record* rec = rg.data;
 
 	if (self->is_default) {
 		schema_assign_header(table, rec, src_idx);
@@ -547,7 +549,7 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		vec_resize(self->expressions, rec->fields.size);
 		schema_preflight(self);
 	}
-	delete_(recgroup, rg);
+	delete_(record, rg.data);
 
 	return FQL_GOOD;
 }
@@ -1213,7 +1215,7 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 
 int schema_resolve(struct fql_handle* fql)
 {
-	queue* query_node = fql->query_list;
+	node* query_node = fql->query_list;
 	for (; query_node; query_node = query_node->next) {
 		query* query = query_node->data;
 
