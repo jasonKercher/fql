@@ -257,6 +257,7 @@ int fqlselect_connect_api(query* query, vec* api)
 			try_(fqlselect_resolve_type_from_subquery(*it));
 		}
 		struct fql_field* field = vec_at(api, i);
+		field->is_null = false;
 		switch (it[i]->field_type) {
 		case FIELD_INT:
 			field->type = FQL_INT;
@@ -472,18 +473,32 @@ int _select_record_api(fqlselect* self, struct node* rg)
 	unsigned i = 0;
 	for (; i < expr_vec->size; ++i) {
 		struct fql_field* field = vec_at(self->api, i);
+		field->is_null = false;
 		switch (exprs[i]->field_type) {
 		case FIELD_INT:
-			try_(expression_get_int(&field->data.i, exprs[i], rg));
+			if (try_(expression_get_int(&field->data.i, exprs[i], rg))
+			    == FQL_NULL) {
+				field->data.i = 0;
+				field->is_null = true;
+			}
 			break;
 		case FIELD_FLOAT:
-			try_(expression_get_float(&field->data.f, exprs[i], rg));
+			if (try_(expression_get_float(&field->data.f, exprs[i], rg))
+			    == FQL_NULL) {
+				field->data.f = -0;
+				field->is_null = true;
+			}
 			break;
 		case FIELD_STRING: {
 			stringview sv;
-			try_(expression_get_stringview(&sv, exprs[i], rg));
 			string* s = field->_in;
-			string_copy_from_stringview(s, &sv);
+			if (try_(expression_get_stringview(&sv, exprs[i], rg))
+			    == FQL_NULL) {
+				string_clear(s);
+				field->is_null = true;
+			} else {
+				string_copy_from_stringview(s, &sv);
+			}
 			field->data.s = s->data;
 			break;
 		}
@@ -586,19 +601,25 @@ int _select_record_to_const(fqlselect* self, node* rg)
 	switch (expr->field_type) {
 	case FIELD_INT: {
 		long num = 0;
-		try_(expression_get_int(&num, expr, rg));
+		if (try_(expression_get_int(&num, expr, rg))) {
+			self->const_dest->expr = EXPR_NULL;
+		}
 		self->const_dest->field.i = num;
 		return 1;
 	}
 	case FIELD_FLOAT: {
 		double num = 0;
-		try_(expression_get_float(&num, expr, rg));
+		if (try_(expression_get_float(&num, expr, rg))) {
+			self->const_dest->expr = EXPR_NULL;
+		}
 		self->const_dest->field.f = num;
 		return 1;
 	}
 	case FIELD_STRING: {
 		stringview sv;
-		try_(expression_get_stringview(&sv, expr, rg));
+		if (try_(expression_get_stringview(&sv, expr, rg)) == FQL_NULL) {
+			self->const_dest->expr = EXPR_NULL;
+		}
 		string_copy_from_stringview(&self->const_dest->buf, &sv);
 		self->const_dest->field.s = &self->const_dest->buf;
 		return 1;

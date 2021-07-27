@@ -171,6 +171,7 @@ void query_destroy(struct query*);
 void query_free(void*);
 
 int query_add_constant(struct query*, const char*, int);
+int query_add_null_expression(struct query*);
 int query_add_expression(struct query*, char*, const char* table);
 int query_add_asterisk(struct query*, const char* table);
 void query_add_source(struct query*, struct node**, const char*);
@@ -208,6 +209,7 @@ int query_exit_switch_search(struct query*);
 
 /* search building functions */
 void query_set_logic_comparison(struct query*, const char*);
+void query_set_logic_isnull(struct query*, bool negation);
 //void query_enter_search(struct query*);
 //void query_exit_search(struct query*, bool exit_and);
 void query_enter_search_or(struct query*);

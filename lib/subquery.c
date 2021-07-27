@@ -37,7 +37,11 @@ int subquery_get_record(reader* reader, node* rg)
 	expression** it = vec_begin(expressions);
 	for (; it != vec_end(expressions); ++it) {
 		stringview* copy_sv = vec_add_one(&self->copy_data.fields);
-		try_(expression_get_stringview(copy_sv, *it, rg));
+		int ret = try_(expression_get_stringview(copy_sv, *it, rg));
+
+		if (ret == FQL_NULL) {
+			// TODO: do something about it...
+		}
 
 		switch ((*it)->expr) {
 		case EXPR_GROUPING:

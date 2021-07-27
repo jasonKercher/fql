@@ -133,7 +133,7 @@ void* node_dequeue(node** head)
 node* node_at(node* head, unsigned idx)
 {
 	unsigned i = 0;
-	for (; i < idx; ++i) {
+	for (; head && i < idx; ++i) {
 		head = head->next;
 	}
 
@@ -142,7 +142,11 @@ node* node_at(node* head, unsigned idx)
 
 void* node_data_at(node* head, unsigned idx)
 {
-	return node_at(head, idx)->data;
+	node* node = node_at(head, idx);
+	if (node == NULL) {
+		return NULL;
+	}
+	return node->data;
 }
 
 int node_count(node* head)

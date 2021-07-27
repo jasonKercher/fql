@@ -351,6 +351,11 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 			join_node = dgraph_add_data(self->processes, join_proc);
 			read_node->out[0] = join_node;
 		} else {
+			if (table_iter->join_type == JOIN_LEFT) {
+				fputs("LEFT JOIN only compatible with hash join\n",
+				      stderr);
+				return FQL_FAIL;
+			}
 			join_proc =
 			        _new_join_proc(table_iter->join_type, "cartesian", self);
 			join_proc->action__ = &fql_cartesian_join;

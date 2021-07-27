@@ -15,37 +15,19 @@ fql gives you the power of SQL for your delimited or fixed-width data files with
 
 ### What can it *not* do?
 
-There is not yet any concept of NULL.  Because of this LEFT, RIGHT and FULL JOIN are not available.  However, there is a workaround for single key joins.  This will not (currently) work:
-
-```sql
-select t1.*
-from t1
-left join t2
-	on t1.foo = t2.foo
-where t2.foo is NULL
-```
-
-For now, just use an IN statement with a subquery:
-
-```sql
-select *
-from t1
-where foo not in (select foo from t2)
-```
-
-Other missing features:
 - windowed-functions
 - temp tables not so temp
 - TOP PERCENT
-- WITH
-- COUNT(DISTINCT [col])
+- WITH / common table expressions
+- COUNT([column]) -- All counts are treated as COUNT(*)
 - MERGE
 - APPLY
 - UNION without ALL
+- PIVOT/UNPIVOT
 
 Most recent and possibly unstable features:
-- UNION ALL
-- CASE statements
+- LEFT JOIN
+- NULL
 
 ### Is it fast?
 
@@ -81,7 +63,7 @@ a05c7214        b1      143027
 
 program|time
 ---|---
-fql|4.031s
+fql|3.568s
 shell tools|6.133s
 sqlite3|20.275s
 q|53.986s
@@ -93,8 +75,8 @@ textql|N/A #
 program|time
 ---|---
 shell tools|0.635s
+fql|1.113s
 sqlite3|1.138s
-fql|1.397s
 textql|15.582s
 q|17.319s
 csvsql|1m57.014s
@@ -106,7 +88,7 @@ program|time
 ---|---
 sqlite3|0.206s *
 shell tools|0.417s
-fql|1.037s
+fql|0.762s
 q|13.737s *
 textql|14.154s
 csvsql|1m56.471s *

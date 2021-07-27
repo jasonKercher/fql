@@ -170,7 +170,11 @@ int fql_hash_join(process* proc)
 
 		char* right_location = _hash_join_left_side(proc, table, *left_rg_iter);
 		if (right_location == NULL) {
-			_recycle(proc, left_rg_iter);
+			if (table->join_type == JOIN_LEFT) {
+				fifo_add(out, left_rg_iter);
+			} else {
+				_recycle(proc, left_rg_iter);
+			}
 			left_rg_iter = fifo_iter(in_left);
 			continue;
 		}

@@ -81,7 +81,7 @@ int fql_cast_int(function* fn, union field* ret, node* rg)
 int fql_cast_bit(function* fn, union field* ret, node* rg)
 {
 	expression** arg = vec_begin(fn->args);
-	try_(expression_get_int(&ret->i, *arg, rg));
+	try_deref_(expression_get_int(&ret->i, *arg, rg));
 	if (ret->i) {
 		ret->i = 1;
 	}
@@ -96,7 +96,7 @@ int fql_cast_string(function* fn, union field* ret, node* rg)
 {
 	expression** arg = vec_begin(fn->args);
 	stringview sv;
-	try_(expression_get_stringview(&sv, *arg, rg));
+	try_deref_(expression_get_stringview(&sv, *arg, rg));
 	string_strncpy(ret->s, sv.data, sv.len);
 	return FQL_GOOD;
 }
@@ -105,12 +105,12 @@ int fql_cast_char(function* fn, union field* ret, node* rg)
 	long len = -1;
 	if (fn->args->size == 2) {
 		expression** len_expr = vec_at(fn->args, 1);
-		try_(expression_get_int(&len, *len_expr, rg));
+		try_deref_(expression_get_int(&len, *len_expr, rg));
 	}
 
 	expression** arg = vec_begin(fn->args);
 	stringview sv;
-	try_(expression_get_stringview(&sv, *arg, rg));
+	try_deref_(expression_get_stringview(&sv, *arg, rg));
 
 	if (len == -1) {
 		string_strncpy(ret->s, sv.data, sv.len);
@@ -134,7 +134,7 @@ int fql_len(function* fn, union field* ret, node* rg)
 	expression** arg = vec_begin(fn->args);
 	stringview sv;
 
-	try_(expression_get_stringview(&sv, *arg, rg));
+	try_deref_(expression_get_stringview(&sv, *arg, rg));
 
 	unsigned idx = 0;
 	int bytes = 1;
@@ -173,7 +173,7 @@ int fql_datalength(function* fn, union field* ret, node* rg)
 	}
 
 	stringview sv;
-	try_(expression_get_stringview(&sv, *arg, rg));
+	try_deref_(expression_get_stringview(&sv, *arg, rg));
 
 	ret->i = sv.len;
 
@@ -184,9 +184,9 @@ int fql_left(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	stringview sv;
-	try_(expression_get_stringview(&sv, args[0], rg));
+	try_deref_(expression_get_stringview(&sv, args[0], rg));
 	long n = 0;
-	try_(expression_get_int(&n, args[1], rg));
+	try_deref_(expression_get_int(&n, args[1], rg));
 
 	if (n > sv.len) {
 		string_strncpy(ret->s, sv.data, sv.len);
@@ -216,9 +216,9 @@ int fql_right(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	stringview sv;
-	expression_get_stringview(&sv, args[0], rg);
+	try_deref_(expression_get_stringview(&sv, args[0], rg));
 	long n = 0;
-	try_(expression_get_int(&n, args[1], rg));
+	try_deref_(expression_get_int(&n, args[1], rg));
 
 	if (n > sv.len) {
 		string_strncpy(ret->s, sv.data, n);
@@ -249,12 +249,12 @@ int fql_substring(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	stringview sv;
-	try_(expression_get_stringview(&sv, args[0], rg));
+	try_deref_(expression_get_stringview(&sv, args[0], rg));
 	long start = 0;
-	try_(expression_get_int(&start, args[1], rg));
+	try_deref_(expression_get_int(&start, args[1], rg));
 	--start;
 	long n = 0;
-	try_(expression_get_int(&n, args[2], rg));
+	try_deref_(expression_get_int(&n, args[2], rg));
 
 	unsigned idx = 0;
 	int bytes = 0;
@@ -299,8 +299,8 @@ int fql_op_plus_i(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(expression_get_int(&n0, args[0], rg));
-	try_(expression_get_int(&n1, args[1], rg));
+	try_deref_(expression_get_int(&n0, args[0], rg));
+	try_deref_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = overflow_safe_add_i(n0, n1);
 
@@ -312,8 +312,8 @@ int fql_op_plus_f(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	try_(expression_get_float(&n0, args[0], rg));
-	try_(expression_get_float(&n1, args[1], rg));
+	try_deref_(expression_get_float(&n0, args[0], rg));
+	try_deref_(expression_get_float(&n1, args[1], rg));
 
 	ret->f = n0 + n1;
 
@@ -325,8 +325,8 @@ int fql_op_plus_s(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	stringview s0;
 	stringview s1;
-	expression_get_stringview(&s0, args[0], rg);
-	expression_get_stringview(&s1, args[1], rg);
+	try_deref_(expression_get_stringview(&s0, args[0], rg));
+	try_deref_(expression_get_stringview(&s1, args[1], rg));
 
 	string_copy_from_stringview(ret->s, &s0);
 	string_append_stringview(ret->s, &s1);
@@ -339,8 +339,8 @@ int fql_op_minus_i(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(expression_get_int(&n0, args[0], rg));
-	try_(expression_get_int(&n1, args[1], rg));
+	try_deref_(expression_get_int(&n0, args[0], rg));
+	try_deref_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = overflow_safe_minus_i(n0, n1);
 
@@ -352,8 +352,8 @@ int fql_op_minus_f(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	try_(expression_get_float(&n0, args[0], rg));
-	try_(expression_get_float(&n1, args[1], rg));
+	try_deref_(expression_get_float(&n0, args[0], rg));
+	try_deref_(expression_get_float(&n1, args[1], rg));
 
 	ret->f = n0 - n1;
 
@@ -365,8 +365,8 @@ int fql_op_mult_i(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(expression_get_int(&n0, args[0], rg));
-	try_(expression_get_int(&n1, args[1], rg));
+	try_deref_(expression_get_int(&n0, args[0], rg));
+	try_deref_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = overflow_safe_multiply_i(n0, n1);
 
@@ -378,8 +378,8 @@ int fql_op_mult_f(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	try_(expression_get_float(&n0, args[0], rg));
-	try_(expression_get_float(&n1, args[1], rg));
+	try_deref_(expression_get_float(&n0, args[0], rg));
+	try_deref_(expression_get_float(&n1, args[1], rg));
 
 	ret->f = n0 * n1;
 
@@ -391,8 +391,8 @@ int fql_op_divi_i(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(expression_get_int(&n0, args[0], rg));
-	try_(expression_get_int(&n1, args[1], rg));
+	try_deref_(expression_get_int(&n0, args[0], rg));
+	try_deref_(expression_get_int(&n1, args[1], rg));
 
 	if (n1 == 0) {
 		fputs("division by zero\n", stderr);
@@ -409,8 +409,8 @@ int fql_op_divi_f(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	double n0 = 0;
 	double n1 = 0;
-	try_(expression_get_float(&n0, args[0], rg));
-	try_(expression_get_float(&n1, args[1], rg));
+	try_deref_(expression_get_float(&n0, args[0], rg));
+	try_deref_(expression_get_float(&n1, args[1], rg));
 
 	if (n1 == 0) {
 		fputs("division by zero\n", stderr);
@@ -427,8 +427,8 @@ int fql_op_mod_i(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(expression_get_int(&n0, args[0], rg));
-	try_(expression_get_int(&n1, args[1], rg));
+	try_deref_(expression_get_int(&n0, args[0], rg));
+	try_deref_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = n0 % n1;
 
@@ -440,8 +440,8 @@ int fql_op_bit_or(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(expression_get_int(&n0, args[0], rg));
-	try_(expression_get_int(&n1, args[1], rg));
+	try_deref_(expression_get_int(&n0, args[0], rg));
+	try_deref_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = n0 | n1;
 
@@ -453,8 +453,8 @@ int fql_op_bit_and(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(expression_get_int(&n0, args[0], rg));
-	try_(expression_get_int(&n1, args[1], rg));
+	try_deref_(expression_get_int(&n0, args[0], rg));
+	try_deref_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = n0 & n1;
 
@@ -466,8 +466,8 @@ int fql_op_bit_xor(function* fn, union field* ret, node* rg)
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
 	long n1 = 0;
-	try_(expression_get_int(&n0, args[0], rg));
-	try_(expression_get_int(&n1, args[1], rg));
+	try_deref_(expression_get_int(&n0, args[0], rg));
+	try_deref_(expression_get_int(&n1, args[1], rg));
 
 	ret->i = n0 ^ n1;
 
@@ -478,7 +478,7 @@ int fql_op_bit_not(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
-	try_(expression_get_int(&n0, args[0], rg));
+	try_deref_(expression_get_int(&n0, args[0], rg));
 
 	ret->i = ~n0;
 
@@ -489,7 +489,7 @@ int fql_op_unary_minus_i(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	long n0 = 0;
-	try_(expression_get_int(&n0, args[0], rg));
+	try_deref_(expression_get_int(&n0, args[0], rg));
 
 	if (n0 == LONG_MIN) {
 		fputs("arithmetic overflow detected\n", stderr);
@@ -505,7 +505,7 @@ int fql_op_unary_minus_f(function* fn, union field* ret, node* rg)
 {
 	expression** args = vec_begin(fn->args);
 	double n0 = 0;
-	try_(expression_get_float(&n0, args[0], rg));
+	try_deref_(expression_get_float(&n0, args[0], rg));
 
 	ret->f = -n0;
 

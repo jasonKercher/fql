@@ -77,9 +77,11 @@ int logic_assign_process(logic* self, process* proc)
 {
 	if (self->in_data != NULL) {
 		self->data_type = inlist_determine_type(self->in_data, self->expr[0]);
-	} else {
+	} else if (self->comp_type != COMP_NULL) {
 		self->data_type = field_determine_type(self->expr[0]->field_type,
 		                                       self->expr[1]->field_type);
+	} else {
+		self->data_type = FIELD_STRING;
 	}
 	self->logic__ = _logic_matrix[self->comp_type][self->data_type];
 	if (self->logic__ == NULL) {
@@ -102,7 +104,7 @@ int logic_assign_process(logic* self, process* proc)
 
 	if (self->in_data != NULL) {
 		inlist_cat_description(self->in_data, proc->plan_msg);
-	} else {
+	} else if (self->comp_type != COMP_NULL) {
 		expression_cat_description(self->expr[1], proc->plan_msg);
 	}
 

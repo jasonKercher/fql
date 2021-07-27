@@ -3,9 +3,12 @@
 
 #ifdef __cplusplus
 extern "C" {
+#else
+#include <stdbool.h>
 #endif
 
 #define FQL_FAIL -5
+#define FQL_NULL -1
 #define FQL_GOOD 0
 
 enum fql_type {
@@ -23,6 +26,7 @@ struct fql_field {
                 long i;
                 double f;
         } data;
+	bool is_null;
 };
 
 struct fql_handle;

@@ -57,6 +57,10 @@ expression* expression_construct(expression* self,
 		break;
 	case EXPR_SUBQUERY:
 		self->subquery = data;
+		break;
+	case EXPR_NULL:
+		self->field_type = FIELD_STRING;
+		string_construct(&self->alias);
 	default:;
 	}
 
@@ -127,6 +131,9 @@ void expression_link(struct expression* dest, struct expression* src)
 void expression_cat_description(expression* self, string* msg)
 {
 	switch (self->expr) {
+	case EXPR_NULL:
+		string_strcat(msg, "NULL");
+		break;
 	case EXPR_GROUPING:
 	case EXPR_ROW_NUMBER:
 	case EXPR_FULL_RECORD:
@@ -290,6 +297,9 @@ void expression_update_indicies(vec* expr_vec)
 int expression_get_int(long* ret, expression* self, node* rg)
 {
 	switch (self->expr) {
+	case EXPR_NULL:
+		*ret = 0;
+		return FQL_NULL;
 	case EXPR_SWITCH_CASE:
 		try_(switchcase_eval_to_int(self->field.sc, ret, rg));
 		return FQL_GOOD;
@@ -298,6 +308,10 @@ int expression_get_int(long* ret, expression* self, node* rg)
 		return FQL_GOOD;
 	case EXPR_FULL_RECORD: {
 		record* rec = node_data_at(rg, self->src_idx);
+		if (rec == NULL) {
+			*ret = 0;
+			return FQL_NULL;
+		}
 		stringview* sv = &rec->rec_ref;
 		string_copy_from_stringview(&self->buf, sv);
 		fail_if_(str2long(ret, self->buf.data));
@@ -308,6 +322,10 @@ int expression_get_int(long* ret, expression* self, node* rg)
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
 		record* rec = node_data_at(rg, src_expr->src_idx);
+		if (rec == NULL) {
+			*ret = 0;
+			return FQL_NULL;
+		}
 		if (rec->fields.size <= src_expr->index) {
 			string_clear(&self->buf);
 			*ret = 0;
@@ -326,7 +344,7 @@ int expression_get_int(long* ret, expression* self, node* rg)
 			new_field.s = &self->buf;
 			string_clear(new_field.s);
 		}
-		try_(func->call__(func, &new_field, rg));
+		try_deref_(func->call__(func, &new_field, rg));
 		try_(field_to_int(ret, &new_field, &new_field_type));
 		break;
 	}
@@ -344,6 +362,9 @@ int expression_get_int(long* ret, expression* self, node* rg)
 int expression_get_float(double* ret, expression* self, node* rg)
 {
 	switch (self->expr) {
+	case EXPR_NULL:
+		*ret = -0;
+		return FQL_NULL;
 	case EXPR_SWITCH_CASE:
 		try_(switchcase_eval_to_float(self->field.sc, ret, rg));
 		return FQL_GOOD;
@@ -352,6 +373,10 @@ int expression_get_float(double* ret, expression* self, node* rg)
 		return FQL_GOOD;
 	case EXPR_FULL_RECORD: {
 		record* rec = node_data_at(rg, self->src_idx);
+		if (rec == NULL) {
+			*ret = -0;
+			return FQL_NULL;
+		}
 		stringview* sv = &rec->rec_ref;
 		string_copy_from_stringview(&self->buf, sv);
 		fail_if_(str2double(ret, self->buf.data));
@@ -362,6 +387,10 @@ int expression_get_float(double* ret, expression* self, node* rg)
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
 		record* rec = node_data_at(rg, src_expr->src_idx);
+		if (rec == NULL) {
+			return -0;
+			return FQL_NULL;
+		}
 		if (rec->fields.size <= src_expr->index) {
 			string_clear(&self->buf);
 			*ret = 0;
@@ -380,7 +409,7 @@ int expression_get_float(double* ret, expression* self, node* rg)
 			new_field.s = &self->buf;
 			string_clear(new_field.s);
 		}
-		try_(func->call__(func, &new_field, rg));
+		try_deref_(func->call__(func, &new_field, rg));
 		try_(field_to_float(ret, &new_field, &new_field_type));
 		break;
 	}
@@ -398,11 +427,18 @@ int expression_get_float(double* ret, expression* self, node* rg)
 int expression_get_stringview(stringview* ret, expression* self, node* rg)
 {
 	switch (self->expr) {
+	case EXPR_NULL:
+		ret->len = 0;
+		return FQL_NULL;
 	case EXPR_SWITCH_CASE:
 		try_(switchcase_eval_to_stringview(self->field.sc, ret, rg));
 		return FQL_GOOD;
 	case EXPR_FULL_RECORD: {
 		record* rec = node_data_at(rg, self->src_idx);
+		if (rec == NULL) {
+			ret->len = 0;
+			return FQL_NULL;
+		}
 		*ret = rec->rec_ref;
 		return FQL_GOOD;
 	}
@@ -416,6 +452,10 @@ int expression_get_stringview(stringview* ret, expression* self, node* rg)
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
 		record* rec = node_data_at(rg, src_expr->src_idx);
+		if (rec == NULL) {
+			ret->len = 0;
+			return FQL_NULL;
+		}
 		if (rec->fields.size <= src_expr->index) {
 			string_clear(&self->buf);
 			ret->data = self->buf.data;
@@ -435,7 +475,7 @@ int expression_get_stringview(stringview* ret, expression* self, node* rg)
 			new_field.s = &self->buf;
 			string_clear(new_field.s);
 		}
-		try_(func->call__(func, &new_field, rg));
+		try_deref_(func->call__(func, &new_field, rg));
 		try_(field_to_stringview(ret, &self->buf, &new_field, &new_field_type));
 		break;
 	}

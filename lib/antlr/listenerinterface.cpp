@@ -74,7 +74,12 @@ void ListenerInterface::enterAsterisk(TSqlParser::AsteriskContext * ctx)
 }
 void ListenerInterface::exitAsterisk(TSqlParser::AsteriskContext * ctx) { }
 
-void ListenerInterface::enterColumn_elem(TSqlParser::Column_elemContext * ctx) { }
+void ListenerInterface::enterColumn_elem(TSqlParser::Column_elemContext * ctx)
+{
+	if (ctx->NULL_()) {
+		query_add_null_expression(_query);
+	}
+}
 void ListenerInterface::exitColumn_elem(TSqlParser::Column_elemContext * ctx)
 {
 	_table_name[0] = '\0';
@@ -165,8 +170,10 @@ void ListenerInterface::enterJoin_on(TSqlParser::Join_onContext* ctx)
 		_query->join = JOIN_LEFT;
 	} else if (ctx->RIGHT()) {
 		_query->join = JOIN_RIGHT;
+		std::cerr << "RIGHT JOIN not currently supported, try LEFT JOIN\n";
 	} else if (ctx->FULL()) {
 		_query->join = JOIN_FULL;
+		std::cerr << "FULL JOIN not currently supported, try LEFT JOIN\n";
 	} else {
 		_query->join = JOIN_INNER;
 	}
@@ -256,9 +263,6 @@ void ListenerInterface::exitFull_column_name(TSqlParser::Full_column_nameContext
 	free_(column_name);
 
 }
-
-void ListenerInterface::enterNull_notnull(TSqlParser::Null_notnullContext * ctx) { }
-void ListenerInterface::exitNull_notnull(TSqlParser::Null_notnullContext * ctx) { }
 
 void ListenerInterface::enterTsql_file(TSqlParser::Tsql_fileContext * ctx) { }
 void ListenerInterface::exitTsql_file(TSqlParser::Tsql_fileContext * ctx) { }
@@ -384,6 +388,12 @@ void ListenerInterface::enterComparison_operator(TSqlParser::Comparison_operator
 void ListenerInterface::exitComparison_operator(TSqlParser::Comparison_operatorContext * ctx)
 {
 }
+
+void ListenerInterface::enterNull_notnull(TSqlParser::Null_notnullContext * ctx)
+{
+	query_set_logic_isnull(_query, ctx->NOT());
+}
+void ListenerInterface::exitNull_notnull(TSqlParser::Null_notnullContext * ctx) { }
 
 void ListenerInterface::enterSCALAR_FUNCTION(TSqlParser::SCALAR_FUNCTIONContext * ctx)
 {
@@ -512,7 +522,12 @@ void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx)
 
 }
 
-void ListenerInterface::enterPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { }
+void ListenerInterface::enterPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx)
+{
+	if (ctx->NULL_()) {
+		query_add_null_expression(_query);
+	}
+}
 void ListenerInterface::exitPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx) { }
 
 void ListenerInterface::enterData_type(TSqlParser::Data_typeContext * ctx)

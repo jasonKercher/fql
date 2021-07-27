@@ -276,6 +276,7 @@ int fql_logic_like(logic* self, node* rg)
 
 int fql_logic_is_null(logic* self, node* rg)
 {
-	fputs("logical NULL check not yet implemented\n", stderr);
-	return FQL_FAIL;
+	stringview sv;
+	int ret = try_(expression_get_stringview(&sv, self->expr[0], rg));
+	return (ret == FQL_NULL);
 }

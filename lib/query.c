@@ -260,6 +260,12 @@ int query_add_constant(query* self, const char* s, int len)
 	return FQL_GOOD;
 }
 
+int query_add_null_expression(query* self)
+{
+	expression* expr = new_(expression, EXPR_NULL, NULL, "");
+	try_(_distribute_expression(self, expr));
+	return FQL_GOOD;
+}
 /**
  * create new table and source object
  * assign name and schema if provided. source_stack
@@ -599,6 +605,14 @@ void query_set_logic_comparison(query* self, const char* op)
 	logicgroup* lg = self->logic_stack->data;
 	logic* logic = lg->condition;
 	logic_set_comparison(logic, op);
+}
+
+void query_set_logic_isnull(query* self, bool negation)
+{
+	logicgroup* lg = self->logic_stack->data;
+	lg->negation = negation;
+	logic* logic = lg->condition;
+	logic_set_comparison(logic, "NULL");
 }
 
 void _assign_logic(query* self, logicgroup* lg)

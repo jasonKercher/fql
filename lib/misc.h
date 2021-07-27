@@ -17,6 +17,15 @@
 		ret_;                    \
 	})
 
+#define try_deref_(condition_)                              \
+	({                                                  \
+		int ret_ = (condition_);                    \
+		if (ret_ == FQL_FAIL || ret_ == FQL_NULL) { \
+			return ret_;                        \
+		}                                           \
+		ret_;                                       \
+	})
+
 #define fail_if_(condition_)             \
 	({                               \
 		int ret_ = (condition_); \
