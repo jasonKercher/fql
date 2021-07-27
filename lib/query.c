@@ -48,12 +48,11 @@ query* query_construct(query* self, int id)
 	        NULL, /* function_stack */
 	        NULL, /* switchcase_stack */
 
-	        0, /* in_bracket_expression */
-
 	        MODE_UNDEFINED,  /* mode */
 	        MODE_UNDEFINED,  /* mode_store */
 	        LOGIC_UNDEFINED, /* logic_mode */
-	        JOIN_FROM        /* join */
+	        JOIN_FROM,       /* join */
+	        false,           /* in_bracket_expression */
 	};
 
 	return self;
@@ -502,7 +501,11 @@ int query_apply_data_type(query* self, const char* type_str)
 		cast_expr->field_type = FIELD_FLOAT;
 	} else if (istring_eq(type_str, "varchar") || istring_eq(type_str, "nvarchar")
 	           || istring_eq(type_str, "text") || istring_eq(type_str, "ntext")) {
-		cast_expr->field.fn->call__ = &fql_cast_string;
+		if (cast_expr->field.fn->args->size == 2) {
+			cast_expr->field.fn->call__ = &fql_left;
+		} else {
+			cast_expr->field.fn->call__ = &fql_cast_string;
+		}
 		cast_expr->field_type = FIELD_STRING;
 	} else if (istring_eq(type_str, "char") || istring_eq(type_str, "nchar")) {
 		cast_expr->field.fn->call__ = &fql_cast_char;
@@ -511,6 +514,7 @@ int query_apply_data_type(query* self, const char* type_str)
 		fprintf(stderr, "Type not implemented: `%s'\n", type_str);
 		return FQL_FAIL;
 	}
+
 	return FQL_GOOD;
 }
 

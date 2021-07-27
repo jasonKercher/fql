@@ -33,14 +33,6 @@ from t1
 where foo not in (select foo from t2)
 ```
 
-There is an interface for scalar and aggregate functions, but many functions are not yet implemented. Speaking of not implemented functions, I never implemented cast. Until then, you can always implicitly cast:
-
-```sql
-select number_field + 0 from [file.txt] -- int
-select number_field + 0.0 from [file.txt] -- float
-select left(not_number_field, 9999999) from [file.txt] -- lol string
-```
-
 Other missing features:
 - windowed-functions
 - temp tables not so temp

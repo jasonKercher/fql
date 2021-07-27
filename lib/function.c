@@ -88,7 +88,6 @@ function* function_construct(function* self,
 	case SCALAR_ABS:
 	case SCALAR_ASCII:
 	case SCALAR_CEILING:
-	case SCALAR_CAST:
 	case SCALAR_CHAR:
 	case SCALAR_DAY:
 	case SCALAR_FLOOR:
@@ -105,6 +104,14 @@ function* function_construct(function* self,
 	case SCALAR_UPPER:
 	case SCALAR_SIGN:
 	case SCALAR_YEAR:
+		return self;
+	default:;
+	}
+
+	self->arg_min = 1;
+	self->arg_max = 2;
+	switch (scalar_type) {
+	case SCALAR_CAST:
 		return self;
 	default:;
 	}

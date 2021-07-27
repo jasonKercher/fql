@@ -18,6 +18,15 @@ struct group;
 struct expression;
 typedef struct vec string;
 
+enum sql_type {
+	SQL_BIT,
+	SQL_INT,
+	SQL_FLOAT,
+	SQL_VARCHAR,
+	SQL_TEXT,
+	SQL_CHAR,
+};
+
 enum aggregate_function {
 	AGG_UNDEFINED,
 	AGG_AVG,
@@ -146,14 +155,13 @@ struct query {
 	struct node* function_stack;    /* track function nesting */
 	struct node* switchcase_stack;  /* track casestatement nesting */
 
-	int in_bracket_expression; /* boolean for whether we are in a
-	                            * bracket expression or not
-	                            */
-
 	enum mode mode;
 	enum mode mode_store;
 	enum logic_mode logic_mode;
 	enum join_type join;
+	bool in_bracket_expression; /* boolean for whether we are in a
+	                             * bracket expression or not
+	                             */
 };
 typedef struct query query;
 

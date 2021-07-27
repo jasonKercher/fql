@@ -5,6 +5,7 @@
 #include "fql.h"
 #include "expression.h"
 #include "misc.h"
+#include "stringy.h"
 #include "util/stringview.h"
 #include "util/util.h"
 
@@ -74,23 +75,58 @@ int _get_rev_byte_count(const char* s, unsigned limit)
 
 int fql_cast_int(function* fn, union field* ret, node* rg)
 {
-	return FQL_FAIL;
+	expression** arg = vec_begin(fn->args);
+	return expression_get_int(&ret->i, *arg, rg);
 }
 int fql_cast_bit(function* fn, union field* ret, node* rg)
 {
-	return FQL_FAIL;
+	expression** arg = vec_begin(fn->args);
+	try_(expression_get_int(&ret->i, *arg, rg));
+	if (ret->i) {
+		ret->i = 1;
+	}
+	return FQL_GOOD;
 }
 int fql_cast_float(function* fn, union field* ret, node* rg)
 {
-	return FQL_FAIL;
+	expression** arg = vec_begin(fn->args);
+	return expression_get_float(&ret->f, *arg, rg);
 }
 int fql_cast_string(function* fn, union field* ret, node* rg)
 {
-	return FQL_FAIL;
+	expression** arg = vec_begin(fn->args);
+	stringview sv;
+	try_(expression_get_stringview(&sv, *arg, rg));
+	string_strncpy(ret->s, sv.data, sv.len);
+	return FQL_GOOD;
 }
 int fql_cast_char(function* fn, union field* ret, node* rg)
 {
-	return FQL_FAIL;
+	long len = -1;
+	if (fn->args->size == 2) {
+		expression** len_expr = vec_at(fn->args, 1);
+		try_(expression_get_int(&len, *len_expr, rg));
+	}
+
+	expression** arg = vec_begin(fn->args);
+	stringview sv;
+	try_(expression_get_stringview(&sv, *arg, rg));
+
+	if (len == -1) {
+		string_strncpy(ret->s, sv.data, sv.len);
+		return FQL_GOOD;
+	} else if (sv.len >= len) {
+		string_strncpy(ret->s, sv.data, len);
+		return FQL_GOOD;
+	}
+
+	/* At this point, we have a string of length < len */
+	string_strncpy(ret->s, sv.data, sv.len);
+	while (ret->s->size < (unsigned)len) {
+		string_push_back(ret->s, ' ');
+	}
+
+	return FQL_GOOD;
 }
 
 int fql_len(function* fn, union field* ret, node* rg)

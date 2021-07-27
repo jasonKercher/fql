@@ -518,6 +518,37 @@ void ListenerInterface::exitPrimitive_expression(TSqlParser::Primitive_expressio
 void ListenerInterface::enterData_type(TSqlParser::Data_typeContext * ctx)
 {
 	_tok_type = TOK_DATA_TYPE;
+
+	const char* tok_str = strdup(ctx->getText().c_str());
+	const char* it = tok_str;
+	char numstr[32];
+	char* num_iter = numstr;
+	bool in_bracket = false;
+	for (; *it && num_iter - numstr < 31; ++it) {
+		if (!in_bracket && *it == '(') {
+			in_bracket = true;
+			continue;
+		}
+		if (in_bracket && *it == ')') {
+			in_bracket = false;
+			break;
+		}
+		if (in_bracket) {
+			*num_iter = *it;
+			++num_iter;
+		}
+	}
+
+	free_(tok_str);
+
+	*num_iter = '\0';
+	if (num_iter == numstr) {
+		return;
+	}
+
+	if (query_add_constant(_query, numstr, num_iter - numstr)) {
+		_set_failure();
+	}
 }
 void ListenerInterface::exitData_type(TSqlParser::Data_typeContext * ctx) { }
 
@@ -765,6 +796,12 @@ void ListenerInterface::enterCAST(TSqlParser::CASTContext * ctx)
 	}
 }
 void ListenerInterface::exitCAST(TSqlParser::CASTContext * ctx) { }
+
+void ListenerInterface::enterBUILT_IN_FUNC(TSqlParser::BUILT_IN_FUNCContext* ctx) { }
+void ListenerInterface::exitBUILT_IN_FUNC(TSqlParser::BUILT_IN_FUNCContext* ctx) { }
+
+void ListenerInterface::enterKeyword(TSqlParser::KeywordContext* ctx) { }
+void ListenerInterface::exitKeyword(TSqlParser::KeywordContext* ctx) { }
 
 /* Every Rule Operations */
 
@@ -1303,9 +1340,6 @@ void ListenerInterface::exitExecute_statement_arg_named(TSqlParser::Execute_stat
 void ListenerInterface::enterGo_batch_statement(TSqlParser::Go_batch_statementContext* ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitGo_batch_statement(TSqlParser::Go_batch_statementContext* ctx) { }
 
-void ListenerInterface::enterBUILT_IN_FUNC(TSqlParser::BUILT_IN_FUNCContext* ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitBUILT_IN_FUNC(TSqlParser::BUILT_IN_FUNCContext* ctx) { }
-
 void ListenerInterface::enterPartition_function(TSqlParser::Partition_functionContext* ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitPartition_function(TSqlParser::Partition_functionContext* ctx) { }
 
@@ -1332,9 +1366,6 @@ void ListenerInterface::exitExecute_body_batch(TSqlParser::Execute_body_batchCon
 
 void ListenerInterface::enterExecute_parameter(TSqlParser::Execute_parameterContext* ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitExecute_parameter(TSqlParser::Execute_parameterContext* ctx) { }
-
-void ListenerInterface::enterKeyword(TSqlParser::KeywordContext* ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitKeyword(TSqlParser::KeywordContext* ctx) { }
 
 void ListenerInterface::enterUpdate_elem_merge(TSqlParser::Update_elem_mergeContext* ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitUpdate_elem_merge(TSqlParser::Update_elem_mergeContext* ctx) { }
