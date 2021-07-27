@@ -94,7 +94,7 @@ int switchcase_eval_to_int(switchcase* self, long* ret, node* rg)
 	/* NO MATCH */
 	if (val_idx == -1) {
 		*ret = 0;
-		return FQL_GOOD;
+		return FQL_NULL;
 	}
 
 	expression** val = vec_at(&self->values, val_idx);
@@ -109,7 +109,7 @@ int switchcase_eval_to_float(switchcase* self, double* ret, node* rg)
 	/* ELSE */
 	if (val_idx == -1) {
 		*ret = 0;
-		return FQL_GOOD;
+		return FQL_NULL;
 	}
 
 	expression** val = vec_at(&self->values, val_idx);
@@ -127,7 +127,7 @@ int switchcase_eval_to_stringview(switchcase* self, stringview* ret, node* rg)
 	if (val_idx == -1) {
 		ret->data = null;
 		ret->len = 0;
-		return FQL_GOOD;
+		return FQL_NULL;
 	}
 
 	expression** val = vec_at(&self->values, val_idx);

@@ -293,6 +293,40 @@ int fql_substring(function* fn, union field* ret, node* rg)
 	return FQL_GOOD;
 }
 
+int fql_isnull_i(function* fn, union field* ret, node* rg)
+{
+	expression** expr = vec_begin(fn->args);
+	int retval = try_(expression_get_int(&ret->i, *expr, rg));
+	if (retval == FQL_GOOD) {
+		return FQL_GOOD;
+	}
+	return expression_get_int(&ret->i, expr[1], rg);
+}
+
+int fql_isnull_f(function* fn, union field* ret, node* rg)
+{
+	expression** expr = vec_begin(fn->args);
+	int retval = try_(expression_get_float(&ret->f, *expr, rg));
+	if (retval == FQL_GOOD) {
+		return FQL_GOOD;
+	}
+	return expression_get_float(&ret->f, expr[1], rg);
+}
+
+int fql_isnull_s(function* fn, union field* ret, node* rg)
+{
+	expression** expr = vec_begin(fn->args);
+	stringview sv;
+	if (try_(expression_get_stringview(&sv, *expr, rg)) == FQL_GOOD) {
+		goto good_return;
+	}
+	try_deref_(expression_get_stringview(&sv, expr[1], rg));
+
+good_return:
+	string_strncpy(ret->s, sv.data, sv.len);
+	return FQL_GOOD;
+}
+
 /* opertor functions */
 int fql_op_plus_i(function* fn, union field* ret, node* rg)
 {

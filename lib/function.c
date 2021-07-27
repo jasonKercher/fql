@@ -22,13 +22,13 @@ static scalar_fn _scalar_ops[OPERATOR_COUNT][FIELD_TYPE_COUNT] = {
         {&fql_op_unary_minus_i, &fql_op_unary_minus_f, NULL}};
 
 static const char* _scalar_str[] = {
-        "PLUS",    "MINUS",     "MULTIPY",       "DIVIDE",      "MODULE",   "BIT_OR",
-        "BIT_AND", "BIT_XOR",   "UNARY_BIT_NOT", "UNARY_MINUS", "ABS",      "ASCII",
-        "CAST",    "CEILING",   "CHAR",          "CHARINDEX",   "CHECKSUM", "DATALENGTH",
-        "DAY",     "FLOOR",     "ISDATE",        "ISNUMERIC",   "LEFT",     "LEN",
-        "LOWER",   "LTRIM",     "MONTH",         "NCHAR",       "PATINDEX", "RAND",
-        "REPLACE", "RIGHT",     "ROUND",         "RTRIM",       "SIGN",     "SPACE",
-        "STR",     "SUBSTRING", "UPPER",         "USER_NAME",   "YEAR",
+        "PLUS",    "MINUS",   "MULTIPY",       "DIVIDE",      "MODULE",    "BIT_OR",
+        "BIT_AND", "BIT_XOR", "UNARY_BIT_NOT", "UNARY_MINUS", "ABS",       "ASCII",
+        "CAST",    "CEILING", "CHAR",          "CHARINDEX",   "CHECKSUM",  "DATALENGTH",
+        "DAY",     "FLOOR",   "ISDATE",        "ISNULL",      "ISNUMERIC", "LEFT",
+        "LEN",     "LOWER",   "LTRIM",         "MONTH",       "NCHAR",     "PATINDEX",
+        "RAND",    "REPLACE", "RIGHT",         "ROUND",       "RTRIM",     "SIGN",
+        "SPACE",   "STR",     "SUBSTRING",     "UPPER",       "USER_NAME", "YEAR",
 };
 
 int _not_implemented(function* self, union field* f, node* unused)
@@ -137,7 +137,9 @@ function* function_construct(function* self,
 		return self;
 	//case SCALAR_DATENAME:
 	//case SCALAR_DATEPART:
-	//case SCALAR_ISNULL:
+	case SCALAR_ISNULL:
+		//self->call__ = &fql_isnull;
+		return self;
 	//case SCALAR_NULLIF:
 	case SCALAR_PATINDEX:
 		return self;
@@ -243,8 +245,25 @@ const char* function_get_name(function* self)
 	return _scalar_str[self->type];
 }
 
-int function_validate(function* self)
+int function_validate(function* self, expression* parent)
 {
+	if (self->type == SCALAR_ISNULL) {
+		expression** first_arg = vec_begin(self->args);
+		parent->field_type = (*first_arg)->field_type;
+		switch (parent->field_type) {
+		case FIELD_INT:
+			self->call__ = &fql_isnull_i;
+			break;
+		case FIELD_FLOAT:
+			self->call__ = &fql_isnull_f;
+			break;
+		case FIELD_STRING:
+			self->call__ = &fql_isnull_s;
+			break;
+		default:;
+		}
+	}
+
 	unsigned argc = self->args->size;
 	if (argc >= self->arg_min && argc <= self->arg_max) {
 		return FQL_GOOD;

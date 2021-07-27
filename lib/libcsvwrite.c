@@ -41,8 +41,11 @@ int libcsv_write_record(writer* writer, vec* expr_vec, node* rg, FILE* outstream
 			if (writer->strict && exprs[i]->field_type != FIELD_STRING) {
 				try_(expression_type_check(exprs[i], rg));
 			}
-			try_(expression_get_stringview(&sv, exprs[i], rg));
-			struct csv_field field = {sv.data, sv.len};
+			struct csv_field field = {NULL, 0};
+			if (try_(expression_get_stringview(&sv, exprs[i], rg))
+			    != FQL_NULL) {
+				field = (struct csv_field) {sv.data, sv.len};
+			}
 			len += csv_write_field(handle, &field);
 		}
 	}

@@ -603,7 +603,7 @@ int _assign_expression_limited(expression* expr, vec* sources, int limit, int st
 		function* func = expr->field.fn;
 		try_(_assign_expressions_limited(func->args, sources, limit, strictness));
 		try_(function_op_resolve(func, &expr->field_type));
-		try_(function_validate(func));
+		try_(function_validate(func, expr));
 		try_(_evaluate_if_const(expr));
 		break;
 	}

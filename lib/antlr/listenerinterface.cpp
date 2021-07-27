@@ -810,7 +810,22 @@ void ListenerInterface::enterCAST(TSqlParser::CASTContext * ctx)
 		_set_failure();
 	}
 }
-void ListenerInterface::exitCAST(TSqlParser::CASTContext * ctx) { }
+void ListenerInterface::exitCAST(TSqlParser::CASTContext * ctx) 
+{ 
+	query_exit_function(_query);
+}
+
+void ListenerInterface::enterISNULL(TSqlParser::ISNULLContext * ctx)
+{
+	if (query_enter_function(_query, SCALAR_ISNULL, _fql->props.char_as_byte)) {
+		_set_failure();
+	}
+}
+
+void ListenerInterface::exitISNULL(TSqlParser::ISNULLContext * ctx) 
+{
+	query_exit_function(_query);
+}
 
 void ListenerInterface::enterBUILT_IN_FUNC(TSqlParser::BUILT_IN_FUNCContext* ctx) { }
 void ListenerInterface::exitBUILT_IN_FUNC(TSqlParser::BUILT_IN_FUNCContext* ctx) { }
@@ -1213,9 +1228,6 @@ void ListenerInterface::exitSESSION_USER(TSqlParser::SESSION_USERContext * ctx) 
 
 void ListenerInterface::enterSYSTEM_USER(TSqlParser::SYSTEM_USERContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitSYSTEM_USER(TSqlParser::SYSTEM_USERContext * ctx) { }
-
-void ListenerInterface::enterISNULL(TSqlParser::ISNULLContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitISNULL(TSqlParser::ISNULLContext * ctx) { }
 
 void ListenerInterface::enterRANKING_WINDOWED_FUNC(TSqlParser::RANKING_WINDOWED_FUNCContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitRANKING_WINDOWED_FUNC(TSqlParser::RANKING_WINDOWED_FUNCContext * ctx) { }

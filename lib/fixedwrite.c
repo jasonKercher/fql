@@ -168,7 +168,7 @@ int fixedwriter_write_record(writer* writer, vec* expr_vec, node* rg, FILE* outs
 	expression** exprs = vec_begin(expr_vec);
 	unsigned i = 0;
 	for (; i < expr_vec->size; ++i) {
-		stringview sv;
+		stringview sv = {NULL, 0};
 		if (exprs[i]->expr == EXPR_ASTERISK) {
 			record* rec = node_data_at(rg, exprs[i]->src_idx);
 			sv = rec->rec_ref;
