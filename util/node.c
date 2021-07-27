@@ -51,9 +51,13 @@ node* node_push(node** head, void* data)
 
 node* node_push_import(node** head, node* import)
 {
+	import->next = *head;
+
 	if (*head)
 		(*head)->prev = import;
 	*head = import;
+
+	import->prev = NULL;
 
 	return import;
 }
@@ -95,6 +99,9 @@ node* node_enqueue_import(node** head, node* import)
 
 	if (!*head)
 		*head = import;
+
+	import->next = NULL;
+
 	return import;
 }
 
@@ -171,6 +178,9 @@ node* node_export(node** head, node* export)
 		export->prev->next = export->next;
 	else
 		*head = export->next;
+
+	export->next = NULL;
+	export->prev = NULL;
 
 	return export;
 }

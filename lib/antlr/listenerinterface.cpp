@@ -247,11 +247,13 @@ void ListenerInterface::exitFull_column_name(TSqlParser::Full_column_nameContext
 		if (query_add_expression(_query, column_name, table_name)) {
 			_set_failure();
 		}
+		free_(table_name);
 	} else {
 		if (query_add_expression(_query, column_name, "")) {
 			_set_failure();
 		}
 	}
+	free_(column_name);
 
 }
 

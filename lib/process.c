@@ -27,6 +27,8 @@ process* process_construct(process* self, const char* action, plan* plan)
 {
 	*self = (process) {
 	        0,                            /* thread */
+	        NULL,                         /* inbuf */
+	        NULL,                         /* outbuf */
 	        &fql_no_op,                   /* action__ */
 	        NULL,                         /* root_ref */
 	        {NULL, NULL},                 /* fifo_in */
@@ -39,6 +41,8 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        NULL,                         /* queued_results */
 	        0,                            /* rows_affected */
 	        -1,                           /* max_recs_iter */
+	        0,                            /* inbuf_idx */
+	        0,                            /* outbuf_idx */
 	        plan->source_count,           /* in_src_count */
 	        plan->source_count,           /* out_src_count */
 	        PROCESS_NO_ROOT,              /* root_fifo */
@@ -68,6 +72,8 @@ void process_destroy(process* self, bool is_root)
 		delete_(fifo, self->fifo_in[1]);
 	}
 	delete_if_exists_(vec, self->wait_list);
+	delete_if_exists_(vec, self->inbuf);
+	delete_if_exists_(vec, self->outbuf);
 	delete_(vec, self->union_end_nodes);
 	delete_(string, self->plan_msg);
 	node_free_func(&self->queued_results, &fifo_free);
@@ -76,6 +82,9 @@ void process_destroy(process* self, bool is_root)
 void process_activate(process* self, plan* plan, unsigned fifo_size)
 {
 	self->root_ref = plan->root;
+
+	self->inbuf = new_t_(vec, node*);
+	self->outbuf = new_t_(vec, node*);
 
 	if (self->root_fifo != PROCESS_NO_ROOT) {
 		self->fifo_in[self->root_fifo] = self->root_ref;
@@ -272,11 +281,11 @@ void* _thread_exec(void* data)
 					break;
 				}
 			}
-			if (node->is_root) {
-				fifo_wait_for_add(in0);
-			} else {
-				fifo_wait_for_work(in0);
-			}
+			//if (node->is_root) {
+			fifo_wait_for_add(in0);
+			//} else {
+			//	//fifo_wait_for_work(in0);
+			//}
 			if (fifo_is_empty(in0)) {
 				process_disable(self);
 				break;
