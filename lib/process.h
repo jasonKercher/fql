@@ -60,6 +60,7 @@ int fql_read(struct process*);
 //int fql_read_subquery(struct process*);
 int fql_select(struct process*);
 int fql_logic(struct process*);
+int fql_left_join_logic(struct process*);
 int fql_cartesian_join(struct process*);
 int fql_hash_join(struct process*);
 int fql_distinct(struct process*);

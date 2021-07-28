@@ -244,6 +244,39 @@ int fql_logic(process* proc)
 	return 1;
 }
 
+int fql_left_join_logic(process* proc)
+{
+	logicgroup* lg = proc->proc_data;
+
+	fifo* in = proc->fifo_in[0];
+	// No out_false for left_join
+	//fifo* out_false = proc->fifo_out[0];
+	fifo* out_true = proc->fifo_out[1];
+
+	node** rg_iter = fifo_begin(in);
+	for (; rg_iter != fifo_end(in) && fifo_receivable(out_true);
+	     rg_iter = fifo_iter(in)) {
+		/* If we are short a node, right side is already NULL.
+		 * These records have already failed a hash join.
+		 */
+		if (node_count(*rg_iter) == proc->out_src_count) {
+			if (!try_(logicgroup_eval(lg, *rg_iter, lg->join_logic))) {
+				/* our condition failed, but we still want to pass 
+				 * it on. Chop off right-most node and recycle it.
+				 */
+				node* right_side = node_back(*rg_iter);
+				node_export(rg_iter, right_side);
+				_recycle(proc, &right_side);
+			}
+		}
+
+		fifo_add(out_true, rg_iter);
+	}
+	fifo_update(in);
+
+	return 1;
+}
+
 int _group_dump(process* proc, fifo* in_fresh, fifo* out)
 {
 	group* group = proc->proc_data;

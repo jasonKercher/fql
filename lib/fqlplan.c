@@ -193,10 +193,15 @@ int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 int _logicgroup_process(plan* self,
                         logicgroup* lg,
                         bool is_from_hash_join,
-                        bool is_from_having)
+                        bool is_from_having,
+                        bool is_from_left_join)
 {
 	process* logic_proc = new_(process, "", self);
-	logic_proc->action__ = &fql_logic;
+	if (is_from_left_join) {
+		logic_proc->action__ = &fql_left_join_logic;
+	} else {
+		logic_proc->action__ = &fql_logic;
+	}
 	logic_proc->proc_data = lg;
 	try_(_logic_to_process(self, logic_proc, lg));
 	dnode* logic_node = dgraph_add_data(self->processes, logic_proc);
@@ -371,7 +376,8 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 			try_(_logicgroup_process(self,
 			                         table_iter->condition,
 			                         is_hash_join,
-			                         false));
+			                         false,
+			                         (table_iter->join_type == JOIN_LEFT)));
 		}
 	}
 
@@ -386,7 +392,7 @@ int _where(plan* self, query* query)
 		return FQL_GOOD;
 	}
 
-	return _logicgroup_process(self, query->where, false, false);
+	return _logicgroup_process(self, query->where, false, false, false);
 }
 
 /* NOTE: If there is a grouping, the grouping becomes the
@@ -439,7 +445,7 @@ int _having(plan* self, query* query)
 		return FQL_GOOD;
 	}
 
-	return _logicgroup_process(self, query->having, false, true);
+	return _logicgroup_process(self, query->having, false, true, false);
 }
 
 void _operation(plan* self, query* query, dnode* entry, bool is_union)
