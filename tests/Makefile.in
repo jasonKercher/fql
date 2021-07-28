@@ -89,16 +89,18 @@ build_triplet = @build@
 host_triplet = @host@
 TESTS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
 	check_read$(EXEEXT) check_logic$(EXEEXT) check_switch$(EXEEXT) \
-	check_join$(EXEEXT) check_subquery$(EXEEXT) \
-	check_group$(EXEEXT) check_having$(EXEEXT) \
-	check_order$(EXEEXT) check_top$(EXEEXT) check_union$(EXEEXT) \
-	check_difficult$(EXEEXT) check_failure$(EXEEXT)
+	check_null$(EXEEXT) check_join$(EXEEXT) \
+	check_subquery$(EXEEXT) check_group$(EXEEXT) \
+	check_having$(EXEEXT) check_order$(EXEEXT) check_top$(EXEEXT) \
+	check_union$(EXEEXT) check_difficult$(EXEEXT) \
+	check_failure$(EXEEXT)
 check_PROGRAMS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
 	check_read$(EXEEXT) check_logic$(EXEEXT) check_switch$(EXEEXT) \
-	check_join$(EXEEXT) check_subquery$(EXEEXT) \
-	check_group$(EXEEXT) check_having$(EXEEXT) \
-	check_order$(EXEEXT) check_top$(EXEEXT) check_union$(EXEEXT) \
-	check_difficult$(EXEEXT) check_failure$(EXEEXT)
+	check_null$(EXEEXT) check_join$(EXEEXT) \
+	check_subquery$(EXEEXT) check_group$(EXEEXT) \
+	check_having$(EXEEXT) check_order$(EXEEXT) check_top$(EXEEXT) \
+	check_union$(EXEEXT) check_difficult$(EXEEXT) \
+	check_failure$(EXEEXT)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -173,6 +175,13 @@ check_logic_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_logic_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_logic_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+am_check_null_OBJECTS = check_null-check_common.$(OBJEXT) \
+	check_null-check_null.$(OBJEXT)
+check_null_OBJECTS = $(am_check_null_OBJECTS)
+check_null_DEPENDENCIES = $(top_builddir)/lib/libfql.la
+check_null_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_null_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_check_order_OBJECTS = check_order-check_common.$(OBJEXT) \
 	check_order-check_order.$(OBJEXT)
 check_order_OBJECTS = $(am_check_order_OBJECTS)
@@ -246,6 +255,8 @@ am__depfiles_remade = ./$(DEPDIR)/check_constants-check_common.Po \
 	./$(DEPDIR)/check_join-check_join.Po \
 	./$(DEPDIR)/check_logic-check_common.Po \
 	./$(DEPDIR)/check_logic-check_logic.Po \
+	./$(DEPDIR)/check_null-check_common.Po \
+	./$(DEPDIR)/check_null-check_null.Po \
 	./$(DEPDIR)/check_order-check_common.Po \
 	./$(DEPDIR)/check_order-check_order.Po \
 	./$(DEPDIR)/check_read-check_common.Po \
@@ -281,16 +292,18 @@ SOURCES = $(check_constants_SOURCES) $(check_difficult_SOURCES) \
 	$(check_failure_SOURCES) $(check_group_SOURCES) \
 	$(check_hashmap_SOURCES) $(check_having_SOURCES) \
 	$(check_join_SOURCES) $(check_logic_SOURCES) \
-	$(check_order_SOURCES) $(check_read_SOURCES) \
-	$(check_subquery_SOURCES) $(check_switch_SOURCES) \
-	$(check_top_SOURCES) $(check_union_SOURCES)
+	$(check_null_SOURCES) $(check_order_SOURCES) \
+	$(check_read_SOURCES) $(check_subquery_SOURCES) \
+	$(check_switch_SOURCES) $(check_top_SOURCES) \
+	$(check_union_SOURCES)
 DIST_SOURCES = $(check_constants_SOURCES) $(check_difficult_SOURCES) \
 	$(check_failure_SOURCES) $(check_group_SOURCES) \
 	$(check_hashmap_SOURCES) $(check_having_SOURCES) \
 	$(check_join_SOURCES) $(check_logic_SOURCES) \
-	$(check_order_SOURCES) $(check_read_SOURCES) \
-	$(check_subquery_SOURCES) $(check_switch_SOURCES) \
-	$(check_top_SOURCES) $(check_union_SOURCES)
+	$(check_null_SOURCES) $(check_order_SOURCES) \
+	$(check_read_SOURCES) $(check_subquery_SOURCES) \
+	$(check_switch_SOURCES) $(check_top_SOURCES) \
+	$(check_union_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -677,6 +690,12 @@ check_switch_SOURCES = $(top_builddir)/lib/include/fql.h \
 
 check_switch_CFLAGS = @CHECK_CFLAGS@
 check_switch_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+check_null_SOURCES = $(top_builddir)/lib/include/fql.h \
+			check_common.h check_common.c \
+			check_null.c
+
+check_null_CFLAGS = @CHECK_CFLAGS@
+check_null_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 check_join_SOURCES = $(top_builddir)/lib/include/fql.h \
 			check_common.h check_common.c \
 			check_join.c
@@ -806,6 +825,10 @@ check_logic$(EXEEXT): $(check_logic_OBJECTS) $(check_logic_DEPENDENCIES) $(EXTRA
 	@rm -f check_logic$(EXEEXT)
 	$(AM_V_CCLD)$(check_logic_LINK) $(check_logic_OBJECTS) $(check_logic_LDADD) $(LIBS)
 
+check_null$(EXEEXT): $(check_null_OBJECTS) $(check_null_DEPENDENCIES) $(EXTRA_check_null_DEPENDENCIES) 
+	@rm -f check_null$(EXEEXT)
+	$(AM_V_CCLD)$(check_null_LINK) $(check_null_OBJECTS) $(check_null_LDADD) $(LIBS)
+
 check_order$(EXEEXT): $(check_order_OBJECTS) $(check_order_DEPENDENCIES) $(EXTRA_check_order_DEPENDENCIES) 
 	@rm -f check_order$(EXEEXT)
 	$(AM_V_CCLD)$(check_order_LINK) $(check_order_OBJECTS) $(check_order_LDADD) $(LIBS)
@@ -851,6 +874,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_join-check_join.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_logic-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_logic-check_logic.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_null-check_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_null-check_null.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_order-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_order-check_order.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_read-check_common.Po@am__quote@ # am--include-marker
@@ -1100,6 +1125,34 @@ check_logic-check_logic.obj: check_logic.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_logic.c' object='check_logic-check_logic.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_logic_CFLAGS) $(CFLAGS) -c -o check_logic-check_logic.obj `if test -f 'check_logic.c'; then $(CYGPATH_W) 'check_logic.c'; else $(CYGPATH_W) '$(srcdir)/check_logic.c'; fi`
+
+check_null-check_common.o: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_null_CFLAGS) $(CFLAGS) -MT check_null-check_common.o -MD -MP -MF $(DEPDIR)/check_null-check_common.Tpo -c -o check_null-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_null-check_common.Tpo $(DEPDIR)/check_null-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_null-check_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_null_CFLAGS) $(CFLAGS) -c -o check_null-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+
+check_null-check_common.obj: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_null_CFLAGS) $(CFLAGS) -MT check_null-check_common.obj -MD -MP -MF $(DEPDIR)/check_null-check_common.Tpo -c -o check_null-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_null-check_common.Tpo $(DEPDIR)/check_null-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_null-check_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_null_CFLAGS) $(CFLAGS) -c -o check_null-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+
+check_null-check_null.o: check_null.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_null_CFLAGS) $(CFLAGS) -MT check_null-check_null.o -MD -MP -MF $(DEPDIR)/check_null-check_null.Tpo -c -o check_null-check_null.o `test -f 'check_null.c' || echo '$(srcdir)/'`check_null.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_null-check_null.Tpo $(DEPDIR)/check_null-check_null.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_null.c' object='check_null-check_null.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_null_CFLAGS) $(CFLAGS) -c -o check_null-check_null.o `test -f 'check_null.c' || echo '$(srcdir)/'`check_null.c
+
+check_null-check_null.obj: check_null.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_null_CFLAGS) $(CFLAGS) -MT check_null-check_null.obj -MD -MP -MF $(DEPDIR)/check_null-check_null.Tpo -c -o check_null-check_null.obj `if test -f 'check_null.c'; then $(CYGPATH_W) 'check_null.c'; else $(CYGPATH_W) '$(srcdir)/check_null.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_null-check_null.Tpo $(DEPDIR)/check_null-check_null.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_null.c' object='check_null-check_null.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_null_CFLAGS) $(CFLAGS) -c -o check_null-check_null.obj `if test -f 'check_null.c'; then $(CYGPATH_W) 'check_null.c'; else $(CYGPATH_W) '$(srcdir)/check_null.c'; fi`
 
 check_order-check_common.o: check_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_order_CFLAGS) $(CFLAGS) -MT check_order-check_common.o -MD -MP -MF $(DEPDIR)/check_order-check_common.Tpo -c -o check_order-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
@@ -1503,6 +1556,13 @@ check_switch.log: check_switch$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+check_null.log: check_null$(EXEEXT)
+	@p='check_null$(EXEEXT)'; \
+	b='check_null'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 check_join.log: check_join$(EXEEXT)
 	@p='check_join$(EXEEXT)'; \
 	b='check_join'; \
@@ -1674,6 +1734,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/check_join-check_join.Po
 	-rm -f ./$(DEPDIR)/check_logic-check_common.Po
 	-rm -f ./$(DEPDIR)/check_logic-check_logic.Po
+	-rm -f ./$(DEPDIR)/check_null-check_common.Po
+	-rm -f ./$(DEPDIR)/check_null-check_null.Po
 	-rm -f ./$(DEPDIR)/check_order-check_common.Po
 	-rm -f ./$(DEPDIR)/check_order-check_order.Po
 	-rm -f ./$(DEPDIR)/check_read-check_common.Po
@@ -1746,6 +1808,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/check_join-check_join.Po
 	-rm -f ./$(DEPDIR)/check_logic-check_common.Po
 	-rm -f ./$(DEPDIR)/check_logic-check_logic.Po
+	-rm -f ./$(DEPDIR)/check_null-check_common.Po
+	-rm -f ./$(DEPDIR)/check_null-check_null.Po
 	-rm -f ./$(DEPDIR)/check_order-check_common.Po
 	-rm -f ./$(DEPDIR)/check_order-check_order.Po
 	-rm -f ./$(DEPDIR)/check_read-check_common.Po

@@ -12,4 +12,7 @@ extern struct fql_handle* fql;
 void fql_setup();
 void fql_teardown();
 
+void assert_select_string(const char*, const char* EXPECTED_VALUE);
+void assert_select_int(const char*, long EXPECTED_VALUE);
+void assert_nothing(const char*);
 #endif  /* CHECK_COMMON_H */
