@@ -5,6 +5,7 @@
 #include "fqlplan.h"
 
 struct schema;
+struct writer;
 
 /** operation **/
 enum op {
@@ -18,6 +19,7 @@ void op_preop(struct fql_handle*);
 struct vec* op_get_expressions(void* op);
 struct schema* op_get_schema(enum op*);
 void op_set_top_count(enum op*, size_t);
+void op_set_writer(enum op*, struct writer*);
 void op_set_schema(enum op*, const struct schema*);
 void op_set_rec_terminator(enum op*, const char* term);
 void op_set_delim(enum op*, const char* delim);

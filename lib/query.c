@@ -11,6 +11,7 @@
 #include "field.h"
 #include "function.h"
 #include "fqlselect.h"
+#include "fqldelete.h"
 #include "aggregate.h"
 #include "expression.h"
 #include "switchcase.h"
@@ -366,6 +367,9 @@ int query_init_op(query* self)
 	switch (self->mode) {
 	case MODE_SELECT:
 		self->op = new_(fqlselect);
+		break;
+	case MODE_DELETE:
+		self->op = new_(fqldelete);
 		break;
 	default:
 		fprintf(stderr, "unexpected operation mode `%d'\n", self->mode);

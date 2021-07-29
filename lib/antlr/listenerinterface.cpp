@@ -273,6 +273,7 @@ void ListenerInterface::exitBatch(TSqlParser::BatchContext * ctx) { }
 void ListenerInterface::enterSql_clauses(TSqlParser::Sql_clausesContext* ctx)
 {
 	_query = query_new(0);
+	_query_id = 0;
 	node_enqueue(&_fql->query_list, _query);
 	node_push(&_query_stack, _query);
 }
@@ -483,10 +484,20 @@ void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContex
 	}
 }
 
-void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx)
-{
+void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx) { }
 
+void ListenerInterface::enterDelete_statement(TSqlParser::Delete_statementContext * ctx) 
+{ 
+	_query->mode = MODE_DELETE;
+	if (query_init_op(_query)) {
+		_set_failure();
+	}
 }
+
+void ListenerInterface::exitDelete_statement(TSqlParser::Delete_statementContext * ctx) { }
+
+void ListenerInterface::enterDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) { }
+void ListenerInterface::exitDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) { }
 
 void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx)
 {
@@ -958,12 +969,6 @@ void ListenerInterface::exitMerge_matched(TSqlParser::Merge_matchedContext * ctx
 
 void ListenerInterface::enterMerge_not_matched(TSqlParser::Merge_not_matchedContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitMerge_not_matched(TSqlParser::Merge_not_matchedContext * ctx) { }
-
-void ListenerInterface::enterDelete_statement(TSqlParser::Delete_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitDelete_statement(TSqlParser::Delete_statementContext * ctx) { }
-
-void ListenerInterface::enterDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) { }
 
 void ListenerInterface::enterInsert_statement(TSqlParser::Insert_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitInsert_statement(TSqlParser::Insert_statementContext * ctx) { }

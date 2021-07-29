@@ -74,35 +74,6 @@ unsigned fqlselect_get_field_count(fqlselect* self)
 	return field_count;
 }
 
-void fqlselect_set_delim(fqlselect* self, const char* delim)
-{
-	schema_set_delim(self->schema, delim);
-}
-
-void fqlselect_set_rec_terminator(fqlselect* self, const char* term)
-{
-	strncpy_(self->schema->rec_terminator, term, DELIM_LEN_MAX);
-}
-
-void fqlselect_set_schema(fqlselect* self, const schema* src_schema)
-{
-	if (src_schema == NULL) {
-		if (!self->schema->delim_is_set) {
-			fqlselect_set_delim(self, ",");
-		}
-		self->schema->io_type = IO_LIBCSV;
-		self->schema->write_io_type = IO_LIBCSV;
-		self->schema->is_default = true;
-		return;
-	}
-	if (!self->schema->delim_is_set) {
-		fqlselect_set_delim(self, src_schema->delimiter);
-	}
-	self->schema->io_type = src_schema->io_type;
-	self->schema->write_io_type = src_schema->write_io_type;
-	self->schema->is_default = src_schema->is_default;
-}
-
 void fqlselect_add_expression(fqlselect* self, expression* expr)
 {
 	schema_add_expression(self->schema, expr, 0);
@@ -140,7 +111,7 @@ int _expand_asterisk(vec* expr_vec, table* table, unsigned src_idx, unsigned* ex
 	return table->schema->expressions->size;
 }
 
-void _expand_asterisks(query* query, bool force_expansion)
+void fqlselect_expand_asterisks(query* query, bool force_expansion)
 {
 	fqlselect* self = query->op;
 	vec* expr_vec = self->schema->expressions;
@@ -245,7 +216,7 @@ int fqlselect_connect_api(query* query, vec* api)
 	} else {
 		self->select__ = &_select_record_order_api;
 	}
-	_expand_asterisks(query, true);
+	fqlselect_expand_asterisks(query, true);
 
 	vec* exprs = self->schema->expressions;
 	vec_resize(api, exprs->size);
@@ -324,7 +295,7 @@ int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 	if (self->schema->expressions->size == 1) {
 		expression** expr = vec_begin(self->schema->expressions);
 		if ((*expr)->expr == EXPR_ASTERISK) {
-			_expand_asterisks(inlist->subquery, true);
+			fqlselect_expand_asterisks(inlist->subquery, true);
 		}
 	}
 	if (self->schema->expressions->size != 1) {
@@ -334,47 +305,6 @@ int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 	inlist->list_data = new_(set, 16, HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 	self->list_data = inlist->list_data;
 	self->select__ = &_select_record_to_list;
-	return FQL_GOOD;
-}
-
-/* NOTE: do not allow any writer initialization if a union query */
-int fqlselect_writer_init(fqlselect* self, query* query, struct fql_handle* fql)
-{
-	if (!query->union_id) {
-		self->writer = new_(writer, self->schema->write_io_type, fql);
-	}
-
-	if (!query->union_id && query->into_table_name) {
-		if (!fql->props.overwrite && access(query->into_table_name, F_OK) == 0) {
-			fprintf(stderr,
-			        "Cannot SELECT INTO: file `%s' already exists\n",
-			        query->into_table_name);
-			return FQL_FAIL;
-		}
-		try_(writer_open(self->writer, query->into_table_name));
-	}
-
-	if (!query->union_id && query->orderby != NULL) {
-		char* out_name = writer_take_filename(self->writer);
-		const char* in_name = writer_get_tempname(self->writer);
-
-		try_(order_init_io(query->orderby, in_name, out_name));
-		/* take_filename takes ownership, must free */
-		free_(out_name);
-	}
-
-	_expand_asterisks(query, (!query->groupby || !query->distinct));
-
-	/* TODO: verify this does not cause double free */
-	if (query->distinct != NULL) {
-		expression** it = vec_begin(self->schema->expressions);
-		for (; it != vec_end(self->schema->expressions); ++it) {
-			group_add_expression(query->distinct, *it);
-		}
-	}
-
-	schema_preflight(self->schema);
-
 	return FQL_GOOD;
 }
 

@@ -1016,6 +1016,31 @@ int _group_validation(query* query, vec* exprs, vec* op_exprs, bool loose_groups
 	return FQL_GOOD;
 }
 
+int _resolve_unions(struct fql_handle* fql, query* aquery)
+{
+	/* As we loop through union queries, we want to
+	 * also verify that we have the same number of
+	 * expressions.
+	 */
+	enum io main_io_type = op_get_schema(aquery->op)->io_type;
+
+	unsigned expected = fqlselect_get_field_count(aquery->op);
+	query** query_iter = vec_begin(aquery->unions);
+	for (; query_iter != vec_end(aquery->unions); ++query_iter) {
+		try_(_resolve_query(fql, *query_iter, main_io_type));
+		if (expected != fqlselect_get_field_count((*query_iter)->op)) {
+			fputs("UNION query schema mis-match\n", stderr);
+			return FQL_FAIL;
+		}
+	}
+
+	/* We need to resolve final types for each expression */
+	try_(op_resolve_final_types(aquery->op));
+
+	return FQL_GOOD;
+}
+
+
 /* Tie everything together and verify correctness. */
 int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 {
@@ -1106,7 +1131,8 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 		}
 	}
 
-	if (op_get_schema(aquery->op)->write_io_type == IO_UNDEFINED) {
+	schema* op_schema = op_get_schema(aquery->op);
+	if (op_schema->write_io_type == IO_UNDEFINED) {
 		op_set_schema(aquery->op, NULL);
 	}
 
@@ -1142,8 +1168,6 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 		                         aquery->sources,
 		                         fql->props.strictness));
 	}
-
-	try_(op_writer_init(aquery, fql));
 
 	/* Do GROUP BY last. There are less caveats having
 	 * waited until everything else is already resolved
@@ -1187,28 +1211,12 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 		}
 	}
 
-	if (vec_empty(aquery->unions)) {
-		return FQL_GOOD;
+	if (!vec_empty(aquery->unions)) {
+		try_(_resolve_unions(fql, aquery));
 	}
 
-	/* As we loop through union queries, we want to
-	 * also verify that we have the same number of
-	 * expressions.
-	 */
-	enum io main_io_type = op_get_schema(aquery->op)->io_type;
-
-	unsigned expected = fqlselect_get_field_count(aquery->op);
-	query_iter = vec_begin(aquery->unions);
-	for (; query_iter != vec_end(aquery->unions); ++query_iter) {
-		try_(_resolve_query(fql, *query_iter, main_io_type));
-		if (expected != fqlselect_get_field_count((*query_iter)->op)) {
-			fputs("UNION query schema mis-match\n", stderr);
-			return FQL_FAIL;
-		}
-	}
-
-	/* We need to resolve final types for each expression */
-	try_(op_resolve_final_types(aquery->op));
+	try_(op_writer_init(aquery, fql));
+	schema_preflight(op_schema);
 
 	return FQL_GOOD;
 }
