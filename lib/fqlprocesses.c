@@ -29,6 +29,8 @@ int fql_read(process* proc)
 
 	node** rg_iter = fifo_begin(in);
 	for (; rg_iter != fifo_end(in) && fifo_receivable(out); rg_iter = fifo_iter(in)) {
+		record* rec = (*rg_iter)->data;
+		rec->src_idx = table->idx;
 		switch (reader->get_record__(reader, *rg_iter)) {
 		case FQL_GOOD:
 			break;
@@ -66,6 +68,8 @@ int fql_cartesian_join(process* proc)
 	}
 	node** iter_right = vec_at(proc->inbuf, proc->inbuf_idx);
 	for (; iter_right != vec_end(proc->inbuf); ++iter_right, ++proc->inbuf_idx) {
+		record* rec = (*iter_right)->data;
+		rec->src_idx = table->idx;
 		int ret = reader->get_record__(reader, *iter_right);
 
 		switch (ret) {
@@ -104,12 +108,7 @@ void _hash_join_right_side(process* proc, table* table, fifo* in_right)
 
 	node** rg_iter = fifo_begin(in_right);
 	for (; rg_iter != fifo_end(in_right); rg_iter = fifo_iter(in_right)) {
-		/* NOTE: this is tricking node_data_at which
-		 *       iterates to the nth node.
-		 */
-		(*rg_iter)->next = *rg_iter;
 		expression_get_stringview(&sv, hj->right_expr, *rg_iter);
-		(*rg_iter)->next = NULL;
 
 		record* rec = (*rg_iter)->data;
 		multimap_nset(hj->hash_data, sv.data, &rec->rec_ref.data, sv.len);
@@ -179,9 +178,9 @@ int fql_hash_join(process* proc)
 			continue;
 		}
 		node** right_rg = fifo_get(proc->root_ref);
-
+		record* right_rec = (*right_rg)->data;
+		right_rec->src_idx = proc->out_src_count - 1;
 		reader* reader = table->reader;
-
 		reader->get_record_at__(reader, *right_rg, right_location);
 
 		/* If this is the last record match to the left
@@ -285,6 +284,7 @@ int _group_dump(process* proc, fifo* in_fresh, fifo* out)
 	for (; rg_iter != fifo_end(in_fresh) && fifo_receivable(out);
 	     rg_iter = fifo_iter(in_fresh)) {
 		record* rec = (*rg_iter)->data;
+		rec->src_idx = 0;
 
 		switch (group_dump_record(group, rec)) {
 		case FQL_FAIL:
@@ -330,6 +330,7 @@ int fql_groupby(process* proc)
 		} else {
 			node** rg = fifo_get(in_fresh);
 			record* rec = (*rg)->data;
+			rec->src_idx = 0;
 			try_(group_dump_record(group, rec));
 			fifo_add(out, rg);
 			process_disable(proc);

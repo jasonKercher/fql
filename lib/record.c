@@ -6,16 +6,17 @@
 record* record_construct(record* self, unsigned idx)
 {
 	*self = (record) {
-	        {0},   /* fields */
-	        NULL,  /* subquery_strings */
-	        NULL,  /* group_strings */
-	        NULL,  /* libcsv_rec */
-	        {0},   /* rec_ref */
-	        0,     /* offset */
-	        idx,   /* rec_idx */
-	        0,     /* select_len */
-	        0,     /* max_subquery_strings */
-	        0,     /* max_group_strings */
+	        {0},  /* fields */
+	        NULL, /* subquery_strings */
+	        NULL, /* group_strings */
+	        NULL, /* libcsv_rec */
+	        {0},  /* rec_ref */
+	        0,    /* offset */
+	        -1,   /* src_idx */
+	        idx,  /* rec_idx */
+	        0,    /* select_len */
+	        0,    /* max_subquery_strings */
+	        0,    /* max_group_strings */
 	};
 
 	vec_construct_(&self->fields, stringview);
@@ -48,10 +49,24 @@ void record_destroy(record* self)
 	vec_destroy(&self->fields);
 }
 
+record* record_at(const node* head, int idx)
+{
+	record* rec = NULL;
+	do {
+		if (head == NULL) {
+			return NULL;
+		}
+		rec = head->data;
+		head = head->next;
+	} while (rec->src_idx != idx);
+	return rec;
+}
+
 void record_copy(record* self, const record* src)
 {
 	vec_clear(&self->fields);
 	vec_extend(&self->fields, &src->fields);
+	self->src_idx = src->src_idx;
 
 	self->rec_ref = src->rec_ref;
 }

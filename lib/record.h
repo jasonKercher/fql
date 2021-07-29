@@ -17,6 +17,7 @@ struct record {
 	struct csv_record* libcsv_rec;
 	stringview rec_ref;
 	size_t offset;
+	int src_idx;
 	unsigned rec_idx;
 	unsigned select_len;
 	unsigned max_subquery_count;
@@ -24,8 +25,9 @@ struct record {
 };
 typedef struct record record;
 
-struct record* record_construct(struct record*, unsigned idx);
+struct record* record_construct(struct record*, unsigned rec_idx);
 void record_destroy(struct record*);
+struct record* record_at(const struct node*, int src_idx);
 void record_copy(struct record* dest, const struct record* src);
 void record_resize(struct record*, unsigned size);
 void record_swap(struct record*, struct record* src);

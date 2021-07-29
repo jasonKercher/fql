@@ -307,7 +307,7 @@ int expression_get_int(long* ret, expression* self, node* rg)
 		*ret = *self->rownum_ref;
 		return FQL_GOOD;
 	case EXPR_FULL_RECORD: {
-		record* rec = node_data_at(rg, self->src_idx);
+		record* rec = record_at(rg, self->src_idx);
 		if (rec == NULL) {
 			*ret = 0;
 			return FQL_NULL;
@@ -321,7 +321,7 @@ int expression_get_int(long* ret, expression* self, node* rg)
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
-		record* rec = node_data_at(rg, src_expr->src_idx);
+		record* rec = record_at(rg, src_expr->src_idx);
 		if (rec == NULL) {
 			*ret = 0;
 			return FQL_NULL;
@@ -372,7 +372,7 @@ int expression_get_float(double* ret, expression* self, node* rg)
 		*ret = (double)*self->rownum_ref;
 		return FQL_GOOD;
 	case EXPR_FULL_RECORD: {
-		record* rec = node_data_at(rg, self->src_idx);
+		record* rec = record_at(rg, self->src_idx);
 		if (rec == NULL) {
 			*ret = -0;
 			return FQL_NULL;
@@ -386,7 +386,7 @@ int expression_get_float(double* ret, expression* self, node* rg)
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
-		record* rec = node_data_at(rg, src_expr->src_idx);
+		record* rec = record_at(rg, src_expr->src_idx);
 		if (rec == NULL) {
 			return -0;
 			return FQL_NULL;
@@ -434,7 +434,7 @@ int expression_get_stringview(stringview* ret, expression* self, node* rg)
 		try_(switchcase_eval_to_stringview(self->field.sc, ret, rg));
 		return FQL_GOOD;
 	case EXPR_FULL_RECORD: {
-		record* rec = node_data_at(rg, self->src_idx);
+		record* rec = record_at(rg, self->src_idx);
 		if (rec == NULL) {
 			ret->len = 0;
 			return FQL_NULL;
@@ -451,7 +451,7 @@ int expression_get_stringview(stringview* ret, expression* self, node* rg)
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
-		record* rec = node_data_at(rg, src_expr->src_idx);
+		record* rec = record_at(rg, src_expr->src_idx);
 		if (rec == NULL) {
 			ret->len = 0;
 			return FQL_NULL;
