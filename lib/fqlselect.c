@@ -79,75 +79,6 @@ void fqlselect_add_expression(fqlselect* self, expression* expr)
 	schema_add_expression(self->schema, expr, 0);
 }
 
-void _resize_raw_rec(vec* raw_rec, unsigned size)
-{
-	unsigned org_size = raw_rec->size;
-	vec_resize(raw_rec, size);
-	string* s = vec_at(raw_rec, org_size);
-	for (; s != vec_end(raw_rec); ++s) {
-		string_construct(s);
-	}
-}
-
-/* this should be in schema.c */
-int _expand_asterisk(vec* expr_vec, table* table, unsigned src_idx, unsigned* expr_idx)
-{
-	vec* src_expr_vec = table->schema->expressions;
-
-	table->reader->max_idx = src_expr_vec->size - 1;
-
-	expression** it = vec_begin(src_expr_vec);
-	for (; it != vec_end(src_expr_vec); ++it) {
-		//string* expr_name = string_from_string(&(*it)->alias);
-		expression* new_expr =
-		        new_(expression, EXPR_COLUMN_NAME, (*it)->alias.data, "");
-		new_expr->data_source = *it;
-		new_expr->src_idx = src_idx;
-		new_expr->field_type = (*it)->field_type;
-		++(*expr_idx);
-		vec_insert_at(expr_vec, *expr_idx, &new_expr, 1);
-	}
-
-	return table->schema->expressions->size;
-}
-
-void fqlselect_expand_asterisks(query* query, bool force_expansion)
-{
-	fqlselect* self = query->op;
-	vec* expr_vec = self->schema->expressions;
-	unsigned i = 0;
-
-	for (; i < expr_vec->size; ++i) {
-		expression** expr = vec_at(expr_vec, i);
-		if ((*expr)->expr != EXPR_ASTERISK) {
-			continue;
-		}
-
-		table* table = vec_at(query->sources, (*expr)->src_idx);
-
-		if (table->subquery == NULL /* is not a subquery source */
-		    && !force_expansion && query->query_id == 0 /* is in main query */
-		    && schema_eq(table->schema, self->schema)) {
-			continue;
-		}
-
-		unsigned asterisk_index = i;
-		_expand_asterisk(expr_vec, table, (*expr)->src_idx, &i);
-
-		expression** asterisk_expr = vec_at(expr_vec, asterisk_index);
-		delete_(expression, *asterisk_expr);
-		vec_erase_at(expr_vec, asterisk_index, 1);
-		--i;
-	}
-
-	expression_update_indicies(expr_vec);
-
-	if (self->writer == NULL) {
-		return;
-	}
-	_resize_raw_rec(self->writer->raw_rec, expr_vec->size);
-}
-
 int fqlselect_resolve_type_from_subquery(expression* expr)
 {
 	query* subquery = expr->subquery;
@@ -216,7 +147,7 @@ int fqlselect_connect_api(query* query, vec* api)
 	} else {
 		self->select__ = &_select_record_order_api;
 	}
-	fqlselect_expand_asterisks(query, true);
+	op_expand_asterisks(query, true);
 
 	vec* exprs = self->schema->expressions;
 	vec_resize(api, exprs->size);
@@ -295,7 +226,7 @@ int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 	if (self->schema->expressions->size == 1) {
 		expression** expr = vec_begin(self->schema->expressions);
 		if ((*expr)->expr == EXPR_ASTERISK) {
-			fqlselect_expand_asterisks(inlist->subquery, true);
+			op_expand_asterisks(inlist->subquery, true);
 		}
 	}
 	if (self->schema->expressions->size != 1) {

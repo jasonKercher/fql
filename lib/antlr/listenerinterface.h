@@ -13,6 +13,7 @@ class ListenerInterface : public TSqlParserBaseListener {
       private:
 	enum tok_type {
 		TOK_UNDEFINED,
+		TOK_OP_TABLE,
 		TOK_INTO_TABLE,
 		TOK_COLUMN_NAME,
 		TOK_COLUMN_ALIAS,

@@ -4,6 +4,7 @@ core*
 check_hashmap
 check_constants
 check_logic
+check_null
 check_read
 check_join
 check_subquery

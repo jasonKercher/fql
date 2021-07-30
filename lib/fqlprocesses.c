@@ -427,6 +427,11 @@ int fql_select(process* proc)
 	return ret;
 }
 
+int fql_delete(process* proc)
+{
+	return FQL_FAIL;
+}
+
 int fql_orderby(process* proc)
 {
 	order* order = proc->proc_data;

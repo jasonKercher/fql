@@ -267,6 +267,7 @@ int query_add_null_expression(query* self)
 	try_(_distribute_expression(self, expr));
 	return FQL_GOOD;
 }
+
 /**
  * create new table and source object
  * assign name and schema if provided. source_stack
@@ -286,6 +287,21 @@ void query_add_source(query* self, node** source_stack, const char* alias)
 	                alias,
 	                self->sources->size - 1,
 	                self->join);
+
+	/* Try to match the operation table.  For example:
+	 * 
+	 * DELETE t1   -- ...And we want to try and match this
+	 * FROM t1     -- You are here...
+	 * WHERE FOO > 0
+	 *
+	 * We send the alias because:
+	 *
+	 * DELETE t2   --...trying to match by alias here.
+	 * FROM t1
+	 * JOIN [dumb table name.txt] t2  -- you could also be here...
+	 *
+	 */
+	op_match_table_alias(self->op, new_table);
 
 	if (schema_name != NULL) {
 		new_table->schema->name = string_take(schema_name);
@@ -376,6 +392,11 @@ int query_init_op(query* self)
 		return FQL_FAIL;
 	}
 	return FQL_GOOD;
+}
+
+void query_set_op_table(query* self, const char* op_table_name)
+{
+	op_set_table_name(self->op, op_table_name);
 }
 
 void query_init_groupby(query* self)

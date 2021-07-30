@@ -2,12 +2,28 @@
 
 #include "fql.h"
 #include "misc.h"
+#include "table.h"
 #include "group.h"
 #include "order.h"
+#include "reader.h"
 #include "fqlhandle.h"
 #include "fqlselect.h"
 #include "fqldelete.h"
 #include "util/util.h"
+
+void op_destroy(enum op* self)
+{
+	switch (*self) {
+	case OP_SELECT:
+		fqlselect_destroy((fqlselect*)self);
+		break;
+	case OP_DELETE:
+		fqldelete_destroy((fqldelete*)self);
+		break;
+	default:;
+	}
+}
+
 
 vec* op_get_expressions(void* self)
 {
@@ -17,11 +33,69 @@ vec* op_get_expressions(void* self)
 	case OP_SELECT:
 		return ((fqlselect*)self)->schema->expressions;
 	case OP_DELETE:
+		return ((fqldelete*)self)->schema->expressions;
 	default:
 		return NULL;
 	}
 
 	return NULL;
+}
+
+schema* op_get_schema(enum op* self)
+{
+	switch (*self) {
+	case OP_SELECT: {
+		fqlselect* select = (fqlselect*)self;
+		return select->schema;
+	}
+	case OP_DELETE: {
+		fqldelete* delete = (fqldelete*)self;
+		return delete->schema;
+	}
+	default:
+		return NULL;
+	}
+}
+
+void op_match_table_alias(enum op* self, table* check_table)
+{
+	bool* has_matched_alias = NULL;
+	const char* op_table_name = NULL;
+	table** op_table = NULL;
+
+	switch (*self) {
+	case OP_DELETE: {
+		fqldelete* delete = (fqldelete*)self;
+		has_matched_alias = &delete->has_matched_alias;
+		if (*has_matched_alias) {
+			return;
+		}
+		op_table = &delete->delete_table;
+		expression** fake_asterisk = vec_begin(delete->schema->expressions);
+		op_table_name = string_c_str(&(*fake_asterisk)->table_name);
+		break;
+	}
+	case OP_SELECT:
+	default:
+		return;
+	}
+
+	if (!strcasecmp(op_table_name, string_c_str(&check_table->alias))) {
+		*has_matched_alias = true;
+		*op_table = check_table;
+		return;
+	}
+
+	if (!strcasecmp(op_table_name, string_c_str(&check_table->name))) {
+		*op_table = check_table;
+	}
+}
+
+void op_set_table_name(enum op* self, const char* table_name)
+{
+	schema* op_schema = op_get_schema(self);
+	expression** fake_asterisk = vec_begin(op_schema->expressions);
+	string_strcpy(&(*fake_asterisk)->table_name, table_name);
 }
 
 void op_set_top_count(enum op* self, size_t top_count)
@@ -56,22 +130,6 @@ void op_preop(struct fql_handle* fql)
 		fqldelete_preop(query->op, query);
 		break;
 	default:;
-	}
-}
-
-schema* op_get_schema(enum op* self)
-{
-	switch (*self) {
-	case OP_SELECT: {
-		fqlselect* select = (fqlselect*)self;
-		return select->schema;
-	}
-	case OP_DELETE: {
-		fqldelete* delete = (fqldelete*)self;
-		return delete->schema;
-	}
-	default:
-		return NULL;
 	}
 }
 
@@ -174,7 +232,7 @@ int op_writer_init(query* query, struct fql_handle* fql)
 		return FQL_GOOD;
 	}
 
-	fqlselect_expand_asterisks(query, (!query->groupby || !query->distinct));
+	op_expand_asterisks(query, (!query->groupby || !query->distinct));
 
 	/* TODO: verify this does not cause double free */
 	if (query->distinct != NULL) {
@@ -213,15 +271,71 @@ int op_resolve_final_types(enum op* self)
 	}
 }
 
-void op_destroy(enum op* self)
+void _resize_raw_rec(vec* raw_rec, unsigned size)
 {
-	switch (*self) {
-	case OP_SELECT:
-		fqlselect_destroy((fqlselect*)self);
-		break;
-	case OP_DELETE:
-		fqldelete_destroy((fqldelete*)self);
-		break;
-	default:;
+	unsigned org_size = raw_rec->size;
+	vec_resize(raw_rec, size);
+	string* s = vec_at(raw_rec, org_size);
+	for (; s != vec_end(raw_rec); ++s) {
+		string_construct(s);
 	}
+}
+
+int _expand_asterisk(vec* expr_vec, table* table, unsigned src_idx, unsigned* expr_idx)
+{
+	vec* src_expr_vec = table->schema->expressions;
+
+	table->reader->max_idx = src_expr_vec->size - 1;
+
+	expression** it = vec_begin(src_expr_vec);
+	for (; it != vec_end(src_expr_vec); ++it) {
+		//string* expr_name = string_from_string(&(*it)->alias);
+		expression* new_expr =
+		        new_(expression, EXPR_COLUMN_NAME, (*it)->alias.data, "");
+		new_expr->data_source = *it;
+		new_expr->src_idx = src_idx;
+		new_expr->field_type = (*it)->field_type;
+		++(*expr_idx);
+		vec_insert_at(expr_vec, *expr_idx, &new_expr, 1);
+	}
+
+	return table->schema->expressions->size;
+}
+
+void op_expand_asterisks(query* query, bool force_expansion)
+{
+	schema* op_schema = op_get_schema(query->op);
+	vec* expr_vec = op_schema->expressions;
+	unsigned i = 0;
+
+	for (; i < expr_vec->size; ++i) {
+		expression** expr = vec_at(expr_vec, i);
+		if ((*expr)->expr != EXPR_ASTERISK) {
+			continue;
+		}
+
+		table* table = vec_at(query->sources, (*expr)->src_idx);
+
+		if (table->subquery == NULL /* is not a subquery source */
+		    && !force_expansion && query->query_id == 0 /* is in main query */
+		    && schema_eq(table->schema, op_schema)) {
+			continue;
+		}
+
+		unsigned asterisk_index = i;
+		_expand_asterisk(expr_vec, table, (*expr)->src_idx, &i);
+
+		expression** asterisk_expr = vec_at(expr_vec, asterisk_index);
+		delete_(expression, *asterisk_expr);
+		vec_erase_at(expr_vec, asterisk_index, 1);
+		--i;
+	}
+
+	expression_update_indicies(expr_vec);
+
+	writer* op_writer = op_get_writer(query->op);
+	if (op_writer == NULL) {
+		return;
+	}
+	_resize_raw_rec(op_writer->raw_rec, expr_vec->size);
 }

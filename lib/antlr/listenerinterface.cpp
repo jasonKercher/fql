@@ -339,6 +339,10 @@ void ListenerInterface::enterId_(TSqlParser::Id_Context* ctx)
 	char* token = strdup(new_str.c_str());
 
 	switch (_tok_type) {
+	case TOK_OP_TABLE:
+		query_set_op_table(_query, token);
+		free_(token);
+		break;
 	case TOK_COLUMN_NAME:
 		/* consume table designation */
 		node_push(&_column_stack, token);
@@ -496,8 +500,17 @@ void ListenerInterface::enterDelete_statement(TSqlParser::Delete_statementContex
 
 void ListenerInterface::exitDelete_statement(TSqlParser::Delete_statementContext * ctx) { }
 
-void ListenerInterface::enterDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) { }
-void ListenerInterface::exitDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) { }
+void ListenerInterface::enterDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) 
+{ 
+	_tok_type = TOK_OP_TABLE;
+}
+void ListenerInterface::exitDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) 
+{ 
+	_tok_type = TOK_UNDEFINED;
+}
+
+void ListenerInterface::enterDdl_object(TSqlParser::Ddl_objectContext * ctx) { }
+void ListenerInterface::exitDdl_object(TSqlParser::Ddl_objectContext * ctx) { }
 
 void ListenerInterface::enterExpression(TSqlParser::ExpressionContext * ctx)
 {
@@ -843,6 +856,9 @@ void ListenerInterface::exitBUILT_IN_FUNC(TSqlParser::BUILT_IN_FUNCContext* ctx)
 
 void ListenerInterface::enterKeyword(TSqlParser::KeywordContext* ctx) { }
 void ListenerInterface::exitKeyword(TSqlParser::KeywordContext* ctx) { }
+
+void ListenerInterface::enterFull_table_name(TSqlParser::Full_table_nameContext * ctx) { }
+void ListenerInterface::exitFull_table_name(TSqlParser::Full_table_nameContext * ctx) { }
 
 /* Every Rule Operations */
 
@@ -1297,14 +1313,8 @@ void ListenerInterface::exitEntity_name_for_azure_dw(TSqlParser::Entity_name_for
 void ListenerInterface::enterEntity_name_for_parallel_dw(TSqlParser::Entity_name_for_parallel_dwContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitEntity_name_for_parallel_dw(TSqlParser::Entity_name_for_parallel_dwContext * ctx) { }
 
-void ListenerInterface::enterFull_table_name(TSqlParser::Full_table_nameContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitFull_table_name(TSqlParser::Full_table_nameContext * ctx) { }
-
 void ListenerInterface::enterSimple_name(TSqlParser::Simple_nameContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitSimple_name(TSqlParser::Simple_nameContext * ctx) { }
-
-void ListenerInterface::enterDdl_object(TSqlParser::Ddl_objectContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitDdl_object(TSqlParser::Ddl_objectContext * ctx) { }
 
 void ListenerInterface::enterColumn_name_list_with_order(TSqlParser::Column_name_list_with_orderContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitColumn_name_list_with_order(TSqlParser::Column_name_list_with_orderContext * ctx) { }

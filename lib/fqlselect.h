@@ -38,7 +38,6 @@ void fqlselect_add_expression(struct fqlselect*, struct expression*);
 int fqlselect_connect_api(struct query*, struct vec*);
 void fqlselect_apply_process(struct query*, struct fql_plan*, bool);
 void fqlselect_apply_expression_alias(struct fqlselect*, const char* alias);
-void fqlselect_expand_asterisks(struct query*, bool force_expansion);
 int fqlselect_set_as_inlist(struct fqlselect*, struct inlist*);
 int fqlselect_resolve_type_from_subquery(struct expression*);
 int fqlselect_resolve_final_types(struct fqlselect*);

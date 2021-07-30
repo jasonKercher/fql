@@ -15,8 +15,10 @@ struct fqldelete {
 	struct schema* schema;
 	struct writer* writer;
 	delete_fn delete__;
+	struct table* delete_table;
 	size_t rows_affected;
 	size_t top_count;
+	bool has_matched_alias;
 };
 typedef struct fqldelete fqldelete;
 

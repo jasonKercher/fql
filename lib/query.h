@@ -186,6 +186,7 @@ void query_set_distinct(struct query*);
 int query_enter_aggregate(struct query*, enum aggregate_function);
 int query_exit_aggregate(struct query*);
 int query_init_op(struct query*);
+void query_set_op_table(struct query*, const char*);
 void query_init_groupby(struct query*);
 int query_init_orderby(struct query*);
 void query_enter_in_statement(struct query*);
