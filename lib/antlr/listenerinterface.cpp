@@ -496,6 +496,9 @@ void ListenerInterface::enterDelete_statement(TSqlParser::Delete_statementContex
 	if (query_init_op(_query)) {
 		_set_failure();
 	}
+	if (ctx->WHERE()) {
+		_query->expect_where = true;
+	}
 }
 
 void ListenerInterface::exitDelete_statement(TSqlParser::Delete_statementContext * ctx) { }

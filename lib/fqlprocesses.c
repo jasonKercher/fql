@@ -220,14 +220,14 @@ int fql_logic(process* proc)
 	fifo* out_true = proc->fifo_out[1];
 
 	node** rg_iter = fifo_begin(in);
-	for (; rg_iter != fifo_end(in) && fifo_receivable(out_true)
+	for (; rg_iter != fifo_end(in) && (!out_true || fifo_receivable(out_true))
 	       && (!out_false || fifo_receivable(out_false));
 	     rg_iter = fifo_iter(in)) {
 		int ret = try_(logicgroup_eval(lg, *rg_iter, lg->join_logic));
 
-		if (ret) {
+		if (ret && out_true != NULL) {
 			fifo_add(out_true, rg_iter);
-		} else if (out_false != NULL) {
+		} else if (!ret && out_false != NULL) {
 			fifo_add(out_false, rg_iter);
 		} else {
 			_recycle(proc, rg_iter);
@@ -269,6 +269,7 @@ int fql_left_join_logic(process* proc)
 			}
 		}
 
+		/* TODO: handle a complex delete here */
 		fifo_add(out_true, rg_iter);
 	}
 	fifo_update(in);

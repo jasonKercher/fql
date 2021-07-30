@@ -86,6 +86,14 @@ void op_match_table_alias(enum op* self, table* check_table)
 		return;
 	}
 
+	/* Well, we didn't match on alias or by any default
+	 * rules. No biggie, because this is still legal:
+	 *
+	 * DELETE [file.txt]  -- Note: Still legal to refer to the table
+	 * FROM [file.txt] t1 --       name and not just the alias...
+	 * JOIN [file2.txt] t2
+	 * 	ON t2.foo = t1.foo
+	 */
 	if (!strcasecmp(op_table_name, string_c_str(&check_table->name))) {
 		*op_table = check_table;
 	}
@@ -209,8 +217,34 @@ int op_writer_init(query* query, struct fql_handle* fql)
 	}
 	op_get_writer(query->op);
 
+	table* op_table = NULL;
+
+	switch (*self) {
+	case OP_DELETE: {
+		fqldelete* delete = query->op;
+		op_table = delete->delete_table;
+		break;
+	}
+	case OP_SELECT:
+	default:;
+	}
+
+	if (op_table != NULL) {
+		query->into_table_name = string_c_str(&op_table->reader->file_name);
+	}
+
+	/* If we are dealing specifically with
+	 *
+	 * SELECT foo
+	 * INTO [new.txt]
+	 * FROM t1
+	 *
+	 * verify new.txt does not already exist.
+	 * NOTE: --overwrite nullifies this test.
+	 */
 	if (!query->union_id && query->into_table_name) {
-		if (!fql->props.overwrite && access(query->into_table_name, F_OK) == 0) {
+		if (*self == OP_SELECT && !fql->props.overwrite
+		    && access(query->into_table_name, F_OK) == 0) {
 			fprintf(stderr,
 			        "Cannot SELECT INTO: file `%s' already exists\n",
 			        query->into_table_name);
