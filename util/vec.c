@@ -222,7 +222,9 @@ void vec_sort_r(vec* self, qsort_r_cmp_fn cmp__, void* context)
 
 bitvec* bitvec_construct(bitvec* self)
 {
-	return vec_construct_(self, uint64_t);
+	vec_construct_(self, uint64_t);
+	memset(self->data, 0, self->_elem_size * self->_alloc);
+	return self;
 }
 
 void bitvec_destroy(bitvec* self)
@@ -248,7 +250,45 @@ void bitvec_set(bitvec* self, size_t idx, bool newval)
 	}
 }
 
+void bitvec_reserve(bitvec* self, size_t size)
+{
+	size_t alloc = size / 64 + 1;
+	if (self->_alloc >= ++alloc) {
+		return;
+	}
+	void* new_dest_ = realloc(self->data, alloc * self->_elem_size);
+	if (!new_dest_) {
+		perror("realloc");
+		exit(EXIT_FAILURE);
+	}
+	self->data = new_dest_;
+	new_dest_ = NULL;
+	self->_alloc = alloc;
+}
+
 void bitvec_resize(bitvec* self, size_t size)
 {
-	vec_resize(self, size / 64 + 1);
+	size_t org_size = self->size / 64 + 1;
+	size_t org_alloc = self->_alloc;
+
+	if (size > self->size) {
+		bitvec_reserve(self, size);
+	}
+	self->size = size;
+
+	if (org_alloc == self->_alloc) {
+		return;
+	}
+	void* new_shit = vec_at(self, org_size);
+	size_t new_shit_size = self->_alloc - org_size;
+	memset(new_shit, 0, new_shit_size * self->_elem_size);
+}
+
+void bitvec_push_back(bitvec* self, bool val)
+{
+	if (++self->size > (self->_alloc - 1) * 64) {
+		bitvec_reserve(self, self->size * 2);
+	}
+
+	bitvec_set(self, self->size - 1, val);
 }

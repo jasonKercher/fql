@@ -81,6 +81,6 @@ void bitvec_destroy(bitvec*);
 void bitvec_resize(bitvec*, size_t);
 bool bitvec_at(const bitvec*, size_t idx);
 void bitvec_set(bitvec*, size_t idx, bool);
-
+void bitvec_push_back(bitvec*, bool);
 
 #endif /* VEC_H */
