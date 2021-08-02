@@ -9,6 +9,7 @@
 #include "reader.h"
 #include "aggregate.h"
 #include "fqlselect.h"
+#include "fqldelete.h"
 #include "util/fifo.h"
 
 void _recycle(process* proc, node** rg)
@@ -430,8 +431,48 @@ int fql_select(process* proc)
 
 int fql_delete(process* proc)
 {
-	return FQL_FAIL;
+	fqldelete* delete = proc->proc_data;
+
+	fifo* in = proc->fifo_in[0];
+
+	if (!proc->wait_for_in0) {
+		writer_close(delete->writer);
+		process_disable(proc);
+		return 0;
+	}
+
+	int ret = 0;
+	unsigned iters = 0;
+	node** rg_iter = fifo_begin(in);
+	for (; iters++ < proc->max_recs_iter && rg_iter != fifo_end(in)
+	       && delete->rows_affected < delete->top_count;
+	     rg_iter = fifo_iter(in)) {
+		ret = try_(delete->delete__(delete, *rg_iter));
+
+		++proc->rows_affected;
+		++delete->rows_affected;
+
+		_recycle(proc, rg_iter);
+	}
+
+
+	fifo_update(in);
+
+	if (delete->rows_affected >= delete->top_count) {
+		proc->wait_for_in0 = false;
+	}
+	return ret;
 }
+
+//int fql_delete(process* proc)
+//{
+//	fqldelete* delete = proc->proc_data;
+//	fifo* in = proc->fifo_in[0];
+//
+//	/** TODO **/
+//
+//	return FQL_FAIL;
+//}
 
 int fql_orderby(process* proc)
 {

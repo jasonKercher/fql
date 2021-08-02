@@ -56,7 +56,7 @@ void fqldelete_apply_process(query* query, plan* plan)
 {
 	fqldelete* self = query->op;
 	process* proc = plan->op_false->data;
-	proc->action__ = &fql_delete;
+	proc->action__ = &fql_delete; /* lol */
 	proc->wait_for_in0_end = true;
 	proc->proc_data = self;
 

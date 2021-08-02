@@ -230,7 +230,9 @@ int op_writer_init(query* query, struct fql_handle* fql)
 	}
 
 	if (op_table != NULL) {
-		query->into_table_name = string_c_str(&op_table->reader->file_name);
+		/* query owns this so we dup it */
+		query->into_table_name =
+		        strdup(string_c_str(&op_table->reader->file_name));
 	}
 
 	/* If we are dealing specifically with
