@@ -569,6 +569,29 @@ void _clear_passive(plan* self)
 	}
 }
 
+void _disable_stranded_roots(plan* self)
+{
+	vec* root_vec = self->processes->_roots;
+	dnode** it = vec_begin(root_vec);
+
+	for (; it != vec_end(root_vec); ++it) {
+		if (*it == self->op_false || *it == self->op_true) {
+			continue;
+		}
+		if ((*it)->out[0] == NULL && (*it)->out[1] == NULL) {
+			process* proc = (*it)->data;
+			proc->is_passive = true;
+			//proc->is_enabled = false;
+
+			proc = self->op_false->data;
+			proc->wait_for_in0 = false;
+		}
+	}
+
+	_clear_passive(self);
+	dgraph_get_roots(self->processes);
+}
+
 /* Assign input counts to each process by traversing
  * and copying the visit_count. This important when
  * threading because "is not full" is not a valid
@@ -677,6 +700,9 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 
 	_clear_passive(self);
 	dgraph_get_roots(self->processes);
+	if (*(enum op*)self->query->op != OP_SELECT) {
+		_disable_stranded_roots(self);
+	}
 
 	if (vec_empty(self->processes->nodes)) {
 		process* entry_proc = entry->data;

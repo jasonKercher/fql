@@ -40,6 +40,7 @@ fqlselect* fqlselect_construct(fqlselect* self)
 	        -1,              /* top_count */
 	        0,               /* rownum */
 	        false,           /* is_const */
+	        true,            /* must_run_once */
 	};
 
 	self->_selection_exprs = self->schema->expressions;
@@ -77,6 +78,9 @@ unsigned fqlselect_get_field_count(fqlselect* self)
 void fqlselect_add_expression(fqlselect* self, expression* expr)
 {
 	schema_add_expression(self->schema, expr, 0);
+	if (expr->expr != EXPR_AGGREGATE) {
+		self->must_run_once = false;
+	}
 }
 
 int fqlselect_resolve_type_from_subquery(expression* expr)

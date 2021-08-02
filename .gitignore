@@ -15,6 +15,7 @@ check_having
 check_order
 check_top
 check_difficult
+check_operations
 check_failure
 
 *.vgreport

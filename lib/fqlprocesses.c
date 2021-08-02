@@ -374,6 +374,12 @@ int fql_select(process* proc)
 	fifo* out = proc->fifo_out[0];
 
 	if (!proc->wait_for_in0) {
+		if (select->must_run_once && select->rows_affected == 0) {
+			try_(select->select__(select, NULL));
+			select->rows_affected = 1;
+			proc->rows_affected = 1;
+			return 1;
+		}
 		/* subquery reads expect union schema to
 		 * be "in sync" with the subquery select's
 		 * current schema
@@ -448,10 +454,7 @@ int fql_delete(process* proc)
 	       && delete->rows_affected < delete->top_count;
 	     rg_iter = fifo_iter(in)) {
 		ret = try_(delete->delete__(delete, *rg_iter));
-
 		++proc->rows_affected;
-		++delete->rows_affected;
-
 		_recycle(proc, rg_iter);
 	}
 
@@ -463,16 +466,6 @@ int fql_delete(process* proc)
 	}
 	return ret;
 }
-
-//int fql_delete(process* proc)
-//{
-//	fqldelete* delete = proc->proc_data;
-//	fifo* in = proc->fifo_in[0];
-//
-//	/** TODO **/
-//
-//	return FQL_FAIL;
-//}
 
 int fql_orderby(process* proc)
 {

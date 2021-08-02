@@ -11,6 +11,8 @@
 #include "util/util.h"
 #include "util/stringy.h"
 
+const char* _null_agg_numeric = "0";
+
 expression* expression_construct(expression* self,
                                  enum expr_type expr,
                                  void* data,
@@ -448,7 +450,34 @@ int expression_get_stringview(stringview* ret, expression* self, node* rg)
 		ret->len = self->buf.size;
 		return FQL_GOOD;
 	case EXPR_GROUPING:
-	case EXPR_AGGREGATE:
+	case EXPR_AGGREGATE: {
+		expression* src_expr = self->data_source;
+		record* rec = record_at(rg, src_expr->src_idx);
+		if (rec == NULL) {
+			switch (src_expr->field_type) {
+			case FIELD_INT:
+			case FIELD_FLOAT:
+				ret->data = _null_agg_numeric;
+				ret->len = 1;
+				return FQL_NULL;
+			case FIELD_STRING:
+				ret->len = 0;
+				return FQL_NULL;
+			default:
+				return FQL_NULL;
+			}
+		}
+		if (rec->fields.size <= src_expr->index) {
+			string_clear(&self->buf);
+			ret->data = self->buf.data;
+			ret->len = 0;
+			return FQL_GOOD;
+		}
+		stringview* sv = vec_at(&rec->fields, src_expr->index);
+		ret->data = sv->data;
+		ret->len = sv->len;
+		return FQL_GOOD;
+	}
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
 		record* rec = record_at(rg, src_expr->src_idx);

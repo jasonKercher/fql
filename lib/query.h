@@ -170,6 +170,7 @@ typedef struct query query;
 struct query* query_new(int id);
 struct query* query_construct(struct query*, int id);
 void query_destroy(struct query*);
+void query_release_sources(struct query*);
 void query_free(void*);
 
 int query_add_constant(struct query*, const char*, int);
@@ -195,6 +196,7 @@ void query_assign_in_subquery(struct query*, struct query*);
 void query_add_subquery_const(struct query*, struct query*);
 void query_set_order_desc(struct query*);
 int query_apply_data_type(struct query*, const char*);
+void query_exit_non_select_op(struct query*);
 
 int query_enter_union(struct query*, struct query*);
 int query_exit_union(struct query*, struct query*);

@@ -27,6 +27,7 @@ struct fqlselect {
 	size_t top_count;
 	unsigned rownum;
 	bool is_const;
+	bool must_run_once;
 };
 typedef struct fqlselect fqlselect;
 

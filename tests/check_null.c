@@ -13,10 +13,6 @@ c1519b0d	c8	87082
 6ed156a7	ae	229701
 */
 
-/* t2.csv
- *
- */
-
 void _assert_select_null_const(const char* query_string)
 {
 	int plan_count = fql_make_plans(fql, query_string);

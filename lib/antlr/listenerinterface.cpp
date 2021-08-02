@@ -501,7 +501,10 @@ void ListenerInterface::enterDelete_statement(TSqlParser::Delete_statementContex
 	}
 }
 
-void ListenerInterface::exitDelete_statement(TSqlParser::Delete_statementContext * ctx) { }
+void ListenerInterface::exitDelete_statement(TSqlParser::Delete_statementContext * ctx) 
+{
+	query_exit_non_select_op(_query);
+}
 
 void ListenerInterface::enterDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) 
 { 

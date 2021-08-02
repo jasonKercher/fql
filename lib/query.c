@@ -61,11 +61,8 @@ query* query_construct(query* self, int id)
 
 void query_destroy(query* self)
 {
+	query_release_sources(self);
 	delete_if_exists_(plan, self->plan);
-	table* t_it = vec_begin(self->sources);
-	for (; t_it != vec_end(self->sources); ++t_it) {
-		table_destroy(t_it);
-	}
 	delete_(vec, self->sources);
 	delete_if_exists_(op, self->op);
 	delete_if_exists_(logicgroup, self->where);
@@ -76,18 +73,27 @@ void query_destroy(query* self)
 	delete_if_exists_(expression, self->top_expr);
 	delete_if_exists_(vec, self->joinable);
 
-	query** q_it = vec_begin(self->subquery_const_vec);
-	for (; q_it != vec_end(self->subquery_const_vec); ++q_it) {
-		delete_(query, *q_it);
+	query** it = vec_begin(self->subquery_const_vec);
+	for (; it != vec_end(self->subquery_const_vec); ++it) {
+		delete_(query, *it);
 	}
 
-	q_it = vec_begin(self->unions);
-	for (; q_it != vec_end(self->unions); ++q_it) {
-		delete_(query, *q_it);
+	it = vec_begin(self->unions);
+	for (; it != vec_end(self->unions); ++it) {
+		delete_(query, *it);
 	}
 	delete_(vec, self->unions);
 	delete_(vec, self->subquery_const_vec);
 	free_if_exists_(self->into_table_name);
+}
+
+void query_release_sources(query* self)
+{
+	table* it = vec_begin(self->sources);
+	for (; it != vec_end(self->sources); ++it) {
+		table_destroy(it);
+	}
+	vec_resize(self->sources, 0);
 }
 
 /* only here for address */
@@ -549,6 +555,22 @@ int query_apply_data_type(query* self, const char* type_str)
 	return FQL_GOOD;
 }
 
+void query_exit_non_select_op(query* self)
+{
+	if (!vec_empty(self->sources)) {
+		return;
+	}
+
+	const char* op_table_name = op_get_table_name(self->op);
+	char* table_name_dup = strdup(op_table_name);
+
+	node* fake_source_stack = NULL;
+	node_push(&fake_source_stack, table_name_dup);
+	query_add_source(self, &fake_source_stack, table_name_dup);
+
+	/* query_add_source will free the stack and its data */
+}
+
 void query_exit_function(query* self)
 {
 	node_pop(&self->function_stack);
@@ -651,9 +673,13 @@ void _assign_logic(query* self, logicgroup* lg)
 	case LOGIC_WHERE:
 		self->where = lg;
 		break;
-	case LOGIC_HAVING:
+	case LOGIC_HAVING: {
+		/* Having allows us to assume select */
+		fqlselect* select = self->op;
+		select->must_run_once = false;
 		self->having = lg;
 		break;
+	}
 	case LOGIC_CASE:
 		switchcase_add_logicgroup(self->switchcase_stack->data, lg);
 		break;

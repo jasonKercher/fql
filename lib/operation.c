@@ -57,6 +57,20 @@ schema* op_get_schema(enum op* self)
 	}
 }
 
+const char* op_get_table_name(enum op* self)
+{
+	switch (*self) {
+	case OP_DELETE: {
+		fqldelete* delete = (fqldelete*)self;
+		expression** fake_asterisk = vec_begin(delete->schema->expressions);
+		return string_c_str(&(*fake_asterisk)->table_name);
+	}
+	case OP_SELECT:
+	default:
+		return NULL;
+	}
+}
+
 void op_match_table_alias(enum op* self, table* check_table)
 {
 	bool* has_matched_alias = NULL;

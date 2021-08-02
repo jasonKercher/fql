@@ -19,6 +19,7 @@ enum op {
 void op_preop(struct fql_handle*);
 struct vec* op_get_expressions(void* op);
 struct schema* op_get_schema(enum op*);
+const char* op_get_table_name(enum op*);
 void op_match_table_alias(enum op*, struct table*);
 void op_set_table_name(enum op*, const char*);
 void op_set_top_count(enum op*, size_t);
