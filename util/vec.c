@@ -1,6 +1,6 @@
 #include "vec.h"
 
-#include <limits.h>
+#include <stdint.h>
 #include "util.h"
 
 
@@ -217,4 +217,38 @@ void vec_erase(vec* self, void* begin, void* back)
 void vec_sort_r(vec* self, qsort_r_cmp_fn cmp__, void* context)
 {
 	qsort_r(self->data, self->size, self->_elem_size, cmp__, context);
+}
+
+
+bitvec* bitvec_construct(bitvec* self)
+{
+	return vec_construct_(self, uint64_t);
+}
+
+void bitvec_destroy(bitvec* self)
+{
+	vec_destroy(self);
+}
+
+bool bitvec_at(const bitvec* self, size_t idx)
+{
+	uint64_t* num = vec_at(self, idx / 64);
+	uint8_t offset = idx % 64;
+	return (*num >> offset) & 1;
+}
+
+void bitvec_set(bitvec* self, size_t idx, bool newval)
+{
+	uint64_t* num = vec_at(self, idx / 64);
+	uint8_t offset = idx % 64;
+	if (newval) {
+		*num |= (1 << offset);
+	} else {
+		*num &= ~(1 << offset);
+	}
+}
+
+void bitvec_resize(bitvec* self, size_t size)
+{
+	vec_resize(self, size / 64 + 1);
 }

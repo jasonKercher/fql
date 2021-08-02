@@ -376,8 +376,8 @@ int fql_select(process* proc)
 	if (!proc->wait_for_in0) {
 		if (select->must_run_once && select->rows_affected == 0) {
 			try_(select->select__(select, NULL));
-			select->rows_affected = 1;
-			proc->rows_affected = 1;
+			++select->rows_affected;
+			++proc->rows_affected;
 			return 1;
 		}
 		/* subquery reads expect union schema to

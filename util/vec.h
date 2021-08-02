@@ -75,4 +75,12 @@ void vec_sort_r(struct vec*, qsort_r_cmp_fn, void* context);
 
 #define vec_get_idx_(v_, pos_) vec_iter_size_(v_, vec_begin(v_), pos_) - 1
 
+typedef struct vec bitvec;
+bitvec* bitvec_construct(bitvec*);
+void bitvec_destroy(bitvec*);
+void bitvec_resize(bitvec*, size_t);
+bool bitvec_at(const bitvec*, size_t idx);
+void bitvec_set(bitvec*, size_t idx, bool);
+
+
 #endif /* VEC_H */
