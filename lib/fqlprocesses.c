@@ -467,6 +467,15 @@ int fql_delete(process* proc)
 	return ret;
 }
 
+int fql_delete_filter(process* proc)
+{
+	fifo* in_false = proc->fifo_in[0];
+	fifo* in_true = proc->fifo_in[1];
+
+
+	return FQL_GOOD;
+}
+
 int fql_orderby(process* proc)
 {
 	order* order = proc->proc_data;

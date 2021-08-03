@@ -222,7 +222,7 @@ void vec_sort_r(vec* self, qsort_r_cmp_fn cmp__, void* context)
 
 bitvec* bitvec_construct(bitvec* self)
 {
-	vec_construct_(self, uint64_t);
+	vec_construct_(self, uint32_t);
 	memset(self->data, 0, self->_elem_size * self->_alloc);
 	return self;
 }
@@ -234,15 +234,15 @@ void bitvec_destroy(bitvec* self)
 
 bool bitvec_at(const bitvec* self, size_t idx)
 {
-	uint64_t* num = vec_at(self, idx / 64);
-	uint8_t offset = idx % 64;
+	uint32_t* num = vec_at(self, idx / 32);
+	uint8_t offset = idx % 32;
 	return (*num >> offset) & 1;
 }
 
 void bitvec_set(bitvec* self, size_t idx, bool newval)
 {
-	uint64_t* num = vec_at(self, idx / 64);
-	uint8_t offset = idx % 64;
+	uint32_t* num = vec_at(self, idx / 32);
+	uint32_t offset = idx % 32;
 	if (newval) {
 		*num |= (1 << offset);
 	} else {
@@ -252,7 +252,7 @@ void bitvec_set(bitvec* self, size_t idx, bool newval)
 
 void bitvec_reserve(bitvec* self, size_t size)
 {
-	size_t alloc = size / 64 + 1;
+	size_t alloc = size / 32 + 1;
 	if (self->_alloc >= ++alloc) {
 		return;
 	}
@@ -268,7 +268,7 @@ void bitvec_reserve(bitvec* self, size_t size)
 
 void bitvec_resize(bitvec* self, size_t size)
 {
-	size_t org_size = self->size / 64 + 1;
+	size_t org_size = self->size / 32 + 1;
 	size_t org_alloc = self->_alloc;
 
 	if (size > self->size) {
@@ -286,7 +286,7 @@ void bitvec_resize(bitvec* self, size_t size)
 
 void bitvec_push_back(bitvec* self, bool val)
 {
-	if (++self->size > (self->_alloc - 1) * 64) {
+	if (++self->size > (self->_alloc - 1) * 32) {
 		bitvec_reserve(self, self->size * 2);
 	}
 

@@ -349,7 +349,7 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 			//}
 			table_iter->read_proc = read_proc;
 			read_proc->proc_data = table_iter;
-			read_proc->is_secondary = true;
+			read_proc->out0_is_secondary = true;
 			read_proc->root_fifo = 0;
 			read_node->is_root = true;
 
@@ -537,6 +537,11 @@ void _clear_passive(plan* self)
 			process* proc = nodes[i]->out[0]->data;
 			if (proc->is_passive) {
 				nodes[i]->out[0] = nodes[i]->out[0]->out[0];
+				if (nodes[i]->out[0] != NULL) {
+					process* out0_proc = nodes[i]->out[0]->data;
+					out0_proc->out0_is_secondary =
+					        proc->out0_is_secondary;
+				}
 			} else {
 				break;
 			}
@@ -550,6 +555,11 @@ void _clear_passive(plan* self)
 					nodes[i]->out[1] = nodes[i]->out[1]->out[1];
 				} else {
 					nodes[i]->out[1] = nodes[i]->out[1]->out[0];
+				}
+				if (nodes[i]->out[1] != NULL) {
+					process* out1_proc = nodes[i]->out[1]->data;
+					out1_proc->out1_is_secondary =
+					        proc->out1_is_secondary;
 				}
 			} else {
 				break;
@@ -581,10 +591,8 @@ void _disable_stranded_roots(plan* self)
 		if ((*it)->out[0] == NULL && (*it)->out[1] == NULL) {
 			process* proc = (*it)->data;
 			proc->is_passive = true;
-			//proc->is_enabled = false;
-
-			proc = self->op_false->data;
-			proc->wait_for_in0 = false;
+			process* false_proc = self->op_false->data;
+			false_proc->wait_for_in0 = false;
 		}
 	}
 
@@ -633,14 +641,14 @@ void _make_pipes(plan* self)
 		process* proc = (*nodes)->data;
 		if ((*nodes)->out[0] != NULL) {
 			process* proc0 = (*nodes)->out[0]->data;
-			proc->fifo_out[0] = (proc->is_secondary) ? proc0->fifo_in[1]
-			                                         : proc0->fifo_in[0];
+			proc->fifo_out[0] = (proc->out0_is_secondary) ? proc0->fifo_in[1]
+			                                              : proc0->fifo_in[0];
 		}
 
 		if ((*nodes)->out[1] != NULL) {
 			process* proc1 = (*nodes)->out[1]->data;
-			proc->fifo_out[1] = (proc->is_secondary) ? proc1->fifo_in[1]
-			                                         : proc1->fifo_in[0];
+			proc->fifo_out[1] = (proc->out1_is_secondary) ? proc1->fifo_in[1]
+			                                              : proc1->fifo_in[0];
 		}
 	}
 }

@@ -46,7 +46,8 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        plan->source_count,           /* in_src_count */
 	        plan->source_count,           /* out_src_count */
 	        PROCESS_NO_ROOT,              /* root_fifo */
-	        false,                        /* is_secondary */
+	        false,                        /* out0_is_secondary */
+	        false,                        /* out1_is_secondary */
 	        false,                        /* is_passive */
 	        true,                         /* is_enabled */
 	        false,                        /* is_const */

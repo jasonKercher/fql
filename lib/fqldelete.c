@@ -55,14 +55,40 @@ void fqldelete_destroy(fqldelete* self)
 void fqldelete_apply_process(query* query, plan* plan)
 {
 	fqldelete* self = query->op;
+	if (query->sources->size == 1) {
+		process* proc = plan->op_false->data;
+		proc->action__ = &fql_delete;
+		proc->wait_for_in0_end = true;
+		proc->proc_data = self;
+
+		string_strcpy(proc->plan_msg, "DELETE");
+
+		proc = plan->op_true->data;
+		proc->is_passive = true;
+
+		writer_set_delimiter(self->writer, self->schema->delimiter);
+		writer_set_rec_terminator(self->writer, self->schema->rec_terminator);
+		return;
+	}
+
+	/* At this point, we are dealing with a join */
+	process* delete_sort_proc = new_(process, "DELETE FILTER", plan);
+	delete_sort_proc->action__ = &fql_delete_sort;
+	dnode* sort_node = dgraph_add_data(plan->processes, delete_sort_proc);
+
+	plan->op_false->out[0] = sort_node;
+	plan->op_true->out[0] = sort_node;
+
+	process* delete_proc = new_(process, "DELETE", plan);
+	delete_proc->action__ = &fql_delete;
+	dnode* del_node = dgraph_add_data(plan->processes, delete_proc);
+
+	sort_node->out[0] = del_node;
+
 	process* proc = plan->op_false->data;
-	proc->action__ = &fql_delete; /* lol */
-	proc->wait_for_in0_end = true;
-	proc->proc_data = self;
-
-	string_strcpy(proc->plan_msg, "DELETE");
-
+	proc->is_passive = true;
 	proc = plan->op_true->data;
+	proc->out1_is_secondary = true;
 	proc->is_passive = true;
 
 	writer_set_delimiter(self->writer, self->schema->delimiter);
