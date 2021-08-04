@@ -15,6 +15,7 @@ c1519b0d	c8	87082
 
 START_TEST(test_operations_delete)
 {
+	/* delete all */
 	fql_set_overwrite(fql, 1);
 	ck_assert_int_eq(fql_exec(fql, "select * into [d1.tsv] from t1"), FQL_GOOD);
 	ck_assert_int_eq(fql_exec(fql, "delete d1"), FQL_GOOD);
@@ -25,6 +26,17 @@ START_TEST(test_operations_delete)
 	ck_assert_int_eq(fql_exec(fql, "select * into [d1.tsv] from t1"), FQL_GOOD);
 	ck_assert_int_eq(fql_exec(fql, "delete d1 from [d1.tsv] d1"), FQL_GOOD);
 	assert_select_int("select count(*) from d1", 0);
+
+	/* Delete with condition */
+	ck_assert_int_eq(fql_exec(fql, "select * into [d1.tsv] from t1"), FQL_GOOD);
+	ck_assert_int_eq(fql_exec(fql, "delete d1 where bar = 'b0'"), FQL_GOOD);
+	assert_select_int("select count(*) from d1", 8);
+
+	/* delete with join */
+	ck_assert_int_eq(fql_exec(fql, "select * into [d1.tsv] from t1"), FQL_GOOD);
+	ck_assert_int_eq(fql_exec(fql, "delete d1 from d1 join t2 on d1.foo = t2.foo"),
+	                 FQL_GOOD);
+	assert_select_int("select count(*) from d1", 8);
 }
 END_TEST
 

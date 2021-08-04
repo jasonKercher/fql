@@ -349,7 +349,7 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 			//}
 			table_iter->read_proc = read_proc;
 			read_proc->proc_data = table_iter;
-			read_proc->out0_is_secondary = true;
+			read_proc->is_secondary = true;
 			read_proc->root_fifo = 0;
 			read_node->is_root = true;
 
@@ -448,7 +448,7 @@ int _having(plan* self, query* query)
 	return _logicgroup_process(self, query->having, false, true, false);
 }
 
-void _operation(plan* self, query* query, dnode* entry, bool is_union)
+int _operation(plan* self, query* query, dnode* entry, bool is_union)
 {
 	dnode* prev = self->current;
 	prev->out[0] = self->op_true;
@@ -468,16 +468,18 @@ void _operation(plan* self, query* query, dnode* entry, bool is_union)
 		process* prev_proc = prev->data;
 		if (!prev_proc->is_passive) {
 			self->current = prev;
-			return;
+			return FQL_GOOD;
 		}
 	}
-	op_apply_process(query, self, (is_union || entry != NULL));
+	try_(op_apply_process(query, self, (is_union || entry != NULL)));
 
 	if (entry == NULL) {
-		return;
+		return FQL_GOOD;
 	}
 
 	self->op_true->out[0] = entry;
+
+	return FQL_GOOD;
 }
 
 int _union(plan* self, query* aquery, struct fql_handle* fql)
@@ -537,11 +539,6 @@ void _clear_passive(plan* self)
 			process* proc = nodes[i]->out[0]->data;
 			if (proc->is_passive) {
 				nodes[i]->out[0] = nodes[i]->out[0]->out[0];
-				if (nodes[i]->out[0] != NULL) {
-					process* out0_proc = nodes[i]->out[0]->data;
-					out0_proc->out0_is_secondary =
-					        proc->out0_is_secondary;
-				}
 			} else {
 				break;
 			}
@@ -555,11 +552,6 @@ void _clear_passive(plan* self)
 					nodes[i]->out[1] = nodes[i]->out[1]->out[1];
 				} else {
 					nodes[i]->out[1] = nodes[i]->out[1]->out[0];
-				}
-				if (nodes[i]->out[1] != NULL) {
-					process* out1_proc = nodes[i]->out[1]->data;
-					out1_proc->out1_is_secondary =
-					        proc->out1_is_secondary;
 				}
 			} else {
 				break;
@@ -641,14 +633,24 @@ void _make_pipes(plan* self)
 		process* proc = (*nodes)->data;
 		if ((*nodes)->out[0] != NULL) {
 			process* proc0 = (*nodes)->out[0]->data;
-			proc->fifo_out[0] = (proc->out0_is_secondary) ? proc0->fifo_in[1]
-			                                              : proc0->fifo_in[0];
+			if (proc0->is_dual_link) {
+				proc->fifo_out[0] = proc0->fifo_in[0];
+				proc->fifo_out[1] = proc0->fifo_in[1];
+				continue;
+			}
+			proc->fifo_out[0] = (proc->is_secondary) ? proc0->fifo_in[1]
+			                                         : proc0->fifo_in[0];
 		}
 
 		if ((*nodes)->out[1] != NULL) {
 			process* proc1 = (*nodes)->out[1]->data;
-			proc->fifo_out[1] = (proc->out1_is_secondary) ? proc1->fifo_in[1]
-			                                              : proc1->fifo_in[0];
+			if (proc1->is_dual_link) {
+				proc->fifo_out[0] = proc1->fifo_in[0];
+				proc->fifo_out[1] = proc1->fifo_in[1];
+				continue;
+			}
+			proc->fifo_out[1] = (proc->is_secondary) ? proc1->fifo_in[1]
+			                                         : proc1->fifo_in[0];
 		}
 	}
 }
@@ -697,7 +699,7 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 	try_(_where(self, aquery));
 	_group(self, aquery);
 	try_(_having(self, aquery));
-	_operation(self, aquery, entry, is_union);
+	try_(_operation(self, aquery, entry, is_union));
 	_clear_passive(self);
 	dgraph_get_roots(self->processes);
 	try_(_union(self, aquery, fql));

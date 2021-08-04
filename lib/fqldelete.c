@@ -16,10 +16,13 @@ fqldelete* fqldelete_construct(fqldelete* self)
 	        OP_DELETE,       /* oper_type */
 	        new_(schema),    /* schema */
 	        NULL,            /* writer */
-	        &_delete_writer, /* delete__ */
-	        NULL,            /* delete_table */
+	        &_delete_writer, /* undelete__ */
+	        0,               /* delete_idx */
+	        NULL,            /* delete_node */
 	        0,               /* rows_affected */
 	        -1,              /* top_count */
+	        0,               /* table_idx */
+	        DEL_OPEN,        /* state */
 	        false,           /* has_matched_alias */
 	};
 
@@ -52,7 +55,7 @@ void fqldelete_destroy(fqldelete* self)
  *
  * If foo = bar, we do *not* write to the new file.
  */
-void fqldelete_apply_process(query* query, plan* plan)
+int fqldelete_apply_process(query* query, plan* plan)
 {
 	fqldelete* self = query->op;
 	if (query->sources->size == 1) {
@@ -68,31 +71,35 @@ void fqldelete_apply_process(query* query, plan* plan)
 
 		writer_set_delimiter(self->writer, self->schema->delimiter);
 		writer_set_rec_terminator(self->writer, self->schema->rec_terminator);
-		return;
+		return FQL_GOOD;
+	}
+
+	if (self->table_idx != 0) {
+		fputs("Currently can only delete from left side of join\n", stderr);
+		return FQL_FAIL;
 	}
 
 	/* At this point, we are dealing with a join */
-	process* delete_sort_proc = new_(process, "DELETE FILTER", plan);
-	delete_sort_proc->action__ = &fql_delete_sort;
-	dnode* sort_node = dgraph_add_data(plan->processes, delete_sort_proc);
+	process* delete_filter_proc = new_(process, "DELETE FILTER", plan);
+	delete_filter_proc->action__ = &fql_delete_filter;
+	delete_filter_proc->proc_data = self;
+	delete_filter_proc->wait_for_in0_end = true;
+	delete_filter_proc->is_dual_link = true;
+	delete_filter_proc->has_second_input = true;
+	dnode* filter_node = dgraph_add_data(plan->processes, delete_filter_proc);
 
-	plan->op_false->out[0] = sort_node;
-	plan->op_true->out[0] = sort_node;
-
-	process* delete_proc = new_(process, "DELETE", plan);
-	delete_proc->action__ = &fql_delete;
-	dnode* del_node = dgraph_add_data(plan->processes, delete_proc);
-
-	sort_node->out[0] = del_node;
+	plan->op_false->out[0] = filter_node;
+	plan->op_true->out[0] = filter_node;
 
 	process* proc = plan->op_false->data;
 	proc->is_passive = true;
 	proc = plan->op_true->data;
-	proc->out1_is_secondary = true;
 	proc->is_passive = true;
 
 	writer_set_delimiter(self->writer, self->schema->delimiter);
 	writer_set_rec_terminator(self->writer, self->schema->rec_terminator);
+
+	return FQL_GOOD;
 }
 
 void fqldelete_preop(fqldelete* self, query* query)

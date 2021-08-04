@@ -33,8 +33,8 @@ struct process {
 	short in_src_count;           /* number of input sources at this step */
 	short out_src_count;          /* number of output sources at this step */
 	short root_fifo;              /* index of root for fifo_in[x] */
-	bool out0_is_secondary;       /* fifo_out0 should link to a fifo_in1 */
-	bool out1_is_secondary;       /* fifo_out1 should link to a fifo_in1 */
+	bool is_secondary;            /* fifo_out0 should link to a fifo_in1 */
+	bool is_dual_link;            /* both fifo_out link both fifo_in */
 	bool is_passive;              /* denotes process that does nothing */
 	bool is_enabled;              /* enabled means it still has work to do*/
 	bool is_const;                /* should only run 1 time */
@@ -61,7 +61,7 @@ int fql_read(struct process*);
 //int fql_read_subquery(struct process*);
 int fql_select(struct process*);
 int fql_delete(struct process*);
-int fql_delete_sort(struct process*);
+int fql_delete_filter(struct process*);
 int fql_logic(struct process*);
 int fql_left_join_logic(struct process*);
 int fql_cartesian_join(struct process*);

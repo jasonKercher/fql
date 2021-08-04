@@ -46,8 +46,8 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        plan->source_count,           /* in_src_count */
 	        plan->source_count,           /* out_src_count */
 	        PROCESS_NO_ROOT,              /* root_fifo */
-	        false,                        /* out0_is_secondary */
-	        false,                        /* out1_is_secondary */
+	        false,                        /* is_secondary */
+	        false,                        /* is_dual_link */
 	        false,                        /* is_passive */
 	        true,                         /* is_enabled */
 	        false,                        /* is_const */
@@ -221,9 +221,6 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		if (self->wait_for_in0) {
 			++run_count;
 		}
-		//if (self->rows_affected >= self->top_count) {
-		//	process_disable(self);
-		//}
 		if (proc_node == plan->op_true) {
 			plan->rows_affected = self->rows_affected;
 		}

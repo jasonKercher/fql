@@ -75,7 +75,7 @@ void op_match_table_alias(enum op* self, table* check_table)
 {
 	bool* has_matched_alias = NULL;
 	const char* op_table_name = NULL;
-	table** op_table = NULL;
+	unsigned* table_idx = NULL;
 
 	switch (*self) {
 	case OP_DELETE: {
@@ -84,7 +84,7 @@ void op_match_table_alias(enum op* self, table* check_table)
 		if (*has_matched_alias) {
 			return;
 		}
-		op_table = &delete->delete_table;
+		table_idx = &delete->table_idx;
 		expression** fake_asterisk = vec_begin(delete->schema->expressions);
 		op_table_name = string_c_str(&(*fake_asterisk)->table_name);
 		break;
@@ -96,7 +96,7 @@ void op_match_table_alias(enum op* self, table* check_table)
 
 	if (!strcasecmp(op_table_name, string_c_str(&check_table->alias))) {
 		*has_matched_alias = true;
-		*op_table = check_table;
+		*table_idx = check_table->idx;
 		return;
 	}
 
@@ -109,7 +109,7 @@ void op_match_table_alias(enum op* self, table* check_table)
 	 * 	ON t2.foo = t1.foo
 	 */
 	if (!strcasecmp(op_table_name, string_c_str(&check_table->name))) {
-		*op_table = check_table;
+		*table_idx = check_table->idx;
 	}
 }
 
@@ -236,7 +236,7 @@ int op_writer_init(query* query, struct fql_handle* fql)
 	switch (*self) {
 	case OP_DELETE: {
 		fqldelete* delete = query->op;
-		op_table = delete->delete_table;
+		op_table = vec_at(query->sources, delete->table_idx);
 		break;
 	}
 	case OP_SELECT:
@@ -295,18 +295,18 @@ int op_writer_init(query* query, struct fql_handle* fql)
 	return FQL_GOOD;
 }
 
-void op_apply_process(query* query, plan* plan, bool is_subquery)
+int op_apply_process(query* query, plan* plan, bool is_subquery)
 {
 	enum op* self = query->op;
 
 	switch (*self) {
 	case OP_SELECT:
 		fqlselect_apply_process(query, plan, is_subquery);
-		break;
+		return FQL_GOOD;
 	case OP_DELETE:
-		fqldelete_apply_process(query, plan);
-		break;
-	default:;
+		return fqldelete_apply_process(query, plan);
+	default:
+		return FQL_GOOD;
 	}
 }
 
