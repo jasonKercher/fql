@@ -23,6 +23,7 @@ reader* reader_construct(reader* self)
 	        {0},          /* file_name */
 	        0,            /* max_idx */
 	        0,            /* reclen */
+	        0,            /* rec_id */
 	        1,            /* skip_rows */
 	        false         /* eof */
 	};

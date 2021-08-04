@@ -1,4 +1,5 @@
 #include "fqlupdate.h"
+#include "aggregate.h"
 #include "expression.h"
 #include "process.h"
 #include "util.h"
@@ -9,29 +10,36 @@
 #include "fql.h"
 
 int _update_writer(fqlupdate*, node*);
+int _noupdate_writer(fqlupdate*, node*);
 
 fqlupdate* fqlupdate_construct(fqlupdate* self)
 {
 	*self = (fqlupdate) {
-	        OP_UPDATE,       /* oper_type */
-	        new_(schema),    /* schema */
-	        NULL,            /* writer */
-	        &_update_writer, /* update__ */
-	        0,               /* update_idx */
-	        0,               /* rows_affected */
-	        -1,              /* top_count */
-	        {0},             /* update_columns */
-	        {0},             /* value_expressions */
-	        0,               /* table_idx */
-	        FILTER_OPEN,     /* state */
-	        false,           /* has_matched_alias */
+	        OP_UPDATE,         /* oper_type */
+	        new_(schema),      /* schema */
+	        NULL,              /* writer */
+	        &_update_writer,   /* update__ */
+	        &_noupdate_writer, /* noupdate__ */
+	        0,                 /* update_idx */
+	        0,                 /* rows_affected */
+	        -1,                /* top_count */
+	        {0},               /* update_expressions */
+	        {0},               /* set_columns */
+	        {0},               /* value_expressions */
+	        0,                 /* table_idx */
+	        FILTER_OPEN,       /* state */
+	        false,             /* has_matched_alias */
 	};
 
 	expression* lol_expr = new_(expression, EXPR_ASTERISK, NULL, "");
 	schema_add_expression(self->schema, lol_expr, 0);
 
-	vec_construct_(&self->update_columns, expression*);
+	vec_construct_(&self->update_expressions, expression*);
+	vec_construct_(&self->set_columns, expression*);
 	vec_construct_(&self->value_expressions, expression*);
+
+	lol_expr = new_(expression, EXPR_ASTERISK, NULL, "");
+	vec_push_back(&self->update_expressions, &lol_expr);
 
 	return self;
 }
@@ -41,14 +49,30 @@ void fqlupdate_destroy(fqlupdate* self)
 	if (self == NULL) {
 		return;
 	}
+
+	expression** it = vec_begin(&self->update_expressions);
+	for (; it != vec_end(&self->update_expressions); ++it) {
+		delete_(expression, *it);
+	}
+	vec_destroy(&self->update_expressions);
+
+	it = vec_begin(&self->set_columns);
+	for (; it != vec_end(&self->set_columns); ++it) {
+		delete_(expression, *it);
+	}
+	vec_destroy(&self->set_columns);
+	/* these should all have been copied to update_expressions, 
+	 * so no need to free these individually.
+	 */
+	vec_destroy(&self->value_expressions);
 	delete_if_exists_(writer, self->writer);
 	delete_(schema, self->schema);
 }
 
 int fqlupdate_add_expression(fqlupdate* self, const expression* expr)
 {
-	if (self->update_columns.size == self->value_expressions.size) {
-		vec_push_back(&self->update_columns, &expr);
+	if (self->set_columns.size == self->value_expressions.size) {
+		vec_push_back(&self->set_columns, &expr);
 		if (expr->expr != EXPR_COLUMN_NAME) {
 			fputs("Unexpected expression in update element\n", stderr);
 			return FQL_FAIL;
@@ -66,6 +90,8 @@ int fqlupdate_apply_process(query* query, plan* plan)
 		process* proc = plan->op_false->data;
 		proc->action__ = &fql_update;
 		proc->wait_for_in0_end = true;
+		proc->is_dual_link = true;
+		proc->has_second_input = true;
 		proc->proc_data = self;
 
 		string_strcpy(proc->plan_msg, "UPDATE");
@@ -137,18 +163,58 @@ void fqlupdate_preop(fqlupdate* self, query* query)
 	vec_destroy(&header);
 }
 
-int _update_writer(fqlupdate* self, node* rg)
-{
-	return self->writer->write_record__(self->writer,
-	                                    self->schema->expressions,
-	                                    rg,
-	                                    NULL);
-}
-
+/* At this point, the update expressions represent the output
+ * expressions as if there were no SET statements.  As we go
+ * through the SET columns, overwrite the existing expressions.
+ */
 int fqlupdate_resolve_additional(fqlupdate* self, query* query)
 {
-	expression** it = vec_begin(&self->value_expressions);
-	for (; it != vec_end(&self->value_expressions); ++it) { }
+	table* update_table = vec_at(query->sources, self->table_idx);
+
+	/* Identify an "okay to overwrite" record by verifying 
+	 * this "is_passthrough" flag on a match.
+	 */
+	expression** it = vec_begin(&self->update_expressions);
+	for (; it != vec_end(&self->update_expressions); ++it) {
+		(*it)->is_passthrough = true;
+	}
+
+	unsigned i = 0;
+	for (; i < self->set_columns.size; ++i) {
+		expression** update_col = vec_at(&self->set_columns, i);
+		vec* matches = multimap_get(update_table->schema->expr_map,
+		                            string_c_str(&(*update_col)->name));
+		if (matches == NULL) {
+			fprintf(stderr,
+			        "unable to match set column `%s'\n",
+			        string_c_str(&(*update_col)->name));
+			return FQL_FAIL;
+		}
+
+		if (matches->size > 1) {
+			fprintf(stderr,
+			        "ambiguous column name `%s'\n",
+			        string_c_str(&(*update_col)->name));
+		}
+
+		expression** match_schema_expr = vec_begin(matches);
+		expression** match_expr =
+		        vec_at(&self->update_expressions, (*match_schema_expr)->index);
+
+		if (!(*match_expr)->is_passthrough) {
+			fprintf(stderr,
+			        "set column `%s' matched more than once\n",
+			        string_c_str(&(*update_col)->name));
+			return FQL_FAIL;
+		}
+
+		/* Since we are overwriting its spot any way, free it... */
+		delete_(expression, *match_expr);
+
+		/* overwrite that shit */
+		expression** new_val = vec_at(&self->value_expressions, i);
+		*match_expr = *new_val;
+	}
 	return FQL_GOOD;
 }
 
@@ -156,4 +222,20 @@ int fqlupdate_resolve_additional(fqlupdate* self, query* query)
 int fqlupdate_resolve_final_types(fqlupdate* self)
 {
 	return FQL_GOOD;
+}
+
+int _update_writer(fqlupdate* self, node* rg)
+{
+	return self->writer->write_record__(self->writer,
+	                                    &self->update_expressions,
+	                                    rg,
+	                                    NULL);
+}
+
+int _noupdate_writer(fqlupdate* self, node* rg)
+{
+	return self->writer->write_record__(self->writer,
+	                                    self->schema->expressions,
+	                                    rg,
+	                                    NULL);
 }

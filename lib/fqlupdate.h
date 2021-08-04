@@ -16,10 +16,12 @@ struct fqlupdate {
 	struct schema* schema;
 	struct writer* writer;
 	update_fn update__;
+	update_fn noupdate__;
 	size_t update_idx;
 	size_t rows_affected;
 	size_t top_count;
-	struct vec update_columns;
+	struct vec update_expressions;
+	struct vec set_columns;
 	struct vec value_expressions;
 	unsigned table_idx;
 	enum filter_state state;

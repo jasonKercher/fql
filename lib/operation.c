@@ -12,6 +12,8 @@
 #include "fqlupdate.h"
 #include "util/util.h"
 
+int _expand_asterisk(vec* expr_vec, table* table, unsigned src_idx, unsigned* expr_idx);
+
 void op_destroy(enum op* self)
 {
 	switch (*self) {
@@ -327,19 +329,30 @@ int op_writer_init(query* query, struct fql_handle* fql)
 		free_(out_name);
 	}
 
-	if (*self != OP_SELECT) {
+	if (*self == OP_SELECT) {
+		op_expand_asterisks(query, (!query->groupby || !query->distinct));
+		/* TODO: verify this does not cause double free */
+		if (query->distinct != NULL) {
+			expression** it = vec_begin(op_schema->expressions);
+			for (; it != vec_end(op_schema->expressions); ++it) {
+				group_add_expression(query->distinct, *it);
+			}
+		}
 		return FQL_GOOD;
 	}
 
-	op_expand_asterisks(query, (!query->groupby || !query->distinct));
+	if (*self == OP_UPDATE) {
+		fqlupdate* update = (fqlupdate*)self;
+		table* update_table = vec_at(query->sources, update->table_idx);
 
-	/* TODO: verify this does not cause double free */
-	if (query->distinct != NULL) {
-		expression** it = vec_begin(op_schema->expressions);
-		for (; it != vec_end(op_schema->expressions); ++it) {
-			group_add_expression(query->distinct, *it);
-		}
+		unsigned expr_idx = 0;
+		_expand_asterisk(&update->update_expressions,
+		                 update_table,
+		                 update->table_idx,
+		                 &expr_idx);
+		fqlupdate_resolve_additional((fqlupdate*)self, query);
 	}
+
 
 	return FQL_GOOD;
 }
@@ -365,7 +378,6 @@ int op_resolve_additional(enum op* self, query* query)
 {
 	switch (*self) {
 	case OP_UPDATE:
-		return fqlupdate_resolve_additional((fqlupdate*)self, query);
 	case OP_SELECT:
 	case OP_DELETE:
 	default:
@@ -402,6 +414,8 @@ int _expand_asterisk(vec* expr_vec, table* table, unsigned src_idx, unsigned* ex
 
 	table->reader->max_idx = src_expr_vec->size - 1;
 
+	unsigned aster_idx = *expr_idx;
+
 	expression** it = vec_begin(src_expr_vec);
 	for (; it != vec_end(src_expr_vec); ++it) {
 		//string* expr_name = string_from_string(&(*it)->alias);
@@ -414,6 +428,10 @@ int _expand_asterisk(vec* expr_vec, table* table, unsigned src_idx, unsigned* ex
 		vec_insert_at(expr_vec, *expr_idx, &new_expr, 1);
 	}
 
+	expression** asterisk_expr = vec_at(expr_vec, aster_idx);
+	delete_(expression, *asterisk_expr);
+	vec_erase_at(expr_vec, aster_idx, 1);
+	--(*expr_idx);
 	return table->schema->expressions->size;
 }
 
@@ -437,13 +455,7 @@ void op_expand_asterisks(query* query, bool force_expansion)
 			continue;
 		}
 
-		unsigned asterisk_index = i;
 		_expand_asterisk(expr_vec, table, (*expr)->src_idx, &i);
-
-		expression** asterisk_expr = vec_at(expr_vec, asterisk_index);
-		delete_(expression, *asterisk_expr);
-		vec_erase_at(expr_vec, asterisk_index, 1);
-		--i;
 	}
 
 	expression_update_indicies(expr_vec);

@@ -34,7 +34,8 @@ expression* expression_construct(expression* self,
 	        0,               /* location */
 	        0,               /* width */
 	        0,               /* src_idx */
-	        false            /* descending */
+	        false,           /* descending */
+	        false,           /* is_passthrough */
 	};
 
 	string_construct(&self->buf);
@@ -203,7 +204,7 @@ int expression_try_assign_source(expression* self, table* table)
 		self->src_idx = table->idx;
 		return 1;
 	}
-	vec* exprs = multimap_get(table->schema->expr_map, self->name.data);
+	vec* exprs = multimap_get(table->schema->expr_map, string_c_str(&self->name));
 	if (exprs == NULL) {
 		return 0;
 	}

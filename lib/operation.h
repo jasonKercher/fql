@@ -36,7 +36,6 @@ void op_set_schema(enum op*, const struct schema*);
 void op_set_rec_terminator(enum op*, const char* term);
 void op_set_delim(enum op*, const char* delim);
 int op_apply_process(struct query*, struct fql_plan*, bool is_subquery);
-int op_resolve_additional(enum op*, struct query*);
 int op_resolve_final_types(enum op*);
 int op_writer_init(struct query*, struct fql_handle*);
 void op_expand_asterisks(struct query*, bool force_expansion);

@@ -182,7 +182,10 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		}
 
 		if (self->wait_for_in0 && !self->fifo_in[0]->is_open
-		    && fifo_is_empty(self->fifo_in[0])) {
+		    && fifo_is_empty(self->fifo_in[0])
+		    && (!self->is_dual_link
+		        || (!fifo_is_open(self->fifo_in[1])
+		            && fifo_is_empty(self->fifo_in[1])))) {
 			if (self->wait_for_in0_end) {
 				self->wait_for_in0 = false;
 			} else {
@@ -209,7 +212,8 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 		/* check to see that there is something to process
 		 * as well as a place for it to go.
 		 */
-		if ((self->wait_for_in0 && fifo_is_empty(self->fifo_in[0]))
+		if (((self->wait_for_in0 && fifo_is_empty(self->fifo_in[0]))
+		     && (!self->is_dual_link || fifo_is_empty(self->fifo_in[1])))
 		    || (self->fifo_out[0] && !fifo_receivable(self->fifo_out[0]))
 		    || (self->fifo_out[1] && !fifo_receivable(self->fifo_out[1]))) {
 			++run_count;

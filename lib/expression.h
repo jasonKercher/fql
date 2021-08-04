@@ -44,6 +44,7 @@ struct expression {
 	unsigned width;
 	int src_idx;
 	bool descending;
+	bool is_passthrough;
 };
 typedef struct expression expression;
 

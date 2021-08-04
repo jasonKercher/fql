@@ -28,6 +28,7 @@ struct reader {
 	string file_name;
 	size_t max_idx;
 	size_t reclen;
+	size_t rec_id;
 	unsigned skip_rows;
 	bool eof;
 };

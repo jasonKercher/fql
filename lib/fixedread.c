@@ -76,7 +76,6 @@ int fixedreader_get_record(reader* reader, node* rg)
 int fixedreader_get_record_at(reader* reader, node* rg, const char* begin)
 {
 	record* rec = rg->data;
-	//node_resize(rg, 1);
 	fixedreader* self = reader->reader_data;
 
 	record_resize(rec, self->expressions->size);
@@ -90,6 +89,7 @@ int fixedreader_get_record_at(reader* reader, node* rg, const char* begin)
 
 	rec->rec_ref.data = begin;
 	rec->rec_ref.len = reader->reclen; /* redundant */
+	rec->rec_idx = reader->rec_id++;
 
 	return FQL_GOOD;
 }
@@ -98,6 +98,7 @@ int fixedreader_reset(reader* reader)
 {
 	fixedreader* self = reader->reader_data;
 	reader->eof = false;
+	reader->rec_id = 0;
 	self->iter = self->mmap + reader->reclen * reader->skip_rows;
 	return FQL_GOOD;
 }
