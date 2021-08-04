@@ -12,6 +12,7 @@
 #include "function.h"
 #include "fqlselect.h"
 #include "fqldelete.h"
+#include "fqlupdate.h"
 #include "aggregate.h"
 #include "expression.h"
 #include "switchcase.h"
@@ -155,6 +156,9 @@ int _distribute_expression(query* self, expression* expr)
 	switch (self->mode) {
 	case MODE_SELECT:
 		fqlselect_add_expression(self->op, expr);
+		break;
+	case MODE_UPDATE:
+		try_(fqlupdate_add_expression(self->op, expr));
 		break;
 	case MODE_TOP:
 		self->top_expr = expr;
@@ -392,6 +396,9 @@ int query_init_op(query* self)
 		break;
 	case MODE_DELETE:
 		self->op = new_(fqldelete);
+		break;
+	case MODE_UPDATE:
+		self->op = new_(fqlupdate);
 		break;
 	default:
 		fprintf(stderr, "unexpected operation mode `%d'\n", self->mode);

@@ -9,6 +9,7 @@
 #include "fqlhandle.h"
 #include "fqlselect.h"
 #include "fqldelete.h"
+#include "fqlupdate.h"
 #include "util/util.h"
 
 void op_destroy(enum op* self)
@@ -20,25 +21,31 @@ void op_destroy(enum op* self)
 	case OP_DELETE:
 		fqldelete_destroy((fqldelete*)self);
 		break;
+	case OP_UPDATE:
+		fqlupdate_destroy((fqlupdate*)self);
+		break;
 	default:;
 	}
 }
 
 
-vec* op_get_expressions(void* self)
+vec* op_get_expressions(enum op* self)
 {
-	enum op* type = self;
+	return op_get_schema(self)->expressions;
+}
 
-	switch (*type) {
+vec* op_get_additional_exprs(enum op* self)
+{
+	switch (*self) {
+	case OP_UPDATE: {
+		fqlupdate* update = (fqlupdate*)self;
+		return &update->value_expressions;
+	}
 	case OP_SELECT:
-		return ((fqlselect*)self)->schema->expressions;
 	case OP_DELETE:
-		return ((fqldelete*)self)->schema->expressions;
 	default:
 		return NULL;
 	}
-
-	return NULL;
 }
 
 schema* op_get_schema(enum op* self)
@@ -52,6 +59,10 @@ schema* op_get_schema(enum op* self)
 		fqldelete* delete = (fqldelete*)self;
 		return delete->schema;
 	}
+	case OP_UPDATE: {
+		fqlupdate* update = (fqlupdate*)self;
+		return update->schema;
+	}
 	default:
 		return NULL;
 	}
@@ -63,6 +74,11 @@ const char* op_get_table_name(enum op* self)
 	case OP_DELETE: {
 		fqldelete* delete = (fqldelete*)self;
 		expression** fake_asterisk = vec_begin(delete->schema->expressions);
+		return string_c_str(&(*fake_asterisk)->table_name);
+	}
+	case OP_UPDATE: {
+		fqlupdate* update = (fqlupdate*)self;
+		expression** fake_asterisk = vec_begin(update->schema->expressions);
 		return string_c_str(&(*fake_asterisk)->table_name);
 	}
 	case OP_SELECT:
@@ -86,6 +102,17 @@ void op_match_table_alias(enum op* self, table* check_table)
 		}
 		table_idx = &delete->table_idx;
 		expression** fake_asterisk = vec_begin(delete->schema->expressions);
+		op_table_name = string_c_str(&(*fake_asterisk)->table_name);
+		break;
+	}
+	case OP_UPDATE: {
+		fqlupdate* update = (fqlupdate*)self;
+		has_matched_alias = &update->has_matched_alias;
+		if (*has_matched_alias) {
+			return;
+		}
+		table_idx = &update->table_idx;
+		expression** fake_asterisk = vec_begin(update->schema->expressions);
 		op_table_name = string_c_str(&(*fake_asterisk)->table_name);
 		break;
 	}
@@ -133,6 +160,11 @@ void op_set_top_count(enum op* self, size_t top_count)
 		delete->top_count = top_count;
 		break;
 	}
+	case OP_UPDATE: {
+		fqlupdate* update = (fqlupdate*)self;
+		update->top_count = top_count;
+		break;
+	}
 	default:;
 	}
 }
@@ -151,6 +183,9 @@ void op_preop(struct fql_handle* fql)
 	case OP_DELETE:
 		fqldelete_preop(query->op, query);
 		break;
+	case OP_UPDATE:
+		fqlupdate_preop(query->op, query);
+		break;
 	default:;
 	}
 }
@@ -165,6 +200,10 @@ writer* op_get_writer(enum op* self)
 	case OP_DELETE: {
 		fqldelete* delete = (fqldelete*)self;
 		return delete->writer;
+	}
+	case OP_UPDATE: {
+		fqlupdate* update = (fqlupdate*)self;
+		return update->writer;
 	}
 	default:
 		return NULL;
@@ -192,6 +231,11 @@ void op_set_writer(enum op* self, writer* src_writer)
 	case OP_DELETE: {
 		fqldelete* delete = (fqldelete*)self;
 		delete->writer = src_writer;
+		break;
+	}
+	case OP_UPDATE: {
+		fqlupdate* update = (fqlupdate*)self;
+		update->writer = src_writer;
 		break;
 	}
 	default:;
@@ -237,6 +281,11 @@ int op_writer_init(query* query, struct fql_handle* fql)
 	case OP_DELETE: {
 		fqldelete* delete = query->op;
 		op_table = vec_at(query->sources, delete->table_idx);
+		break;
+	}
+	case OP_UPDATE: {
+		fqlupdate* update = query->op;
+		op_table = vec_at(query->sources, update->table_idx);
 		break;
 	}
 	case OP_SELECT:
@@ -305,6 +354,20 @@ int op_apply_process(query* query, plan* plan, bool is_subquery)
 		return FQL_GOOD;
 	case OP_DELETE:
 		return fqldelete_apply_process(query, plan);
+	case OP_UPDATE:
+		return fqlupdate_apply_process(query, plan);
+	default:
+		return FQL_GOOD;
+	}
+}
+
+int op_resolve_additional(enum op* self, query* query)
+{
+	switch (*self) {
+	case OP_UPDATE:
+		return fqlupdate_resolve_additional((fqlupdate*)self, query);
+	case OP_SELECT:
+	case OP_DELETE:
 	default:
 		return FQL_GOOD;
 	}
@@ -315,6 +378,8 @@ int op_resolve_final_types(enum op* self)
 	switch (*self) {
 	case OP_SELECT:
 		return fqlselect_resolve_final_types((fqlselect*)self);
+	case OP_UPDATE:
+		return fqlupdate_resolve_final_types((fqlupdate*)self);
 	case OP_DELETE:
 	default:
 		return FQL_GOOD;

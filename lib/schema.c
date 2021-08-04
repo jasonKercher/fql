@@ -1150,6 +1150,12 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	try_(_asterisk_resolve(op_exprs, sources));
 	try_(_assign_expressions(op_exprs, sources, fql->props.strictness));
 
+	op_exprs = op_get_additional_exprs(aquery->op);
+	if (op_exprs != NULL) {
+		try_(_assign_expressions(op_exprs, sources, fql->props.strictness));
+		try_(op_resolve_additional(aquery->op, aquery));
+	}
+
 	/* Validate HAVING expressions */
 	vec* having_exprs = NULL;
 	if (aquery->having != NULL) {

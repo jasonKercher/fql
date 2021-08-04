@@ -8,6 +8,12 @@ struct table;
 struct schema;
 struct writer;
 
+enum filter_state {
+	FILTER_OPEN,
+	FILTER_PASSTHROUGH,
+	FILTER_FILTERING,
+};
+
 /** operation **/
 enum op {
 	OP_NONE,
@@ -17,7 +23,8 @@ enum op {
 };
 
 void op_preop(struct fql_handle*);
-struct vec* op_get_expressions(void* op);
+struct vec* op_get_expressions(enum op*);
+struct vec* op_get_additional_exprs(enum op*);
 struct schema* op_get_schema(enum op*);
 const char* op_get_table_name(enum op*);
 void op_match_table_alias(enum op*, struct table*);
@@ -29,6 +36,7 @@ void op_set_schema(enum op*, const struct schema*);
 void op_set_rec_terminator(enum op*, const char* term);
 void op_set_delim(enum op*, const char* delim);
 int op_apply_process(struct query*, struct fql_plan*, bool is_subquery);
+int op_resolve_additional(enum op*, struct query*);
 int op_resolve_final_types(enum op*);
 int op_writer_init(struct query*, struct fql_handle*);
 void op_expand_asterisks(struct query*, bool force_expansion);

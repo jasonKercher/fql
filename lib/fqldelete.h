@@ -10,12 +10,6 @@ struct fqldelete;
 
 typedef int (*delete_fn)(struct fqldelete*, struct node*);
 
-enum del_state {
-	DEL_OPEN,
-	DEL_PASSTHROUGH,
-	DEL_FILTERING,
-};
-
 struct fqldelete {
 	enum op oper_type;
 	struct schema* schema;
@@ -26,7 +20,7 @@ struct fqldelete {
 	size_t rows_affected;
 	size_t top_count;
 	unsigned table_idx;
-	enum del_state state;
+	enum filter_state state;
 	bool has_matched_alias;
 };
 typedef struct fqldelete fqldelete;

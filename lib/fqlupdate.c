@@ -1,4 +1,4 @@
-#include "fqldelete.h"
+#include "fqlupdate.h"
 #include "expression.h"
 #include "process.h"
 #include "util.h"
@@ -8,19 +8,20 @@
 #include "query.h"
 #include "fql.h"
 
-int _delete_writer(fqldelete*, node*);
+int _update_writer(fqlupdate*, node*);
 
-fqldelete* fqldelete_construct(fqldelete* self)
+fqlupdate* fqlupdate_construct(fqlupdate* self)
 {
-	*self = (fqldelete) {
-	        OP_DELETE,       /* oper_type */
+	*self = (fqlupdate) {
+	        OP_UPDATE,       /* oper_type */
 	        new_(schema),    /* schema */
 	        NULL,            /* writer */
-	        &_delete_writer, /* undelete__ */
-	        0,               /* delete_idx */
-	        NULL,            /* delete_node */
+	        &_update_writer, /* update__ */
+	        0,               /* update_idx */
 	        0,               /* rows_affected */
 	        -1,              /* top_count */
+	        {0},             /* update_columns */
+	        {0},             /* value_expressions */
 	        0,               /* table_idx */
 	        FILTER_OPEN,     /* state */
 	        false,           /* has_matched_alias */
@@ -29,10 +30,13 @@ fqldelete* fqldelete_construct(fqldelete* self)
 	expression* lol_expr = new_(expression, EXPR_ASTERISK, NULL, "");
 	schema_add_expression(self->schema, lol_expr, 0);
 
+	vec_construct_(&self->update_columns, expression*);
+	vec_construct_(&self->value_expressions, expression*);
+
 	return self;
 }
 
-void fqldelete_destroy(fqldelete* self)
+void fqlupdate_destroy(fqlupdate* self)
 {
 	if (self == NULL) {
 		return;
@@ -41,30 +45,30 @@ void fqldelete_destroy(fqldelete* self)
 	delete_(schema, self->schema);
 }
 
-/**
- * Deleting is achieved by writing a new file and
- * renaming that file over top of the original.
- * This protects data from a runtime error. So,
- * the Primary process for delete is the op_false
- * node. If I match a record, the record is *not* 
- * written to the output.  The only resulting ID
- * should come from NOT matching. example:
- *
- * DELETE T1
- * WHERE FOO = BAR
- *
- * If foo = bar, we do *not* write to the new file.
- */
-int fqldelete_apply_process(query* query, plan* plan)
+int fqlupdate_add_expression(fqlupdate* self, const expression* expr)
 {
-	fqldelete* self = query->op;
+	if (self->update_columns.size == self->value_expressions.size) {
+		vec_push_back(&self->update_columns, &expr);
+		if (expr->expr != EXPR_COLUMN_NAME) {
+			fputs("Unexpected expression in update element\n", stderr);
+			return FQL_FAIL;
+		}
+	} else {
+		vec_push_back(&self->value_expressions, &expr);
+	}
+	return FQL_GOOD;
+}
+
+int fqlupdate_apply_process(query* query, plan* plan)
+{
+	fqlupdate* self = query->op;
 	if (query->sources->size == 1) {
 		process* proc = plan->op_false->data;
-		proc->action__ = &fql_delete;
+		proc->action__ = &fql_update;
 		proc->wait_for_in0_end = true;
 		proc->proc_data = self;
 
-		string_strcpy(proc->plan_msg, "DELETE");
+		string_strcpy(proc->plan_msg, "UPDATE");
 
 		proc = plan->op_true->data;
 		proc->is_passive = true;
@@ -75,18 +79,18 @@ int fqldelete_apply_process(query* query, plan* plan)
 	}
 
 	if (self->table_idx != 0) {
-		fputs("Currently can only delete from left side of join\n", stderr);
+		fputs("Currently can only update from left side of join\n", stderr);
 		return FQL_FAIL;
 	}
 
 	/* At this point, we are dealing with a join */
-	process* delete_filter_proc = new_(process, "DELETE FILTER", plan);
-	delete_filter_proc->action__ = &fql_delete_filter;
-	delete_filter_proc->proc_data = self;
-	delete_filter_proc->wait_for_in0_end = true;
-	delete_filter_proc->is_dual_link = true;
-	delete_filter_proc->has_second_input = true;
-	dnode* filter_node = dgraph_add_data(plan->processes, delete_filter_proc);
+	process* update_filter_proc = new_(process, "UPDATE FILTER", plan);
+	update_filter_proc->action__ = &fql_update_filter;
+	update_filter_proc->proc_data = self;
+	update_filter_proc->wait_for_in0_end = true;
+	update_filter_proc->is_dual_link = true;
+	update_filter_proc->has_second_input = true;
+	dnode* filter_node = dgraph_add_data(plan->processes, update_filter_proc);
 
 	plan->op_false->out[0] = filter_node;
 	plan->op_true->out[0] = filter_node;
@@ -102,7 +106,7 @@ int fqldelete_apply_process(query* query, plan* plan)
 	return FQL_GOOD;
 }
 
-void fqldelete_preop(fqldelete* self, query* query)
+void fqlupdate_preop(fqlupdate* self, query* query)
 {
 	if (!self->schema->is_default) {
 		return;
@@ -111,11 +115,7 @@ void fqldelete_preop(fqldelete* self, query* query)
 	vec header;
 	vec_construct_(&header, expression*);
 
-	/* print header
-	 * in a delete, we only care about full records. In order to
-	 * re-use the select writing implementations, we treat this
-	 * like the inverse of select [delete table].*
-	 */
+	/* print header */
 	expression** aster = vec_begin(self->schema->expressions);
 	table* aster_src = vec_at(query->sources, (*aster)->src_idx);
 	vec* aster_exprs = aster_src->schema->expressions;
@@ -137,7 +137,7 @@ void fqldelete_preop(fqldelete* self, query* query)
 	vec_destroy(&header);
 }
 
-int _delete_writer(fqldelete* self, node* rg)
+int _update_writer(fqlupdate* self, node* rg)
 {
 	return self->writer->write_record__(self->writer,
 	                                    self->schema->expressions,
@@ -145,3 +145,15 @@ int _delete_writer(fqldelete* self, node* rg)
 	                                    NULL);
 }
 
+int fqlupdate_resolve_additional(fqlupdate* self, query* query)
+{
+	expression** it = vec_begin(&self->value_expressions);
+	for (; it != vec_end(&self->value_expressions); ++it) { }
+	return FQL_GOOD;
+}
+
+/* called from schema.c: _resolve_unions */
+int fqlupdate_resolve_final_types(fqlupdate* self)
+{
+	return FQL_GOOD;
+}

@@ -140,12 +140,13 @@ am_libfql_la_OBJECTS = libfql_la-libfql.lo libfql_la-query.lo \
 	libfql_la-like.lo libfql_la-inlist.lo libfql_la-group.lo \
 	libfql_la-aggregate.lo libfql_la-aggregatefn.lo \
 	libfql_la-operation.lo libfql_la-fqlselect.lo \
-	libfql_la-fqldelete.lo libfql_la-order.lo libfql_la-fqlplan.lo \
-	libfql_la-process.lo libfql_la-fqlprocesses.lo \
-	libfql_la-reader.lo libfql_la-libcsvread.lo \
-	libfql_la-fixedread.lo libfql_la-subquery.lo \
-	libfql_la-writer.lo libfql_la-libcsvwrite.lo \
-	libfql_la-fixedwrite.lo libfql_la-record.lo libfql_la-field.lo
+	libfql_la-fqldelete.lo libfql_la-fqlupdate.lo \
+	libfql_la-order.lo libfql_la-fqlplan.lo libfql_la-process.lo \
+	libfql_la-fqlprocesses.lo libfql_la-reader.lo \
+	libfql_la-libcsvread.lo libfql_la-fixedread.lo \
+	libfql_la-subquery.lo libfql_la-writer.lo \
+	libfql_la-libcsvwrite.lo libfql_la-fixedwrite.lo \
+	libfql_la-record.lo libfql_la-field.lo
 libfql_la_OBJECTS = $(am_libfql_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -180,6 +181,7 @@ am__depfiles_remade = ./$(DEPDIR)/libfql_la-aggregate.Plo \
 	./$(DEPDIR)/libfql_la-fqlplan.Plo \
 	./$(DEPDIR)/libfql_la-fqlprocesses.Plo \
 	./$(DEPDIR)/libfql_la-fqlselect.Plo \
+	./$(DEPDIR)/libfql_la-fqlupdate.Plo \
 	./$(DEPDIR)/libfql_la-function.Plo \
 	./$(DEPDIR)/libfql_la-group.Plo \
 	./$(DEPDIR)/libfql_la-inlist.Plo \
@@ -303,6 +305,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHECK_CFLAGS = @CHECK_CFLAGS@
 CHECK_LIBS = @CHECK_LIBS@
+CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -407,7 +410,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -421,38 +423,38 @@ AM_CPPFLAGS = -Iinclude -I$(top_srcdir)/util/
 include_HEADERS = include/fql.h
 lib_LTLIBRARIES = libfql.la
 libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c 	    \
-	                                                    \
-	query.h query.c                                     \
-		table.h table.c                             \
+	query.h query.c                             \
+		table.h table.c                         \
 			schema.h schema.c                   \
-		expression.h expression.c                   \
+		expression.h expression.c               \
 			switchcase.h switchcase.c           \
 			function.h function.c               \
-				scalarfn.c                  \
-		logic.h logic.c                             \
+				scalarfn.c                      \
+		logic.h logic.c                         \
 			fqllogic.c                          \
-				like.c                      \
-				inlist.c                    \
-		group.h group.c                             \
+				like.c                          \
+				inlist.c                        \
+		group.h group.c                         \
 			aggregate.h aggregate.c             \
-				aggregatefn.c               \
-		operation.h operation.c                     \
+				aggregatefn.c                   \
+		operation.h operation.c                 \
 			fqlselect.h fqlselect.c             \
 			fqldelete.h fqldelete.c             \
-		order.h order.c                             \
-	                                                    \
-	fqlplan.h fqlplan.c                                 \
-		process.h process.c                         \
+			fqlupdate.h fqlupdate.c             \
+		order.h order.c                         \
+	                                            \
+	fqlplan.h fqlplan.c                         \
+		process.h process.c                     \
 			fqlprocesses.c                      \
-	                                                    \
-	io.h                                                \
-		reader.h reader.c                           \
+	                                            \
+	io.h                                        \
+		reader.h reader.c                       \
 			libcsvread.c fixedread.c subquery.c \
-		writer.h writer.c                           \
+		writer.h writer.c                       \
 			libcsvwrite.c fixedwrite.c          \
-	                                                    \
-	record.h record.c                                   \
-	field.h field.c                                     \
+	                                            \
+	record.h record.c                           \
+	field.h field.c                             \
 	misc.h
 
 libfql_la_CFLAGS = -Wextra -Wall -Wno-unused-parameter
@@ -547,6 +549,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fqlplan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fqlprocesses.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fqlselect.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fqlupdate.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-function.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-group.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-inlist.Plo@am__quote@ # am--include-marker
@@ -720,6 +723,13 @@ libfql_la-fqldelete.lo: fqldelete.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fqldelete.c' object='libfql_la-fqldelete.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-fqldelete.lo `test -f 'fqldelete.c' || echo '$(srcdir)/'`fqldelete.c
+
+libfql_la-fqlupdate.lo: fqlupdate.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-fqlupdate.lo -MD -MP -MF $(DEPDIR)/libfql_la-fqlupdate.Tpo -c -o libfql_la-fqlupdate.lo `test -f 'fqlupdate.c' || echo '$(srcdir)/'`fqlupdate.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libfql_la-fqlupdate.Tpo $(DEPDIR)/libfql_la-fqlupdate.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fqlupdate.c' object='libfql_la-fqlupdate.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-fqlupdate.lo `test -f 'fqlupdate.c' || echo '$(srcdir)/'`fqlupdate.c
 
 libfql_la-order.lo: order.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-order.lo -MD -MP -MF $(DEPDIR)/libfql_la-order.Tpo -c -o libfql_la-order.lo `test -f 'order.c' || echo '$(srcdir)/'`order.c
@@ -1051,6 +1061,7 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/libfql_la-fqlplan.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlprocesses.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlselect.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-fqlupdate.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-function.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-group.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-inlist.Plo
@@ -1127,6 +1138,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/libfql_la-fqlplan.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlprocesses.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlselect.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-fqlupdate.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-function.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-group.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-inlist.Plo

@@ -511,9 +511,29 @@ void ListenerInterface::enterDelete_statement_from(TSqlParser::Delete_statement_
 	_tok_type = TOK_OP_TABLE;
 }
 void ListenerInterface::exitDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) 
-{ 
+{
 	_tok_type = TOK_UNDEFINED;
 }
+
+void ListenerInterface::enterUpdate_statement(TSqlParser::Update_statementContext * ctx) 
+{
+	_query->mode = MODE_UPDATE;
+	if (query_init_op(_query)) {
+		_set_failure();
+	}
+	if (ctx->WHERE()) {
+		_query->expect_where = true;
+	}
+	_tok_type = TOK_OP_TABLE;
+}
+void ListenerInterface::exitUpdate_statement(TSqlParser::Update_statementContext * ctx) 
+{
+	_tok_type = TOK_UNDEFINED;
+	query_exit_non_select_op(_query);
+}
+
+void ListenerInterface::enterUpdate_elem(TSqlParser::Update_elemContext * ctx) { }
+void ListenerInterface::exitUpdate_elem(TSqlParser::Update_elemContext * ctx) { }
 
 void ListenerInterface::enterDdl_object(TSqlParser::Ddl_objectContext * ctx) { }
 void ListenerInterface::exitDdl_object(TSqlParser::Ddl_objectContext * ctx) { }
@@ -1001,9 +1021,6 @@ void ListenerInterface::exitInsert_statement_value(TSqlParser::Insert_statement_
 void ListenerInterface::enterTime(TSqlParser::TimeContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitTime(TSqlParser::TimeContext * ctx) { }
 
-void ListenerInterface::enterUpdate_statement(TSqlParser::Update_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitUpdate_statement(TSqlParser::Update_statementContext * ctx) { }
-
 void ListenerInterface::enterOutput_clause(TSqlParser::Output_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitOutput_clause(TSqlParser::Output_clauseContext * ctx) { }
 
@@ -1159,9 +1176,6 @@ void ListenerInterface::exitWith_expression(TSqlParser::With_expressionContext *
 
 void ListenerInterface::enterCommon_table_expression(TSqlParser::Common_table_expressionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitCommon_table_expression(TSqlParser::Common_table_expressionContext * ctx) { }
-
-void ListenerInterface::enterUpdate_elem(TSqlParser::Update_elemContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitUpdate_elem(TSqlParser::Update_elemContext * ctx) { }
 
 void ListenerInterface::enterTop_percent(TSqlParser::Top_percentContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitTop_percent(TSqlParser::Top_percentContext * ctx) { }

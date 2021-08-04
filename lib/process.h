@@ -62,6 +62,8 @@ int fql_read(struct process*);
 int fql_select(struct process*);
 int fql_delete(struct process*);
 int fql_delete_filter(struct process*);
+int fql_update(struct process*);
+int fql_update_filter(struct process*);
 int fql_logic(struct process*);
 int fql_left_join_logic(struct process*);
 int fql_cartesian_join(struct process*);
