@@ -23,7 +23,6 @@ class ListenerInterface : public TSqlParserBaseListener {
 		TOK_DATA_TYPE,
 	};
 
-	std::vector<std::string> _error_tokens;
 	std::vector<std::string> _rule_names;
 
 	TreeWalker* _walker = NULL;
@@ -50,10 +49,7 @@ class ListenerInterface : public TSqlParserBaseListener {
 
       public:
 	ListenerInterface(struct fql_handle*, TreeWalker*, const std::vector<std::string>&);
-	void enterEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
-	void exitEveryRule(antlr4::ParserRuleContext * /*ctx*/) override;
 	int get_return_code();
-
 
 	virtual void enterTsql_file(TSqlParser::Tsql_fileContext * /*ctx*/) override;
 	virtual void exitTsql_file(TSqlParser::Tsql_fileContext * /*ctx*/) override;

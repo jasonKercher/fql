@@ -208,11 +208,14 @@ int fqlupdate_resolve_additional(fqlupdate* self, query* query)
 			return FQL_FAIL;
 		}
 
+		expression** new_val = vec_at(&self->value_expressions, i);
+		(*new_val)->location = (*match_expr)->location;
+		(*new_val)->width = (*match_expr)->width;
+
 		/* Since we are overwriting its spot any way, free it... */
 		delete_(expression, *match_expr);
 
 		/* overwrite that shit */
-		expression** new_val = vec_at(&self->value_expressions, i);
 		*match_expr = *new_val;
 	}
 	return FQL_GOOD;

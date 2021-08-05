@@ -116,6 +116,8 @@ void expression_link(struct expression* dest, struct expression* src)
 {
 	dest->data_source = src;
 	dest->field_type = src->field_type;
+	dest->location = src->location;
+	dest->width = src->width;
 
 	if (src->expr == EXPR_AGGREGATE) {
 		aggregate* agg = src->field.agg;

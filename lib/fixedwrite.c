@@ -71,6 +71,7 @@ bool _isopen(fixedwriter* self)
 }
 int fixedwriter_open(fixedwriter* self, const char* filename)
 {
+	_set_filename(self, filename);
 	if (_isopen(self)) {
 		fprintf(stderr, "fixedwriter already open\n");
 		return FQL_FAIL;
@@ -98,11 +99,11 @@ int fixedwriter_close(fixedwriter* self)
 		fputs("file name empty\n", stderr);
 		return FQL_FAIL;
 	}
-	if (rename(tmp, file), tmp) {
+	if (rename(tmp, file)) {
 		perror(tmp);
 		return FQL_FAIL;
 	}
-	if (chmod(file, 0666), file) {
+	if (chmod(file, 0666)) {
 		perror(file);
 		return FQL_FAIL;
 	}
@@ -165,21 +166,39 @@ int fixedwriter_write_record(writer* writer, vec* expr_vec, node* rg, FILE* outs
 
 	int len = 0;
 
-	expression** exprs = vec_begin(expr_vec);
-	unsigned i = 0;
-	for (; i < expr_vec->size; ++i) {
+	expression** it = vec_begin(expr_vec);
+	for (; it != vec_end(expr_vec); ++it) {
 		stringview sv = {NULL, 0};
-		if (exprs[i]->expr == EXPR_ASTERISK) {
-			record* rec = node_data_at(rg, exprs[i]->src_idx);
+		if ((*it)->expr == EXPR_ASTERISK) {
+			record* rec = node_data_at(rg, (*it)->src_idx);
 			sv = rec->rec_ref;
 		} else {
-			if (writer->strict && exprs[i]->field_type != FIELD_STRING) {
-				try_(expression_type_check(exprs[i], rg));
+			if (writer->strict && (*it)->field_type != FIELD_STRING) {
+				try_(expression_type_check(*it, rg));
 			}
-			try_(expression_get_stringview(&sv, exprs[i], rg));
+			try_(expression_get_stringview(&sv, *it, rg));
 		}
+
+		unsigned width = sv.len;
+		if ((*it)->width != 0) {
+			width = (*it)->width;
+			if (width < sv.len) {
+				fprintf(stderr,
+				        "Truncation error: `%.*s' to `%.*s'\n",
+				        sv.len,
+				        sv.data,
+				        width,
+				        sv.data);
+				return FQL_FAIL;
+			}
+		}
+
 		fprintf(self->file, "%.*s", sv.len, sv.data);
-		len += sv.len;
+		unsigned i = sv.len;
+		for (; i < width; ++i) {
+			fputc(' ', self->file);
+		}
+		len += width;
 	}
 
 	if (store_stream) {

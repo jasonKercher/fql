@@ -886,40 +886,18 @@ void ListenerInterface::exitKeyword(TSqlParser::KeywordContext* ctx) { }
 void ListenerInterface::enterFull_table_name(TSqlParser::Full_table_nameContext * ctx) { }
 void ListenerInterface::exitFull_table_name(TSqlParser::Full_table_nameContext * ctx) { }
 
-/* Every Rule Operations */
-
-void ListenerInterface::enterEveryRule(antlr4::ParserRuleContext * ctx)
-{
-	if(_fql->props.verbose)
-		std::cerr << "ENTER: " << _rule_names[ctx->getRuleIndex()] << " : " << ctx->getText() << std::endl;
-
-	if(_error_tokens.size() > 0)
-	{
-		std::cerr << "The following keyword is currently not supported:\n";
-		std::cerr << _error_tokens[0];
-		_error_tokens.pop_back();
-
-		if(_fql->props.override_warnings) {
-			std::cerr << "\nCAUTION: Overriding the above warnings! Results may be incorrect!\n";
-		} else {
-			std::cerr << "\nTerminated: Use -O to Override at your own risk.\n";
-			_set_failure();
-		}
-	}
-}
-
-void ListenerInterface::exitEveryRule(antlr4::ParserRuleContext * ctx)
-{
-	if(_fql->props.verbose)
-		std::cerr << "EXIT:  " << _rule_names[ctx->getRuleIndex()] << " : " << ctx->getText() << std::endl;
-}
-
 /**
  * Not Implemented
  */
 void ListenerInterface::_no_impl(const std::string& text, int rule_idx)
 {
-	_error_tokens.push_back(text + " ( " + _rule_names[rule_idx] + " )");
+	std::cerr << "SQL construct not supported: " << text << "(" << _rule_names[rule_idx] << ")\n";
+	if(_fql->props.override_warnings) {
+		std::cerr << "\nCAUTION: Overriding the above warnings! Results may be incorrect!\n";
+	} else {
+		std::cerr << "\nTerminating: Though not recommended, warnings can be overridden.\n";
+		_set_failure();
+	}
 }
 
 void ListenerInterface::_set_failure()
