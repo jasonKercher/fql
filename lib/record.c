@@ -67,7 +67,7 @@ void record_copy(record* self, const record* src)
 	vec_clear(&self->fields);
 	vec_extend(&self->fields, &src->fields);
 	self->src_idx = src->src_idx;
-
+	self->rec_idx = src->rec_idx;
 	self->rec_ref = src->rec_ref;
 }
 

@@ -350,7 +350,7 @@ int op_writer_init(query* query, struct fql_handle* fql)
 		                 update_table,
 		                 update->table_idx,
 		                 &expr_idx);
-		fqlupdate_resolve_additional((fqlupdate*)self, query);
+		try_(fqlupdate_resolve_additional((fqlupdate*)self, query));
 	}
 
 
@@ -369,17 +369,6 @@ int op_apply_process(query* query, plan* plan, bool is_subquery)
 		return fqldelete_apply_process(query, plan);
 	case OP_UPDATE:
 		return fqlupdate_apply_process(query, plan);
-	default:
-		return FQL_GOOD;
-	}
-}
-
-int op_resolve_additional(enum op* self, query* query)
-{
-	switch (*self) {
-	case OP_UPDATE:
-	case OP_SELECT:
-	case OP_DELETE:
 	default:
 		return FQL_GOOD;
 	}

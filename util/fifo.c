@@ -80,7 +80,7 @@ bool fifo_is_open(fifo* self)
 	return ret;
 }
 
-unsigned fifo_available(fifo* self)
+unsigned fifo_available(const fifo* self)
 {
 	size_t available = self->head - self->tail;
 	if (self->head < self->tail) {
@@ -142,6 +142,17 @@ int fifo_nget(fifo* self, vec* buffer, int block_size, unsigned max)
 void* fifo_peek(const fifo* self)
 {
 	return vec_at(self->buf, self->tail);
+}
+
+void* fifo_look_ahead(const fifo* self)
+{
+	if (fifo_available(self) < 2) {
+		return NULL;
+	}
+	unsigned look_ahead_idx = self->tail;
+	_idx_adv_(look_ahead_idx);
+
+	return vec_at(self->buf, look_ahead_idx);
 }
 
 void fifo_consume(fifo* self)

@@ -41,7 +41,7 @@ void fifo_destroy(struct fifo*);
 
 void fifo_set_open(struct fifo*, int);
 void fifo_resize(struct fifo*, unsigned);
-unsigned fifo_available(struct fifo*);
+unsigned fifo_available(const struct fifo*);
 bool fifo_is_empty(const struct fifo*);
 bool fifo_is_full(const struct fifo*);
 bool fifo_is_open(struct fifo*);
@@ -51,6 +51,7 @@ void fifo_set_full(struct fifo*);
 void* fifo_get(struct fifo*);
 int fifo_nget(struct fifo*, struct vec*, int block_size, unsigned max);
 void* fifo_peek(const struct fifo*);
+void* fifo_look_ahead(const struct fifo*);
 void fifo_consume(struct fifo*);
 
 void fifo_add(struct fifo*, void*);
