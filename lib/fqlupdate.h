@@ -24,6 +24,7 @@ struct fqlupdate {
 	struct vec set_columns;
 	struct vec value_expressions;
 	unsigned table_idx;
+	unsigned rownum;
 	enum filter_state state;
 	bool has_matched_alias;
 };

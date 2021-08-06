@@ -27,6 +27,7 @@ fqlupdate* fqlupdate_construct(fqlupdate* self)
 	        {0},               /* set_columns */
 	        {0},               /* value_expressions */
 	        0,                 /* table_idx */
+	        0,                 /* rownum */
 	        FILTER_OPEN,       /* state */
 	        false,             /* has_matched_alias */
 	};
@@ -240,6 +241,7 @@ int fqlupdate_resolve_final_types(fqlupdate* self)
 
 int _update_writer(fqlupdate* self, node* rg)
 {
+	++self->rownum;
 	return self->writer->write_record__(self->writer,
 	                                    &self->update_expressions,
 	                                    rg,

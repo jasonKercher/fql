@@ -7,6 +7,7 @@
 struct table;
 struct schema;
 struct writer;
+struct expression;
 
 enum filter_state {
 	FILTER_OPEN,
@@ -35,6 +36,7 @@ void op_set_writer(enum op*, struct writer*);
 void op_set_schema(enum op*, const struct schema*);
 void op_set_rec_terminator(enum op*, const char* term);
 void op_set_delim(enum op*, const char* delim);
+void op_assign_rownum_ref(enum op*, struct expression*);
 int op_apply_process(struct query*, struct fql_plan*, bool is_subquery);
 int op_resolve_final_types(enum op*);
 int op_writer_init(struct query*, struct fql_handle*);

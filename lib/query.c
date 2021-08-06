@@ -211,11 +211,10 @@ int query_add_expression(query* self, char* expr_name, const char* table_id)
 		expr->field.s = &expr->buf;
 	} else if (istring_eq(expr_name, "__rec")) {
 		expr = new_(expression, EXPR_FULL_RECORD, expr_name, table_id);
-	} else if (istring_eq(expr_name, "__rownum") && self->mode == MODE_SELECT) {
+	} else if (istring_eq(expr_name, "__rownum")) { // && self->mode == MODE_SELECT) {
 		expr = new_(expression, EXPR_ROW_NUMBER, expr_name, table_id);
 		expr->field_type = FIELD_INT;
-		fqlselect* select = self->op;
-		expr->rownum_ref = &select->rownum;
+		op_assign_rownum_ref(self->op, expr);
 	} else {
 		expr = new_(expression, EXPR_COLUMN_NAME, expr_name, table_id);
 	}

@@ -265,6 +265,24 @@ void op_set_schema(enum op* self, const schema* src_schema)
 	op_schema->is_default = src_schema->is_default;
 }
 
+void op_assign_rownum_ref(enum op* self, expression* expr)
+{
+	switch (*self) {
+	case OP_SELECT: {
+		fqlselect* select = (fqlselect*)self;
+		expr->rownum_ref = &select->rownum;
+		break;
+	}
+	case OP_UPDATE: {
+		fqlupdate* update = (fqlupdate*)self;
+		expr->rownum_ref = &update->rownum;
+		break;
+	}
+	default:
+		break;
+	}
+}
+
 /* NOTE: do not allow any writer initialization if a union query */
 int op_writer_init(query* query, struct fql_handle* fql)
 {
