@@ -290,7 +290,6 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 		from_node->is_root = true;
 	} else {
 		from_proc = new_(process, "subquery select", self);
-		from_proc->action__ = &fql_read;
 		from_node = dgraph_add_data(self->processes, from_proc);
 		try_(_build(table_iter->subquery, fql, from_node, false));
 		plan* subquery_plan = table_iter->subquery->plan;
@@ -299,6 +298,7 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 	}
 	from_proc->proc_data = table_iter;
 	from_proc->action__ = &fql_read;
+	table_iter->read_proc = from_proc;
 
 	self->current->out[0] = from_node;
 	self->current = from_node;
@@ -644,6 +644,7 @@ void _make_pipes(plan* self)
 
 		if ((*nodes)->out[1] != NULL) {
 			process* proc1 = (*nodes)->out[1]->data;
+			/* This should be unreachable */
 			if (proc1->is_dual_link) {
 				proc->fifo_out[0] = proc1->fifo_in[0];
 				proc->fifo_out[1] = proc1->fifo_in[1];
@@ -661,7 +662,7 @@ void _mark_roots_const(vec* roots)
 	for (; it != vec_end(roots); ++it) {
 		process* proc = (*it)->data;
 		if (proc->action__ != fql_read) {
-			if (proc->root_fifo == PROCESS_NO_ROOT) {
+			if (proc->root_fifo == PROCESS_NO_PIPE_INDEX) {
 				proc->root_fifo = 0;
 			}
 			proc->is_const = true;
@@ -700,17 +701,20 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 	_group(self, aquery);
 	try_(_having(self, aquery));
 	try_(_operation(self, aquery, entry, is_union));
-	_clear_passive(self);
-	dgraph_get_roots(self->processes);
-	try_(_union(self, aquery, fql));
-	_order(self, aquery);
 
 	/* Uncomment this to view the plan *with* passive nodes */
 	//_print_plan(self);
 
 	_clear_passive(self);
 	dgraph_get_roots(self->processes);
-	if (*(enum op*)self->query->op != OP_SELECT) {
+	try_(_union(self, aquery, fql));
+	_order(self, aquery);
+
+	_clear_passive(self);
+	dgraph_get_roots(self->processes);
+
+	/* No logic DELETE = TRUNCATE */
+	if (*(enum op*)self->query->op == OP_DELETE) {
 		_disable_stranded_roots(self);
 	}
 

@@ -87,17 +87,28 @@ int fqlupdate_apply_process(query* query, plan* plan)
 {
 	fqlupdate* self = query->op;
 	if (query->sources->size == 1) {
-		process* proc = plan->op_false->data;
-		proc->action__ = &fql_update;
-		proc->wait_for_in0_end = true;
-		proc->is_dual_link = true;
-		proc->has_second_input = true;
-		proc->proc_data = self;
+		process* update_proc = plan->op_true->data;
+		update_proc->action__ = &fql_update;
+		update_proc->wait_for_in0_end = true;
+		update_proc->proc_data = self;
+		update_proc->has_second_input = true;
+		/* If there is no where clause, we need to mark
+		 * the read_proc as secondary so it always passes
+		 * data to fifo_in[1] on the update process. This
+		 * is the "TRUE" input to the update process.
+		 */
+		if (query->where == NULL) {
+			table* update_table = vec_begin(query->sources);
+			update_table->read_proc->is_secondary = true;
+			update_proc->killed_pipe = 0;
+		} else {
+			update_proc->is_dual_link = true;
+		}
 
-		string_strcpy(proc->plan_msg, "UPDATE");
+		string_strcpy(update_proc->plan_msg, "UPDATE");
 
-		proc = plan->op_true->data;
-		proc->is_passive = true;
+		update_proc = plan->op_false->data;
+		update_proc->is_passive = true;
 
 		writer_set_delimiter(self->writer, self->schema->delimiter);
 		writer_set_rec_terminator(self->writer, self->schema->rec_terminator);

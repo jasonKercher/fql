@@ -1,7 +1,7 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
-#define PROCESS_NO_ROOT     -1
+#define PROCESS_NO_PIPE_INDEX -1
 
 #include "fqlplan.h"
 #include "util/stringy.h"
@@ -33,6 +33,7 @@ struct process {
 	short in_src_count;           /* number of input sources at this step */
 	short out_src_count;          /* number of output sources at this step */
 	short root_fifo;              /* index of root for fifo_in[x] */
+	short killed_pipe;            /* start a process with a closed pipe */
 	bool is_secondary;            /* fifo_out0 should link to a fifo_in1 */
 	bool is_dual_link;            /* both fifo_out link both fifo_in */
 	bool is_passive;              /* denotes process that does nothing */

@@ -45,7 +45,8 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        0,                            /* outbuf_idx */
 	        plan->source_count,           /* in_src_count */
 	        plan->source_count,           /* out_src_count */
-	        PROCESS_NO_ROOT,              /* root_fifo */
+	        PROCESS_NO_PIPE_INDEX,        /* root_fifo */
+	        PROCESS_NO_PIPE_INDEX,        /* killed_pipe */
 	        false,                        /* is_secondary */
 	        false,                        /* is_dual_link */
 	        false,                        /* is_passive */
@@ -87,7 +88,7 @@ void process_activate(process* self, plan* plan, unsigned fifo_size)
 	self->inbuf = new_t_(vec, node*);
 	self->outbuf = new_t_(vec, node*);
 
-	if (self->root_fifo != PROCESS_NO_ROOT) {
+	if (self->root_fifo != PROCESS_NO_PIPE_INDEX) {
 		self->fifo_in[self->root_fifo] = self->root_ref;
 	}
 
@@ -123,6 +124,10 @@ void process_activate(process* self, plan* plan, unsigned fifo_size)
 		}
 		self->fifo_in[1] = new_t_(fifo, node*, fifo_size);
 	}
+
+	if (self->killed_pipe != PROCESS_NO_PIPE_INDEX) {
+		self->fifo_in[self->killed_pipe]->is_open = false;
+	}
 }
 
 void process_add_to_wait_list(process* self, const process* wait_proc)
@@ -157,6 +162,19 @@ void process_enable(process* self)
 	self->is_enabled = true;
 }
 
+bool _check_wait_list(struct vec* wait_list)
+{
+	bool enabled = false;
+	process** it = vec_begin(wait_list);
+	for (; it != vec_end(wait_list); ++it) {
+		if ((*it)->is_enabled) {
+			enabled = true;
+			break;
+		}
+	}
+	return enabled;
+}
+
 /* returns number of processes that executed or FQL_FAIL
  * 0 should not happen unless we are done.
  */
@@ -171,53 +189,11 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 			continue;
 		}
 
-		/* Check if the process in front is closed */
-		if (self->fifo_out[0] && !fifo_is_open(self->fifo_out[0])) {
-			process_disable(self);
-			continue;
-		}
-		if (self->fifo_out[1] && !fifo_is_open(self->fifo_out[1])) {
-			process_disable(self);
-			continue;
-		}
-
-		if (self->wait_for_in0 && !self->fifo_in[0]->is_open
-		    && fifo_is_empty(self->fifo_in[0])
-		    && (!self->is_dual_link
-		        || (!fifo_is_open(self->fifo_in[1])
-		            && fifo_is_empty(self->fifo_in[1])))) {
-			if (self->wait_for_in0_end) {
-				self->wait_for_in0 = false;
-			} else {
-				process_disable(self);
-				continue;
-			}
-		}
-
 		if (self->wait_list != NULL) {
-			bool enabled = false;
-			process** it = vec_begin(self->wait_list);
-			for (; it != vec_end(self->wait_list); ++it) {
-				if ((*it)->is_enabled) {
-					enabled = true;
-					break;
-				}
-			}
-			if (enabled) {
+			if (_check_wait_list(self->wait_list)) {
 				++run_count;
 				continue;
 			}
-		}
-
-		/* check to see that there is something to process
-		 * as well as a place for it to go.
-		 */
-		if (((self->wait_for_in0 && fifo_is_empty(self->fifo_in[0]))
-		     && (!self->is_dual_link || fifo_is_empty(self->fifo_in[1])))
-		    || (self->fifo_out[0] && !fifo_receivable(self->fifo_out[0]))
-		    || (self->fifo_out[1] && !fifo_receivable(self->fifo_out[1]))) {
-			++run_count;
-			continue;
 		}
 
 		int ret = try_(self->action__(self));
