@@ -193,7 +193,7 @@ int fixedwriter_write_record(writer* writer, vec* expr_vec, node* rg, FILE* outs
 			}
 		}
 
-		fprintf(self->file, "%.*s", sv.len, sv.data);
+		fwrite(sv.data, 1, sv.len, self->file);
 		unsigned i = sv.len;
 		for (; i < width; ++i) {
 			fputc(' ', self->file);
