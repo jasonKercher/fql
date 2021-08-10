@@ -46,7 +46,7 @@ const char* _help =
         " -C, --cartesian        use cartesian join algorithm (less memory use)\n"
         " -d, --dry-run          validate and build a plan, but do not execute\n"
         " -h, --no-header        for default schema, do not print a header\n"
-        //" -H, --add-header       for no-header delimited, add a header\n"
+        " -H, --add-header       for no-header delimited, add a header\n"
         " -L, --summarize        allow SELECTion outside of groups.\n"
         //" -o, --overwrite        creation of tables can overwrite existing files\n"
         " -O, --override         allow processing of unsupported language features\n"
@@ -305,7 +305,7 @@ void _parse_args(struct fql_handle* handle, int c)
 		fql_set_print_header(handle, 0);
 		break;
 	case 'H':
-		fql_set_add_header(handle, 0);
+		fql_set_add_header(handle, 1);
 		break;
 	case 'L':
 		fql_set_loose_groups(handle, 1);

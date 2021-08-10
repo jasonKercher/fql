@@ -2,6 +2,7 @@
 #include "csv.h"
 #include "field.h"
 #include "fql.h"
+#include "io.h"
 #include "misc.h"
 #include "group.h"
 #include "order.h"
@@ -258,9 +259,11 @@ int fqlselect_next_union(fqlselect* self)
 	return 1;
 }
 
-void fqlselect_preop(fqlselect* self, query* query)
+void fqlselect_preop(fqlselect* self, query* query, struct fql_handle* fql)
 {
-	if (!self->schema->is_default) {
+	if (self->schema->write_io_type != IO_LIBCSV
+	    || (!self->schema->is_default && !fql->props.add_header)
+	    || (self->schema->is_default && !fql->props.print_header)) {
 		return;
 	}
 

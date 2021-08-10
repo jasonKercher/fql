@@ -178,9 +178,7 @@ void op_preop(struct fql_handle* fql)
 
 	switch (*type) {
 	case OP_SELECT:
-		if (fql->props.print_header) {
-			fqlselect_preop(query->op, query);
-		}
+		fqlselect_preop(query->op, query, fql);
 		break;
 	case OP_DELETE:
 		fqldelete_preop(query->op, query);
