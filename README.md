@@ -1,4 +1,4 @@
-```
+```c
   __       _
  / _| __ _| |
 | |_ / _` | |
@@ -15,7 +15,7 @@ fql gives you the power of SQL for your delimited or fixed-width data files with
 
 ### What can it *not* do?
 
-- windowed-functions
+- windowed-functions (like RANK)
 - temp tables not so temp
 - TOP PERCENT
 - WITH / common table expressions
@@ -26,9 +26,9 @@ fql gives you the power of SQL for your delimited or fixed-width data files with
 - PIVOT/UNPIVOT
 
 Most recent and possibly unstable features:
-- LEFT JOIN
-- NULL
-
+- UPDATE 
+- DELETE
+  
 ### Is it fast?
 
 Here is a naive benchmark vs other similar projects:
@@ -39,11 +39,12 @@ Here is a naive benchmark vs other similar projects:
 - base benchmark with shell tools
 
 
-Benchmarks are performed on 2 tables of generic random data of 2 000 000 records (not including header).  The gencsv.sh script can be used to build these files: `./gencsv.sh 2000001 > t1.temp` and `./gencsv.sh 2000001`:
+Benchmarks are performed on 2 tables of generic random data of 2 000 000 records (not including header).  The gentsv.sh script can be used to build these files:
 
 ```sh
+:) ./gentsv.sh 2000000 > t2.temp
 :) wc -l t2.temp
-2000000 t2.temp
+2000001 t2.temp
 :) head -10 t2.temp
 foo     bar     baz
 f493263f        5b      7791

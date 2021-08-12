@@ -453,9 +453,6 @@ int _operation(plan* self, query* query, dnode* entry, bool is_union)
 	dnode* prev = self->current;
 	prev->out[0] = self->op_true;
 	self->current = self->op_true;
-	_check_all_for_special_expression(self,
-	                                  self->op_true->data,
-	                                  op_get_expressions(query->op));
 
 	/* Current no longer matters. After operation, we
 	 * do order where current DOES matter... BUT
@@ -472,6 +469,18 @@ int _operation(plan* self, query* query, dnode* entry, bool is_union)
 		}
 	}
 	try_(op_apply_process(query, self, (is_union || entry != NULL)));
+
+	_check_all_for_special_expression(self,
+	                                  self->op_true->data,
+	                                  op_get_expressions(query->op));
+
+	vec* op_add_exprs = op_get_additional_exprs(query->op);
+	if (op_add_exprs != NULL) {
+		_check_all_for_special_expression(self,
+		                                  self->op_true->data,
+		                                  op_add_exprs);
+	}
+
 
 	if (entry == NULL) {
 		return FQL_GOOD;

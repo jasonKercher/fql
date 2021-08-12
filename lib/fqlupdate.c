@@ -138,6 +138,9 @@ int fqlupdate_apply_process(query* query, plan* plan)
 	proc = plan->op_true->data;
 	proc->is_passive = true;
 
+	/*** NOTE: UPDATE is becoming op_true!!!! ***/
+	plan->op_true = filter_node;
+
 	writer_set_delimiter(self->writer, self->schema->delimiter);
 	writer_set_rec_terminator(self->writer, self->schema->rec_terminator);
 
