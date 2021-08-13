@@ -44,7 +44,15 @@ expression* expression_construct(expression* self,
 	switch (expr) {
 	case EXPR_GROUPING:
 	case EXPR_ROW_NUMBER:
+		self->field_type = FIELD_INT;
+		string_construct_from_char_ptr(&self->alias, data);
+		string_construct_from_char_ptr(&self->name, data);
+		return self; /* skip alias construct */
 	case EXPR_FULL_RECORD:
+		self->field_type = FIELD_STRING;
+		string_construct_from_char_ptr(&self->alias, data);
+		string_construct_from_char_ptr(&self->name, data);
+		return self; /* skip alias construct */
 	case EXPR_COLUMN_NAME:
 		string_construct_from_char_ptr(&self->alias, data);
 		string_construct_from_char_ptr(&self->name, data);

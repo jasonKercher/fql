@@ -474,6 +474,11 @@ void ListenerInterface::enterScalar_function_name(TSqlParser::Scalar_function_na
 	if (ctx->YEAR())
 		fn = SCALAR_YEAR;
 
+	if (fn == SCALAR_UNDEFINED) {
+		std::cerr << "Function " << ctx->getText() << "' not defined\n";
+		_set_failure();
+	}
+
 	if (query_enter_function(_query, fn, _fql->props.char_as_byte)) {
 		_set_failure();
 	}

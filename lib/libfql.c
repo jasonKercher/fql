@@ -299,6 +299,16 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 			ret = process_exec_plan(plan);
 		}
 
+		if (fql->props.verbose) {
+			if (plan->rows_affected == 1) {
+				fprintf(stderr, "1 row affected\n");
+			} else {
+				fprintf(stderr,
+				        "%lu rows affected\n\n",
+				        plan->rows_affected);
+			}
+		}
+
 		query_free(query);
 		node_dequeue(&fql->query_list);
 		if (ret == FQL_FAIL) {
@@ -329,6 +339,10 @@ int fql_exec(struct fql_handle* fql, const char* query_str)
 
 int fql_make_plans(struct fql_handle* fql, const char* query_str)
 {
+	if (fql->props.verbose) {
+		fprintf(stderr, "\n[fql] Making Plan for:\n%s\n", query_str);
+	}
+
 	if (fql->query_str) {
 		free_(fql->query_str);
 	}

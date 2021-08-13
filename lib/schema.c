@@ -719,6 +719,7 @@ enum join_side _get_join_side(expression* expr, int right_idx)
 {
 	switch (expr->expr) {
 	case EXPR_FULL_RECORD:
+		return (expr->src_idx < right_idx) ? SIDE_LEFT : SIDE_RIGHT;
 	case EXPR_COLUMN_NAME:
 		return (expr->data_source->src_idx < right_idx) ? SIDE_LEFT : SIDE_RIGHT;
 	case EXPR_FUNCTION: {
