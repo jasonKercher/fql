@@ -34,7 +34,7 @@ typedef struct fqlselect fqlselect;
 struct fqlselect* fqlselect_construct(struct fqlselect*);
 void fqlselect_destroy(struct fqlselect*);
 
-unsigned fqlselect_get_field_count(struct fqlselect*);
+unsigned fqlselect_get_field_count(struct fqlselect*, const struct vec*);
 void fqlselect_add_expression(struct fqlselect*, struct expression*);
 int fqlselect_connect_api(struct query*, struct vec*);
 void fqlselect_apply_process(struct query*, struct fql_plan*, bool);

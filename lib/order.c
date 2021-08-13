@@ -69,7 +69,7 @@ int order_init_io(order* self, const char* in_name, const char* out_name)
 	return FQL_GOOD;
 }
 
-int order_preresolve_expressions(order* self, fqlselect* select)
+int order_preresolve_expressions(order* self, fqlselect* select, const vec* sources)
 {
 	/* First, we want to try and resolve by ordinal:
 	 * SELECT foo
@@ -128,11 +128,11 @@ int order_preresolve_expressions(order* self, fqlselect* select)
 			continue;
 		}
 		if ((*result)->expr == EXPR_CONST) {
-			expression_link(*it, *result);
+			table* result_table = vec_at(sources, (*result)->src_idx);
+			expression_link(*it, *result, result_table);
 			continue;
 		}
 		(*it)->index = (*result)->index;
-		//expression_link(*it, *result);
 		(*it)->expr = EXPR_GROUPING;
 	}
 

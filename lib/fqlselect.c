@@ -59,14 +59,16 @@ void fqlselect_destroy(fqlselect* self)
 	delete_(schema, self->schema);
 }
 
-unsigned fqlselect_get_field_count(fqlselect* self)
+unsigned fqlselect_get_field_count(fqlselect* self, const vec* sources)
 {
+	table* expr_table = NULL;
 	unsigned field_count = 0;
 	expression** it = vec_begin(self->schema->expressions);
 	for (; it != vec_end(self->schema->expressions); ++it) {
 		switch ((*it)->expr) {
 		case EXPR_ASTERISK:
-			field_count += (*it)->table->schema->expressions->size;
+			expr_table = vec_at(sources, (*it)->src_idx);
+			field_count += expr_table->schema->expressions->size;
 			break;
 		default:
 			++field_count;

@@ -29,7 +29,7 @@ enum expr_type {
 /** expression **/
 struct expression {
 	enum expr_type expr;
-	struct table* table;
+	//struct table* table;
 	struct expression* data_source;
 	struct query* subquery;
 	unsigned* rownum_ref;
@@ -54,7 +54,9 @@ void expression_destroy(void*);
 
 struct expression* expression_copy(const struct expression*);
 
-void expression_link(struct expression* dest, struct expression* src);
+void expression_link(struct expression* dest,
+                     struct expression* src,
+                     const struct table* src_table);
 void expression_cat_description(struct expression*, string*);
 int expression_try_assign_source(struct expression*, struct table*);
 

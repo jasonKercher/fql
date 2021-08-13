@@ -370,7 +370,9 @@ int query_enter_aggregate(query* self, enum aggregate_function agg_type)
 	group_add_expression(self->groupby, group_expr);
 
 	expression* linked_expr = new_(expression, EXPR_AGGREGATE, agg, "");
-	expression_link(linked_expr, group_expr);
+	//table* group_table = vec_at(self->sources, group_expr->src_idx);
+	//expression_link(linked_expr, group_expr, group_table);
+	expression_link(linked_expr, group_expr, NULL);
 	agg->linked_expression = linked_expr;
 	try_(_distribute_expression(self, linked_expr));
 

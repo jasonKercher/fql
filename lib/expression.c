@@ -19,8 +19,8 @@ expression* expression_construct(expression* self,
                                  const char* table_name)
 {
 	*self = (expression) {
-	        expr,            /* expr */
-	        NULL,            /* table */
+	        expr, /* expr */
+	        //NULL,            /* table */
 	        NULL,            /* data_source */
 	        NULL,            /* subquery */
 	        NULL,            /* rownum_ref */
@@ -112,7 +112,7 @@ expression* expression_copy(const struct expression* src)
 	return dest;
 }
 
-void expression_link(struct expression* dest, struct expression* src)
+void expression_link(expression* dest, expression* src, const table* src_table)
 {
 	dest->data_source = src;
 	dest->field_type = src->field_type;
@@ -124,7 +124,8 @@ void expression_link(struct expression* dest, struct expression* src)
 		agg->linked_expression = dest;
 	}
 
-	table* src_table = src->table;
+	//table* src_table = src->table;
+
 	if (src_table == NULL) {
 		return;
 	}
@@ -212,7 +213,7 @@ int expression_try_assign_source(expression* self, table* table)
 	}
 
 	expression** first_match = vec_begin(exprs);
-	expression_link(self, *first_match);
+	expression_link(self, *first_match, table);
 	return exprs->size;
 }
 

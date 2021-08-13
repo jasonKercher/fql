@@ -245,7 +245,8 @@ void schema_assign_header(table* table, record* rec, int src_idx)
 		schema_add_expression(table->schema, new_expr, src_idx);
 
 		new_expr->index = i++;
-		new_expr->table = table;
+		//new_expr->table = table;
+		new_expr->src_idx = table->idx;
 		new_expr->field_type = FIELD_STRING;
 
 		string_destroy(&expr_str);
@@ -331,7 +332,8 @@ int _add_expression_from_rec(table* table,
 	string expr_str;
 	string_construct_from_stringview(&expr_str, &field_name);
 	expression* new_expr = new_(expression, EXPR_COLUMN_NAME, expr_str.data, "");
-	new_expr->table = table;
+	//new_expr->table = table;
+	new_expr->src_idx = table->idx;
 	string_destroy(&expr_str);
 	switch (rec->size) {
 	case 1: /* <field>, assume char */
@@ -542,11 +544,12 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		schema_assign_header(table, rec, src_idx);
 	} else {
 		/* TODO: in the future, maybe just set these SQL NULL */
-		expression** it = vec_at(self->expressions, rec->fields.size);
+		unsigned newsize = (rec->fields.size) ? rec->fields.size : 1;
+		expression** it = vec_at(self->expressions, newsize);
 		for (; it != vec_end(self->expressions); ++it) {
 			delete_(expression, *it);
 		}
-		vec_resize(self->expressions, rec->fields.size);
+		vec_resize(self->expressions, newsize);
 		schema_preflight(self);
 	}
 	delete_(record, rg.data);
@@ -670,7 +673,7 @@ int _assign_expressions(vec* expressions, vec* sources, int strictness)
 	                                   strictness);
 }
 
-int _asterisk_resolve(vec* expressions, vec* sources)
+int _resolve_asterisk(vec* expressions, vec* sources)
 {
 	unsigned i = 0;
 	for (; i < expressions->size; ++i) {
@@ -775,6 +778,7 @@ enum _expr_type {
 	MAP_CONST_FLOAT,
 	MAP_CONST_STRING,
 	MAP_COLUMN,
+	MAP_ASTERISK,
 	MAP_AGGREGATE,
 	MAP_SUBQUERY,
 	MAP_FUNCTION,
@@ -789,6 +793,7 @@ int _map_expression(vec* key, expression* expr)
 	static const enum _expr_type _c_float = MAP_CONST_FLOAT;
 	static const enum _expr_type _c_string = MAP_CONST_STRING;
 	static const enum _expr_type _expr = MAP_COLUMN;
+	static const enum _expr_type _expr_aster = MAP_ASTERISK;
 	static const enum _expr_type _agg = MAP_AGGREGATE;
 	static const enum _expr_type _sub = MAP_SUBQUERY;
 	static const enum _expr_type _func = MAP_FUNCTION;
@@ -875,8 +880,14 @@ int _map_expression(vec* key, expression* expr)
 		stringview_nset(&val_sv, (char*)&expr->subquery, sizeof(void*));
 		vec_push_back(key, &val_sv);
 		break;
+	case EXPR_ASTERISK:
+		type_sv.data = (void*)&_expr_aster;
+		vec_push_back(key, &type_sv);
+		stringview_nset(&val_sv, (char*)&expr->src_idx, sizeof(expr->src_idx));
+		vec_push_back(key, &val_sv);
+		break;
 	default:
-		fputs("unexpected expression\n", stderr);
+		fputs("unexpected expression mapping\n", stderr);
 		return FQL_FAIL;
 	}
 
@@ -1024,11 +1035,13 @@ int _resolve_unions(struct fql_handle* fql, query* aquery)
 	 */
 	enum io main_io_type = op_get_schema(aquery->op)->io_type;
 
-	unsigned expected = fqlselect_get_field_count(aquery->op);
+	unsigned expected = fqlselect_get_field_count(aquery->op, aquery->sources);
 	query** query_iter = vec_begin(aquery->unions);
 	for (; query_iter != vec_end(aquery->unions); ++query_iter) {
 		try_(_resolve_query(fql, *query_iter, main_io_type));
-		if (expected != fqlselect_get_field_count((*query_iter)->op)) {
+		if (expected
+		    != fqlselect_get_field_count((*query_iter)->op,
+		                                 (*query_iter)->sources)) {
 			fputs("UNION query schema mis-match\n", stderr);
 			return FQL_FAIL;
 		}
@@ -1147,7 +1160,7 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	 * (e.g. expressions listed in SELECT).
 	 */
 	vec* op_exprs = op_get_expressions(aquery->op);
-	try_(_asterisk_resolve(op_exprs, sources));
+	try_(_resolve_asterisk(op_exprs, sources));
 	try_(_assign_expressions(op_exprs, sources, fql->props.strictness));
 
 	vec* op_add_exprs = op_get_additional_exprs(aquery->op);
@@ -1168,7 +1181,9 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	vec* order_exprs = NULL;
 	if (aquery->orderby) {
 		order_exprs = &aquery->orderby->expressions;
-		try_(order_preresolve_expressions(aquery->orderby, aquery->op));
+		try_(order_preresolve_expressions(aquery->orderby,
+		                                  aquery->op,
+		                                  aquery->sources));
 		try_(_assign_expressions(order_exprs,
 		                         aquery->sources,
 		                         fql->props.strictness));
