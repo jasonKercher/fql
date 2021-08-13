@@ -21,6 +21,7 @@ struct switchcase {
 	struct vec values;
 	struct expression* static_expr;
 	struct node* return_logic_stack;
+	struct node* return_function_stack;
 	struct vec* return_joinable;
 	enum switch_state state;
 	enum mode return_mode;

@@ -48,7 +48,7 @@ const char* _help =
         " -h, --no-header        for default schema, do not print a header\n"
         " -H, --add-header       for no-header delimited, add a header\n"
         " -L, --summarize        allow SELECTion outside of groups.\n"
-        //" -o, --overwrite        creation of tables can overwrite existing files\n"
+        " -o, --overwrite        creation of tables can overwrite existing files\n"
         " -O, --override         allow processing of unsupported language features\n"
         " -p, --print            print the processing plan\n"
         " -P, --pipe-factor arg  set multiplier for process pipe size\n"
@@ -137,7 +137,7 @@ int main(int argc, char** argv)
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
 
-	char opt_string[64] = "AbCdhHLOpP:s:S:tvW";
+	char opt_string[64] = "AbCdhHLoOpP:s:S:tvW";
 	char* opt_iter = opt_string + strlen(opt_string) - 1;
 	*++opt_iter = HELP_ARG;
 	*++opt_iter = IN_STD_ARG;

@@ -599,10 +599,12 @@ int query_enter_case_expression(query* self)
 	new_sc->return_mode = self->mode;
 	new_sc->return_logic_mode = self->logic_mode;
 	new_sc->return_logic_stack = self->logic_stack;
+	new_sc->return_function_stack = self->function_stack;
 	new_sc->return_joinable = self->joinable;
-	self->logic_mode = LOGIC_CASE;
 	self->mode = MODE_CASE;
+	self->logic_mode = LOGIC_CASE;
 	self->logic_stack = NULL;
+	self->function_stack = NULL;
 	self->joinable = NULL;
 	return FQL_GOOD;
 }
@@ -612,6 +614,7 @@ int query_exit_case_expression(query* self)
 	switchcase* sc = node_pop(&self->switchcase_stack);
 	self->mode = sc->return_mode;
 	self->logic_mode = sc->return_logic_mode;
+	self->function_stack = sc->return_function_stack;
 	self->logic_stack = sc->return_logic_stack;
 	self->joinable = sc->return_joinable;
 	return FQL_GOOD;

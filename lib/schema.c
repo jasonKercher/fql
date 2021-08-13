@@ -545,11 +545,13 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	} else {
 		/* TODO: in the future, maybe just set these SQL NULL */
 		unsigned newsize = (rec->fields.size) ? rec->fields.size : 1;
-		expression** it = vec_at(self->expressions, newsize);
-		for (; it != vec_end(self->expressions); ++it) {
-			delete_(expression, *it);
+		if (newsize < self->expressions->size) {
+			expression** it = vec_at(self->expressions, newsize);
+			for (; it != vec_end(self->expressions); ++it) {
+				delete_(expression, *it);
+			}
+			vec_resize(self->expressions, newsize);
 		}
-		vec_resize(self->expressions, newsize);
 		schema_preflight(self);
 	}
 	delete_(record, rg.data);
