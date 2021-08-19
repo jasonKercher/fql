@@ -75,10 +75,13 @@ string* string_construct_take(string* s, char* src)
 	 * but it is >= len + 1
 	 */
 	*s = (string) {
-		 src            /* data */
-		,len            /* size */
-		,len + 1        /* _alloc */
-		,1              /* _elem_s */
+	        src /* data */
+	        ,
+	        len /* size */
+	        ,
+	        len + 1 /* _alloc */
+	        ,
+	        1 /* _elem_s */
 	};
 
 	return s;
@@ -145,7 +148,7 @@ size_t string_strncpy(string* dest, const char* src, size_t limit)
 	}
 	string_resize(dest, i);
 	_null_terminate_(dest);
-	return i-1;
+	return i - 1;
 }
 
 size_t string_sprintf(string* s, const char* fmt, ...)
@@ -157,14 +160,14 @@ size_t string_sprintf(string* s, const char* fmt, ...)
 	size_t len = vsnprintf(NULL, 0, fmt, args);
 	va_end(args);
 	vec_resize(s, len);
-	vsnprintf(s->data, len+1, fmt, args2);
+	vsnprintf(s->data, len + 1, fmt, args2);
 	va_end(args2);
 	return len;
 }
 
 const char* string_c_str(const string* s)
 {
-	return (const char*) s->data;
+	return (const char*)s->data;
 }
 
 char* string_export(string* s)
@@ -198,9 +201,17 @@ const char* string_find_replace_one(string* s,
                                     const char* newstr,
                                     size_t begin_idx)
 {
-	unsigned oldlen = strlen(oldstr);
 	unsigned newlen = strlen(newstr);
+	return string_find_replace_one_limited(s, oldstr, newstr, begin_idx, newlen);
+}
 
+const char* string_find_replace_one_limited(string* s,
+                                            const char* oldstr,
+                                            const char* newstr,
+                                            size_t begin_idx,
+                                            unsigned newlen)
+{
+	unsigned oldlen = strlen(oldstr);
 	char* begin = vec_at(s, begin_idx);
 	char* pos = memmem(begin, s->size, oldstr, oldlen);
 
@@ -228,12 +239,97 @@ const char* string_find_replace_one(string* s,
 	return begin + newlen;
 }
 
-void string_find_replace(string* s, const char* oldstr, const char* newstr)
+
+void string_find_replace_limited(string* s,
+                                 const char* oldstr,
+                                 const char* newstr,
+                                 unsigned newlen)
 {
 	unsigned i = 0;
 	for (; i < s->size; ++i) {
 		const char* next =
-		        string_find_replace_one(s, oldstr, newstr, i);
+		        string_find_replace_one_limited(s, oldstr, newstr, i, newlen);
 		i += next - (const char*)vec_begin(s);
 	}
+}
+
+
+void string_find_replace(string* s, const char* oldstr, const char* newstr)
+{
+	string_find_replace_limited(s, oldstr, newstr, strlen(newstr));
+}
+
+/* separate implementation for nocase limited because it must allocate */
+const char* string_find_replace_one_nocase(string* s,
+                                           const char* oldstr,
+                                           const char* newstr,
+                                           size_t begin_idx)
+{
+	unsigned newlen = strlen(newstr);
+	return string_find_replace_one_nocase_limited(s,
+	                                              oldstr,
+	                                              newstr,
+	                                              begin_idx,
+	                                              newlen);
+}
+
+const char* string_find_replace_one_nocase_limited(string* s,
+                                                   const char* oldstr,
+                                                   const char* newstr,
+                                                   size_t begin_idx,
+                                                   unsigned newlen)
+{
+	unsigned oldlen = strlen(oldstr);
+	char* begin = vec_at(s, begin_idx);
+
+	/* We will assume oldstr is null terminated.
+	 * We expect begin to be... It's a string...
+	 */
+	char* pos = strcasestr(begin, oldstr);
+
+	if (pos == NULL) {
+		return vec_end(s);
+	}
+
+	int idx = pos - begin;
+
+	unsigned i = 0;
+	for (; i < oldlen && i < newlen; ++i) {
+		begin[idx++] = newstr[i];
+	}
+
+	if (oldlen == newlen) {
+		return begin + idx;
+	}
+
+	if (i < oldlen) {
+		vec_erase_at(s, idx + begin_idx, oldlen - i);
+	} else { /* j < newstr.len */
+		vec_insert_at(s, idx + begin_idx, &newstr[i], newlen - i);
+	}
+
+	return begin + newlen;
+}
+
+
+void string_find_replace_nocase_limited(string* s,
+                                        const char* oldstr,
+                                        const char* newstr,
+                                        unsigned newlen)
+{
+	unsigned i = 0;
+	for (; i < s->size; ++i) {
+		const char* next = string_find_replace_one_nocase_limited(s,
+		                                                          oldstr,
+		                                                          newstr,
+		                                                          i,
+		                                                          newlen);
+		i += next - (const char*)vec_begin(s);
+	}
+}
+
+
+void string_find_replace_nocase(string* s, const char* oldstr, const char* newstr)
+{
+	string_find_replace_nocase_limited(s, oldstr, newstr, strlen(newstr));
 }

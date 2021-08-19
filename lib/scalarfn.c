@@ -293,6 +293,43 @@ int fql_substring(function* fn, union field* ret, node* rg)
 	return FQL_GOOD;
 }
 
+int fql_replace(function* fn, union field* ret, node* rg)
+{
+	expression** args = vec_begin(fn->args);
+	stringview haystack;
+	stringview needle;
+	stringview replacement;
+
+	try_deref_(expression_get_stringview(&haystack, args[0], rg));
+	try_deref_(expression_get_stringview(&needle, args[1], rg));
+	try_deref_(expression_get_stringview(&replacement, args[2], rg));
+
+	string_strncpy(ret->s, haystack.data, haystack.len);
+
+	/* string_find_replace_nocase_limited assumes that the needle is NULL terminated.
+	 * However, I cannot assume that is the case. I can only make that assumption if
+	 * in some circumstances, for example, a constant expression...
+	 */
+	if (args[1]->expr == EXPR_CONST) {
+		string_find_replace_nocase_limited(ret->s,
+		                                   needle.data,
+		                                   replacement.data,
+		                                   replacement.len);
+		return FQL_GOOD;
+	}
+
+	/* If we've made it this far, needle may not be a NULL terminated string... allocate a copy =( */
+	char* needle_cpy = malloc_(needle.len + 1);
+	strncpy_(needle_cpy, needle.data, needle.len + 1);
+	string_find_replace_nocase_limited(ret->s,
+	                                   needle_cpy,
+	                                   replacement.data,
+	                                   replacement.len);
+	free_(needle_cpy);
+
+	return FQL_GOOD;
+}
+
 int fql_isnull_i(function* fn, union field* ret, node* rg)
 {
 	expression** expr = vec_begin(fn->args);

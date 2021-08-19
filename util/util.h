@@ -48,10 +48,10 @@ typedef int (*int_generic_data_fn)(void*);
 /**
  * strncpy but guaranteed to end with '\0'
  */
-#define strncpy_(dest_, src_, n_)             \
-	{                                     \
-		strncpy(dest_, src_, n_ - 1); \
-		dest_[n_ - 1] = '\0';         \
+#define strncpy_(dest_, src_, n_)         \
+	{                                 \
+		dest_[0] = '\0';          \
+		strncat(dest_, src_, n_); \
 	}
 
 /**

@@ -48,6 +48,7 @@ int fql_datalength(struct function*, union field* ret, struct node*);
 int fql_left(struct function*, union field* ret, struct node*);
 int fql_right(struct function*, union field* ret, struct node*);
 int fql_substring(struct function*, union field* ret, struct node*);
+int fql_replace(struct function*, union field* ret, struct node*);
 
 int fql_isnull_i(struct function*, union field* ret, struct node*);
 int fql_isnull_f(struct function*, union field* ret, struct node*);

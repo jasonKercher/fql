@@ -163,10 +163,13 @@ function* function_construct(function* self,
 		self->call__ = &fql_substring;
 		*type = FIELD_STRING;
 		return self;
-	case SCALAR_CHARINDEX:
 	//case SCALAR_DATEADD:
 	//case SCALAR_DATEDIFF:
 	case SCALAR_REPLACE:
+		self->call__ = &fql_replace;
+		*type = FIELD_STRING;
+		return self;
+	case SCALAR_CHARINDEX:
 		return self;
 	default:;
 	}
