@@ -58,7 +58,7 @@ int fixedreader_open(reader* reader, const char* file_name)
 int fixedreader_get_record(reader* reader, node* rg)
 {
 	if (reader->eof) {
-		return FQL_FAIL;
+		return EOF;
 	}
 
 	fixedreader* self = reader->reader_data;

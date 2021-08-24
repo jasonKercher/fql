@@ -16,7 +16,7 @@ int libcsv_get_record(reader* self, node* rg)
 	struct csv_reader* csv = self->reader_data;
 
 	if (self->eof) {
-		return FQL_FAIL;
+		return EOF;
 	}
 
 	if (rec->libcsv_rec == NULL) {

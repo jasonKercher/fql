@@ -301,7 +301,7 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 
 		if (fql->props.verbose) {
 			if (plan->rows_affected == 1) {
-				fprintf(stderr, "1 row affected\n");
+				fprintf(stderr, "1 row affected\n\n");
 			} else {
 				fprintf(stderr,
 				        "%lu rows affected\n\n",
