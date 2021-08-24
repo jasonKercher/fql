@@ -81,8 +81,14 @@ unsigned fqlselect_get_field_count(fqlselect* self, const vec* sources)
 void fqlselect_add_expression(fqlselect* self, expression* expr)
 {
 	schema_add_expression(self->schema, expr, 0);
-	if (expr->expr != EXPR_AGGREGATE) {
-		self->must_run_once = false;
+	switch (expr->expr) {
+	case EXPR_ROW_NUMBER:
+	case EXPR_AGGREGATE:
+		break;
+	default:
+		if (!expression_is_const(expr)) {
+			self->must_run_once = false;
+		}
 	}
 }
 
@@ -260,6 +266,42 @@ int fqlselect_next_union(fqlselect* self)
 
 	return 1;
 }
+
+/* The "must_run_once" flag at this point means that the
+ * conditions are correct to force a SELECT under the
+ * assumption that there may be an unreached aggregate in
+ * the SELECT list:
+ *   SELECT COUNT(*)
+ *   FROM T1
+ *   WHERE 1=0
+ *
+ * Even though no records will make it to the SELECT,
+ * we must still report our count of 0. If this condition
+ * is true, then we must check that there is indeed an
+ * aggregate function to warrant forcing a SELECT. We
+ * wouldn't want "must_run_once" set true for a query like
+ *   SELECT 1 
+ *   WHERE 1=0
+ *
+ * TODO: Verify this behavior when UNION is involved
+ */
+void fqlselect_verify_must_run(fqlselect* self)
+{
+	if (self->must_run_once) {
+		expression** it = vec_begin(self->schema->expressions);
+		bool agg_found = false;
+		for (; it != vec_end(self->schema->expressions); ++it) {
+			if ((*it)->expr == EXPR_AGGREGATE) {
+				agg_found = true;
+				break;
+			}
+		}
+		if (!agg_found) {
+			self->must_run_once = false;
+		}
+	}
+}
+
 
 void fqlselect_preop(fqlselect* self, query* query, struct fql_handle* fql)
 {

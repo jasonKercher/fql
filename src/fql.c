@@ -168,6 +168,7 @@ int main(int argc, char** argv)
 	if (optind != argc) {
 		query_file = fopen(argv[optind], "r");
 		if (query_file == NULL) {
+			perror(argv[optind]);
 			return EXIT_FAILURE;
 		}
 	}

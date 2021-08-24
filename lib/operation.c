@@ -293,8 +293,8 @@ int op_writer_init(query* query, struct fql_handle* fql)
 	}
 	op_get_writer(query->op);
 
+	/* Retrieve op_table */
 	table* op_table = NULL;
-
 	switch (*self) {
 	case OP_DELETE: {
 		fqldelete* delete = query->op;
@@ -347,13 +347,13 @@ int op_writer_init(query* query, struct fql_handle* fql)
 
 	if (*self == OP_SELECT) {
 		op_expand_asterisks(query, (!query->groupby || !query->distinct));
-		/* TODO: verify this does not cause double free */
 		if (query->distinct != NULL) {
 			expression** it = vec_begin(op_schema->expressions);
 			for (; it != vec_end(op_schema->expressions); ++it) {
 				group_add_expression(query->distinct, *it);
 			}
 		}
+		fqlselect_verify_must_run((fqlselect*)self);
 		return FQL_GOOD;
 	}
 

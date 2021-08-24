@@ -22,7 +22,6 @@ enum expr_type {
 	EXPR_ASTERISK,
 	EXPR_FUNCTION,
 	EXPR_AGGREGATE,
-	EXPR_SOURCE,
 	EXPR_SUBQUERY,
 };
 
@@ -60,6 +59,7 @@ void expression_link(struct expression* dest,
 void expression_cat_description(struct expression*, string*);
 int expression_try_assign_source(struct expression*, struct table*);
 
+bool expression_is_const(struct expression*);
 int expression_type_check(struct expression*, struct node*);
 int expression_cast(struct expression*, enum field_type);
 

@@ -1,6 +1,7 @@
 #include "expression.h"
 #include "fql.h"
 #include "misc.h"
+#include "logic.h"
 #include "query.h"
 #include "reader.h"
 #include "record.h"
@@ -198,9 +199,6 @@ void expression_cat_description(expression* self, string* msg)
 	case EXPR_ASTERISK:
 		string_strcat(msg, "*");
 		break;
-	case EXPR_SOURCE:
-		string_strcat(msg, "TABLE SOURCE");
-		break;
 	case EXPR_SUBQUERY:
 		string_strcat(msg, "SUBQUERY");
 		break;
@@ -223,6 +221,50 @@ int expression_try_assign_source(expression* self, table* table)
 	expression** first_match = vec_begin(exprs);
 	expression_link(self, *first_match, table);
 	return exprs->size;
+}
+
+bool _list_is_const(vec* expr_vec)
+{
+	expression** it = vec_begin(expr_vec);
+	for (; it != vec_end(expr_vec); ++it) {
+		if (!expression_is_const(*it)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool _tests_are_const(vec* test_vec)
+{
+	logicgroup** it = vec_begin(test_vec);
+	for (; it != vec_end(test_vec); ++it) {
+		if (!_list_is_const((*it)->expressions)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool expression_is_const(expression* self)
+{
+	switch (self->expr) {
+	case EXPR_CONST:
+	case EXPR_SUBQUERY:
+	case EXPR_NULL:
+		return true;
+	//case EXPR_ASTERISK:  /* Technically this can be const... */
+	case EXPR_SWITCH_CASE: {
+		switchcase* sc = self->field.sc;
+		return (_list_is_const(&sc->values) && _tests_are_const(&sc->tests));
+	}
+	case EXPR_FUNCTION: {
+		function* fn = self->field.fn;
+		return _list_is_const(fn->args);
+	}
+	default:
+		return false;
+	}
+	return true;
 }
 
 int expression_type_check(expression* self, node* rg)

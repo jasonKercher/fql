@@ -42,6 +42,7 @@ void fqlselect_apply_expression_alias(struct fqlselect*, const char* alias);
 int fqlselect_set_as_inlist(struct fqlselect*, struct inlist*);
 int fqlselect_resolve_type_from_subquery(struct expression*);
 int fqlselect_resolve_final_types(struct fqlselect*);
+void fqlselect_verify_must_run(struct fqlselect*);
 int fqlselect_next_union(struct fqlselect*);
 void fqlselect_preop(struct fqlselect*, struct query*, struct fql_handle*);
 
