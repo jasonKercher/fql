@@ -43,7 +43,6 @@ expression* expression_construct(expression* self,
 	string_construct_from_char_ptr(&self->table_name, table_name);
 
 	switch (expr) {
-	case EXPR_GROUPING:
 	case EXPR_ROW_NUMBER:
 		self->field_type = FIELD_INT;
 		string_construct_from_char_ptr(&self->alias, data);
@@ -149,6 +148,7 @@ void expression_cat_description(expression* self, string* msg)
 	case EXPR_NULL:
 		string_strcat(msg, "NULL");
 		break;
+	case EXPR_REFERENCE:
 	case EXPR_GROUPING:
 	case EXPR_ROW_NUMBER:
 	case EXPR_FULL_RECORD:
@@ -373,6 +373,8 @@ int expression_get_int(long* ret, expression* self, node* rg)
 		fail_if_(str2long(ret, self->buf.data));
 		return FQL_GOOD;
 	}
+	case EXPR_REFERENCE:
+		return expression_get_int(ret, self->data_source, rg);
 	case EXPR_GROUPING:
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
@@ -438,6 +440,8 @@ int expression_get_float(double* ret, expression* self, node* rg)
 		fail_if_(str2double(ret, self->buf.data));
 		return FQL_GOOD;
 	}
+	case EXPR_REFERENCE:
+		return expression_get_float(ret, self->data_source, rg);
 	case EXPR_GROUPING:
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
@@ -503,6 +507,8 @@ int expression_get_stringview(stringview* ret, expression* self, node* rg)
 		ret->data = self->buf.data;
 		ret->len = self->buf.size;
 		return FQL_GOOD;
+	case EXPR_REFERENCE:
+		return expression_get_stringview(ret, self->data_source, rg);
 	case EXPR_GROUPING:
 	case EXPR_AGGREGATE: {
 		expression* src_expr = self->data_source;

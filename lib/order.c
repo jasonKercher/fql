@@ -76,7 +76,6 @@ int order_preresolve_expressions(order* self, fqlselect* select, const vec* sour
 	 * FROM T1
 	 * ORDER BY 1
 	 */
-	vec* select_exprs = select->schema->expressions;
 
 	/* We also want to try and match fields by SELECT alias:
 	 * SELECT foo bar
@@ -85,6 +84,8 @@ int order_preresolve_expressions(order* self, fqlselect* select, const vec* sour
 	 *
 	 * These were never mapped. Preflight does this.
 	 */
+
+	vec* select_exprs = select->schema->expressions;
 	schema_preflight(select->schema);
 	multimap* select_map = select->schema->expr_map;
 
@@ -92,7 +93,7 @@ int order_preresolve_expressions(order* self, fqlselect* select, const vec* sour
 	for (; it != vec_end(&self->expressions); ++it) {
 		expression** result = NULL;
 		switch ((*it)->expr) {
-		case EXPR_GROUPING:
+		case EXPR_REFERENCE:
 		case EXPR_FULL_RECORD:
 		case EXPR_COLUMN_NAME: {
 			vec* exprs = multimap_get(select_map, (*it)->alias.data);
@@ -133,7 +134,7 @@ int order_preresolve_expressions(order* self, fqlselect* select, const vec* sour
 			continue;
 		}
 		(*it)->index = (*result)->index;
-		(*it)->expr = EXPR_GROUPING;
+		(*it)->expr = EXPR_REFERENCE;
 	}
 
 	return FQL_GOOD;

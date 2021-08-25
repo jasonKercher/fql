@@ -16,6 +16,7 @@ enum expr_type {
 	EXPR_SWITCH_CASE,
 	EXPR_ROW_NUMBER,  /* keyword __ROWNUM */
 	EXPR_FULL_RECORD, /* keyword __REC */
+	EXPR_REFERENCE,
 	EXPR_GROUPING,
 	EXPR_CONST,
 	EXPR_NULL,

@@ -1013,11 +1013,11 @@ int _group_validation(query* query, vec* exprs, vec* op_exprs, bool loose_groups
 	vec_construct_(&key, stringview);
 	expression** it = vec_begin(exprs);
 	for (; it != vec_end(exprs); ++it) {
-		if ((*it)->expr == EXPR_GROUPING) {
+		if ((*it)->expr == EXPR_REFERENCE) {
 			expression** matched = vec_at(op_exprs, (*it)->index);
 			(*it)->src_idx = 0;
-			(*it)->data_source = (*matched)->data_source;
 			(*it)->field_type = (*matched)->field_type;
+			(*it)->data_source = *matched;
 			continue;
 		}
 		if (_op_find_group(expr_map, *it, &key, loose_groups)) {
@@ -1225,11 +1225,11 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 		 */
 		expression** it = vec_begin(order_exprs);
 		for (; it != vec_end(order_exprs); ++it) {
-			if ((*it)->expr != EXPR_GROUPING) {
+			if ((*it)->expr != EXPR_REFERENCE) {
 				continue;
 			}
 			expression** matched = vec_at(op_exprs, (*it)->index);
-			(*it)->data_source = (*matched)->data_source;
+			(*it)->data_source = *matched;
 			(*it)->field_type = (*matched)->field_type;
 		}
 	}
