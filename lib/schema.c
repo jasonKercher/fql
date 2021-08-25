@@ -1218,7 +1218,15 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 			                       op_exprs,
 			                       fql->props.loose_groups));
 		}
-	} else if (aquery->orderby) {
+	}
+
+	if (!vec_empty(aquery->unions)) {
+		try_(_resolve_unions(fql, aquery));
+	}
+
+	try_(op_writer_init(aquery, fql));
+
+	if (aquery->groupby == NULL && aquery->orderby) {
 		/* This is normally handled in _op_find_group,
 		 * but if there is no GROUP BY, just assign the
 		 * pre-resolved ORDER BY expressions.
@@ -1234,11 +1242,7 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 		}
 	}
 
-	if (!vec_empty(aquery->unions)) {
-		try_(_resolve_unions(fql, aquery));
-	}
 
-	try_(op_writer_init(aquery, fql));
 	schema_preflight(op_schema);
 
 	return FQL_GOOD;
