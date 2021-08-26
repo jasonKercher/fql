@@ -148,6 +148,27 @@ void process_disable(process* self)
 	}
 	fifo_set_open(self->fifo_in[0], false);
 	self->is_enabled = false;
+
+	/* Now we want to recycle any records sitting
+	 * in the input fifos
+	 */
+
+	if (self->fifo_in[0] != NULL && self->fifo_in[0] != self->root_ref) {
+		fifo* in = self->fifo_in[0];
+		node** it = fifo_begin(in);
+		for (; it != fifo_end(in); it = fifo_iter(in)) {
+			fifo_add(self->root_ref, it);
+		}
+		fifo_update(in);
+	}
+	if (self->fifo_in[1] != NULL && self->fifo_in[1] != self->root_ref) {
+		fifo* in = self->fifo_in[1];
+		node** it = fifo_begin(in);
+		for (; it != fifo_end(in); it = fifo_iter(in)) {
+			fifo_add(self->root_ref, it);
+		}
+		fifo_update(in);
+	}
 }
 
 void process_enable(process* self)
