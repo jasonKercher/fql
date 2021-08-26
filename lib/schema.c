@@ -499,6 +499,10 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 	}
 
 	if (table->source_type == SOURCE_SUBQUERY) {
+		if (string_empty(&table->alias)) {
+			fputs("subquery sources require an alias\n", stderr);
+			return FQL_FAIL;
+		}
 		try_(_resolve_query(fql, table->subquery, IO_UNDEFINED));
 		fqlselect* select = table->subquery->op;
 		table->schema = select->schema;
