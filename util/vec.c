@@ -178,16 +178,26 @@ void vec_insert_at(vec* self, size_t idx, const void* data, size_t len)
 {
 	void* pos = vec_at(self, idx);
 	const void* back = (const char*)data + ((len - 1) * self->_elem_size);
-	vec_insert(self, pos, data, back);
+	vec_insert_iter(self, pos, data, back);
 }
 
-void vec_insert(vec* self, void* pos, const void* begin, const void* back)
+void vec_insert(vec* self, void* pos, const void* begin, size_t len)
+{
+	if (len == 0) {
+		return;
+	}
+	const void* back = begin + self->_elem_size * (len - 1);
+	vec_insert_iter(self, pos, begin, back);
+}
+
+void vec_insert_iter(vec* self, void* pos, const void* begin, const void* back)
 {
 	size_t idx = vec_get_idx_(self, pos);
 	size_t iter_size = vec_iter_size_(self, begin, back);
 	size_t iter_bytes = self->_elem_size * iter_size;
-	size_t move_bytes = self->_elem_size * (self->_alloc - idx - iter_size);
+
 	vec_resize(self, self->size + iter_size);
+	size_t move_bytes = self->_elem_size * (self->_alloc - idx - iter_size);
 
 	pos = vec_at(self, idx);
 
@@ -197,17 +207,26 @@ void vec_insert(vec* self, void* pos, const void* begin, const void* back)
 
 void vec_erase_one(vec* self, void* elem)
 {
-	vec_erase(self, elem, elem);
+	vec_erase_iter(self, elem, elem);
 }
 
 void vec_erase_at(vec* self, size_t index, size_t len)
 {
 	void* begin = vec_at(self, index);
 	void* back = vec_at(self, index + len - 1);
-	vec_erase(self, begin, back);
+	vec_erase_iter(self, begin, back);
 }
 
-void vec_erase(vec* self, void* begin, void* back)
+void vec_erase(vec* self, void* begin, size_t len)
+{
+	if (len == 0) {
+		return;
+	}
+	void* back = begin + self->_elem_size * (len - 1);
+	vec_erase_iter(self, begin, back);
+}
+
+void vec_erase_iter(vec* self, void* begin, void* back)
 {
 	size_t bytes = (const char*)vec_at(self, self->_alloc - 1) - (const char*)back;
 	self->size -= vec_iter_size_(self, begin, back);

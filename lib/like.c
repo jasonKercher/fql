@@ -96,7 +96,10 @@ void _extract_character_ranges(vec* ranges, string* likebuf)
 			if (open <= 0) {
 				end[0] = '\\';
 				char end_bracket = ']';
-				vec_insert(likebuf, end + 1, &end_bracket, &end_bracket);
+				vec_insert_iter(likebuf,
+				                end + 1,
+				                &end_bracket,
+				                &end_bracket);
 				search = end + 3;
 			} else {
 				open--;

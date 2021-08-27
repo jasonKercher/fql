@@ -219,24 +219,18 @@ const char* string_find_replace_one_limited(string* s,
 		return vec_end(s);
 	}
 
-	int idx = pos - begin;
-
-	unsigned i = 0;
-	for (; i < oldlen && i < newlen; ++i) {
-		begin[idx++] = newstr[i];
+	/* unnecessary optimization */
+	if (newlen == oldlen) {
+		memcpy(pos, newstr, newlen);
+		return pos + newlen;
 	}
 
-	if (oldlen == newlen) {
-		return begin + idx;
-	}
+	size_t pos_idx = vec_get_idx_(s, pos);
 
-	if (i < oldlen) {
-		vec_erase_at(s, idx + begin_idx, oldlen - i);
-	} else { /* j < newstr.len */
-		vec_insert_at(s, idx + begin_idx, &newstr[i], newlen - i);
-	}
+	vec_erase(s, pos, oldlen);
+	vec_insert(s, pos, newstr, newlen);
 
-	return begin + newlen;
+	return vec_at(s, pos_idx + newlen);
 }
 
 
@@ -291,24 +285,18 @@ const char* string_find_replace_one_nocase_limited(string* s,
 		return vec_end(s);
 	}
 
-	int idx = pos - begin;
+	size_t pos_idx = vec_get_idx_(s, pos);
 
-	unsigned i = 0;
-	for (; i < oldlen && i < newlen; ++i) {
-		begin[idx++] = newstr[i];
+	/* unnecessary optimization */
+	if (newlen == oldlen) {
+		memcpy(pos, newstr, newlen);
+		return pos + newlen;
 	}
 
-	if (oldlen == newlen) {
-		return begin + idx;
-	}
+	vec_erase(s, pos, oldlen);
+	vec_insert(s, pos, newstr, newlen);
 
-	if (i < oldlen) {
-		vec_erase_at(s, idx + begin_idx, oldlen - i);
-	} else { /* j < newstr.len */
-		vec_insert_at(s, idx + begin_idx, &newstr[i], newlen - i);
-	}
-
-	return begin + newlen;
+	return vec_at(s, pos_idx + newlen);
 }
 
 
