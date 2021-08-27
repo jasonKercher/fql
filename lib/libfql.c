@@ -5,6 +5,7 @@
 #include "order.h"
 #include "schema.h"
 #include "reader.h"
+#include "fqlsig.h"
 #include "process.h"
 #include "fqlplan.h"
 #include "fqlselect.h"
@@ -12,6 +13,8 @@
 #include "util/util.h"
 #include "util/node.h"
 #include "antlr/antlr.h"
+
+#include <signal.h>
 
 #define PIPE_FACTOR_DEFAULT 16
 
@@ -59,6 +62,9 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	                false,               /* _out_delim_set */
 	        }                            /* props */
 	};
+
+	fqlsig_init_sig();
+
 	return fql;
 }
 
@@ -309,15 +315,19 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 			}
 		}
 
+		fqlsig_tmp_removeall();
+
 		query_free(query);
 		node_dequeue(&fql->query_list);
 		if (ret == FQL_FAIL) {
 			break;
 		}
 	}
+
 	if (ret != FQL_GOOD) {
 		node_free_func(&fql->query_list, query_free);
 	}
+
 	return ret;
 }
 

@@ -36,6 +36,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c 	    \
 	                                            \
 	record.h record.c                           \
 	field.h field.c                             \
+	fqlsig.h fqlsig.c                           \
 	misc.h
 
 libfql_la_CFLAGS = -Wextra -Wall -Wno-unused-parameter

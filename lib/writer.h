@@ -16,6 +16,7 @@ int libcsv_write_record(struct writer*, struct vec*, struct node*, FILE*);
 
 struct fixedwriter {
 	FILE* file;
+	node* tempnode;
 	string tempname;
 	string filename;
 	string buffer;

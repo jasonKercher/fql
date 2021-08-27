@@ -1,9 +1,10 @@
 #include "writer.h"
 #include <sys/stat.h>
+#include "fql.h"
+#include "misc.h"
+#include "fqlsig.h"
 #include "record.h"
 #include "expression.h"
-#include "misc.h"
-#include "fql.h"
 
 /**
  * For the most part, I'm just mimicing libcsv writer functions.
@@ -11,11 +12,11 @@
  * are done, we rename.  Anything goes wrong, and we delete the
  * temp file. The user should never lose a file if we error out.
  */
-
 fixedwriter* fixedwriter_construct(fixedwriter* self)
 {
 	*self = (fixedwriter) {
 	        stdout, /* file */
+	        NULL,   /* tempnode */
 	        {0},    /* tempname */
 	        {0},    /* filename */
 	        {0},    /* buffer */
@@ -62,7 +63,7 @@ int _mktmp(fixedwriter* self)
 		return FQL_FAIL;
 	}
 
-	//self->tmp_node = tmp_push(&self->tempname);
+	self->tempnode = fqlsig_tmp_push(&self->tempname);
 	return FQL_GOOD;
 }
 bool _isopen(fixedwriter* self)
@@ -107,8 +108,8 @@ int fixedwriter_close(fixedwriter* self)
 		perror(file);
 		return FQL_FAIL;
 	}
-	//tmp_remove_node(self->tmp_node);
-	//self->tmp_node = NULL;
+	fqlsig_tmp_remove_node(self->tempnode);
+	self->tempnode = NULL;
 	return FQL_GOOD;
 }
 

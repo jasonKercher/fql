@@ -757,7 +757,7 @@ int fql_update(process* proc)
 	for (; rg_iter != fifo_end(in_false) && update->rows_affected < update->top_count;
 	     rg_iter = fifo_iter(in_false)) {
 		record* rec = record_at(*rg_iter, update->table_idx);
-		if (rec->rec_idx < update->update_idx) {
+		if (rec->rec_idx > update->update_idx) {
 			break;
 		}
 		ret = try_(update->noupdate__(update, *rg_iter));
@@ -770,7 +770,7 @@ int fql_update(process* proc)
 	for (; rg_iter != fifo_end(in_true) && update->rows_affected < update->top_count;
 	     rg_iter = fifo_iter(in_true)) {
 		record* rec = record_at(*rg_iter, update->table_idx);
-		if (rec->rec_idx < update->update_idx) {
+		if (rec->rec_idx > update->update_idx) {
 			break;
 		}
 		ret = try_(update->update__(update, *rg_iter));

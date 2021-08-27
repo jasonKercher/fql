@@ -146,7 +146,7 @@ am_libfql_la_OBJECTS = libfql_la-libfql.lo libfql_la-query.lo \
 	libfql_la-libcsvread.lo libfql_la-fixedread.lo \
 	libfql_la-subquery.lo libfql_la-writer.lo \
 	libfql_la-libcsvwrite.lo libfql_la-fixedwrite.lo \
-	libfql_la-record.lo libfql_la-field.lo
+	libfql_la-record.lo libfql_la-field.lo libfql_la-fqlsig.lo
 libfql_la_OBJECTS = $(am_libfql_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -181,6 +181,7 @@ am__depfiles_remade = ./$(DEPDIR)/libfql_la-aggregate.Plo \
 	./$(DEPDIR)/libfql_la-fqlplan.Plo \
 	./$(DEPDIR)/libfql_la-fqlprocesses.Plo \
 	./$(DEPDIR)/libfql_la-fqlselect.Plo \
+	./$(DEPDIR)/libfql_la-fqlsig.Plo \
 	./$(DEPDIR)/libfql_la-fqlupdate.Plo \
 	./$(DEPDIR)/libfql_la-function.Plo \
 	./$(DEPDIR)/libfql_la-group.Plo \
@@ -455,6 +456,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c 	    \
 	                                            \
 	record.h record.c                           \
 	field.h field.c                             \
+	fqlsig.h fqlsig.c                           \
 	misc.h
 
 libfql_la_CFLAGS = -Wextra -Wall -Wno-unused-parameter
@@ -549,6 +551,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fqlplan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fqlprocesses.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fqlselect.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fqlsig.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-fqlupdate.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-function.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libfql_la-group.Plo@am__quote@ # am--include-marker
@@ -822,6 +825,13 @@ libfql_la-field.lo: field.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-field.lo `test -f 'field.c' || echo '$(srcdir)/'`field.c
 
+libfql_la-fqlsig.lo: fqlsig.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -MT libfql_la-fqlsig.lo -MD -MP -MF $(DEPDIR)/libfql_la-fqlsig.Tpo -c -o libfql_la-fqlsig.lo `test -f 'fqlsig.c' || echo '$(srcdir)/'`fqlsig.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libfql_la-fqlsig.Tpo $(DEPDIR)/libfql_la-fqlsig.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='fqlsig.c' object='libfql_la-fqlsig.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libfql_la_CFLAGS) $(CFLAGS) -c -o libfql_la-fqlsig.lo `test -f 'fqlsig.c' || echo '$(srcdir)/'`fqlsig.c
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -1061,6 +1071,7 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/libfql_la-fqlplan.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlprocesses.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlselect.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-fqlsig.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlupdate.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-function.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-group.Plo
@@ -1138,6 +1149,7 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/libfql_la-fqlplan.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlprocesses.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlselect.Plo
+	-rm -f ./$(DEPDIR)/libfql_la-fqlsig.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-fqlupdate.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-function.Plo
 	-rm -f ./$(DEPDIR)/libfql_la-group.Plo

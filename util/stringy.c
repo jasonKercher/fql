@@ -75,13 +75,10 @@ string* string_construct_take(string* s, char* src)
 	 * but it is >= len + 1
 	 */
 	*s = (string) {
-	        src /* data */
-	        ,
-	        len /* size */
-	        ,
-	        len + 1 /* _alloc */
-	        ,
-	        1 /* _elem_s */
+	        src,     /* data */
+	        len,     /* size */
+	        len + 1, /* _alloc */
+	        1,       /* _elem_s */
 	};
 
 	return s;

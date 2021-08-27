@@ -83,26 +83,13 @@ void _print_field(struct fql_field* field);
 
 static int use_api = 0;
 
-void clean_up(int x) { }
-
 int main(int argc, char** argv)
 {
-	///* Set up signal handling */
-	//struct sigaction act;
-	///* sigset_t and sa_flags only set to shut up valgrind */
-	//sigset_t vg_shutup = { {0} };
-	//act.sa_mask = vg_shutup;
-	//act.sa_flags = 0;
-	//act.sa_handler = clean_up;
-	//sigaction(SIGINT, &act, NULL);
-	//sigaction(SIGQUIT, &act, NULL);
-	//sigaction(SIGTERM, &act, NULL);
-	//sigaction(SIGHUP, &act, NULL);
-
 	int c = 0;
 
 	struct fql_handle* handle = fql_new();
 	if (handle == NULL) {
+		fputs("fql failed to initialize\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
