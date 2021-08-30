@@ -25,6 +25,7 @@ struct table {
 	size_t idx;
 	enum source_type source_type;
 	enum join_type join_type;
+	bool must_reopen;
 };
 typedef struct table table;
 

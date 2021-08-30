@@ -23,17 +23,18 @@ table* table_construct(table* self,
                        enum join_type join_type)
 {
 	*self = (table) {
-	        {0},                  /* name */
-	        {0},                  /* alias */
-	        NULL,                 /* subquery */
-	        new_(reader),         /* reader */
-	        new_(schema),         /* schema */
-	        NULL,                 /* condition */
-	        NULL,                 /* read_proc */
-	        NULL,                 /* join_data */
-	        idx,                  /* idx */
-	        SOURCE_TABLE,         /* source_type */
-	        join_type             /* join_type */
+	        {0},          /* name */
+	        {0},          /* alias */
+	        NULL,         /* subquery */
+	        new_(reader), /* reader */
+	        new_(schema), /* schema */
+	        NULL,         /* condition */
+	        NULL,         /* read_proc */
+	        NULL,         /* join_data */
+	        idx,          /* idx */
+	        SOURCE_TABLE, /* source_type */
+	        join_type,    /* join_type */
+	        false,        /* must_reopen */
 	};
 
 	string_construct_take(&self->name, name);

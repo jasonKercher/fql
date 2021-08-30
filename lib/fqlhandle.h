@@ -10,6 +10,7 @@ extern "C" {
 struct fql_handle {
 	struct node* query_list;
 	struct vec* api_vec;
+	struct hashmap* schema_map;
 	char* query_str;
 	struct {
 		struct vec* schema_path; /* actually string but extern "C" so... */

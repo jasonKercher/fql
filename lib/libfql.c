@@ -1,4 +1,5 @@
 #include "fql.h"
+#include "hashmap.h"
 #include "misc.h"
 #include "query.h"
 #include "table.h"
@@ -33,9 +34,10 @@ struct fql_handle* fql_new()
 struct fql_handle* fql_construct(struct fql_handle* fql)
 {
 	*fql = (struct fql_handle) {
-	        NULL,                          /* queries */
-	        new_t_(vec, struct fql_field), /* api_vec */
-	        NULL,                          /* query_str */
+	        NULL,                                                     /* queries */
+	        new_t_(vec, struct fql_field),                            /* api_vec */
+	        new_(hashmap, sizeof(schema*), 16, HASHMAP_PROP_DEFAULT), /* schema_map */
+	        NULL,                                                     /* query_str */
 	        {
 	                new_(string),        /* schema_path */
 	                new_(string),        /* schema */

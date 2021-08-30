@@ -109,7 +109,10 @@ void schema_preflight(schema* self)
 	expression** expr = vec_begin(self->expressions);
 	for (; i < self->expressions->size; ++i) {
 		expr[i]->index = i; /* this is occasionally redundant */
-		multimap_set(self->expr_map, expr[i]->alias.data, &expr[i]);
+		multimap_nset(self->expr_map,
+		              expr[i]->alias.data,
+		              &expr[i],
+		              expr[i]->alias.size);
 	}
 
 	if (!self->delim_is_set) {
@@ -224,13 +227,31 @@ fuzzy_file_match_success:
 	return FQL_GOOD;
 }
 
-int _resolve_file(table* table, int strictness)
+int _resolve_file(table* table, struct fql_handle* fql)
 {
-	if (table->source_type == SOURCE_SUBQUERY) {
+	try_(_fuzzy_resolve_file(&table->reader->file_name,
+	                         &table->name,
+	                         fql->props.strictness));
+
+	char absolute_path[PATH_MAX];
+	if (!realpath(string_c_str(&table->reader->file_name), absolute_path)) {
+		perror(string_c_str(&table->reader->file_name));
+		return FQL_FAIL;
+	}
+
+	schema** match = hashmap_get(fql->schema_map, absolute_path);
+	if (match == NULL) {
+		//hashmap_set(fql->schema_map, absolute_path, table->schema);
 		return FQL_GOOD;
 	}
 
-	return _fuzzy_resolve_file(&table->reader->file_name, &table->name, strictness);
+	/* TODO: Copy schema */
+	//table->must_reopen = true;
+
+	fputs("File collision detected. This is not yet supported.\n", stderr);
+	return FQL_FAIL;
+
+	//return FQL_GOOD;
 }
 
 void schema_assign_header(table* table, record* rec, int src_idx)
@@ -515,7 +536,7 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		 * list of field names.
 		 * This is the "default schema".
 		 */
-		try_(_resolve_file(table, fql->props.strictness));
+		try_(_resolve_file(table, fql));
 		if (self->is_default) {
 			table->reader->type = IO_LIBCSV;
 		}
@@ -1249,8 +1270,40 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 		}
 	}
 
-
 	schema_preflight(op_schema);
+
+	/* If this query will be writing changes to the file system,
+	 * we need to be aware of this when parsing future queries.
+	 * These are mapped as absolute paths. First check that the
+	 * file exists first. If it doesn't, create it now so that
+	 * realpath works.
+	 */
+	if (aquery->into_table_name != NULL) {
+		if (access(aquery->into_table_name, F_OK) != 0) {
+			/* NOTE: that we may enter this block for a number of
+			 *       reasons other than "file doesn't exist." We
+			 *       rely on fopen errors to catch other errors.
+			 */
+			FILE* place_holder = fopen(aquery->into_table_name, "w");
+			if (place_holder == NULL) {
+				perror(aquery->into_table_name);
+				return FQL_FAIL;
+			}
+
+			if (fclose(place_holder) == EOF) {
+				perror(aquery->into_table_name);
+				return FQL_FAIL;
+			}
+		}
+
+		char absolute_path[PATH_MAX];
+		if (!realpath(aquery->into_table_name, absolute_path)) {
+			perror(aquery->into_table_name);
+			return FQL_FAIL;
+		}
+
+		hashmap_set(fql->schema_map, absolute_path, &op_schema);
+	}
 
 	return FQL_GOOD;
 }
