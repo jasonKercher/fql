@@ -252,12 +252,15 @@ int _resolve_file(struct fql_handle* fql, query* query, table* table)
 		expression* new_expr =
 		        new_(expression, EXPR_COLUMN_NAME, (*it)->alias.data, "");
 		new_expr->field_type = (*it)->field_type;
+		new_expr->location = (*it)->location;
+		new_expr->width = (*it)->width;
 		schema_add_expression(table->schema, new_expr, table->idx);
 	}
 
 	table->must_reopen = true;
 	table->schema->is_preresolved = true;
-	table->schema->io_type = (*match)->write_io_type;
+	table->reader->type = (*match)->write_io_type;
+	table->schema->is_default = (*match)->is_default;
 	return FQL_GOOD;
 }
 

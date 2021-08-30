@@ -102,6 +102,8 @@ int reader_reopen(reader* self)
 		return FQL_FAIL;
 	}
 
+	self->reset__(self);
+
 	return FQL_GOOD;
 }
 
