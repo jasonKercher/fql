@@ -38,6 +38,7 @@ schema* schema_construct(schema* self)
 	        IO_UNDEFINED,             /* write_io_type */
 	        true,                     /* is_default */
 	        false,                    /* delim_is_set */
+	        false,                    /* is_preresolved */
 	};
 
 	return self;
@@ -224,7 +225,7 @@ fuzzy_file_match_success:
 	string_destroy(&basedata);
 	string_destroy(&dirdata);
 	string_destroy(&file_noext);
-	return FQL_GOOD;
+	return 1;
 }
 
 int _resolve_file(struct fql_handle* fql, query* query, table* table)
@@ -244,13 +245,25 @@ int _resolve_file(struct fql_handle* fql, query* query, table* table)
 		return FQL_GOOD;
 	}
 
+	vec* src_vec = (*match)->expressions;
+
+	expression** it = vec_begin(src_vec);
+	for (; it != vec_end(src_vec); ++it) {
+		expression* new_expr =
+		        new_(expression, EXPR_COLUMN_NAME, (*it)->alias.data, "");
+		new_expr->field_type = (*it)->field_type;
+		schema_add_expression(table->schema, new_expr, table->idx);
+	}
+
 	table->must_reopen = true;
+	table->schema->is_preresolved = true;
+	table->schema->io_type = (*match)->write_io_type;
 	return FQL_GOOD;
 }
 
 void schema_assign_header(table* table, record* rec, int src_idx)
 {
-	int i = 0;
+	//int i = 0;
 	stringview* it = vec_begin(&rec->fields);
 	for (; it != vec_end(&rec->fields); ++it) {
 		string expr_str;
@@ -259,9 +272,9 @@ void schema_assign_header(table* table, record* rec, int src_idx)
 		        new_(expression, EXPR_COLUMN_NAME, expr_str.data, "");
 		schema_add_expression(table->schema, new_expr, src_idx);
 
-		new_expr->index = i++;
+		//new_expr->index = i++;
 		//new_expr->table = table;
-		new_expr->src_idx = table->idx;
+		//new_expr->src_idx = table->idx;
 		new_expr->field_type = FIELD_STRING;
 
 		string_destroy(&expr_str);
@@ -428,7 +441,7 @@ int _parse_schema_file(table* table, struct fql_handle* fql, int src_idx)
 			continue;
 		}
 
-		/* we ARE defining a expression */
+		/* we ARE defining an expression */
 		int count = _add_expression_from_rec(table,
 		                                     expression_rec,
 		                                     &running_offset,
@@ -522,14 +535,9 @@ int _resolve_source(struct fql_handle* fql, query* query, table* table, int src_
 		fqlselect* select = table->subquery->op;
 		table->schema = select->schema;
 		self = table->schema;
+		self->is_preresolved = true;
 		table->reader->type = IO_SUBQUERY;
 	} else {
-		/* if we've made it this far, we want to try
-		 * and determine schema by reading the top
-		 * row of the file and assume a delimited
-		 * list of field names.
-		 * This is the "default schema".
-		 */
 		try_(_resolve_file(fql, query, table));
 		if (self->is_default) {
 			table->reader->type = IO_LIBCSV;
@@ -547,7 +555,6 @@ int _resolve_source(struct fql_handle* fql, query* query, table* table, int src_
 	default:;
 	}
 
-	//node* rg = new_(node, 0);
 	node rg = {0};
 	rg.data = new_(record, 0);
 	table->reader->max_idx = INT_MAX;
@@ -557,10 +564,20 @@ int _resolve_source(struct fql_handle* fql, query* query, table* table, int src_
 	/* redundant if default schema */
 	table->reader->reset__(table->reader);
 
+	/* if we've made it this far, we want to try
+	 * and determine schema by reading the top
+	 * row of the file and assume a delimited
+	 * list of field names.
+	 * This is the "default schema".
+	 */
 	record* rec = rg.data;
 
 	if (self->is_default) {
-		schema_assign_header(table, rec, src_idx);
+		if (self->is_preresolved) {
+			schema_preflight(self);
+		} else {
+			schema_assign_header(table, rec, src_idx);
+		}
 	} else {
 		/* TODO: in the future, maybe just set these SQL NULL */
 		unsigned newsize = (rec->fields.size) ? rec->fields.size : 1;

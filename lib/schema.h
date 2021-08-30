@@ -19,6 +19,7 @@ struct schema {
 	enum io write_io_type;
 	bool is_default;
 	bool delim_is_set;
+	bool is_preresolved;
 };
 typedef struct schema schema;
 
