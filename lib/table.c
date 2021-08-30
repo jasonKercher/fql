@@ -128,12 +128,13 @@ int table_resolve_schema(table* self, struct fql_handle* fql)
 hashjoin* hashjoin_construct(hashjoin* join)
 {
 	*join = (struct hashjoin) {
-	        NULL,       /* hash_data */
-	        NULL,       /* left_expr */
-	        NULL,       /* right_expr */
-	        NULL,       /* recs */
-	        SIDE_RIGHT, /* state */
-	        0           /* rec_idx */
+	        NULL,            /* hash_data */
+	        NULL,            /* left_expr */
+	        NULL,            /* right_expr */
+	        NULL,            /* recs */
+	        SIDE_RIGHT,      /* state */
+	        FIELD_UNDEFINED, /* comp_type */
+	        0                /* rec_idx */
 	};
 
 	return join;

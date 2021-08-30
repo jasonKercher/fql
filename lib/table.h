@@ -2,6 +2,7 @@
 #define TABLE_H
 
 #include "query.h"
+#include "field.h"
 #include "schema.h"
 #include "fqlimits.h"
 #include "util/hashmap.h"
@@ -48,6 +49,7 @@ struct hashjoin {
 	struct expression* right_expr;
 	struct vec* recs;
 	enum join_side state;
+	enum field_type comp_type;
 	unsigned rec_idx;
 };
 typedef struct hashjoin hashjoin;

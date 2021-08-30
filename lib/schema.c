@@ -773,6 +773,9 @@ void _resolve_join_conditions(table* right_table, int right_idx)
 					hj->right_expr = (*it)->expr[1];
 					hj->left_expr = (*it)->expr[0];
 				}
+				hj->comp_type =
+				        field_determine_type(hj->right_expr->field_type,
+				                             hj->left_expr->field_type);
 				right_table->join_data = hj;
 				break;
 			}

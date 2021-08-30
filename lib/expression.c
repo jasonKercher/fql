@@ -21,7 +21,6 @@ expression* expression_construct(expression* self,
 {
 	*self = (expression) {
 	        expr, /* expr */
-	        //NULL,            /* table */
 	        NULL,            /* data_source */
 	        NULL,            /* subquery */
 	        NULL,            /* rownum_ref */
