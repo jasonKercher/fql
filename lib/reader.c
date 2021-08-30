@@ -68,7 +68,7 @@ int reader_assign(reader* self, table* table, struct fql_handle* fql)
 		self->get_record__ = &fixedreader_get_record;
 		self->get_record_at__ = &fixedreader_get_record_at;
 		self->reset__ = &fixedreader_reset;
-		fail_if_(fixedreader_open(self, string_c_str(&self->file_name)));
+		try_(fixedreader_open(self, string_c_str(&self->file_name)));
 		return FQL_GOOD;
 	case IO_SUBQUERY:
 		self->reader_data = new_(subquery, table->subquery->op);
@@ -82,6 +82,27 @@ int reader_assign(reader* self, table* table, struct fql_handle* fql)
 		fprintf(stderr, "%d: unknown read_type\n", self->type);
 		return FQL_FAIL;
 	}
+}
+
+int reader_reopen(reader* self)
+{
+	switch (self->type) {
+	case IO_FIXED:
+		try_(fixedreader_reopen(self));
+		break;
+	case IO_LIBCSV:
+		csv_reader_close(self->reader_data);
+		if (csv_reader_open_mmap(self->reader_data,
+		                         string_c_str(&self->file_name))) {
+			csv_perror();
+			return FQL_FAIL;
+		}
+		break;
+	default:
+		return FQL_FAIL;
+	}
+
+	return FQL_GOOD;
 }
 
 size_t reader_get_file_size(reader* self)

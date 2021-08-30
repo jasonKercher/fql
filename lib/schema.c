@@ -227,7 +227,7 @@ fuzzy_file_match_success:
 	return FQL_GOOD;
 }
 
-int _resolve_file(table* table, struct fql_handle* fql)
+int _resolve_file(struct fql_handle* fql, query* query, table* table)
 {
 	try_(_fuzzy_resolve_file(&table->reader->file_name,
 	                         &table->name,
@@ -241,17 +241,11 @@ int _resolve_file(table* table, struct fql_handle* fql)
 
 	schema** match = hashmap_get(fql->schema_map, absolute_path);
 	if (match == NULL) {
-		//hashmap_set(fql->schema_map, absolute_path, table->schema);
 		return FQL_GOOD;
 	}
 
-	/* TODO: Copy schema */
-	//table->must_reopen = true;
-
-	fputs("File collision detected. This is not yet supported.\n", stderr);
-	return FQL_FAIL;
-
-	//return FQL_GOOD;
+	table->must_reopen = true;
+	return FQL_GOOD;
 }
 
 void schema_assign_header(table* table, record* rec, int src_idx)
@@ -492,7 +486,7 @@ int _load_by_name(table* table, struct fql_handle* fql, int src_idx)
 	return FQL_GOOD;
 }
 
-int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
+int _resolve_source(struct fql_handle* fql, query* query, table* table, int src_idx)
 {
 	schema* self = table->schema;
 	if (self && !vec_empty(self->expressions)) {
@@ -536,7 +530,7 @@ int _resolve_source(struct fql_handle* fql, table* table, int src_idx)
 		 * list of field names.
 		 * This is the "default schema".
 		 */
-		try_(_resolve_file(table, fql));
+		try_(_resolve_file(fql, query, table));
 		if (self->is_default) {
 			table->reader->type = IO_LIBCSV;
 		}
@@ -1153,7 +1147,7 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	vec* sources = aquery->sources;
 	for (; i < sources->size; ++i) {
 		table* table = vec_at(aquery->sources, i);
-		try_(_resolve_source(fql, table, i));
+		try_(_resolve_source(fql, aquery, table, i));
 		try_(table_resolve_schema(table, fql));
 
 		if (union_io != IO_UNDEFINED) {
@@ -1314,7 +1308,7 @@ int schema_resolve(struct fql_handle* fql)
 	for (; query_node; query_node = query_node->next) {
 		query* query = query_node->data;
 
-		if (fql->props._out_delim_set) {
+		if (fql->_out_delim_set) {
 			op_set_delim(query->op, fql->props.out_delim);
 		}
 

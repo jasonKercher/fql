@@ -65,7 +65,8 @@ table* table_construct_subquery(table* self,
 	        NULL,            /* join_data */
 	        idx,             /* idx */
 	        SOURCE_SUBQUERY, /* source_type */
-	        join_type        /* join_type */
+	        join_type,       /* join_type */
+	        false,           /* must_reopen */
 	};
 
 	string_construct(&self->name);

@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "fql.h"
+#include "misc.h"
 #include "expression.h"
 
 fixedreader* fixedreader_construct(fixedreader* self, vec* expressions)
@@ -12,7 +13,7 @@ fixedreader* fixedreader_construct(fixedreader* self, vec* expressions)
 	        NULL,        /* iter */
 	        expressions, /* expressions */
 	        0,           /* file_size */
-	        0,           /* fd */
+	        -1,          /* fd */
 	};
 	return self;
 }
@@ -20,6 +21,10 @@ fixedreader* fixedreader_construct(fixedreader* self, vec* expressions)
 void fixedreader_free(void* generic_data)
 {
 	fixedreader* self = generic_data;
+	if (self->fd != -1) {
+		munmap(self->mmap, self->file_size);
+		close(self->fd);
+	}
 	free_(self);
 }
 
@@ -53,6 +58,16 @@ int fixedreader_open(reader* reader, const char* file_name)
 	madvise(self->mmap, sb.st_size, MADV_SEQUENTIAL);
 	self->iter = self->mmap;
 	return FQL_GOOD;
+}
+
+int fixedreader_reopen(reader* reader)
+{
+	fixedreader* self = reader->reader_data;
+	if (self->mmap != NULL) {
+		munmap(self->mmap, self->file_size);
+		close(self->fd);
+	}
+	return fixedreader_open(reader, string_c_str(&reader->file_name));
 }
 
 int fixedreader_get_record(reader* reader, node* rg)

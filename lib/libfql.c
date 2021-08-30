@@ -38,6 +38,7 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	        new_t_(vec, struct fql_field),                            /* api_vec */
 	        new_(hashmap, sizeof(schema*), 16, HASHMAP_PROP_DEFAULT), /* schema_map */
 	        NULL,                                                     /* query_str */
+	        false, /* _out_delim_set */
 	        {
 	                new_(string),        /* schema_path */
 	                new_(string),        /* schema */
@@ -61,7 +62,6 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	                false,               /* char_as_byte */
 	                false,               /* loose_groups */
 	                false,               /* stable */
-	                false,               /* _out_delim_set */
 	        }                            /* props */
 	};
 
@@ -72,6 +72,7 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 
 void fql_free(struct fql_handle* fql)
 {
+	delete_(hashmap, fql->schema_map);
 	delete_(string, fql->props.schema_path);
 	delete_(string, fql->props.schema);
 	delete_if_exists_(vec, fql->api_vec);
@@ -209,7 +210,7 @@ void fql_set_in_delim(struct fql_handle* fql, const char* delim)
 void fql_set_out_delim(struct fql_handle* fql, const char* delim)
 {
 	strncpy_(fql->props.out_delim, delim, DELIM_LEN_MAX);
-	fql->props._out_delim_set = true;
+	fql->_out_delim_set = true;
 }
 
 void fql_set_record_terminator(struct fql_handle* fql, const char* term)
@@ -328,6 +329,13 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 
 	if (ret != FQL_GOOD) {
 		node_free_func(&fql->query_list, query_free);
+	}
+
+	/* TODO: hashmap_clear() */
+	if (node_count(fql->query_list) == 0) {
+		delete_(hashmap, fql->schema_map);
+		fql->schema_map =
+		        new_(hashmap, sizeof(schema*), 16, HASHMAP_PROP_DEFAULT);
 	}
 
 	return ret;

@@ -23,7 +23,7 @@ enum op {
 	OP_UPDATE,
 };
 
-void op_preop(struct fql_handle*);
+int op_preop(struct fql_handle*);
 struct vec* op_get_expressions(enum op*);
 struct vec* op_get_additional_exprs(enum op*);
 struct schema* op_get_schema(enum op*);

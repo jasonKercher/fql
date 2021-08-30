@@ -39,6 +39,7 @@ void reader_destroy(struct reader*);
 
 int reader_assign(struct reader*, struct table*, struct fql_handle*);
 size_t reader_get_file_size(struct reader*);
+int reader_reopen(struct reader*);
 
 
 /* Below structures extend struct reader
@@ -72,6 +73,7 @@ typedef struct fixedreader fixedreader;
 struct fixedreader* fixedreader_construct(struct fixedreader*, struct vec* expressions);
 void fixedreader_free(void*);
 int fixedreader_open(struct reader*, const char* file_name);
+int fixedreader_reopen(struct reader*);
 int fixedreader_get_record(struct reader*, struct node*);
 int fixedreader_get_record_at(struct reader*, struct node*, const char*);
 int fixedreader_reset(struct reader*);

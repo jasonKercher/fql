@@ -12,6 +12,7 @@ struct fql_handle {
 	struct vec* api_vec;
 	struct hashmap* schema_map;
 	char* query_str;
+	bool _out_delim_set;
 	struct {
 		struct vec* schema_path; /* actually string but extern "C" so... */
 		struct vec* schema;      /* Same thing... this is also a string */
@@ -35,7 +36,6 @@ struct fql_handle {
 		bool char_as_byte;
 		bool loose_groups;
 		bool stable;
-		bool _out_delim_set;
 	} props;
 };
 

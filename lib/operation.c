@@ -171,10 +171,17 @@ void op_set_top_count(enum op* self, size_t top_count)
 	}
 }
 
-void op_preop(struct fql_handle* fql)
+int op_preop(struct fql_handle* fql)
 {
 	query* query = fql->query_list->data;
 	enum op* type = query->op;
+
+	table* it = vec_begin(query->sources);
+	for (; it != vec_end(query->sources); ++it) {
+		if (it->must_reopen) {
+			try_(reader_reopen(it->reader));
+		}
+	}
 
 	switch (*type) {
 	case OP_SELECT:
@@ -188,6 +195,8 @@ void op_preop(struct fql_handle* fql)
 		break;
 	default:;
 	}
+
+	return FQL_GOOD;
 }
 
 writer* op_get_writer(enum op* self)
