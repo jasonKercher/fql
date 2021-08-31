@@ -379,14 +379,10 @@ int expression_get_int(long* ret, expression* self, node* rg)
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
 		record* rec = record_at(rg, src_expr->src_idx);
-		if (rec == NULL) {
-			*ret = 0;
-			return FQL_NULL;
-		}
-		if (rec->fields.size <= src_expr->index) {
+		if (rec == NULL || rec->fields.size <= src_expr->index) {
 			string_clear(&self->buf);
 			*ret = 0;
-			return FQL_GOOD;
+			return FQL_NULL;
 		}
 		stringview* sv = vec_at(&rec->fields, src_expr->index);
 		string_copy_from_stringview(&self->buf, sv);
@@ -446,14 +442,10 @@ int expression_get_float(double* ret, expression* self, node* rg)
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
 		record* rec = record_at(rg, src_expr->src_idx);
-		if (rec == NULL) {
-			return -0;
-			return FQL_NULL;
-		}
-		if (rec->fields.size <= src_expr->index) {
+		if (rec == NULL || rec->fields.size <= src_expr->index) {
 			string_clear(&self->buf);
 			*ret = 0;
-			return FQL_GOOD;
+			return FQL_NULL;
 		}
 		stringview* sv = vec_at(&rec->fields, src_expr->index);
 		string_copy_from_stringview(&self->buf, sv);
@@ -540,15 +532,11 @@ int expression_get_stringview(stringview* ret, expression* self, node* rg)
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
 		record* rec = record_at(rg, src_expr->src_idx);
-		if (rec == NULL) {
-			ret->len = 0;
-			return FQL_NULL;
-		}
-		if (rec->fields.size <= src_expr->index) {
+		if (rec == NULL || rec->fields.size <= src_expr->index) {
 			string_clear(&self->buf);
 			ret->data = self->buf.data;
 			ret->len = 0;
-			return FQL_GOOD;
+			return FQL_NULL;
 		}
 		stringview* sv = vec_at(&rec->fields, src_expr->index);
 		ret->data = sv->data;

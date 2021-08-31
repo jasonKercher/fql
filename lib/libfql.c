@@ -62,6 +62,7 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	                false,               /* char_as_byte */
 	                false,               /* loose_groups */
 	                false,               /* stable */
+	                false,               /* allow_stdin */
 	        }                            /* props */
 	};
 
@@ -281,6 +282,11 @@ void fql_set_crlf_output(struct fql_handle* fql, int crlf)
 		fql->props.rec_terminator[0] = '\n';
 		fql->props.rec_terminator[1] = '\0';
 	}
+}
+
+void fql_set_allow_stdin(struct fql_handle* fql, int allow_stdin)
+{
+	fql->props.allow_stdin = allow_stdin;
 }
 
 /**

@@ -230,6 +230,10 @@ fuzzy_file_match_success:
 
 int _resolve_file(struct fql_handle* fql, query* query, table* table)
 {
+	if (table->is_stdin) {
+		return FQL_GOOD;
+	}
+
 	try_(_fuzzy_resolve_file(&table->reader->file_name,
 	                         &table->name,
 	                         fql->props.strictness));
@@ -489,9 +493,8 @@ int _load_by_name(table* table, struct fql_handle* fql, int src_idx)
 	               string_c_str(self->schema_path),
 	               string_c_str(self->name));
 
-	if (_fuzzy_resolve_file(self->schema_path,
-	                        full_path_temp,
-	                        fql->props.strictness)) {
+	if (_fuzzy_resolve_file(self->schema_path, full_path_temp, fql->props.strictness)
+	    == FQL_FAIL) {
 		delete_(string, full_path_temp);
 		return FQL_FAIL;
 	}
@@ -555,6 +558,10 @@ int _resolve_source(struct fql_handle* fql, query* query, table* table, int src_
 	case IO_SUBQUERY:
 		return FQL_GOOD;
 	case IO_LIBCSV:
+		if (!self->is_default) {
+			schema_preflight(self);
+			return FQL_GOOD;
+		}
 	default:;
 	}
 
@@ -564,8 +571,9 @@ int _resolve_source(struct fql_handle* fql, query* query, table* table, int src_
 	table->reader->get_record__(table->reader, &rg);
 	table->reader->max_idx = 0;
 
-	/* redundant if default schema */
-	table->reader->reset__(table->reader);
+	if (!table->is_stdin) {
+		table->reader->reset__(table->reader);
+	}
 
 	/* if we've made it this far, we want to try
 	 * and determine schema by reading the top
@@ -575,23 +583,10 @@ int _resolve_source(struct fql_handle* fql, query* query, table* table, int src_
 	 */
 	record* rec = rg.data;
 
-	if (self->is_default) {
-		if (self->is_preresolved) {
-			schema_preflight(self);
-		} else {
-			schema_assign_header(table, rec, src_idx);
-		}
-	} else {
-		/* TODO: in the future, maybe just set these SQL NULL */
-		unsigned newsize = (rec->fields.size) ? rec->fields.size : 1;
-		if (newsize < self->expressions->size) {
-			expression** it = vec_at(self->expressions, newsize);
-			for (; it != vec_end(self->expressions); ++it) {
-				delete_(expression, *it);
-			}
-			vec_resize(self->expressions, newsize);
-		}
+	if (self->is_preresolved) {
 		schema_preflight(self);
+	} else {
+		schema_assign_header(table, rec, src_idx);
 	}
 	delete_(record, rg.data);
 

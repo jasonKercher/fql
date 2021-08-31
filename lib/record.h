@@ -15,6 +15,7 @@ struct record {
 	struct vec* subquery_strings;
 	struct vec* group_strings;
 	struct csv_record* libcsv_rec;
+	char* _cpy;
 	stringview rec_ref;
 	size_t offset;
 	int src_idx;

@@ -13,9 +13,10 @@ extern "C" {
  * is our interface to c++
  */
 struct vec;
-struct logicgroup;
 struct group;
+struct logicgroup;
 struct expression;
+struct fql_handle;
 typedef struct vec string;
 
 enum sql_type {
@@ -177,7 +178,7 @@ int query_add_constant(struct query*, const char*, int);
 int query_add_null_expression(struct query*);
 int query_add_expression(struct query*, char*, const char* table);
 int query_add_asterisk(struct query*, const char* table);
-void query_add_source(struct query*, struct node**, const char*);
+void query_add_source(struct query*, struct fql_handle*, struct node**, const char*);
 void query_add_subquery_source(struct query*, struct query*, const char*);
 void query_apply_table_alias(struct query*, const char*);
 void query_apply_expression_alias(struct query*, const char*);
@@ -196,7 +197,7 @@ void query_assign_in_subquery(struct query*, struct query*);
 void query_add_subquery_const(struct query*, struct query*);
 void query_set_order_desc(struct query*);
 int query_apply_data_type(struct query*, const char*);
-void query_exit_non_select_op(struct query*);
+void query_exit_non_select_op(struct query*, struct fql_handle*);
 
 int query_enter_union(struct query*, struct query*);
 int query_exit_union(struct query*, struct query*);

@@ -22,7 +22,9 @@ int libcsv_get_record(reader* self, node* rg)
 		rec->libcsv_rec = csv_record_new();
 	}
 
-	rec->offset = csv->offset;
+	if (!self->random_access_file) {
+		rec->offset = csv->offset;
+	}
 
 	int ret = csv_get_record_to(csv, rec->libcsv_rec, self->max_idx + 1);
 	switch (ret) {
@@ -48,6 +50,13 @@ int libcsv_get_record(reader* self, node* rg)
 
 	rec->rec_ref.data = rec->libcsv_rec->rec;
 	rec->rec_ref.len = rec->libcsv_rec->reclen;
+
+	if (self->random_access_file) {
+		rec->offset = ftello(self->random_access_file);
+		fwrite(rec->rec_ref.data, 1, rec->rec_ref.len, self->random_access_file);
+		fputc('\n', self->random_access_file);
+	}
+
 	rec->rec_idx = self->rec_id++;
 
 	return FQL_GOOD;
@@ -85,4 +94,17 @@ int libcsv_reset(reader* self)
 	csv_record_free(libcsv_rec);
 
 	return ret;
+}
+
+int libcsv_reset_stdin(reader* self)
+{
+	reader_stop_file_backed_input(self);
+	self->reset__ = libcsv_reset;
+	if (csv_reader_open_mmap(self->reader_data,
+	                         string_c_str(self->random_access_filename))) {
+		csv_perror();
+		return FQL_FAIL;
+	}
+
+	return FQL_GOOD;
 }

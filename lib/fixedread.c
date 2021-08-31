@@ -6,9 +6,9 @@
 #include "misc.h"
 #include "expression.h"
 
-fixedreader* fixedreader_construct(fixedreader* self, vec* expressions)
+fixedread* fixedread_construct(fixedread* self, vec* expressions)
 {
-	*self = (fixedreader) {
+	*self = (fixedread) {
 	        NULL,        /* mmap */
 	        expressions, /* expressions */
 	        0,           /* offset */
@@ -18,9 +18,9 @@ fixedreader* fixedreader_construct(fixedreader* self, vec* expressions)
 	return self;
 }
 
-void fixedreader_free(void* generic_data)
+void fixedread_free(void* generic_data)
 {
-	fixedreader* self = generic_data;
+	fixedread* self = generic_data;
 	if (self->fd != -1) {
 		munmap(self->mmap, self->file_size);
 		close(self->fd);
@@ -28,9 +28,9 @@ void fixedreader_free(void* generic_data)
 	free_(self);
 }
 
-int fixedreader_open(reader* reader, const char* file_name)
+int fixedread_open(reader* reader, const char* file_name)
 {
-	fixedreader* self = reader->reader_data;
+	fixedread* self = reader->reader_data;
 	self->fd = open(file_name, O_RDONLY);
 	if (self->fd == -1) {
 		perror(file_name);
@@ -60,37 +60,77 @@ int fixedreader_open(reader* reader, const char* file_name)
 	return FQL_GOOD;
 }
 
-int fixedreader_reopen(reader* reader)
+int fixedread_reopen(reader* reader)
 {
-	fixedreader* self = reader->reader_data;
+	fixedread* self = reader->reader_data;
 	if (self->mmap != NULL) {
 		munmap(self->mmap, self->file_size);
 		close(self->fd);
 	}
-	return fixedreader_open(reader, string_c_str(&reader->file_name));
+	return fixedread_open(reader, string_c_str(&reader->file_name));
 }
 
-int fixedreader_get_record(reader* reader, node* rg)
+int fixedread_get_record_stdin(reader* reader, node* rg)
 {
-	if (reader->eof) {
-		return EOF;
+	record* rec = rg->data;
+	fixedread* self = reader->reader_data;
+
+	record_resize(rec, self->expressions->size);
+
+	if (rec->_cpy == NULL) {
+		/* No NULL terminator added, but + 1 for fun... */
+		rec->_cpy = malloc_(reader->reclen);
 	}
 
-	fixedreader* self = reader->reader_data;
+	size_t bytes_read = fread(rec->_cpy, 1, reader->reclen, stdin);
+	if (bytes_read != reader->reclen) {
+		if (feof(stdin)) {
+			reader->eof = true;
+			return EOF;
+		}
+	}
+
+	unsigned i = 0;
+	for (; i < self->expressions->size; ++i) {
+		expression** col = vec_at(self->expressions, i);
+		stringview sv = {(char*)rec->_cpy + (*col)->location, (*col)->width};
+		vec_set(&rec->fields, i, &sv);
+	}
+
+	rec->rec_ref.data = rec->_cpy;
+	rec->rec_ref.len = reader->reclen; /* redundant */
+	rec->rec_idx = reader->rec_id++;
+
+	if (reader->random_access_file) {
+		fwrite(rec->rec_ref.data,
+		       1,
+		       rec->rec_ref.len,
+		       reader->random_access_file);
+	}
+
+	rec->offset = self->offset;
+	self->offset += reader->reclen;
+
+	return FQL_GOOD;
+}
+
+int fixedread_get_record(reader* reader, node* rg)
+{
+	fixedread* self = reader->reader_data;
 	if (self->offset + reader->reclen > self->file_size) {
 		reader->eof = true;
 		return EOF;
 	}
 
-	int ret = fixedreader_get_record_at(reader, rg, self->offset);
+	int ret = fixedread_get_record_at(reader, rg, self->offset);
 	self->offset += reader->reclen;
 	return ret;
 }
 
-int fixedreader_get_record_at(reader* reader, node* rg, size_t offset)
+int fixedread_get_record_at(reader* reader, node* rg, size_t offset)
 {
 	record* rec = rg->data;
-	fixedreader* self = reader->reader_data;
+	fixedread* self = reader->reader_data;
 	const char* begin = self->mmap + offset;
 
 	record_resize(rec, self->expressions->size);
@@ -110,11 +150,20 @@ int fixedreader_get_record_at(reader* reader, node* rg, size_t offset)
 	return FQL_GOOD;
 }
 
-int fixedreader_reset(reader* reader)
+int fixedread_reset(reader* reader)
 {
-	fixedreader* self = reader->reader_data;
+	fixedread* self = reader->reader_data;
 	reader->eof = false;
 	reader->rec_id = 0;
 	self->offset = reader->reclen * reader->skip_rows;
 	return FQL_GOOD;
+}
+
+int fixedread_reset_stdin(reader* reader)
+{
+	reader_stop_file_backed_input(reader);
+	reader->reset__ = &fixedread_reset;
+	reader->get_record__ = &fixedread_get_record;
+
+	return fixedread_open(reader, string_c_str(reader->random_access_filename));
 }

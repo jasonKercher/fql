@@ -10,6 +10,7 @@ record* record_construct(record* self, unsigned idx)
 	        NULL, /* subquery_strings */
 	        NULL, /* group_strings */
 	        NULL, /* libcsv_rec */
+	        NULL, /* _cpy */
 	        {0},  /* rec_ref */
 	        0,    /* offset */
 	        -1,   /* src_idx */
@@ -45,6 +46,8 @@ void record_destroy(record* self)
 	if (self->libcsv_rec != NULL) {
 		csv_record_free(self->libcsv_rec);
 	}
+
+	free_if_exists_(self->_cpy);
 
 	vec_destroy(&self->fields);
 }

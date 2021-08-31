@@ -26,6 +26,7 @@ struct table {
 	enum source_type source_type;
 	enum join_type join_type;
 	bool must_reopen;
+	bool is_stdin;
 };
 typedef struct table table;
 

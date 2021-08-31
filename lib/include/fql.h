@@ -205,6 +205,13 @@ void fql_set_crlf_output(struct fql_handle* fql, int);
 int fql_set_in_std(struct fql_handle* fql, const char*);
 int fql_set_out_std(struct fql_handle* fql, const char*);
 
+/**
+ * Determine if we are allowed to use the internal
+ * table "__STDIN." The user should be in control of
+ * stdin so by default, __STDIN, is not available.
+ */
+void fql_set_allow_stdin(struct fql_handle* fql, int);
+
 /** executing **/
 
 /**

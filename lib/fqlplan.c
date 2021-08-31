@@ -264,7 +264,6 @@ process* _new_join_proc(enum join_type type, const char* algorithm, plan* self)
 	return new_(process, buffer, self);
 }
 
-/* lol */
 int _from(plan* self, query* query, struct fql_handle* fql)
 {
 	if (query->sources->size == 0) {
@@ -319,13 +318,16 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 		if (is_hash_join) {
 			join_proc = _new_join_proc(table_iter->join_type, "hash", self);
 			join_proc->action__ = &fql_hash_join;
-			table_hash_join_init(table_iter);
 			join_proc->has_second_input = true;
+
+			if (table_iter->is_stdin) {
+				reader_start_file_backed_input(table_iter->reader);
+			}
+			table_hash_join_init(table_iter);
 
 			process* read_proc = NULL;
 			dnode* read_node = NULL;
 
-			/* TODO: subquery on right side of join */
 			//if (table_iter->source_type == SOURCE_TABLE) {
 			string_sprintf(&plan_msg,
 			               "%s: %s",

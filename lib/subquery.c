@@ -26,8 +26,6 @@ void subquery_free(void* generic)
  */
 int subquery_get_record(reader* reader, node* rg)
 {
-	//record* dest = node_rec_at(rg, 0);
-
 	subquery* self = reader->reader_data;
 	vec* expressions = self->select->_selection_exprs;
 

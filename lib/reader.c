@@ -6,6 +6,7 @@
 #include "misc.h"
 #include "query.h"
 #include "table.h"
+#include "fqlsig.h"
 #include "process.h"
 #include "fqlselect.h"
 #include "util/stringview.h"
@@ -16,6 +17,9 @@ reader* reader_construct(reader* self)
 	*self = (reader) {
 	        IO_UNDEFINED, /* type */
 	        NULL,         /* reader_data */
+	        NULL,         /* random_access_file */
+	        NULL,         /* random_access_filename */
+	        NULL,         /* random_access_tempnode */
 	        NULL,         /* get_record__ */
 	        NULL,         /* get_record_at__ */
 	        NULL,         /* free__ */
@@ -39,6 +43,8 @@ void reader_destroy(reader* self)
 	if (self->free__) {
 		self->free__(self->reader_data);
 	}
+
+	if (self->random_access_filename != NULL) { }
 }
 
 int reader_assign(reader* self, table* table, struct fql_handle* fql)
@@ -54,6 +60,10 @@ int reader_assign(reader* self, table* table, struct fql_handle* fql)
 		self->free__ = &libcsv_free;
 		self->get_record__ = &libcsv_get_record;
 		self->get_record_at__ = &libcsv_get_record_at;
+		if (table->is_stdin) {
+			self->reset__ = &libcsv_reset_stdin;
+			return FQL_GOOD;
+		}
 		self->reset__ = &libcsv_reset;
 		if (csv_reader_open_mmap(self->reader_data,
 		                         string_c_str(&self->file_name))) {
@@ -63,12 +73,17 @@ int reader_assign(reader* self, table* table, struct fql_handle* fql)
 		return FQL_GOOD;
 	}
 	case IO_FIXED:
-		self->reader_data = new_(fixedreader, table->schema->expressions);
-		self->free__ = &fixedreader_free;
-		self->get_record__ = &fixedreader_get_record;
-		self->get_record_at__ = &fixedreader_get_record_at;
-		self->reset__ = &fixedreader_reset;
-		try_(fixedreader_open(self, string_c_str(&self->file_name)));
+		self->reader_data = new_(fixedread, table->schema->expressions);
+		self->free__ = &fixedread_free;
+		self->get_record_at__ = &fixedread_get_record_at;
+		if (table->is_stdin) {
+			self->get_record__ = &fixedread_get_record_stdin;
+			self->reset__ = &fixedread_reset_stdin;
+			return FQL_GOOD;
+		}
+		self->get_record__ = &fixedread_get_record;
+		self->reset__ = &fixedread_reset;
+		try_(fixedread_open(self, string_c_str(&self->file_name)));
 		return FQL_GOOD;
 	case IO_SUBQUERY:
 		self->reader_data = new_(subquery, table->subquery->op);
@@ -88,7 +103,7 @@ int reader_reopen(reader* self)
 {
 	switch (self->type) {
 	case IO_FIXED:
-		try_(fixedreader_reopen(self));
+		try_(fixedread_reopen(self));
 		break;
 	case IO_LIBCSV:
 		csv_reader_close(self->reader_data);
@@ -113,10 +128,38 @@ size_t reader_get_file_size(reader* self)
 	case IO_LIBCSV:
 		return csv_reader_get_file_size(self->reader_data);
 	case IO_FIXED:
-		return ((fixedreader*)(self->reader_data))->file_size;
+		return ((fixedread*)(self->reader_data))->file_size;
 	case IO_SUBQUERY:
 	default:
 		return 0;
 	}
 }
 
+int reader_mktmp(reader* self)
+{
+	string_strcpy(self->random_access_filename, "./read_XXXXXX");
+
+	int fd = mkstemp(self->random_access_filename->data);
+	self->random_access_file = fdopen(fd, "w");
+	if (!self->random_access_file) {
+		perror(string_c_str(self->random_access_filename));
+		return FQL_FAIL;
+	}
+
+	self->random_access_tempnode = fqlsig_tmp_push(self->random_access_filename);
+	return FQL_GOOD;
+}
+
+int reader_start_file_backed_input(reader* self)
+{
+	self->random_access_filename = new_(string);
+	try_(reader_mktmp(self));
+	return FQL_GOOD;
+}
+
+int reader_stop_file_backed_input(reader* self)
+{
+	fclose(self->random_access_file);
+	self->random_access_file = NULL;
+	return FQL_GOOD;
+}

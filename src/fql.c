@@ -82,6 +82,7 @@ void _parse_args(struct fql_handle* handle, int c);
 void _print_field(struct fql_field* field);
 
 static int use_api = 0;
+static char* query_str = NULL;
 
 int main(int argc, char** argv)
 {
@@ -97,6 +98,7 @@ int main(int argc, char** argv)
 	        /* long option, (no) arg, 0, short option */
 	        {"api", no_argument, 0, 'A'},
 	        {"char-as-byte", no_argument, 0, 'b'},
+	        {"command", required_argument, 0, 'c'},
 	        {"cartesian", no_argument, 0, 'C'},
 	        {"dry-run", no_argument, 0, 'd'},
 	        {"no-header", no_argument, 0, 'h'},
@@ -124,7 +126,7 @@ int main(int argc, char** argv)
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
 
-	char opt_string[64] = "AbCdhHLoOpP:s:S:tvW";
+	char opt_string[64] = "Abc:CdhHLoOpP:s:S:tvW";
 	char* opt_iter = opt_string + strlen(opt_string) - 1;
 	*++opt_iter = HELP_ARG;
 	*++opt_iter = IN_STD_ARG;
@@ -140,7 +142,6 @@ int main(int argc, char** argv)
 	*++opt_iter = STRICT_ARG;
 	*++opt_iter = '\0';
 
-
 	while ((c = getopt_long(argc, argv, opt_string, long_options, &option_index))
 	       != -1)
 		_parse_args(handle, c);
@@ -148,7 +149,6 @@ int main(int argc, char** argv)
 	size_t max_size = 1024;
 	size_t running_size = 0;
 	FILE* query_file = stdin;
-	char* query = NULL;
 	char* line = NULL;
 
 	/* Query is the contents of the file */
@@ -158,23 +158,25 @@ int main(int argc, char** argv)
 			perror(argv[optind]);
 			return EXIT_FAILURE;
 		}
+		fql_set_allow_stdin(handle, 1);
 	}
-	if (optind != argc || !isatty(STDIN_FILENO)) {
+
+	if (query_str == NULL && (optind != argc || !isatty(STDIN_FILENO))) {
 		/* Found this neat trick on stack overflow for reading entire
 		 * contents of file into a buffer...
 		 */
-		ssize_t bytes = getdelim(&query, &max_size, '\0', query_file);
+		ssize_t bytes = getdelim(&query_str, &max_size, '\0', query_file);
 		if (bytes == -1) {
 			return EXIT_FAILURE;
 		}
-	} else {
+	} else if (query_str == NULL) {
 		/* Get input from readline if we are interactive */
-		query = malloc(max_size);
-		if (query == NULL) {
+		query_str = malloc(max_size);
+		if (query_str == NULL) {
 			perror("malloc");
 			return EXIT_FAILURE;
 		}
-		query[0] = '\0';
+		query_str[0] = '\0';
 
 		/* Send readline output to /dev/tty */
 		FILE* devtty = fopen("/dev/tty", "w");
@@ -184,45 +186,23 @@ int main(int argc, char** argv)
 			if (!line) {
 				break;
 			}
-			size_t n = snprintf(NULL, 0, "%s\n%s", query, line);
+			size_t n = snprintf(NULL, 0, "%s\n%s", query_str, line);
 			running_size += n;
 			if (running_size >= max_size) {
 				max_size *= 2;
-				query = realloc(query, max_size);
-				if (!query) {
+				query_str = realloc(query_str, max_size);
+				if (!query_str) {
 					perror("realloc");
 					return EXIT_FAILURE;
 				}
 			}
-			strcat(query, "\n");
-			strcat(query, line);
+			strcat(query_str, "\n");
+			strcat(query_str, line);
 		} while (1);
-		//} else {
-		//	query = malloc(max_size);
-		//	if (query == NULL) {
-		//		perror("malloc");
-		//		return EXIT_FAILURE;
-		//	}
-		//	query[0] = '\0';
-
-		//	size_t n = 0;
-		//	while (getline(&line, &n, stdin) != -1) {
-		//		running_size += n;
-		//		if (running_size >= max_size) {
-		//			max_size *= 2;
-		//			query = realloc(query, max_size);
-		//			if (!query) {
-		//				perror("realloc");
-		//				return EXIT_FAILURE;
-		//			}
-		//		}
-		//		strcat(query, line);
-		//	}
-		//}
 	}
 
 	if (!use_api) {
-		if (fql_exec(handle, query) == FQL_FAIL) {
+		if (fql_exec(handle, query_str) == FQL_FAIL) {
 			goto err_exit;
 		}
 		goto success_exit;
@@ -232,7 +212,7 @@ int main(int argc, char** argv)
 	 * This is more of a debugging tool and
 	 * likely way slower.
 	 */
-	int plan_count = fql_make_plans(handle, query);
+	int plan_count = fql_make_plans(handle, query_str);
 	if (plan_count == FQL_FAIL) {
 		goto err_exit;
 	}
@@ -261,7 +241,7 @@ success_exit:
 	if (line != NULL) {
 		free(line);
 	}
-	free(query);
+	free(query_str);
 	fql_free(handle);
 	return EXIT_SUCCESS;
 
@@ -269,7 +249,7 @@ err_exit:
 	if (line != NULL) {
 		free(line);
 	}
-	free(query);
+	free(query_str);
 	fql_free(handle);
 	return EXIT_FAILURE;
 }
@@ -282,6 +262,10 @@ void _parse_args(struct fql_handle* handle, int c)
 		break;
 	case 'b':
 		fql_set_char_as_byte(handle, 1);
+		break;
+	case 'c':
+		fql_set_allow_stdin(handle, 1);
+		query_str = strdup(optarg);
 		break;
 	case 'C':
 		fql_set_force_cartesian(handle, 1);

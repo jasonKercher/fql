@@ -8,14 +8,6 @@
 #include "antlr/antlr.h"
 #include "util/util.h"
 
-/**
- * When building a hash table for a file, we can
- * get a size estimate from the file and avoid
- * resizing the hashmap.  If it is a subquery, we
- * have no such information.
- */
-#define SUBQUERY_HASH_TABLE_INITIAL_SIZE 512
-
 table* table_construct(table* self,
                        char* name,
                        const char* alias,
@@ -35,6 +27,7 @@ table* table_construct(table* self,
 	        SOURCE_TABLE, /* source_type */
 	        join_type,    /* join_type */
 	        false,        /* must_reopen */
+	        false,        /* is_stdin */
 	};
 
 	string_construct_take(&self->name, name);
@@ -67,6 +60,7 @@ table* table_construct_subquery(table* self,
 	        SOURCE_SUBQUERY, /* source_type */
 	        join_type,       /* join_type */
 	        false,           /* must_reopen */
+	        false,           /* is_stdin */
 	};
 
 	string_construct(&self->name);
@@ -147,13 +141,11 @@ void hashjoin_destroy(struct hashjoin* join)
 	delete_if_exists_(multimap, join->hash_data);
 }
 
+/* The sole purpose of this function is to derive a good
+ * starting size for the hashmap that will avoid a resize.
+ */
 size_t _guess_row_count(table* self)
 {
-	/* just allow the hash map to grow with it */
-	if (self->subquery != NULL) {
-		return SUBQUERY_HASH_TABLE_INITIAL_SIZE / 2;
-	}
-
 	size_t guess = 0;
 	size_t total_length = 0;
 
@@ -199,7 +191,10 @@ size_t _guess_row_count(table* self)
 
 void table_hash_join_init(table* self)
 {
-	size_t guessed_row_count = _guess_row_count(self);
+	size_t guessed_row_count = HASH_JOIN_MIN_SIZE;
+	if (!self->is_stdin || self->subquery != NULL) {
+		guessed_row_count = _guess_row_count(self);
+	}
 
 	struct hashjoin* join = self->join_data;
 

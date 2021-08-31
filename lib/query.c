@@ -284,7 +284,10 @@ int query_add_null_expression(query* self)
  * object->schema->database->server
  * we ignore database and server for now.
  */
-void query_add_source(query* self, node** source_stack, const char* alias)
+void query_add_source(query* self,
+                      struct fql_handle* fql,
+                      node** source_stack,
+                      const char* alias)
 {
 	char* table_name = node_pop(source_stack);
 	char* schema_name = node_pop(source_stack);
@@ -296,6 +299,21 @@ void query_add_source(query* self, node** source_stack, const char* alias)
 	                alias,
 	                self->sources->size - 1,
 	                self->join);
+
+	if (schema_name != NULL) {
+		new_table->schema->name = string_take(schema_name);
+	}
+
+	char* unused = node_pop(source_stack);
+	while (unused != NULL) {
+		fprintf(stderr, "Ignored table qualification: `%s'\n", unused);
+		unused = node_pop(source_stack);
+	}
+
+	if (fql->props.allow_stdin && istring_eq(table_name, "__stdin")) {
+		new_table->is_stdin = true;
+		return; /* avoid op_match_table_alias */
+	}
 
 	/* Try to match the operation table.  For example:
 	 * 
@@ -312,9 +330,6 @@ void query_add_source(query* self, node** source_stack, const char* alias)
 	 */
 	op_match_table_alias(self->op, new_table);
 
-	if (schema_name != NULL) {
-		new_table->schema->name = string_take(schema_name);
-	}
 }
 
 void query_add_subquery_source(query* self, query* subquery, const char* alias)
@@ -563,7 +578,7 @@ int query_apply_data_type(query* self, const char* type_str)
 	return FQL_GOOD;
 }
 
-void query_exit_non_select_op(query* self)
+void query_exit_non_select_op(query* self, struct fql_handle* fql)
 {
 	if (!vec_empty(self->sources)) {
 		return;
@@ -574,7 +589,7 @@ void query_exit_non_select_op(query* self)
 
 	node* fake_source_stack = NULL;
 	node_push(&fake_source_stack, table_name_dup);
-	query_add_source(self, &fake_source_stack, table_name_dup);
+	query_add_source(self, fql, &fake_source_stack, table_name_dup);
 
 	/* query_add_source will free the stack and its data */
 }

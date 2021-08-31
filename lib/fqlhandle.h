@@ -36,6 +36,7 @@ struct fql_handle {
 		bool char_as_byte;
 		bool loose_groups;
 		bool stable;
+		bool allow_stdin;
 	} props;
 };
 

@@ -130,7 +130,7 @@ void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemCont
 void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx)
 {
 	if (_subquery == NULL) {
-		query_add_source(_query, &_source_stack, _table_alias);
+		query_add_source(_query, _fql, &_source_stack, _table_alias);
 	} else {
 	        query_add_subquery_source(_query, _subquery, _table_alias);
 	}
@@ -508,7 +508,7 @@ void ListenerInterface::enterDelete_statement(TSqlParser::Delete_statementContex
 
 void ListenerInterface::exitDelete_statement(TSqlParser::Delete_statementContext * ctx) 
 {
-	query_exit_non_select_op(_query);
+	query_exit_non_select_op(_query, _fql);
 }
 
 void ListenerInterface::enterDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) 
@@ -534,7 +534,7 @@ void ListenerInterface::enterUpdate_statement(TSqlParser::Update_statementContex
 void ListenerInterface::exitUpdate_statement(TSqlParser::Update_statementContext * ctx) 
 {
 	_tok_type = TOK_UNDEFINED;
-	query_exit_non_select_op(_query);
+	query_exit_non_select_op(_query, _fql);
 }
 
 void ListenerInterface::enterUpdate_elem(TSqlParser::Update_elemContext * ctx) { }

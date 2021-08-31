@@ -21,6 +21,9 @@ typedef int (*reset_fn)(struct reader*);
 struct reader {
 	enum io type;
 	void* reader_data;
+	FILE* random_access_file;
+	string* random_access_filename;
+	struct node* random_access_tempnode;
 	read_fn get_record__;
 	read_at_fn get_record_at__;
 	generic_data_fn free__;
@@ -38,8 +41,10 @@ struct reader* reader_construct(struct reader*);
 void reader_destroy(struct reader*);
 
 int reader_assign(struct reader*, struct table*, struct fql_handle*);
-size_t reader_get_file_size(struct reader*);
 int reader_reopen(struct reader*);
+size_t reader_get_file_size(struct reader*);
+int reader_start_file_backed_input(struct reader*);
+int reader_stop_file_backed_input(struct reader*);
 
 
 /* Below structures extend struct reader
@@ -60,23 +65,25 @@ int subquery_get_record_at(struct reader*, struct node*, size_t offset);
 int subquery_reset(struct reader*);
 
 
-/** fixedreader **/
-struct fixedreader {
+/** fixedread **/
+struct fixedread {
 	char* mmap;
 	struct vec* expressions;
 	size_t offset;
 	size_t file_size;
 	int fd;
 };
-typedef struct fixedreader fixedreader;
+typedef struct fixedread fixedread;
 
-struct fixedreader* fixedreader_construct(struct fixedreader*, struct vec* expressions);
-void fixedreader_free(void*);
-int fixedreader_open(struct reader*, const char* file_name);
-int fixedreader_reopen(struct reader*);
-int fixedreader_get_record(struct reader*, struct node*);
-int fixedreader_get_record_at(struct reader*, struct node*, size_t offset);
-int fixedreader_reset(struct reader*);
+struct fixedread* fixedread_construct(struct fixedread*, struct vec* expressions);
+void fixedread_free(void*);
+int fixedread_open(struct reader*, const char* file_name);
+int fixedread_reopen(struct reader*);
+int fixedread_get_record(struct reader*, struct node*);
+int fixedread_get_record_stdin(struct reader*, struct node*);
+int fixedread_get_record_at(struct reader*, struct node*, size_t offset);
+int fixedread_reset(struct reader*);
+int fixedread_reset_stdin(struct reader*);
 
 
 /* These functions are using libcsv's
@@ -87,6 +94,7 @@ typedef struct csv_reader csv_reader;
 void libcsv_free(void*);
 int libcsv_get_record(struct reader*, struct node*);
 int libcsv_get_record_at(struct reader*, struct node*, size_t offset);
+int libcsv_reset_stdin(struct reader*);
 int libcsv_reset(struct reader*);
 
 #endif /* READER_H */

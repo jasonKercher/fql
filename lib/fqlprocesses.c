@@ -231,6 +231,7 @@ int fql_hash_join(process* proc)
 	if (hj->state == SIDE_RIGHT && fifo_is_empty(in_right)) {
 		if (!in_right->is_open) {
 			hj->state = SIDE_LEFT;
+			table->reader->reset__(table->reader);
 			return 1;
 		} else {
 			return 0;
@@ -262,7 +263,7 @@ int fql_hash_join(process* proc)
 		record* right_rec = (*right_rg)->data;
 		right_rec->src_idx = proc->out_src_count - 1;
 		reader* reader = table->reader;
-		reader->get_record_at__(reader, *right_rg, offset);
+		try_(reader->get_record_at__(reader, *right_rg, offset));
 
 		/* If this is the last record match to the left
 		 * side, send the left side. Otherwise, insert
