@@ -1,3 +1,5 @@
+#include "csv.h"
+#include "expression.h"
 #include "reader.h"
 #include "fqlselect.h"
 #include "misc.h"
@@ -29,16 +31,23 @@ int subquery_get_record(reader* reader, node* rg)
 	subquery* self = reader->reader_data;
 	vec* expressions = self->select->_selection_exprs;
 
+	record* rec = rg->data;
 	record_clear_strings(&self->copy_data, self->copy_data.subquery_strings);
+
 	vec_clear(&self->copy_data.fields);
 
 	expression** it = vec_begin(expressions);
 	for (; it != vec_end(expressions); ++it) {
 		stringview* copy_sv = vec_add_one(&self->copy_data.fields);
-		int ret = try_(expression_get_stringview(copy_sv, *it, rg));
+		try_(expression_get_stringview(copy_sv, *it, rg));
 
-		if (ret == FQL_NULL) {
-			// TODO: do something about it...
+		if (reader->random_access_file) {
+			rec->offset = ftello(reader->random_access_file);
+			if (it != vec_begin(expressions)) {
+				fputc('|', reader->random_access_file);
+			}
+			struct csv_field field = {copy_sv->data, copy_sv->len};
+			csv_write_field(reader->subquery_writer, &field);
 		}
 
 		switch ((*it)->expr) {
@@ -77,8 +86,11 @@ int subquery_get_record(reader* reader, node* rg)
 		}
 	}
 
-	record* dest = rg->data;
-	record_swap(dest, &self->copy_data);
+	if (reader->random_access_file) {
+		fputc('\n', reader->random_access_file);
+	}
+
+	record_swap(rec, &self->copy_data);
 
 	return FQL_GOOD;
 }
@@ -93,4 +105,43 @@ int subquery_reset(reader* unused)
 {
 	fputs("cannot reset subquery\n", stderr);
 	return FQL_FAIL;
+}
+
+/* If we have been reset from a join, we will no longer
+ * need to read from the subquery. We are now 100% backed
+ * by a file, so convert reader to a libcsv reader.
+ */
+int subquery_reset_from_join(reader* reader)
+{
+	reader_stop_file_backed_input(reader);
+	csv_writer_free(reader->subquery_writer);
+
+	subquery* self = reader->reader_data;
+
+	csv_reader* csv = csv_reader_new();
+	csv_reader_set_delim(csv, "|");
+	reader->reader_data = csv;
+	reader->free__ = &libcsv_free;
+	reader->get_record__ = &libcsv_get_record;
+	reader->get_record_at__ = &libcsv_get_record_at;
+	reader->reset__ = &libcsv_reset;
+
+	if (csv_reader_open_mmap(csv, string_c_str(reader->random_access_filename))) {
+		csv_perror();
+		return FQL_FAIL;
+	}
+
+	subquery_free(self);
+
+	return FQL_GOOD;
+}
+
+int subquery_start_file_backed_input(reader* reader)
+{
+	reader_start_file_backed_input(reader);
+	reader->subquery_writer = csv_writer_new();
+	csv_writer_set_delim(reader->subquery_writer, "|");
+	reader->reset__ = &subquery_reset_from_join;
+	csv_writer_set_file(reader->subquery_writer, reader->random_access_file);
+	return FQL_GOOD;
 }

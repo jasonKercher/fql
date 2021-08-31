@@ -24,6 +24,7 @@ struct reader {
 	FILE* random_access_file;
 	string* random_access_filename;
 	struct node* random_access_tempnode;
+	struct csv_writer* subquery_writer;
 	read_fn get_record__;
 	read_at_fn get_record_at__;
 	generic_data_fn free__;
@@ -63,6 +64,8 @@ void subquery_free(void*);
 int subquery_get_record(struct reader*, struct node*);
 int subquery_get_record_at(struct reader*, struct node*, size_t offset);
 int subquery_reset(struct reader*);
+int subquery_reset_from_join(struct reader*);
+int subquery_start_file_backed_input(struct reader*);
 
 
 /** fixedread **/

@@ -305,13 +305,12 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 
 	for (++table_iter; table_iter != vec_end(query->sources); ++table_iter) {
 
-		/* TODO */
-		if (table_iter->source_type == SOURCE_SUBQUERY) {
-			fputs("currently cannot join with a"
-			      "sub-query on the right side\n",
-			      stderr);
-			return FQL_FAIL;
-		}
+		//if (table_iter->source_type == SOURCE_SUBQUERY) {
+		//	fputs("currently cannot join with a"
+		//	      "sub-query on the right side\n",
+		//	      stderr);
+		//	return FQL_FAIL;
+		//}
 
 		process* join_proc = NULL;
 		bool is_hash_join = (table_iter->condition->join_logic != NULL);
@@ -328,32 +327,29 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 			process* read_proc = NULL;
 			dnode* read_node = NULL;
 
-			//if (table_iter->source_type == SOURCE_TABLE) {
-			string_sprintf(&plan_msg,
-			               "%s: %s",
-			               table_iter->reader->file_name.data,
-			               "mmap read");
+			if (table_iter->source_type == SOURCE_TABLE) {
+				string_sprintf(&plan_msg,
+				               "%s: %s",
+				               table_iter->reader->file_name.data,
+				               "mmap read");
 
-			read_proc = new_(process, plan_msg.data, self);
+				read_proc = new_(process, plan_msg.data, self);
+				read_node = dgraph_add_data(self->processes, read_proc);
+				read_node->is_root = true;
+				read_proc->root_fifo = 0;
+			} else {
+				subquery_start_file_backed_input(table_iter->reader);
+				read_proc = new_(process, "subquery select (JOIN)", self);
+				read_node = dgraph_add_data(self->processes, read_proc);
+				try_(_build(table_iter->subquery, fql, read_node, false));
+				plan* subquery_plan = table_iter->subquery->plan;
+				dgraph_consume(self->processes, subquery_plan->processes);
+				subquery_plan->processes = NULL;
+			}
 			read_proc->action__ = &fql_read;
-			read_node = dgraph_add_data(self->processes, read_proc);
-			//} else {
-			//	read_proc = new_(process, "subquery select", self);
-			//	read_proc->action__ = &fql_read_subquery;
-			//	read_proc->root_fifo = 1;
-			//	read_node = dgraph_add_data(self->processes, read_proc);
-			//	read_node->is_root = true;
-			//	Plan* subquery_plan = _build(table_iter->subquery, read_node);
-			//	fail_if_ (subquery_plan == NULL);
-			//	read_proc->subquery_plan_id = subquery_plan->plan_id;
-			//	dgraph_consume(self->processes, subquery_plan->processes);
-			//	subquery_plan->processes = NULL;
-			//}
-			table_iter->read_proc = read_proc;
 			read_proc->proc_data = table_iter;
 			read_proc->is_secondary = true;
-			read_proc->root_fifo = 0;
-			read_node->is_root = true;
+			table_iter->read_proc = read_proc;
 
 			join_node = dgraph_add_data(self->processes, join_proc);
 			read_node->out[0] = join_node;
@@ -535,6 +531,8 @@ void _order(plan* self, query* query)
 
 /* In an effort to make building of the process graph easier
  * passive nodes are used as a sort of link between the steps.
+ * Here, we *attempt* to remove the passive nodes and bridge
+ * the gaps between.
  * TODO: Fix my shit design
  */
 void _clear_passive(plan* self)

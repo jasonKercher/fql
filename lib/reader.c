@@ -20,6 +20,7 @@ reader* reader_construct(reader* self)
 	        NULL,         /* random_access_file */
 	        NULL,         /* random_access_filename */
 	        NULL,         /* random_access_tempnode */
+	        NULL,         /* subquery_writer */
 	        NULL,         /* get_record__ */
 	        NULL,         /* get_record_at__ */
 	        NULL,         /* free__ */
@@ -91,7 +92,6 @@ int reader_assign(reader* self, table* table, struct fql_handle* fql)
 		self->get_record__ = &subquery_get_record;
 		self->get_record_at__ = &subquery_get_record_at;
 		self->reset__ = &subquery_reset;
-		// reader_data set in schema.c
 		return FQL_GOOD;
 	default:
 		fprintf(stderr, "%d: unknown read_type\n", self->type);
