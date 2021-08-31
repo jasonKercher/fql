@@ -36,13 +36,15 @@ int subquery_get_record(reader* reader, node* rg)
 
 	vec_clear(&self->copy_data.fields);
 
+	if (reader->random_access_file) {
+		rec->offset = ftello(reader->random_access_file);
+	}
 	expression** it = vec_begin(expressions);
 	for (; it != vec_end(expressions); ++it) {
 		stringview* copy_sv = vec_add_one(&self->copy_data.fields);
 		try_(expression_get_stringview(copy_sv, *it, rg));
 
 		if (reader->random_access_file) {
-			rec->offset = ftello(reader->random_access_file);
 			if (it != vec_begin(expressions)) {
 				fputc('|', reader->random_access_file);
 			}

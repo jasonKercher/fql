@@ -436,10 +436,15 @@ int _expand_asterisk(vec* expr_vec, table* table, unsigned src_idx, unsigned* ex
 		expression* new_expr =
 		        new_(expression, EXPR_COLUMN_NAME, (*it)->alias.data, "");
 		new_expr->data_source = *it;
-		new_expr->src_idx = src_idx;
 		new_expr->width = (*it)->width;
 		new_expr->location = (*it)->location;
 		new_expr->field_type = (*it)->field_type;
+
+		new_expr->src_idx = src_idx;
+		if (table->subquery != NULL) {
+			new_expr->subquery_src_idx = src_idx;
+		}
+
 		++(*expr_idx);
 		vec_insert_at(expr_vec, *expr_idx, &new_expr, 1);
 	}
