@@ -8,31 +8,31 @@
  * want to pass that up. A program relying on
  * user input has to check everything...
  */
-#define try_(condition_)                 \
-	({                               \
-		int ret_ = (condition_); \
-		if (ret_ == FQL_FAIL) {  \
-			return FQL_FAIL; \
-		}                        \
-		ret_;                    \
+#define try_(condition_)                  \
+	({                                \
+		long ret_ = (condition_); \
+		if (ret_ == FQL_FAIL) {   \
+			return FQL_FAIL;  \
+		}                         \
+		ret_;                     \
 	})
 
 #define try_deref_(condition_)                              \
 	({                                                  \
-		int ret_ = (condition_);                    \
+		long ret_ = (condition_);                   \
 		if (ret_ == FQL_FAIL || ret_ == FQL_NULL) { \
 			return ret_;                        \
 		}                                           \
 		ret_;                                       \
 	})
 
-#define fail_if_(condition_)             \
-	({                               \
-		int ret_ = (condition_); \
-		if (ret_) {              \
-			return FQL_FAIL; \
-		}                        \
-		ret_;                    \
+#define fail_if_(condition_)              \
+	({                                \
+		long ret_ = (condition_); \
+		if (ret_) {               \
+			return FQL_FAIL;  \
+		}                         \
+		ret_;                     \
 	})
 
 #define overflow_safe_add_i(n0_, n1_)                                    \

@@ -11,7 +11,6 @@ void libcsv_free(void* csv)
 
 int libcsv_get_record(reader* self, node* rg)
 {
-	//node_resize(rg, 1);
 	record* rec = rg->data;
 	struct csv_reader* csv = self->reader_data;
 
@@ -22,6 +21,8 @@ int libcsv_get_record(reader* self, node* rg)
 	if (rec->libcsv_rec == NULL) {
 		rec->libcsv_rec = csv_record_new();
 	}
+
+	rec->offset = csv->offset;
 
 	int ret = csv_get_record_to(csv, rec->libcsv_rec, self->max_idx + 1);
 	switch (ret) {
@@ -52,15 +53,12 @@ int libcsv_get_record(reader* self, node* rg)
 	return FQL_GOOD;
 }
 
-int libcsv_get_record_at(reader* self, node* rg, const char* location)
+int libcsv_get_record_at(reader* self, node* rg, size_t offset)
 {
-	/* TODO: location should be an index offset to support
-	 *       file backed temp data (thinking stdin or 
-	 *       subquery right joins).  Also, rec_id needs to 
-	 *       be determined in order to free operations from
-	 *       having to be applied to the left side only.
-	 */
-	try_(csv_reader_goto(self->reader_data, location));
+	if (csv_reader_seek(self->reader_data, offset) == CSV_FAIL) {
+		return FQL_FAIL;
+	}
+
 	self->eof = false;
 	return libcsv_get_record(self, rg);
 }

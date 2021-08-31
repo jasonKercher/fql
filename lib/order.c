@@ -297,7 +297,8 @@ int _order_select(order* self, process* proc)
 	struct _entry* it = vec_begin(&self->entries);
 	for (; it != vec_end(&self->entries) && proc->rows_affected < self->top_count;
 	     ++it) {
-		fprintf(self->out_file, "%.*s", it->len, &self->mmap[it->offset]);
+		//fprintf(self->out_file, "%.*s", it->len, &self->mmap[it->offset]);
+		fwrite(&self->mmap[it->offset], 1, it->len, self->out_file);
 		++proc->rows_affected;
 	}
 

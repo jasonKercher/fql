@@ -142,13 +142,11 @@ int _hash_join_right_side(process* proc, table* table, fifo* in_right)
 		switch (hj->comp_type) {
 		case FIELD_INT:
 			try_(expression_get_int(&int_hold, hj->right_expr, *rg_iter));
-			stringview_nset(&sv, (const char*)&int_hold, sizeof(int_hold));
+			stringview_nset(&sv, &int_hold, sizeof(int_hold));
 			break;
 		case FIELD_FLOAT:
 			try_(expression_get_float(&float_hold, hj->right_expr, *rg_iter));
-			stringview_nset(&sv,
-			                (const char*)&float_hold,
-			                sizeof(float_hold));
+			stringview_nset(&sv, &float_hold, sizeof(float_hold));
 			break;
 		case FIELD_STRING:
 			try_(expression_get_stringview(&sv, hj->right_expr, *rg_iter));
@@ -158,7 +156,7 @@ int _hash_join_right_side(process* proc, table* table, fifo* in_right)
 		}
 
 		record* rec = (*rg_iter)->data;
-		multimap_nset(hj->hash_data, sv.data, &rec->rec_ref.data, sv.len);
+		multimap_nset(hj->hash_data, sv.data, &rec->offset, sv.len);
 
 		_recycle(proc, rg_iter);
 	}
@@ -167,10 +165,7 @@ int _hash_join_right_side(process* proc, table* table, fifo* in_right)
 	return FQL_GOOD;
 }
 
-int _hash_join_left_side(process* proc,
-                         char** right_location,
-                         table* table,
-                         node* left_rg)
+long _hash_join_left_side(process* proc, table* table, node* left_rg)
 {
 	struct hashjoin* hj = table->join_data;
 
@@ -181,13 +176,11 @@ int _hash_join_left_side(process* proc,
 		switch (hj->comp_type) {
 		case FIELD_INT:
 			try_(expression_get_int(&int_hold, hj->left_expr, left_rg));
-			stringview_nset(&sv, (const char*)&int_hold, sizeof(int_hold));
+			stringview_nset(&sv, &int_hold, sizeof(int_hold));
 			break;
 		case FIELD_FLOAT:
 			try_(expression_get_float(&float_hold, hj->left_expr, left_rg));
-			stringview_nset(&sv,
-			                (const char*)&float_hold,
-			                sizeof(float_hold));
+			stringview_nset(&sv, &float_hold, sizeof(float_hold));
 			break;
 		case FIELD_STRING:
 			try_(expression_get_stringview(&sv, hj->left_expr, left_rg));
@@ -198,17 +191,17 @@ int _hash_join_left_side(process* proc,
 
 		hj->recs = multimap_nget(hj->hash_data, sv.data, sv.len);
 		if (hj->recs == NULL) {
-			return 0;
+			return -1;
 		}
 		hj->rec_idx = 0;
 	}
 
-	*right_location = *(char**)vec_at(hj->recs, hj->rec_idx++);
+	size_t* offset = vec_at(hj->recs, hj->rec_idx++);
 	if (hj->rec_idx >= hj->recs->size) {
 		hj->recs = NULL;
 	}
 
-	return 1;
+	return *offset;
 }
 
 int fql_hash_join(process* proc)
@@ -253,9 +246,8 @@ int fql_hash_join(process* proc)
 	while (left_rg_iter != fifo_end(in_left) && fifo_receivable(out_true)
 	       && (out_false == NULL || fifo_receivable(out_false))) {
 
-		char* right_location = NULL;
-		try_(_hash_join_left_side(proc, &right_location, table, *left_rg_iter));
-		if (right_location == NULL) {
+		long offset = try_(_hash_join_left_side(proc, table, *left_rg_iter));
+		if (offset == -1) {
 			if (table->join_type == JOIN_LEFT) {
 				fifo_add(out_true, left_rg_iter);
 			} else if (out_false != NULL) {
@@ -270,7 +262,7 @@ int fql_hash_join(process* proc)
 		record* right_rec = (*right_rg)->data;
 		right_rec->src_idx = proc->out_src_count - 1;
 		reader* reader = table->reader;
-		reader->get_record_at__(reader, *right_rg, right_location);
+		reader->get_record_at__(reader, *right_rg, offset);
 
 		/* If this is the last record match to the left
 		 * side, send the left side. Otherwise, insert

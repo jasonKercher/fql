@@ -85,7 +85,7 @@ int subquery_get_record(reader* reader, node* rg)
 	return FQL_GOOD;
 }
 
-int subquery_get_record_at(reader* unused_self, node* unused_rg, const char* unused_loc)
+int subquery_get_record_at(reader* unused_self, node* unused_rg, size_t unused_offset)
 {
 	fputs("cannot seek through subquery\n", stderr);
 	return FQL_FAIL;

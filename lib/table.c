@@ -204,7 +204,7 @@ void table_hash_join_init(table* self)
 	struct hashjoin* join = self->join_data;
 
 	join->hash_data = new_t_(multimap,
-	                         char*, /* T_ */
+	                         size_t,
 	                         guessed_row_count * 2,
 	                         HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
 }

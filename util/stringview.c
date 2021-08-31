@@ -13,7 +13,7 @@ void stringview_set(stringview* sv, const char* s)
 	*sv = (stringview) {s, strlen(s)};
 }
 
-void stringview_nset(stringview* sv, const char* s, unsigned n)
+void stringview_nset(stringview* sv, const void* s, unsigned n)
 {
 	*sv = (stringview) {s, n};
 }

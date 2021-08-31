@@ -18,7 +18,7 @@ typedef struct stringview stringview;
 
 struct stringview* stringview_construct(struct stringview*, char*, unsigned);
 void stringview_set(struct stringview*, const char*);
-void stringview_nset(struct stringview* sv, const char* s, unsigned n);
+void stringview_nset(struct stringview* sv, const void* s, unsigned n);
 void stringview_set_string(struct stringview* sv, string* s);
 
 int stringview_compare(const struct stringview* sv0,

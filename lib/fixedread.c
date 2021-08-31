@@ -10,8 +10,8 @@ fixedreader* fixedreader_construct(fixedreader* self, vec* expressions)
 {
 	*self = (fixedreader) {
 	        NULL,        /* mmap */
-	        NULL,        /* iter */
 	        expressions, /* expressions */
+	        0,           /* offset */
 	        0,           /* file_size */
 	        -1,          /* fd */
 	};
@@ -56,7 +56,7 @@ int fixedreader_open(reader* reader, const char* file_name)
 		return FQL_FAIL;
 	}
 	madvise(self->mmap, sb.st_size, MADV_SEQUENTIAL);
-	self->iter = self->mmap;
+	self->offset = 0;
 	return FQL_GOOD;
 }
 
@@ -77,21 +77,21 @@ int fixedreader_get_record(reader* reader, node* rg)
 	}
 
 	fixedreader* self = reader->reader_data;
-	const char* end = self->mmap + self->file_size;
-	if (self->iter + reader->reclen > end) {
+	if (self->offset + reader->reclen > self->file_size) {
 		reader->eof = true;
 		return EOF;
 	}
 
-	int ret = fixedreader_get_record_at(reader, rg, self->iter);
-	self->iter += reader->reclen;
+	int ret = fixedreader_get_record_at(reader, rg, self->offset);
+	self->offset += reader->reclen;
 	return ret;
 }
 
-int fixedreader_get_record_at(reader* reader, node* rg, const char* begin)
+int fixedreader_get_record_at(reader* reader, node* rg, size_t offset)
 {
 	record* rec = rg->data;
 	fixedreader* self = reader->reader_data;
+	const char* begin = self->mmap + offset;
 
 	record_resize(rec, self->expressions->size);
 
@@ -105,6 +105,7 @@ int fixedreader_get_record_at(reader* reader, node* rg, const char* begin)
 	rec->rec_ref.data = begin;
 	rec->rec_ref.len = reader->reclen; /* redundant */
 	rec->rec_idx = reader->rec_id++;
+	rec->offset = self->offset;
 
 	return FQL_GOOD;
 }
@@ -114,6 +115,6 @@ int fixedreader_reset(reader* reader)
 	fixedreader* self = reader->reader_data;
 	reader->eof = false;
 	reader->rec_id = 0;
-	self->iter = self->mmap + reader->reclen * reader->skip_rows;
+	self->offset = reader->reclen * reader->skip_rows;
 	return FQL_GOOD;
 }

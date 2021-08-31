@@ -855,13 +855,13 @@ int _map_expression(vec* key, expression* expr)
 		case FIELD_INT:
 			type_sv.data = (void*)&_c_int;
 			vec_push_back(key, &type_sv);
-			stringview_nset(&val_sv, (char*)&expr->field.f, sizeof(double));
+			stringview_nset(&val_sv, &expr->field.f, sizeof(double));
 			vec_push_back(key, &val_sv);
 			break;
 		case FIELD_FLOAT:
 			type_sv.data = (void*)&_c_float;
 			vec_push_back(key, &type_sv);
-			stringview_nset(&val_sv, (char*)&expr->field.f, sizeof(double));
+			stringview_nset(&val_sv, &expr->field.f, sizeof(double));
 			vec_push_back(key, &val_sv);
 			break;
 		case FIELD_STRING:
@@ -877,14 +877,14 @@ int _map_expression(vec* key, expression* expr)
 	case EXPR_COLUMN_NAME:
 		type_sv.data = (void*)&_expr;
 		vec_push_back(key, &type_sv);
-		stringview_nset(&val_sv, (char*)&expr->data_source, sizeof(expression*));
+		stringview_nset(&val_sv, &expr->data_source, sizeof(expression*));
 		vec_push_back(key, &val_sv);
 		break;
 	case EXPR_FUNCTION: {
 		type_sv.data = (void*)&_func;
 		vec_push_back(key, &type_sv);
 		stringview_nset(&val_sv,
-		                (char*)&expr->field.fn->type,
+		                &expr->field.fn->type,
 		                sizeof(enum scalar_function));
 		vec_push_back(key, &val_sv);
 
@@ -901,7 +901,7 @@ int _map_expression(vec* key, expression* expr)
 		type_sv.data = (void*)&_agg;
 		vec_push_back(key, &type_sv);
 		stringview_nset(&val_sv,
-		                (char*)&expr->field.agg->agg_type,
+		                &expr->field.agg->agg_type,
 		                sizeof(enum aggregate_function));
 		vec_push_back(key, &val_sv);
 		break;
@@ -922,13 +922,13 @@ int _map_expression(vec* key, expression* expr)
 	case EXPR_SUBQUERY:
 		type_sv.data = (void*)&_sub;
 		vec_push_back(key, &type_sv);
-		stringview_nset(&val_sv, (char*)&expr->subquery, sizeof(void*));
+		stringview_nset(&val_sv, &expr->subquery, sizeof(void*));
 		vec_push_back(key, &val_sv);
 		break;
 	case EXPR_ASTERISK:
 		type_sv.data = (void*)&_expr_aster;
 		vec_push_back(key, &type_sv);
-		stringview_nset(&val_sv, (char*)&expr->src_idx, sizeof(expr->src_idx));
+		stringview_nset(&val_sv, &expr->src_idx, sizeof(expr->src_idx));
 		vec_push_back(key, &val_sv);
 		break;
 	default:
