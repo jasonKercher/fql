@@ -45,7 +45,6 @@ int fql_read(process* proc)
 	node** rg_iter = fifo_begin(in);
 	for (; rg_iter != fifo_end(in) && fifo_receivable(out); rg_iter = fifo_iter(in)) {
 		record* rec = (*rg_iter)->data;
-		rec->src_idx = table->idx;
 		switch (reader->get_record__(reader, *rg_iter)) {
 		case FQL_GOOD:
 			break;
@@ -56,6 +55,7 @@ int fql_read(process* proc)
 			return 0;
 		}
 
+		rec->src_idx = table->idx;
 		fifo_add(out, rg_iter);
 	}
 	fifo_update(in);

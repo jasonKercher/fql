@@ -43,6 +43,7 @@ struct expression {
 	unsigned location;
 	unsigned width;
 	int src_idx;
+	int subquery_src_idx;
 	bool descending;
 	bool is_passthrough;
 };

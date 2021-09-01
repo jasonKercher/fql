@@ -192,7 +192,7 @@ size_t _guess_row_count(table* self)
 void table_hash_join_init(table* self)
 {
 	size_t guessed_row_count = HASH_JOIN_MIN_SIZE;
-	if (!self->is_stdin || self->subquery != NULL) {
+	if (!self->is_stdin && self->subquery == NULL) {
 		guessed_row_count = _guess_row_count(self);
 	}
 

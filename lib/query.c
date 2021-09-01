@@ -317,13 +317,13 @@ void query_add_source(query* self,
 
 	/* Try to match the operation table.  For example:
 	 * 
-	 * DELETE t1   -- ...And we want to try and match this
+	 * DELETE t1   --             ...And we want to try and match this
 	 * FROM t1     -- You are here...
 	 * WHERE FOO > 0
 	 *
 	 * We send the alias because:
 	 *
-	 * DELETE t2   --...trying to match by alias here.
+	 * DELETE t2   -- Trying to match by alias here.
 	 * FROM t1
 	 * JOIN [dumb table name.txt] t2  -- you could also be here...
 	 *
@@ -385,8 +385,6 @@ int query_enter_aggregate(query* self, enum aggregate_function agg_type)
 	group_add_expression(self->groupby, group_expr);
 
 	expression* linked_expr = new_(expression, EXPR_AGGREGATE, agg, "");
-	//table* group_table = vec_at(self->sources, group_expr->src_idx);
-	//expression_link(linked_expr, group_expr, group_table);
 	expression_link(linked_expr, group_expr, NULL);
 	agg->linked_expression = linked_expr;
 	try_(_distribute_expression(self, linked_expr));

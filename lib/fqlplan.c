@@ -301,10 +301,12 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 
 	self->current->out[0] = from_node;
 	self->current = from_node;
+
 	dnode* join_node = NULL;
 
 	for (++table_iter; table_iter != vec_end(query->sources); ++table_iter) {
 
+		// here goes nothing...
 		//if (table_iter->source_type == SOURCE_SUBQUERY) {
 		//	fputs("currently cannot join with a"
 		//	      "sub-query on the right side\n",
@@ -337,7 +339,7 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 				read_node = dgraph_add_data(self->processes, read_proc);
 				read_node->is_root = true;
 				read_proc->root_fifo = 0;
-			} else {
+			} else { /* SUBQUERY */
 				subquery_start_file_backed_input(table_iter->reader);
 				read_proc = new_(process, "subquery select (JOIN)", self);
 				read_node = dgraph_add_data(self->processes, read_proc);
@@ -354,8 +356,16 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 			join_node = dgraph_add_data(self->processes, join_proc);
 			read_node->out[0] = join_node;
 		} else {
+			/* Actually... pretty sure this would work... */
 			if (table_iter->join_type == JOIN_LEFT) {
 				fputs("LEFT JOIN only compatible with hash join\n",
+				      stderr);
+				return FQL_FAIL;
+			}
+			/* ...but definitely not this. */
+			if (table_iter->subquery != NULL) {
+				fputs("Joining subqueries on the left side only"
+				      " compatible with hash join\n",
 				      stderr);
 				return FQL_FAIL;
 			}

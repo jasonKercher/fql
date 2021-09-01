@@ -1,4 +1,5 @@
 #include "expression.h"
+#include <csv.h>
 #include "fql.h"
 #include "misc.h"
 #include "logic.h"
@@ -20,7 +21,7 @@ expression* expression_construct(expression* self,
                                  const char* table_name)
 {
 	*self = (expression) {
-	        expr, /* expr */
+	        expr,            /* expr */
 	        NULL,            /* data_source */
 	        NULL,            /* subquery */
 	        NULL,            /* rownum_ref */
@@ -34,6 +35,7 @@ expression* expression_construct(expression* self,
 	        0,               /* location */
 	        0,               /* width */
 	        0,               /* src_idx */
+	        -1,              /* subquery_src_idx */
 	        false,           /* descending */
 	        false,           /* is_passthrough */
 	};
@@ -74,8 +76,8 @@ expression* expression_construct(expression* self,
 	default:;
 	}
 
-	string_construct(&self->alias);
-	return self;
+	        string_construct(&self->alias);
+	        return self;
 }
 
 void expression_destroy(void* generic_expr)
@@ -219,6 +221,12 @@ int expression_try_assign_source(expression* self, table* table)
 
 	expression** first_match = vec_begin(exprs);
 	expression_link(self, *first_match, table);
+
+	/* hackity hack */
+	if (table->subquery != NULL) {
+		self->subquery_src_idx = table->idx;
+	}
+
 	return exprs->size;
 }
 
@@ -319,9 +327,9 @@ int expression_cast(expression* self, enum field_type new_type)
 		try_(expression_get_stringview(&sv, self, NULL));
 
 		/* This is redundant because of the current behavior
-		 * of expression_get_stringview, but in case that ever
-		 * changes... We do the redundant thing...
-		 */
+			 * of expression_get_stringview, but in case that ever
+			 * changes... We do the redundant thing...
+			 */
 		string_strncpy(&self->buf, sv.data, sv.len);
 		self->field.s = &self->buf;
 
@@ -345,10 +353,10 @@ void expression_update_indicies(vec* expr_vec)
 
 
 /* TODO: field_to_xx functions should only be called once.
- *       After which we should be able to assume the correct
- *       type. The best way to handle this would be to set
- *       the type during parsing.
- */
+	 *       After which we should be able to assume the correct
+	 *       type. The best way to handle this would be to set
+	 *       the type during parsing.
+	 */
 int expression_get_int(long* ret, expression* self, node* rg)
 {
 	switch (self->expr) {
@@ -378,7 +386,12 @@ int expression_get_int(long* ret, expression* self, node* rg)
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
-		record* rec = record_at(rg, src_expr->src_idx);
+		record* rec = NULL;
+		if (self->subquery_src_idx == -1) {
+			rec = record_at(rg, src_expr->src_idx);
+		} else {
+			rec = record_at(rg, self->subquery_src_idx);
+		}
 		if (rec == NULL || rec->fields.size <= src_expr->index) {
 			string_clear(&self->buf);
 			*ret = 0;
@@ -441,7 +454,12 @@ int expression_get_float(double* ret, expression* self, node* rg)
 	case EXPR_AGGREGATE:
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
-		record* rec = record_at(rg, src_expr->src_idx);
+		record* rec = NULL;
+		if (self->subquery_src_idx == -1) {
+			rec = record_at(rg, src_expr->src_idx);
+		} else {
+			rec = record_at(rg, self->subquery_src_idx);
+		}
 		if (rec == NULL || rec->fields.size <= src_expr->index) {
 			string_clear(&self->buf);
 			*ret = 0;
@@ -531,7 +549,12 @@ int expression_get_stringview(stringview* ret, expression* self, node* rg)
 	}
 	case EXPR_COLUMN_NAME: {
 		expression* src_expr = self->data_source;
-		record* rec = record_at(rg, src_expr->src_idx);
+		record* rec = NULL;
+		if (self->subquery_src_idx == -1) {
+			rec = record_at(rg, src_expr->src_idx);
+		} else {
+			rec = record_at(rg, self->subquery_src_idx);
+		}
 		if (rec == NULL || rec->fields.size <= src_expr->index) {
 			string_clear(&self->buf);
 			ret->data = self->buf.data;

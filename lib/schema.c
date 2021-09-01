@@ -755,7 +755,13 @@ enum join_side _get_join_side(expression* expr, int right_idx)
 	case EXPR_FULL_RECORD:
 		return (expr->src_idx < right_idx) ? SIDE_LEFT : SIDE_RIGHT;
 	case EXPR_COLUMN_NAME:
-		return (expr->data_source->src_idx < right_idx) ? SIDE_LEFT : SIDE_RIGHT;
+		if (expr->subquery_src_idx == -1) {
+			return (expr->data_source->src_idx < right_idx) ? SIDE_LEFT
+			                                                : SIDE_RIGHT;
+		} else {
+			return (expr->subquery_src_idx < right_idx) ? SIDE_LEFT
+			                                            : SIDE_RIGHT;
+		}
 	case EXPR_FUNCTION: {
 		function* func = expr->field.fn;
 		expression** it = vec_begin(func->args);
