@@ -34,7 +34,7 @@ static const char* _scalar_str[] = {
 int _not_implemented(function* self, union field* f, node* unused)
 {
 	fprintf(stderr, "function not implemented: %s\n", _scalar_str[self->type]);
-	return 0;
+	return FQL_FAIL;
 }
 
 function* function_construct(function* self,

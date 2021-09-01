@@ -21,7 +21,7 @@ fqldelete* fqldelete_construct(fqldelete* self)
 	        NULL,            /* delete_node */
 	        0,               /* rows_affected */
 	        -1,              /* top_count */
-	        0,               /* table_idx */
+	        -1,              /* table_idx */
 	        FILTER_OPEN,     /* state */
 	        false,           /* has_matched_alias */
 	};

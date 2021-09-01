@@ -741,7 +741,7 @@ int _resolve_asterisk(vec* expressions, vec* sources)
 		if (matches == 0) {
 			fprintf(stderr,
 			        "could not locate table `%s'\n",
-			        (char*)(*expr)->table_name.data);
+			        string_c_str(&(*expr)->table_name));
 			return FQL_FAIL;
 		}
 	}
@@ -1206,7 +1206,9 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	 * (e.g. expressions listed in SELECT).
 	 */
 	vec* op_exprs = op_get_expressions(aquery->op);
-	try_(_resolve_asterisk(op_exprs, sources));
+	if (*(enum op*)aquery->op == OP_SELECT) {
+		try_(_resolve_asterisk(op_exprs, sources));
+	}
 	try_(_assign_expressions(op_exprs, sources, fql->props.strictness));
 
 	vec* op_add_exprs = op_get_additional_exprs(aquery->op);
@@ -1291,7 +1293,9 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	 * we need to be aware of this when parsing future queries.
 	 * These are mapped as absolute paths. First check that the
 	 * file exists first. If it doesn't, create it now so that
-	 * realpath works.
+	 * realpath works. Creating the file also has the affect of
+	 * making fuzzy file discovery possible on a file that did
+	 * not previously exist.
 	 */
 	if (aquery->into_table_name != NULL) {
 		if (access(aquery->into_table_name, F_OK) != 0) {

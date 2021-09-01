@@ -130,9 +130,11 @@ void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemCont
 void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx)
 {
 	if (_subquery == NULL) {
-		query_add_source(_query, _fql, &_source_stack, _table_alias);
+		if (query_add_source(_query, _fql, &_source_stack, _table_alias) == FQL_FAIL) {
+			_set_failure();
+		}
 	} else {
-	        query_add_subquery_source(_query, _subquery, _table_alias);
+		query_add_subquery_source(_query, _subquery, _table_alias);
 	}
 
 	_subquery = NULL;

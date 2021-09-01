@@ -188,6 +188,11 @@ int fql_left(function* fn, union field* ret, node* rg)
 	long n = 0;
 	try_deref_(expression_get_int(&n, args[1], rg));
 
+	if (n < 0) {
+		fprintf(stderr, "Invalid length value `%ld'\n", n);
+		return FQL_FAIL;
+	}
+
 	if (n > sv.len) {
 		string_strncpy(ret->s, sv.data, sv.len);
 		return FQL_GOOD;
@@ -219,6 +224,11 @@ int fql_right(function* fn, union field* ret, node* rg)
 	try_deref_(expression_get_stringview(&sv, args[0], rg));
 	long n = 0;
 	try_deref_(expression_get_int(&n, args[1], rg));
+
+	if (n < 0) {
+		fprintf(stderr, "Invalid length value `%ld'\n", n);
+		return FQL_FAIL;
+	}
 
 	if (n > sv.len) {
 		string_strncpy(ret->s, sv.data, n);
@@ -255,6 +265,11 @@ int fql_substring(function* fn, union field* ret, node* rg)
 	--start;
 	long n = 0;
 	try_deref_(expression_get_int(&n, args[2], rg));
+
+	if (n < 0) {
+		fprintf(stderr, "Invalid length value `%ld'\n", n);
+		return FQL_FAIL;
+	}
 
 	unsigned idx = 0;
 	int bytes = 0;

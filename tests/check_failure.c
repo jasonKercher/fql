@@ -51,6 +51,14 @@ START_TEST(test_failure_syntax)
 	/* More than 1 expression in constant subquery */
 	plan_count = fql_make_plans(fql, "select (select 1, 2)");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* Invalid function parameters */
+	plan_count = fql_make_plans(fql, "select left('shnt', -1)");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* Missing alias on subquery */
+	plan_count = fql_make_plans(fql, "select * from (select 7)");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
 }
 END_TEST
 
@@ -80,12 +88,66 @@ START_TEST(test_failure_columns)
 	ck_assert_int_eq(plan_count, FQL_FAIL);
 
 	/* In order by list, but not in grouping */
-	plan_count =
-	        fql_make_plans(fql,
-	                       "select bar from t1 group by bar order by foo");
+	plan_count = fql_make_plans(fql,
+	                            "select bar   "
+	                            "from t1      "
+	                            "group by bar "
+	                            "order by foo ");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+}
+END_TEST
+
+START_TEST(test_failure_fql_specific)
+{
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+
+	/* Function not yet implemented */
+	plan_count = fql_make_plans(fql, "select patindex('%shnt%','xxxx')");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
 
-	/* In HAVING list, but not in grouping */
+	fql_set_allow_stdin(fql, true);
+
+	/* Try to utilize __stdin twice */
+	plan_count = fql_make_plans(fql,
+	                            "select *              "
+	                            "from __stdin x1       "
+	                            "join __stdin x2       "
+	                            "    on x1.foo = x2.foo");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+}
+END_TEST
+
+START_TEST(test_failure_multioperation)
+{
+	struct fql_field* fields = NULL;
+	int plan_count = 0;
+
+	/* INTO column missing from fresh file */
+	fql_set_overwrite(fql, true);
+	plan_count = fql_make_plans(fql,
+	                            "select foo, bar     "
+	                            "into [nobaz.temp]   "
+	                            "from t1             "
+	                            "                    "
+	                            "select baz          "
+	                            "from [nobaz.temp]   ");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* This file already exists AND contains the column
+	 * [baz]. We should be able to realize this query
+	 * is going to fail up front because we can see
+	 * readonlyt1 is going to be overwritten, and the
+	 * new schema does not contain a column named [baz].
+	 */
+	plan_count = fql_make_plans(fql,
+	                            "select foo, bar       "
+	                            "into [readonlyt1.tsv] "
+	                            "from t1               "
+	                            "                      "
+	                            "select baz            "
+	                            "from [readonlyt1.tsv] ");
+	ck_assert_int_eq(plan_count, FQL_FAIL);
 }
 END_TEST
 
@@ -212,6 +274,8 @@ Suite* fql_failure_suite(void)
 
 	tcase_add_test(tc_failure, test_failure_syntax);
 	tcase_add_test(tc_failure, test_failure_columns);
+	tcase_add_test(tc_failure, test_failure_fql_specific);
+	tcase_add_test(tc_failure, test_failure_multioperation);
 	tcase_add_test(tc_failure, test_failure_strict_mode);
 	tcase_add_test(tc_failure, test_failure_const_runtime);
 	tcase_add_test(tc_failure, test_failure_runtime);
@@ -234,5 +298,3 @@ int main(void)
 
 	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
-

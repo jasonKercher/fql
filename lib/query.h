@@ -178,7 +178,7 @@ int query_add_constant(struct query*, const char*, int);
 int query_add_null_expression(struct query*);
 int query_add_expression(struct query*, char*, const char* table);
 int query_add_asterisk(struct query*, const char* table);
-void query_add_source(struct query*, struct fql_handle*, struct node**, const char*);
+int query_add_source(struct query*, struct fql_handle*, struct node**, const char*);
 void query_add_subquery_source(struct query*, struct query*, const char*);
 void query_apply_table_alias(struct query*, const char*);
 void query_apply_expression_alias(struct query*, const char*);

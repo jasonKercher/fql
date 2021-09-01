@@ -324,8 +324,6 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 			}
 		}
 
-		fqlsig_tmp_removeall();
-
 		query_free(query);
 		node_dequeue(&fql->query_list);
 		if (ret == FQL_FAIL) {
@@ -339,6 +337,8 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 
 	/* TODO: hashmap_clear() */
 	if (node_count(fql->query_list) == 0) {
+		fqlsig_tmp_removeall();
+
 		delete_(hashmap, fql->schema_map);
 		fql->schema_map =
 		        new_(hashmap, sizeof(schema*), 16, HASHMAP_PROP_DEFAULT);
@@ -417,6 +417,8 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 		}
 		plan->has_stepped = true;
 
+		op_preop(fql);
+
 		/* Since we are now stepping, we only want
 		 * to iterate over one record at a time.
 		 */
@@ -436,5 +438,15 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 	query_free(q);
 	_free_api_strings(fql->api_vec);
 	vec_clear(fql->api_vec);
+
+	/* TODO: hashmap_clear() */
+	if (node_count(fql->query_list) == 0) {
+		fqlsig_tmp_removeall();
+
+		delete_(hashmap, fql->schema_map);
+		fql->schema_map =
+		        new_(hashmap, sizeof(schema*), 16, HASHMAP_PROP_DEFAULT);
+	}
+
 	return ret;
 }

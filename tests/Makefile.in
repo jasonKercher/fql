@@ -88,19 +88,21 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 TESTS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
-	check_read$(EXEEXT) check_logic$(EXEEXT) check_switch$(EXEEXT) \
-	check_null$(EXEEXT) check_join$(EXEEXT) \
+	check_read$(EXEEXT) check_logic$(EXEEXT) check_scalar$(EXEEXT) \
+	check_switch$(EXEEXT) check_null$(EXEEXT) check_join$(EXEEXT) \
 	check_subquery$(EXEEXT) check_group$(EXEEXT) \
 	check_having$(EXEEXT) check_order$(EXEEXT) check_top$(EXEEXT) \
 	check_union$(EXEEXT) check_difficult$(EXEEXT) \
-	check_operations$(EXEEXT) check_failure$(EXEEXT)
+	check_operations$(EXEEXT) check_stdin$(EXEEXT) \
+	check_failure$(EXEEXT)
 check_PROGRAMS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
-	check_read$(EXEEXT) check_logic$(EXEEXT) check_switch$(EXEEXT) \
-	check_null$(EXEEXT) check_join$(EXEEXT) \
+	check_read$(EXEEXT) check_logic$(EXEEXT) check_scalar$(EXEEXT) \
+	check_switch$(EXEEXT) check_null$(EXEEXT) check_join$(EXEEXT) \
 	check_subquery$(EXEEXT) check_group$(EXEEXT) \
 	check_having$(EXEEXT) check_order$(EXEEXT) check_top$(EXEEXT) \
 	check_union$(EXEEXT) check_difficult$(EXEEXT) \
-	check_operations$(EXEEXT) check_failure$(EXEEXT)
+	check_operations$(EXEEXT) check_stdin$(EXEEXT) \
+	check_failure$(EXEEXT)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -114,7 +116,8 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am_check_constants_OBJECTS = check_constants-check_common.$(OBJEXT) \
+am__objects_1 = check_constants-check_common.$(OBJEXT)
+am_check_constants_OBJECTS = $(am__objects_1) \
 	check_constants-check_constants.$(OBJEXT)
 check_constants_OBJECTS = $(am_check_constants_OBJECTS)
 check_constants_DEPENDENCIES = $(top_builddir)/lib/libfql.la
@@ -126,7 +129,8 @@ check_constants_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(check_constants_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-am_check_difficult_OBJECTS = check_difficult-check_common.$(OBJEXT) \
+am__objects_2 = check_difficult-check_common.$(OBJEXT)
+am_check_difficult_OBJECTS = $(am__objects_2) \
 	check_difficult-check_difficult.$(OBJEXT)
 check_difficult_OBJECTS = $(am_check_difficult_OBJECTS)
 check_difficult_DEPENDENCIES = $(top_builddir)/lib/libfql.la
@@ -134,14 +138,16 @@ check_difficult_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(check_difficult_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-am_check_failure_OBJECTS = check_failure-check_common.$(OBJEXT) \
+am__objects_3 = check_failure-check_common.$(OBJEXT)
+am_check_failure_OBJECTS = $(am__objects_3) \
 	check_failure-check_failure.$(OBJEXT)
 check_failure_OBJECTS = $(am_check_failure_OBJECTS)
 check_failure_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_failure_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_failure_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am_check_group_OBJECTS = check_group-check_common.$(OBJEXT) \
+am__objects_4 = check_group-check_common.$(OBJEXT)
+am_check_group_OBJECTS = $(am__objects_4) \
 	check_group-check_group.$(OBJEXT)
 check_group_OBJECTS = $(am_check_group_OBJECTS)
 check_group_DEPENDENCIES = $(top_builddir)/lib/libfql.la
@@ -154,35 +160,40 @@ check_hashmap_DEPENDENCIES = $(top_builddir)/util/libutil.la
 check_hashmap_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_hashmap_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am_check_having_OBJECTS = check_having-check_common.$(OBJEXT) \
+am__objects_5 = check_having-check_common.$(OBJEXT)
+am_check_having_OBJECTS = $(am__objects_5) \
 	check_having-check_having.$(OBJEXT)
 check_having_OBJECTS = $(am_check_having_OBJECTS)
 check_having_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_having_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_having_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am_check_join_OBJECTS = check_join-check_common.$(OBJEXT) \
+am__objects_6 = check_join-check_common.$(OBJEXT)
+am_check_join_OBJECTS = $(am__objects_6) \
 	check_join-check_join.$(OBJEXT)
 check_join_OBJECTS = $(am_check_join_OBJECTS)
 check_join_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_join_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_join_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am_check_logic_OBJECTS = check_logic-check_common.$(OBJEXT) \
+am__objects_7 = check_logic-check_common.$(OBJEXT)
+am_check_logic_OBJECTS = $(am__objects_7) \
 	check_logic-check_logic.$(OBJEXT)
 check_logic_OBJECTS = $(am_check_logic_OBJECTS)
 check_logic_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_logic_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_logic_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am_check_null_OBJECTS = check_null-check_common.$(OBJEXT) \
+am__objects_8 = check_null-check_common.$(OBJEXT)
+am_check_null_OBJECTS = $(am__objects_8) \
 	check_null-check_null.$(OBJEXT)
 check_null_OBJECTS = $(am_check_null_OBJECTS)
 check_null_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_null_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_null_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am_check_operations_OBJECTS = check_operations-check_common.$(OBJEXT) \
+am__objects_9 = check_operations-check_common.$(OBJEXT)
+am_check_operations_OBJECTS = $(am__objects_9) \
 	check_operations-check_operations.$(OBJEXT)
 check_operations_OBJECTS = $(am_check_operations_OBJECTS)
 check_operations_DEPENDENCIES = $(top_builddir)/lib/libfql.la
@@ -190,21 +201,40 @@ check_operations_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(check_operations_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-am_check_order_OBJECTS = check_order-check_common.$(OBJEXT) \
+am__objects_10 = check_order-check_common.$(OBJEXT)
+am_check_order_OBJECTS = $(am__objects_10) \
 	check_order-check_order.$(OBJEXT)
 check_order_OBJECTS = $(am_check_order_OBJECTS)
 check_order_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_order_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_order_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am_check_read_OBJECTS = check_read-check_common.$(OBJEXT) \
+am__objects_11 = check_read-check_common.$(OBJEXT)
+am_check_read_OBJECTS = $(am__objects_11) \
 	check_read-check_read.$(OBJEXT)
 check_read_OBJECTS = $(am_check_read_OBJECTS)
 check_read_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_read_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_read_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am_check_subquery_OBJECTS = check_subquery-check_common.$(OBJEXT) \
+am__objects_12 = check_scalar-check_common.$(OBJEXT)
+am_check_scalar_OBJECTS = $(am__objects_12) \
+	check_scalar-check_scalar.$(OBJEXT)
+check_scalar_OBJECTS = $(am_check_scalar_OBJECTS)
+check_scalar_DEPENDENCIES = $(top_builddir)/lib/libfql.la
+check_scalar_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_scalar_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+am__objects_13 = check_stdin-check_common.$(OBJEXT)
+am_check_stdin_OBJECTS = $(am__objects_13) \
+	check_stdin-check_stdin.$(OBJEXT)
+check_stdin_OBJECTS = $(am_check_stdin_OBJECTS)
+check_stdin_DEPENDENCIES = $(top_builddir)/lib/libfql.la
+check_stdin_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_stdin_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+am__objects_14 = check_subquery-check_common.$(OBJEXT)
+am_check_subquery_OBJECTS = $(am__objects_14) \
 	check_subquery-check_subquery.$(OBJEXT)
 check_subquery_OBJECTS = $(am_check_subquery_OBJECTS)
 check_subquery_DEPENDENCIES = $(top_builddir)/lib/libfql.la
@@ -212,21 +242,23 @@ check_subquery_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(check_subquery_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o \
 	$@
-am_check_switch_OBJECTS = check_switch-check_common.$(OBJEXT) \
+am__objects_15 = check_switch-check_common.$(OBJEXT)
+am_check_switch_OBJECTS = $(am__objects_15) \
 	check_switch-check_switch.$(OBJEXT)
 check_switch_OBJECTS = $(am_check_switch_OBJECTS)
 check_switch_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_switch_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_switch_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am_check_top_OBJECTS = check_top-check_common.$(OBJEXT) \
-	check_top-check_top.$(OBJEXT)
+am__objects_16 = check_top-check_common.$(OBJEXT)
+am_check_top_OBJECTS = $(am__objects_16) check_top-check_top.$(OBJEXT)
 check_top_OBJECTS = $(am_check_top_OBJECTS)
 check_top_DEPENDENCIES = $(top_builddir)/lib/libfql.la
 check_top_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(check_top_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-am_check_union_OBJECTS = check_union-check_common.$(OBJEXT) \
+am__objects_17 = check_union-check_common.$(OBJEXT)
+am_check_union_OBJECTS = $(am__objects_17) \
 	check_union-check_union.$(OBJEXT)
 check_union_OBJECTS = $(am_check_union_OBJECTS)
 check_union_DEPENDENCIES = $(top_builddir)/lib/libfql.la
@@ -271,6 +303,10 @@ am__depfiles_remade = ./$(DEPDIR)/check_constants-check_common.Po \
 	./$(DEPDIR)/check_order-check_order.Po \
 	./$(DEPDIR)/check_read-check_common.Po \
 	./$(DEPDIR)/check_read-check_read.Po \
+	./$(DEPDIR)/check_scalar-check_common.Po \
+	./$(DEPDIR)/check_scalar-check_scalar.Po \
+	./$(DEPDIR)/check_stdin-check_common.Po \
+	./$(DEPDIR)/check_stdin-check_stdin.Po \
 	./$(DEPDIR)/check_subquery-check_common.Po \
 	./$(DEPDIR)/check_subquery-check_subquery.Po \
 	./$(DEPDIR)/check_switch-check_common.Po \
@@ -304,6 +340,7 @@ SOURCES = $(check_constants_SOURCES) $(check_difficult_SOURCES) \
 	$(check_join_SOURCES) $(check_logic_SOURCES) \
 	$(check_null_SOURCES) $(check_operations_SOURCES) \
 	$(check_order_SOURCES) $(check_read_SOURCES) \
+	$(check_scalar_SOURCES) $(check_stdin_SOURCES) \
 	$(check_subquery_SOURCES) $(check_switch_SOURCES) \
 	$(check_top_SOURCES) $(check_union_SOURCES)
 DIST_SOURCES = $(check_constants_SOURCES) $(check_difficult_SOURCES) \
@@ -312,6 +349,7 @@ DIST_SOURCES = $(check_constants_SOURCES) $(check_difficult_SOURCES) \
 	$(check_join_SOURCES) $(check_logic_SOURCES) \
 	$(check_null_SOURCES) $(check_operations_SOURCES) \
 	$(check_order_SOURCES) $(check_read_SOURCES) \
+	$(check_scalar_SOURCES) $(check_stdin_SOURCES) \
 	$(check_subquery_SOURCES) $(check_switch_SOURCES) \
 	$(check_top_SOURCES) $(check_union_SOURCES)
 am__can_run_installinfo = \
@@ -673,97 +711,59 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+common_src = $(top_builddir)/lib/include/fql.h check_common.h check_common.c
 check_hashmap_SOURCES = $(top_builddir)/util/hashmap.h check_hashmap.c
 check_hashmap_CFLAGS = @CHECK_CFLAGS@
 check_hashmap_LDADD = $(top_builddir)/util/libutil.la @CHECK_LIBS@
-check_constants_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_constants.c
-
+check_constants_SOURCES = $(common_src) check_constants.c
 check_constants_CFLAGS = @CHECK_CFLAGS@
 check_constants_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_read_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_read.c
-
+check_read_SOURCES = $(common_src) check_read.c
 check_read_CFLAGS = @CHECK_CFLAGS@
 check_read_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_logic_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_logic.c
-
+check_scalar_SOURCES = $(common_src) check_scalar.c
+check_scalar_CFLAGS = @CHECK_CFLAGS@
+check_scalar_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+check_logic_SOURCES = $(common_src) check_logic.c
 check_logic_CFLAGS = @CHECK_CFLAGS@
 check_logic_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_switch_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_switch.c
-
+check_switch_SOURCES = $(common_src) check_switch.c
 check_switch_CFLAGS = @CHECK_CFLAGS@
 check_switch_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_null_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_null.c
-
+check_null_SOURCES = $(common_src) check_null.c
 check_null_CFLAGS = @CHECK_CFLAGS@
 check_null_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_join_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_join.c
-
+check_join_SOURCES = $(common_src) check_join.c
 check_join_CFLAGS = @CHECK_CFLAGS@
 check_join_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_subquery_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_subquery.c
-
+check_subquery_SOURCES = $(common_src) check_subquery.c
 check_subquery_CFLAGS = @CHECK_CFLAGS@
 check_subquery_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_group_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_group.c
-
+check_group_SOURCES = $(common_src) check_group.c
 check_group_CFLAGS = @CHECK_CFLAGS@
 check_group_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_having_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_having.c
-
+check_having_SOURCES = $(common_src) check_having.c
 check_having_CFLAGS = @CHECK_CFLAGS@
 check_having_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_order_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_order.c
-
+check_order_SOURCES = $(common_src) check_order.c
 check_order_CFLAGS = @CHECK_CFLAGS@
 check_order_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_top_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_top.c
-
+check_top_SOURCES = $(common_src) check_top.c
 check_top_CFLAGS = @CHECK_CFLAGS@
 check_top_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_union_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_union.c
-
+check_union_SOURCES = $(common_src) check_union.c
 check_union_CFLAGS = @CHECK_CFLAGS@
 check_union_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_difficult_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_difficult.c
-
+check_difficult_SOURCES = $(common_src) check_difficult.c
 check_difficult_CFLAGS = @CHECK_CFLAGS@
 check_difficult_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_operations_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_operations.c
-
+check_stdin_SOURCES = $(common_src) check_stdin.c
+check_stdin_CFLAGS = @CHECK_CFLAGS@
+check_stdin_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+check_operations_SOURCES = $(common_src) check_operations.c
 check_operations_CFLAGS = @CHECK_CFLAGS@
 check_operations_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
-check_failure_SOURCES = $(top_builddir)/lib/include/fql.h \
-			check_common.h check_common.c \
-			check_failure.c
-
+check_failure_SOURCES = $(common_src) check_failure.c
 check_failure_CFLAGS = @CHECK_CFLAGS@
 check_failure_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 all: all-am
@@ -857,6 +857,14 @@ check_read$(EXEEXT): $(check_read_OBJECTS) $(check_read_DEPENDENCIES) $(EXTRA_ch
 	@rm -f check_read$(EXEEXT)
 	$(AM_V_CCLD)$(check_read_LINK) $(check_read_OBJECTS) $(check_read_LDADD) $(LIBS)
 
+check_scalar$(EXEEXT): $(check_scalar_OBJECTS) $(check_scalar_DEPENDENCIES) $(EXTRA_check_scalar_DEPENDENCIES) 
+	@rm -f check_scalar$(EXEEXT)
+	$(AM_V_CCLD)$(check_scalar_LINK) $(check_scalar_OBJECTS) $(check_scalar_LDADD) $(LIBS)
+
+check_stdin$(EXEEXT): $(check_stdin_OBJECTS) $(check_stdin_DEPENDENCIES) $(EXTRA_check_stdin_DEPENDENCIES) 
+	@rm -f check_stdin$(EXEEXT)
+	$(AM_V_CCLD)$(check_stdin_LINK) $(check_stdin_OBJECTS) $(check_stdin_LDADD) $(LIBS)
+
 check_subquery$(EXEEXT): $(check_subquery_OBJECTS) $(check_subquery_DEPENDENCIES) $(EXTRA_check_subquery_DEPENDENCIES) 
 	@rm -f check_subquery$(EXEEXT)
 	$(AM_V_CCLD)$(check_subquery_LINK) $(check_subquery_OBJECTS) $(check_subquery_LDADD) $(LIBS)
@@ -902,6 +910,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_order-check_order.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_read-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_read-check_read.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_scalar-check_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_scalar-check_scalar.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_stdin-check_common.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_stdin-check_stdin.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_subquery-check_common.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_subquery-check_subquery.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/check_switch-check_common.Po@am__quote@ # am--include-marker
@@ -1260,6 +1272,62 @@ check_read-check_read.obj: check_read.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_read_CFLAGS) $(CFLAGS) -c -o check_read-check_read.obj `if test -f 'check_read.c'; then $(CYGPATH_W) 'check_read.c'; else $(CYGPATH_W) '$(srcdir)/check_read.c'; fi`
 
+check_scalar-check_common.o: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_scalar_CFLAGS) $(CFLAGS) -MT check_scalar-check_common.o -MD -MP -MF $(DEPDIR)/check_scalar-check_common.Tpo -c -o check_scalar-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_scalar-check_common.Tpo $(DEPDIR)/check_scalar-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_scalar-check_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_scalar_CFLAGS) $(CFLAGS) -c -o check_scalar-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+
+check_scalar-check_common.obj: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_scalar_CFLAGS) $(CFLAGS) -MT check_scalar-check_common.obj -MD -MP -MF $(DEPDIR)/check_scalar-check_common.Tpo -c -o check_scalar-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_scalar-check_common.Tpo $(DEPDIR)/check_scalar-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_scalar-check_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_scalar_CFLAGS) $(CFLAGS) -c -o check_scalar-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+
+check_scalar-check_scalar.o: check_scalar.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_scalar_CFLAGS) $(CFLAGS) -MT check_scalar-check_scalar.o -MD -MP -MF $(DEPDIR)/check_scalar-check_scalar.Tpo -c -o check_scalar-check_scalar.o `test -f 'check_scalar.c' || echo '$(srcdir)/'`check_scalar.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_scalar-check_scalar.Tpo $(DEPDIR)/check_scalar-check_scalar.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_scalar.c' object='check_scalar-check_scalar.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_scalar_CFLAGS) $(CFLAGS) -c -o check_scalar-check_scalar.o `test -f 'check_scalar.c' || echo '$(srcdir)/'`check_scalar.c
+
+check_scalar-check_scalar.obj: check_scalar.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_scalar_CFLAGS) $(CFLAGS) -MT check_scalar-check_scalar.obj -MD -MP -MF $(DEPDIR)/check_scalar-check_scalar.Tpo -c -o check_scalar-check_scalar.obj `if test -f 'check_scalar.c'; then $(CYGPATH_W) 'check_scalar.c'; else $(CYGPATH_W) '$(srcdir)/check_scalar.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_scalar-check_scalar.Tpo $(DEPDIR)/check_scalar-check_scalar.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_scalar.c' object='check_scalar-check_scalar.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_scalar_CFLAGS) $(CFLAGS) -c -o check_scalar-check_scalar.obj `if test -f 'check_scalar.c'; then $(CYGPATH_W) 'check_scalar.c'; else $(CYGPATH_W) '$(srcdir)/check_scalar.c'; fi`
+
+check_stdin-check_common.o: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_stdin_CFLAGS) $(CFLAGS) -MT check_stdin-check_common.o -MD -MP -MF $(DEPDIR)/check_stdin-check_common.Tpo -c -o check_stdin-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_stdin-check_common.Tpo $(DEPDIR)/check_stdin-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_stdin-check_common.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_stdin_CFLAGS) $(CFLAGS) -c -o check_stdin-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
+
+check_stdin-check_common.obj: check_common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_stdin_CFLAGS) $(CFLAGS) -MT check_stdin-check_common.obj -MD -MP -MF $(DEPDIR)/check_stdin-check_common.Tpo -c -o check_stdin-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_stdin-check_common.Tpo $(DEPDIR)/check_stdin-check_common.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_common.c' object='check_stdin-check_common.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_stdin_CFLAGS) $(CFLAGS) -c -o check_stdin-check_common.obj `if test -f 'check_common.c'; then $(CYGPATH_W) 'check_common.c'; else $(CYGPATH_W) '$(srcdir)/check_common.c'; fi`
+
+check_stdin-check_stdin.o: check_stdin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_stdin_CFLAGS) $(CFLAGS) -MT check_stdin-check_stdin.o -MD -MP -MF $(DEPDIR)/check_stdin-check_stdin.Tpo -c -o check_stdin-check_stdin.o `test -f 'check_stdin.c' || echo '$(srcdir)/'`check_stdin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_stdin-check_stdin.Tpo $(DEPDIR)/check_stdin-check_stdin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_stdin.c' object='check_stdin-check_stdin.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_stdin_CFLAGS) $(CFLAGS) -c -o check_stdin-check_stdin.o `test -f 'check_stdin.c' || echo '$(srcdir)/'`check_stdin.c
+
+check_stdin-check_stdin.obj: check_stdin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_stdin_CFLAGS) $(CFLAGS) -MT check_stdin-check_stdin.obj -MD -MP -MF $(DEPDIR)/check_stdin-check_stdin.Tpo -c -o check_stdin-check_stdin.obj `if test -f 'check_stdin.c'; then $(CYGPATH_W) 'check_stdin.c'; else $(CYGPATH_W) '$(srcdir)/check_stdin.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_stdin-check_stdin.Tpo $(DEPDIR)/check_stdin-check_stdin.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='check_stdin.c' object='check_stdin-check_stdin.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_stdin_CFLAGS) $(CFLAGS) -c -o check_stdin-check_stdin.obj `if test -f 'check_stdin.c'; then $(CYGPATH_W) 'check_stdin.c'; else $(CYGPATH_W) '$(srcdir)/check_stdin.c'; fi`
+
 check_subquery-check_common.o: check_common.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(check_subquery_CFLAGS) $(CFLAGS) -MT check_subquery-check_common.o -MD -MP -MF $(DEPDIR)/check_subquery-check_common.Tpo -c -o check_subquery-check_common.o `test -f 'check_common.c' || echo '$(srcdir)/'`check_common.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/check_subquery-check_common.Tpo $(DEPDIR)/check_subquery-check_common.Po
@@ -1599,6 +1667,13 @@ check_logic.log: check_logic$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+check_scalar.log: check_scalar$(EXEEXT)
+	@p='check_scalar$(EXEEXT)'; \
+	b='check_scalar'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 check_switch.log: check_switch$(EXEEXT)
 	@p='check_switch$(EXEEXT)'; \
 	b='check_switch'; \
@@ -1672,6 +1747,13 @@ check_difficult.log: check_difficult$(EXEEXT)
 check_operations.log: check_operations$(EXEEXT)
 	@p='check_operations$(EXEEXT)'; \
 	b='check_operations'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+check_stdin.log: check_stdin$(EXEEXT)
+	@p='check_stdin$(EXEEXT)'; \
+	b='check_stdin'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
@@ -1799,6 +1881,10 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/check_order-check_order.Po
 	-rm -f ./$(DEPDIR)/check_read-check_common.Po
 	-rm -f ./$(DEPDIR)/check_read-check_read.Po
+	-rm -f ./$(DEPDIR)/check_scalar-check_common.Po
+	-rm -f ./$(DEPDIR)/check_scalar-check_scalar.Po
+	-rm -f ./$(DEPDIR)/check_stdin-check_common.Po
+	-rm -f ./$(DEPDIR)/check_stdin-check_stdin.Po
 	-rm -f ./$(DEPDIR)/check_subquery-check_common.Po
 	-rm -f ./$(DEPDIR)/check_subquery-check_subquery.Po
 	-rm -f ./$(DEPDIR)/check_switch-check_common.Po
@@ -1875,6 +1961,10 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/check_order-check_order.Po
 	-rm -f ./$(DEPDIR)/check_read-check_common.Po
 	-rm -f ./$(DEPDIR)/check_read-check_read.Po
+	-rm -f ./$(DEPDIR)/check_scalar-check_common.Po
+	-rm -f ./$(DEPDIR)/check_scalar-check_scalar.Po
+	-rm -f ./$(DEPDIR)/check_stdin-check_common.Po
+	-rm -f ./$(DEPDIR)/check_stdin-check_stdin.Po
 	-rm -f ./$(DEPDIR)/check_subquery-check_common.Po
 	-rm -f ./$(DEPDIR)/check_subquery-check_subquery.Po
 	-rm -f ./$(DEPDIR)/check_switch-check_common.Po

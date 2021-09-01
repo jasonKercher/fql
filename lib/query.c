@@ -284,10 +284,10 @@ int query_add_null_expression(query* self)
  * object->schema->database->server
  * we ignore database and server for now.
  */
-void query_add_source(query* self,
-                      struct fql_handle* fql,
-                      node** source_stack,
-                      const char* alias)
+int query_add_source(query* self,
+                     struct fql_handle* fql,
+                     node** source_stack,
+                     const char* alias)
 {
 	char* table_name = node_pop(source_stack);
 	char* schema_name = node_pop(source_stack);
@@ -310,13 +310,18 @@ void query_add_source(query* self,
 		unused = node_pop(source_stack);
 	}
 
-	if (fql->props.allow_stdin && istring_eq(table_name, "__stdin")) {
-		new_table->is_stdin = true;
-		return; /* avoid op_match_table_alias */
+	if (istring_eq(table_name, "__stdin")) {
+		if (fql->props.allow_stdin) {
+			new_table->is_stdin = true;
+			fql->props.allow_stdin = false; /* Only one allowed... */
+			return FQL_GOOD;                /* avoid op_match_table_alias */
+		}
+		fputs("Unable to resolve table __STDIN\n", stderr);
+		return FQL_FAIL;
 	}
 
 	/* Try to match the operation table.  For example:
-	 * 
+	 *
 	 * DELETE t1   --             ...And we want to try and match this
 	 * FROM t1     -- You are here...
 	 * WHERE FOO > 0
@@ -330,6 +335,7 @@ void query_add_source(query* self,
 	 */
 	op_match_table_alias(self->op, new_table);
 
+	return FQL_GOOD;
 }
 
 void query_add_subquery_source(query* self, query* subquery, const char* alias)

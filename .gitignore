@@ -4,6 +4,7 @@ core*
 check_hashmap
 check_constants
 check_logic
+check_scalar
 check_null
 check_read
 check_join
@@ -16,6 +17,7 @@ check_order
 check_top
 check_difficult
 check_operations
+check_stdin
 check_failure
 
 *.vgreport

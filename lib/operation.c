@@ -183,6 +183,10 @@ int op_preop(struct fql_handle* fql)
 		}
 	}
 
+	if (query->plan->has_stepped) {
+		return FQL_GOOD;
+	}
+
 	switch (*type) {
 	case OP_SELECT:
 		fqlselect_preop(query->op, query, fql);

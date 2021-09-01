@@ -26,7 +26,7 @@ fqlupdate* fqlupdate_construct(fqlupdate* self)
 	        {0},               /* update_expressions */
 	        {0},               /* set_columns */
 	        {0},               /* value_expressions */
-	        0,                 /* table_idx */
+	        -1,                /* table_idx */
 	        0,                 /* rownum */
 	        FILTER_OPEN,       /* state */
 	        false,             /* has_matched_alias */

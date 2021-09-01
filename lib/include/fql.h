@@ -217,6 +217,8 @@ void fql_set_allow_stdin(struct fql_handle* fql, int);
 /**
  * Simplest form of interaction. Send a handle and a
  * query in text form, and it will execute it.
+ * Returns:
+ *   The FQL_GOOD or FQL_FAIL
  */
 int fql_exec(struct fql_handle*, const char*);
 
