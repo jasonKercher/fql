@@ -1,4 +1,7 @@
-SUBDIRS = docs antlr
+SUBDIRS = antlr
+if USE_DOXYGEN
+SUBDIRS += docs
+endif
 
 AM_CPPFLAGS = -Iinclude -I$(top_srcdir)/util/
 include_HEADERS = include/fql.h

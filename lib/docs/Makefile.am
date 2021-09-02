@@ -1,4 +1,4 @@
-if HAVE_DOXYGEN
+if USE_DOXYGEN
 
 directory = $(top_srcdir)/lib/docs/man/man3/
 

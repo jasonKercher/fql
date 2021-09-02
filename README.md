@@ -6,12 +6,18 @@
 |_|  \__, |_|
         |_|
 ```
-This is an [ANTLR](https://www.antlr.org/) powered text processing language for Linux.  Similar in spirit to awk which uses a C-like syntax, fql uses SQL (T-SQL specifically).
+This is an [ANTLR](https://www.antlr.org/) powered text processing language for Linux.  
+Similar in spirit to awk which uses a C-like syntax, fql uses SQL (T-SQL specifically).
 
 
 ### What can it do?
 
-fql gives you the power of SQL for your delimited or fixed-width data files without the need to import them into a database.  fql aims to be fast as well as memory efficient.  Most queries should use relatively a low amount of memory. Keep in mind that memory consumption increases for things like GROUP BY, ORDER BY and JOIN. Queries are case insensitive so `SELECT * FROM T1 WHERE FOO = 'BAR'` is the same as `select * from t1 where foo = 'bar'`. Currently, fql can only do SELECT statements though it should be able to handle any amount of complexity with a handful of exceptions.
+fql gives you the power of SQL for your delimited or fixed-width data files 
+without the need to import them into a database. fql aims to be fast as well 
+as memory efficient. Most queries should use relatively a low amount of memory. 
+Keep in mind that memory consumption increases for things like GROUP BY, ORDER BY 
+and JOIN. Queries are case insensitive so `SELECT * FROM T1 WHERE FOO = 'BAR'` is 
+the same as `select * from t1 where foo = 'bar'`.
 
 ### What can it *not* do?
 
@@ -24,6 +30,7 @@ fql gives you the power of SQL for your delimited or fixed-width data files with
 - APPLY
 - UNION without ALL
 - PIVOT/UNPIVOT
+- Implicit UPDATE/DELETE into subquery
 
 Most recent and possibly unstable features:
 - UPDATE 
@@ -39,7 +46,9 @@ Here is a naive benchmark vs other similar projects:
 - base benchmark with shell tools
 
 
-Benchmarks are performed on 2 tables of generic random data of 2 000 000 records (not including header).  The gentsv.sh script can be used to build these files:
+Benchmarks are performed on 2 tables of generic random data of 
+2 000 000 records (not including header).  The gentsv.sh script 
+can be used to build these files:
 
 ```sh
 :) ./gentsv.sh 2000000 > t2.temp
@@ -109,19 +118,17 @@ csvsql|2m6.498s
 \* See benchmark.sh for additional notes
 
 ### Installation
-Bear with me because I'm new to autotools.  There is a configure script, but it is not checking everything it should.
-
 **Requirements**
 - [libcsv](https://github.com/jasonKercher/libcsv): for reading and writing correct csv files based on [RFC 4180](https://www.ietf.org/rfc/rfc4180.txt)
 - [antlr4 C++ runtime library](https://github.com/antlr/antlr4/tree/master/runtime/Cpp): This is available though pacman (`pacman -S antlr4-runtime`) if you have an Arch Linux based distribution.  I struggled getting this installed on Ubuntu and just wound up compiling it.
 - [libpcre2](https://www.pcre.org/): for LIKE statement implementation
 - [libcheck](https://github.com/libcheck/check): This is only for `make check`.
 
-Once antlr4 runtime is installed, you need determine the location of the antlr4-runtime headers since my shit autotools skills won't do it for you.  The parent directory must be set to `ANTLR4_CPATH`.  For me, this is `/usr/include`
-```
-ANTLR4_CPATH=/usr/include ./configure
+Once antlr4 runtime is installed, we want to use the find_antlr_cpath.sh script to set ANTLR4_CPATH for the configure script:
+```sh
+ANTLR4_CPATH=$(./find_antlr_cpath.sh) ./configure
 make
-make check #optional
+make check   # optional
 make install
 ```
 
