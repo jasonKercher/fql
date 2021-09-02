@@ -555,11 +555,23 @@ int _resolve_source(struct fql_handle* fql, query* query, table* table, int src_
 	 * row of the file and assume a delimited
 	 * list of field names.
 	 */
-	if (self->is_preresolved) {
-		schema_preflight(self);
+	if (self->is_default) {
+		if (!self->is_preresolved) {
+			schema_assign_header(table, rec, src_idx);
+		}
 	} else {
-		schema_assign_header(table, rec, src_idx);
+		unsigned newsize = (rec->fields.size) ? rec->fields.size : 1;
+		if (newsize < self->expressions->size) {
+			expression** it = vec_at(self->expressions, newsize);
+			for (; it != vec_end(self->expressions); ++it) {
+				delete_(expression, *it);
+			}
+			vec_resize(self->expressions, newsize);
+		}
 	}
+
+	schema_preflight(self);
+
 	if (self->is_default || !table->is_stdin) {
 		delete_(record, rec);
 	} else {
@@ -981,9 +993,7 @@ int _op_find_group(compositemap* expr_map, expression* expr, vec* key, bool loos
 		return FQL_FAIL;
 	}
 
-	fprintf(stderr,
-	        "expression `%s' unexpected expression\n",
-	        (char*)expr->alias.data);
+	fprintf(stderr, "`%s' unexpected expression\n", (char*)expr->alias.data);
 	return FQL_FAIL;
 }
 
