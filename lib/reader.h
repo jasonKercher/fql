@@ -25,6 +25,7 @@ struct reader {
 	string* random_access_filename;
 	struct node* random_access_tempnode;
 	struct csv_writer* subquery_writer;
+	record* first_rec;
 	read_fn get_record__;
 	read_at_fn get_record_at__;
 	generic_data_fn free__;

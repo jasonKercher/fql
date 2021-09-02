@@ -15,6 +15,7 @@
 @SET_MAKE@
 
 
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -131,7 +132,8 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
+am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(schemadir)" \
+	"$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libfql_la_DEPENDENCIES = antlr/libantlr.la ../util/libutil.la
 am_libfql_la_OBJECTS = libfql_la-libfql.lo libfql_la-query.lo \
@@ -237,6 +239,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+DATA = $(schema_DATA)
 HEADERS = $(include_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
@@ -307,6 +310,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CHECK_CFLAGS = @CHECK_CFLAGS@
 CHECK_LIBS = @CHECK_LIBS@
+CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
@@ -411,7 +415,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -421,9 +424,11 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = antlr $(am__append_1)
+schemadir = $(datadir)/fql/schema/
 AM_CPPFLAGS = -Iinclude -I$(top_srcdir)/util/
 include_HEADERS = include/fql.h
 lib_LTLIBRARIES = libfql.la
+schema_DATA = schema/noheader
 libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c 	    \
 	query.h query.c                             \
 		table.h table.c                         \
@@ -460,7 +465,7 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c 	    \
 	fqlsig.h fqlsig.c                           \
 	misc.h
 
-libfql_la_CFLAGS = -Wextra -Wall -Wno-unused-parameter
+libfql_la_CFLAGS = -Wextra -Wall -Wno-unused-parameter -DSCHEMA_DATADIR=$(schemadir)
 libfql_la_LDFLAGS = -l:libcsv.so.1 -lpcre2-8 -lantlr4-runtime -pthread -version-info 1:1:0
 libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la
 all: all-recursive
@@ -838,6 +843,27 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-schemaDATA: $(schema_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(schema_DATA)'; test -n "$(schemadir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(schemadir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(schemadir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(schemadir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(schemadir)" || exit $$?; \
+	done
+
+uninstall-schemaDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(schema_DATA)'; test -n "$(schemadir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(schemadir)'; $(am__uninstall_files_from_dir)
 install-includeHEADERS: $(include_HEADERS)
 	@$(NORMAL_INSTALL)
 	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
@@ -1019,10 +1045,10 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LTLIBRARIES) $(HEADERS)
+all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(schemadir)" "$(DESTDIR)$(includedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -1110,7 +1136,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-includeHEADERS
+install-data-am: install-includeHEADERS install-schemaDATA
 
 install-dvi: install-dvi-recursive
 
@@ -1188,7 +1214,8 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES
+uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES \
+	uninstall-schemaDATA
 
 .MAKE: $(am__recursive_targets) install-am install-strip
 
@@ -1202,12 +1229,13 @@ uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES
 	install-exec-am install-html install-html-am \
 	install-includeHEADERS install-info install-info-am \
 	install-libLTLIBRARIES install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-includeHEADERS \
-	uninstall-libLTLIBRARIES
+	install-ps install-ps-am install-schemaDATA install-strip \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
+	uninstall-includeHEADERS uninstall-libLTLIBRARIES \
+	uninstall-schemaDATA
 
 .PRECIOUS: Makefile
 

@@ -21,6 +21,7 @@ reader* reader_construct(reader* self)
 	        NULL,         /* random_access_filename */
 	        NULL,         /* random_access_tempnode */
 	        NULL,         /* subquery_writer */
+	        NULL,         /* first_rec */
 	        NULL,         /* get_record__ */
 	        NULL,         /* get_record_at__ */
 	        NULL,         /* free__ */
@@ -41,10 +42,13 @@ reader* reader_construct(reader* self)
 void reader_destroy(reader* self)
 {
 	string_destroy(&self->file_name);
+	delete_if_exists_(record, self->first_rec);
+
 	if (self->free__) {
 		self->free__(self->reader_data);
 	}
 
+	/* TODO */
 	if (self->random_access_filename != NULL) { }
 }
 

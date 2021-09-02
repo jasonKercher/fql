@@ -44,7 +44,6 @@ int fql_read(process* proc)
 
 	node** rg_iter = fifo_begin(in);
 	for (; rg_iter != fifo_end(in) && fifo_receivable(out); rg_iter = fifo_iter(in)) {
-		record* rec = (*rg_iter)->data;
 		switch (reader->get_record__(reader, *rg_iter)) {
 		case FQL_GOOD:
 			break;
@@ -55,6 +54,7 @@ int fql_read(process* proc)
 			return 0;
 		}
 
+		record* rec = (*rg_iter)->data;
 		rec->src_idx = table->idx;
 		fifo_add(out, rg_iter);
 	}
@@ -497,9 +497,16 @@ int fql_distinct(process* proc)
 
 int fql_select(process* proc)
 {
+	fqlselect* select = proc->proc_data;
+
 	/* Check if the process in front is closed */
 	fifo* out = proc->fifo_out[0];
 	if (out && !out->is_open) {
+		dnode** it = vec_begin(proc->union_end_nodes);
+		for (; it != vec_end(proc->union_end_nodes); ++it) {
+			process* union_end_proc = (*it)->data;
+			union_end_proc->fifo_out[0]->is_open = false;
+		}
 		process_disable(proc);
 		return FQL_GOOD;
 	}
@@ -511,8 +518,6 @@ int fql_select(process* proc)
 		}
 		proc->wait_for_in0 = false;
 	}
-
-	fqlselect* select = proc->proc_data;
 
 	////
 

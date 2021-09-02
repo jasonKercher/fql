@@ -18,6 +18,9 @@ extern "C" {
 typedef void (*generic_data_fn)(void*);
 typedef int (*int_generic_data_fn)(void*);
 
+#define _quote_macro_(x) #x
+#define quote_macro_(x)  _quote_macro_(x)
+
 /**
  * malloc wrapper that does error checking
  */

@@ -3,9 +3,12 @@ if USE_DOXYGEN
 SUBDIRS += docs
 endif
 
+schemadir = $(datadir)/fql/schema/
+
 AM_CPPFLAGS = -Iinclude -I$(top_srcdir)/util/
 include_HEADERS = include/fql.h
 lib_LTLIBRARIES = libfql.la
+schema_DATA = schema/noheader
 libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c 	    \
 	query.h query.c                             \
 		table.h table.c                         \
@@ -42,6 +45,6 @@ libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c 	    \
 	fqlsig.h fqlsig.c                           \
 	misc.h
 
-libfql_la_CFLAGS = -Wextra -Wall -Wno-unused-parameter
+libfql_la_CFLAGS = -Wextra -Wall -Wno-unused-parameter -DSCHEMA_DATADIR=$(schemadir)
 libfql_la_LDFLAGS = -l:libcsv.so.1 -lpcre2-8 -lantlr4-runtime -pthread -version-info 1:1:0
 libfql_la_LIBADD = antlr/libantlr.la ../util/libutil.la

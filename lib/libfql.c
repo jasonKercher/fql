@@ -37,7 +37,8 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	        NULL,                                                     /* queries */
 	        new_t_(vec, struct fql_field),                            /* api_vec */
 	        new_(hashmap, sizeof(schema*), 16, HASHMAP_PROP_DEFAULT), /* schema_map */
-	        NULL,                                                     /* query_str */
+	        NULL,  /* schema_paths */
+	        NULL,  /* query_str */
 	        false, /* _out_delim_set */
 	        {
 	                new_(string),        /* schema_path */
@@ -73,6 +74,13 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 
 void fql_free(struct fql_handle* fql)
 {
+	if (fql->schema_paths != NULL) {
+		string** it = vec_begin(fql->schema_paths);
+		for (; it != vec_end(fql->schema_paths); ++it) {
+			delete_(string, *it);
+		}
+		delete_(vec, fql->schema_paths);
+	}
 	delete_(hashmap, fql->schema_map);
 	delete_(string, fql->props.schema_path);
 	delete_(string, fql->props.schema);

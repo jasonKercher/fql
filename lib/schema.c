@@ -29,7 +29,7 @@ schema* schema_construct(schema* self)
 	*self = (schema) {
 	        new_t_(vec, expression*), /* expressions */
 	        NULL,                     /* expr_map */
-	        NULL,                     /* schema_path */
+	        new_(string),             /* schema_path */
 	        NULL,                     /* name */
 	        "",                       /* delimiter */
 	        "",                       /* line_ending */
@@ -126,8 +126,16 @@ void schema_preflight(schema* self)
 	}
 }
 
-int _fuzzy_resolve_file(string* dest, const string* input, int strictness)
+enum _fuzzy_return {
+	FUZZY_SUCCESS,
+	FUZZY_AMBIGUOUS,
+	FUZZY_NOTFOUND,
+};
+
+
+enum _fuzzy_return _fuzzy_resolve_file(string* dest, const string* input, int strictness)
 {
+	enum _fuzzy_return ret = FUZZY_NOTFOUND;
 	string basedata;
 	string dirdata;
 	string file_noext;
@@ -151,12 +159,13 @@ int _fuzzy_resolve_file(string* dest, const string* input, int strictness)
 		if (string_eq(node->data, base)) {
 			++matches;
 			string_sprintf(dest, "%s/%s", dir, node->data);
-			goto fuzzy_file_match_success;
+			ret = FUZZY_SUCCESS;
+			goto fuzzy_file_match_return;
 		}
 	}
 
 	if (strictness) {
-		goto fuzzy_file_match_fail;
+		goto fuzzy_file_match_return;
 	}
 
 	/* match exact ignoring case */
@@ -167,11 +176,9 @@ int _fuzzy_resolve_file(string* dest, const string* input, int strictness)
 		}
 	}
 
-	if (matches > 1) {
-		fprintf(stderr, "%s: ambiguous file name\n", string_c_str(input));
-		goto fuzzy_file_match_fail;
-	} else if (matches) {
-		goto fuzzy_file_match_success;
+	if (matches) {
+		ret = (matches > 1) ? FUZZY_AMBIGUOUS : FUZZY_SUCCESS;
+		goto fuzzy_file_match_return;
 	}
 
 	/* match file without extension */
@@ -184,11 +191,9 @@ int _fuzzy_resolve_file(string* dest, const string* input, int strictness)
 		}
 	}
 
-	if (matches > 1) {
-		fprintf(stderr, "%s.*: ambiguous file\n", base);
-		goto fuzzy_file_match_fail;
-	} else if (matches) {
-		goto fuzzy_file_match_success;
+	if (matches) {
+		ret = (matches > 1) ? FUZZY_AMBIGUOUS : FUZZY_SUCCESS;
+		goto fuzzy_file_match_return;
 	}
 
 	/* match file without extension ignoring case */
@@ -201,31 +206,16 @@ int _fuzzy_resolve_file(string* dest, const string* input, int strictness)
 		}
 	}
 
-	if (matches > 1) {
-		fprintf(stderr, "%s.*: ambiguous file\n", base);
-		goto fuzzy_file_match_fail;
-	} else if (matches) {
-		goto fuzzy_file_match_success;
+	if (matches) {
+		ret = (matches > 1) ? FUZZY_AMBIGUOUS : FUZZY_SUCCESS;
 	}
 
-	fprintf(stderr,
-	        "%s: unable to find matching file (directory: `%s')\n",
-	        base,
-	        dir);
-
-fuzzy_file_match_fail:
-	node_free_data(&files);
-	string_destroy(&file_noext);
-	string_destroy(&basedata);
-	string_destroy(&dirdata);
-	return FQL_FAIL;
-
-fuzzy_file_match_success:
+fuzzy_file_match_return:
 	node_free_data(&files);
 	string_destroy(&basedata);
 	string_destroy(&dirdata);
 	string_destroy(&file_noext);
-	return 1;
+	return ret;
 }
 
 int _resolve_file(struct fql_handle* fql, query* query, table* table)
@@ -234,9 +224,21 @@ int _resolve_file(struct fql_handle* fql, query* query, table* table)
 		return FQL_GOOD;
 	}
 
-	try_(_fuzzy_resolve_file(&table->reader->file_name,
-	                         &table->name,
-	                         fql->props.strictness));
+	switch (_fuzzy_resolve_file(&table->reader->file_name,
+	                            &table->name,
+	                            fql->props.strictness)) {
+	case FUZZY_AMBIGUOUS:
+		fprintf(stderr,
+		        "Table name ambiguous: %s\n",
+		        string_c_str(&table->reader->file_name));
+		return FQL_FAIL;
+	case FUZZY_NOTFOUND:
+		fprintf(stderr,
+		        "Table not resolved: %s\n",
+		        string_c_str(&table->reader->file_name));
+		return FQL_FAIL;
+	default:;
+	}
 
 	char absolute_path[PATH_MAX];
 	if (!realpath(string_c_str(&table->reader->file_name), absolute_path)) {
@@ -288,48 +290,6 @@ void schema_assign_header(table* table, record* rec, int src_idx)
 	}
 
 	schema_preflight(table->schema);
-}
-
-/* Schema path is determined by the following hierarchy:
- *  1. fql->props.schema_path
- *  2. FQL_SCHEMA_PATH environment variable
- *  3. $HOME/.config/fql
- *  4. ./ OR should probably just throw error here...
- */
-int _resolve_schema_path(schema* self, struct fql_handle* fql)
-{
-	self->schema_path = new_(string);
-	DIR* schema_dir = NULL;
-
-	if (!string_empty(fql->props.schema_path)) {
-		string_copy(self->schema_path, fql->props.schema_path);
-		goto dir_check;
-	}
-
-	const char* path_from_env = getenv("FQL_SCHEMA_PATH");
-	if (path_from_env != NULL) {
-		string_strcpy(self->schema_path, path_from_env);
-		goto dir_check;
-	}
-
-	const char* home_path = getenv("HOME");
-	if (home_path != NULL) {
-		string_sprintf(self->schema_path, "%s/.config/fql", home_path);
-		goto dir_check;
-	}
-
-dir_check:
-	schema_dir = opendir(string_c_str(self->schema_path));
-	if (schema_dir) {
-		closedir(schema_dir);
-		return FQL_GOOD;
-	}
-
-	/* Optionally, we could default to CWD */
-	fprintf(stderr,
-	        "Schema path `%s' could not be accessed. Consider creating it.\n",
-	        string_c_str(self->schema_path));
-	return FQL_FAIL;
 }
 
 int _set_variable_from_rec(schema* self, struct csv_record* rec)
@@ -485,20 +445,37 @@ parse_schema_return:
 int _load_by_name(table* table, struct fql_handle* fql, int src_idx)
 {
 	schema* self = table->schema;
-	try_(_resolve_schema_path(self, fql));
-
 	string* full_path_temp = new_(string);
-	string_sprintf(full_path_temp,
-	               "%s/%s",
-	               string_c_str(self->schema_path),
-	               string_c_str(self->name));
+	enum _fuzzy_return ret = FUZZY_NOTFOUND;
 
-	if (_fuzzy_resolve_file(self->schema_path, full_path_temp, fql->props.strictness)
-	    == FQL_FAIL) {
-		delete_(string, full_path_temp);
+	string** path_iter = vec_begin(fql->schema_paths);
+	for (; path_iter != vec_end(fql->schema_paths) && ret == FUZZY_NOTFOUND;
+	     ++path_iter) {
+		string_sprintf(full_path_temp,
+		               "%s/%s",
+		               string_c_str(*path_iter),
+		               string_c_str(self->name));
+
+		ret = _fuzzy_resolve_file(self->schema_path,
+		                          full_path_temp,
+		                          fql->props.strictness);
+		if (ret == FUZZY_AMBIGUOUS) {
+			fprintf(stderr,
+			        "schema name `%s' ambiguous in directory `%s'\n",
+			        string_c_str(self->name),
+			        string_c_str(*path_iter));
+			return FQL_FAIL;
+		}
+	}
+
+	delete_(string, full_path_temp);
+
+	if (ret == FUZZY_NOTFOUND) {
+		fprintf(stderr,
+		        "schema name `%s' could not be found\n",
+		        string_c_str(self->name));
 		return FQL_FAIL;
 	}
-	delete_(string, full_path_temp);
 
 	try_(_parse_schema_file(table, fql, src_idx));
 
@@ -558,15 +535,13 @@ int _resolve_source(struct fql_handle* fql, query* query, table* table, int src_
 	case IO_SUBQUERY:
 		return FQL_GOOD;
 	case IO_LIBCSV:
-		if (!self->is_default) {
-			schema_preflight(self);
-			return FQL_GOOD;
-		}
 	default:;
 	}
 
 	node rg = {0};
-	rg.data = new_(record, 0);
+	record* rec = new_(record, 0);
+	rg.data = rec;
+
 	table->reader->max_idx = INT_MAX;
 	table->reader->get_record__(table->reader, &rg);
 	table->reader->max_idx = 0;
@@ -579,16 +554,17 @@ int _resolve_source(struct fql_handle* fql, query* query, table* table, int src_
 	 * and determine schema by reading the top
 	 * row of the file and assume a delimited
 	 * list of field names.
-	 * This is the "default schema".
 	 */
-	record* rec = rg.data;
-
 	if (self->is_preresolved) {
 		schema_preflight(self);
 	} else {
 		schema_assign_header(table, rec, src_idx);
 	}
-	delete_(record, rg.data);
+	if (self->is_default || !table->is_stdin) {
+		delete_(record, rec);
+	} else {
+		table->reader->first_rec = rec;
+	}
 
 	return FQL_GOOD;
 }
@@ -1327,8 +1303,85 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	return FQL_GOOD;
 }
 
+int _add_schema_path(struct fql_handle* fql, string* schema_path)
+{
+	DIR* schema_dir = opendir(string_c_str(schema_path));
+	if (!schema_dir) {
+		delete_(string, schema_path);
+		return FQL_FAIL;
+	}
+
+	closedir(schema_dir);
+
+	vec_push_back(fql->schema_paths, &schema_path);
+
+	return FQL_GOOD;
+}
+
+/* Schema path is determined by the following hierarchy:
+ *  1. fql->props.schema_path
+ *  2. FQL_SCHEMA_PATH environment variable
+ *  3. $HOME/.config/fql/schema/
+ *  4. $datarootdir/fql/schema/
+ */
+int _resolve_schema_paths(struct fql_handle* fql)
+{
+	if (fql->schema_paths != NULL) {
+		return FQL_GOOD;
+	}
+
+	fql->schema_paths = new_t_(vec, string*);
+
+	/* Add --schema-path */
+	if (!string_empty(fql->props.schema_path)) {
+		string* schema_path = new_(string);
+		string_copy(schema_path, fql->props.schema_path);
+		if (_add_schema_path(fql, schema_path)) {
+			fprintf(stderr,
+			        "schema path defined by variable "
+			        "props.schema_path (%s) is invalid\n",
+			        string_c_str(fql->props.schema_path));
+			return FQL_FAIL;
+		}
+	}
+
+	/* Add FQL_SCHEMA_PATH */
+	const char* path_from_env = getenv("FQL_SCHEMA_PATH");
+	if (path_from_env != NULL) {
+		string* schema_path = string_from_char_ptr(path_from_env);
+		if (_add_schema_path(fql, schema_path)) {
+			fprintf(stderr,
+			        "schema path defined by environment variable "
+			        "FQL_SCHEMA_PATH (%s) is invalid\n",
+			        path_from_env);
+			return FQL_FAIL;
+		}
+	}
+
+	/* NOTE: We do not check the return codes for ~/.config/fql/schema
+	 *       or ${datarootdir}/fql/schema because, we should not error
+	 *       out if they don't exist.
+	 */
+
+	/* Add ~/.config/fql/schema */
+	const char* home_path = getenv("HOME");
+	if (home_path != NULL) {
+		string* schema_path = new_(string);
+		string_sprintf(schema_path, "%s/.config/fql/schema", home_path);
+		_add_schema_path(fql, schema_path);
+	}
+
+	/* add ${datarootdir}/fql/schema/ */
+	string* schema_path = string_from_char_ptr(quote_macro_(SCHEMA_DATADIR));
+	_add_schema_path(fql, schema_path);
+
+	return FQL_GOOD;
+}
+
 int schema_resolve(struct fql_handle* fql)
 {
+	try_(_resolve_schema_paths(fql));
+
 	node* query_node = fql->query_list;
 	for (; query_node; query_node = query_node->next) {
 		query* query = query_node->data;

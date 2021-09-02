@@ -26,7 +26,17 @@ int libcsv_get_record(reader* self, node* rg)
 		rec->offset = csv->offset;
 	}
 
-	int ret = csv_get_record_to(csv, rec->libcsv_rec, self->max_idx + 1);
+	int ret = 0;
+	/* This comes from delimiter discovery in schema.c:_resolve_source */
+	if (self->first_rec != NULL) {
+		delete_(record, rec);
+		rec = self->first_rec;
+		self->first_rec = NULL;
+		rg->data = rec;
+		ret = CSV_GOOD;
+	} else {
+		ret = csv_get_record_to(csv, rec->libcsv_rec, self->max_idx + 1);
+	}
 	switch (ret) {
 	case CSV_GOOD:
 		break;

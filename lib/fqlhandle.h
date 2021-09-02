@@ -11,6 +11,7 @@ struct fql_handle {
 	struct node* query_list;
 	struct vec* api_vec;
 	struct hashmap* schema_map;
+	struct vec* schema_paths;
 	char* query_str;
 	bool _out_delim_set;
 	struct {
