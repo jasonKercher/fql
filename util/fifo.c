@@ -122,13 +122,12 @@ int fifo_nget(fifo* self, vec* buffer, int block_size, unsigned max)
 {
 	pthread_mutex_lock(&self->tail_mutex);
 	unsigned available = fifo_available(self);
-	if (available > max) {
-		available = max;
-	}
-	available -= available % block_size;
+	unsigned transfer_size = (available > max) ? max : available;
+
+	transfer_size -= transfer_size % block_size;
 
 	unsigned i = 0;
-	for (; i < available; ++i) {
+	for (; i < transfer_size; ++i) {
 		vec_push_back(buffer, vec_at(self->buf, self->tail));
 		_idx_adv_(self->tail);
 	}
@@ -136,7 +135,8 @@ int fifo_nget(fifo* self, vec* buffer, int block_size, unsigned max)
 	pthread_cond_signal(&self->cond_get);
 	pthread_mutex_unlock(&self->tail_mutex);
 
-	return available;
+	/* Return what we *know* is available */
+	return available - transfer_size;
 }
 
 void* fifo_peek(const fifo* self)

@@ -3,13 +3,13 @@
 #include <stdbool.h>
 #include <pthread.h>
 
-#include "aggregate.h"
 #include "fql.h"
 #include "misc.h"
 #include "table.h"
 #include "group.h"
 #include "reader.h"
 #include "record.h"
+#include "aggregate.h"
 #include "operation.h"
 #include "fqlselect.h"
 #include "util/vec.h"
@@ -269,50 +269,31 @@ void* _thread_exec(void* data)
 	fifo* out0 = self->fifo_out[0];
 	fifo* out1 = self->fifo_out[1];
 
-	while (self->is_enabled) {
-		if (self->wait_for_in0 && fifo_is_empty(in0)) {
-			if (!in0->is_open) {
-				if (self->wait_for_in0_end) {
-					self->wait_for_in0 = false;
-					continue;
-				} else {
-					process_disable(self);
-					break;
-				}
-			}
-			//if (node->is_root) {
-			fifo_wait_for_add(in0);
-			//} else {
-			//	//fifo_wait_for_work(in0);
-			//}
-			if (fifo_is_empty(in0)) {
-				process_disable(self);
-				break;
-			}
-		}
-		if (in1) {
-			if (fifo_is_open(in1) && fifo_is_open(in0)
-			    && fifo_is_empty(in1)) {
-				//fifo_wait_for_work(in1);
-				fifo_wait_for_add(in1);
-			}
-		}
-		if (out0) {
-			while (!fifo_receivable(out0)) {
-				fifo_wait_for_get(out0);
-			}
-		}
-		if (out1) {
-			while (!fifo_receivable(out1)) {
-				fifo_wait_for_get(out1);
-			}
-		}
-		int ret = self->action__(self);
+	// TODO: This is dumb
+	if (self->wait_list != NULL) {
+		while (_check_wait_list(self->wait_list))
+			;
+	}
 
-		/* TODO: what is best practice here? */
-		if (ret == FQL_FAIL) {
-			//process_disable(self);
+	while (self->is_enabled) {
+		switch (self->action__(self)) {
+		case PROC_RETURN_COMPLETE:
+			process_disable(self);
+			break;
+		case PROC_RETURN_FAIL:
+			/* TODO */
 			exit(EXIT_FAILURE);
+		case PROC_RETURN_WAIT_ON_IN0:
+			fifo_wait_for_add(in0);
+			break;
+		case PROC_RETURN_WAIT_ON_IN1:
+			fifo_wait_for_add(in1);
+			break;
+		case PROC_RETURN_WAIT_ON_OUT0:
+			fifo_wait_for_add(out0);
+			break;
+		case PROC_RETURN_WAIT_ON_OUT1:
+			fifo_wait_for_add(out1);
 			break;
 		}
 	}

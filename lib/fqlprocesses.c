@@ -21,12 +21,12 @@ void _recycle(process* proc, node** rg)
 	}
 }
 
-int fql_read(process* proc)
+enum proc_return fql_read(process* proc)
 {
 	fifo* out = proc->fifo_out[0];
 	if (!out->is_open) {
 		process_disable(proc);
-		return 0;
+		return PROC_RETURN_COMPLETE;
 	}
 
 	fifo* in = proc->fifo_in[0];
@@ -34,7 +34,7 @@ int fql_read(process* proc)
 		if (!in->is_open) {
 			process_disable(proc);
 		}
-		return 0;
+		return PROC_RETURN_COMPLETE;
 	}
 
 	table* table = proc->proc_data;
@@ -42,33 +42,42 @@ int fql_read(process* proc)
 
 	////
 
+	enum proc_return ret =
+	        (in == proc->root_ref) ? PROC_RETURN_RUNNING : PROC_RETURN_WAIT_ON_IN0;
+
 	node** rg_iter = fifo_begin(in);
-	for (; rg_iter != fifo_end(in) && fifo_receivable(out); rg_iter = fifo_iter(in)) {
+	while (rg_iter != fifo_end(in)) {
 		switch (reader->get_record__(reader, *rg_iter)) {
 		case FQL_GOOD:
 			break;
 		case FQL_FAIL:
-			return FQL_FAIL;
+			return PROC_RETURN_FAIL;
 		default: /* eof */
 			process_disable(proc);
-			return 0;
+			return PROC_RETURN_COMPLETE;
 		}
 
 		record* rec = (*rg_iter)->data;
 		rec->src_idx = table->idx;
 		fifo_add(out, rg_iter);
+
+		rg_iter = fifo_iter(in);
+		if (!fifo_receivable(out)) {
+			ret = PROC_RETURN_WAIT_ON_OUT0;
+			break;
+		}
 	}
 	fifo_update(in);
 
-	return 1;
+	return ret;
 }
 
-int fql_cartesian_join(process* proc)
+enum proc_return fql_cartesian_join(process* proc)
 {
 	fifo* out = proc->fifo_out[0];
 	if (!out->is_open) {
 		process_disable(proc);
-		return 0;
+		return PROC_RETURN_COMPLETE;
 	}
 
 	fifo* in_left = proc->fifo_in[0];
@@ -78,7 +87,7 @@ int fql_cartesian_join(process* proc)
 		if (!in_left->is_open) {
 			process_disable(proc);
 		}
-		return 1;
+		return PROC_RETURN_WAIT_ON_IN0;
 	}
 
 	table* table = proc->proc_data;
@@ -86,13 +95,18 @@ int fql_cartesian_join(process* proc)
 
 	////
 
+	enum proc_return ret = PROC_RETURN_RUNNING;
+
 	node** iter_left = fifo_begin(in_left);
 	unsigned out_space = fifo_receivable(out);
 
 	if (proc->inbuf_idx == proc->inbuf->size) {
 		vec_clear(proc->inbuf);
 		proc->inbuf_idx = 0;
-		fifo_nget(in_right, proc->inbuf, proc->out_src_count, out_space);
+		if (fifo_nget(in_right, proc->inbuf, proc->out_src_count, out_space)
+		    < proc->out_src_count) {
+			ret = PROC_RETURN_WAIT_ON_IN1;
+		}
 	}
 	node** iter_right = vec_at(proc->inbuf, proc->inbuf_idx);
 	for (; iter_right != vec_end(proc->inbuf); ++iter_right, ++proc->inbuf_idx) {
@@ -104,11 +118,11 @@ int fql_cartesian_join(process* proc)
 		case FQL_GOOD:
 			break;
 		case FQL_FAIL:
-			return FQL_FAIL;
+			return PROC_RETURN_FAIL;
 		default: { /* eof */
 			reader->reset__(reader);
 			fifo_iter(in_left);
-			return 1;
+			return PROC_RETURN_RUNNING;
 		}
 		}
 
@@ -126,10 +140,10 @@ int fql_cartesian_join(process* proc)
 		fifo_add(out, right_head);
 	}
 
-	return 1;
+	return ret;
 }
 
-int _hash_join_right_side(process* proc, table* table, fifo* in_right)
+enum proc_return _hash_join_right_side(process* proc, table* table, fifo* in_right)
 {
 	struct hashjoin* hj = table->join_data;
 
@@ -152,7 +166,7 @@ int _hash_join_right_side(process* proc, table* table, fifo* in_right)
 			try_(expression_get_stringview(&sv, hj->right_expr, *rg_iter));
 			break;
 		default:
-			return FQL_FAIL;
+			return PROC_RETURN_FAIL;
 		}
 
 		record* rec = (*rg_iter)->data;
@@ -162,7 +176,7 @@ int _hash_join_right_side(process* proc, table* table, fifo* in_right)
 	}
 	fifo_update(in_right);
 
-	return FQL_GOOD;
+	return PROC_RETURN_WAIT_ON_IN1;
 }
 
 long _hash_join_left_side(process* proc, table* table, node* left_rg)
@@ -204,49 +218,47 @@ long _hash_join_left_side(process* proc, table* table, node* left_rg)
 	return *offset;
 }
 
-int fql_hash_join(process* proc)
+enum proc_return fql_hash_join(process* proc)
 {
 	fifo* out_false = proc->fifo_out[0];
 	fifo* out_true = proc->fifo_out[1];
 	if ((out_true && !out_true->is_open) || (out_false && !out_false->is_open)) {
 		process_disable(proc);
-		return 0;
+		return PROC_RETURN_COMPLETE;
 	}
 
 	fifo* in_left = proc->fifo_in[0];
 	fifo* in_right = proc->fifo_in[1];
-
-	if (fifo_is_empty(in_left) && fifo_is_empty(in_right)) {
-		if (!in_right->is_open && !in_left->is_open) {
-			process_disable(proc);
-		}
-		return 1;
-	}
 
 	table* table = proc->proc_data;
 	struct hashjoin* hj = table->join_data;
 
 	////
 
-	if (hj->state == SIDE_RIGHT && fifo_is_empty(in_right)) {
-		if (!in_right->is_open) {
-			hj->state = SIDE_LEFT;
-			table->reader->reset__(table->reader);
-			return 1;
-		} else {
-			return 0;
+	if (hj->state == SIDE_RIGHT) {
+		if (fifo_is_empty(in_right)) {
+			if (!in_right->is_open) {
+				hj->state = SIDE_LEFT;
+				table->reader->reset__(table->reader);
+				return PROC_RETURN_RUNNING;
+			}
+			return PROC_RETURN_WAIT_ON_IN1;
 		}
+		return _hash_join_right_side(proc, table, in_right);
 	}
 
-	if (hj->state == SIDE_RIGHT) {
-		try_(_hash_join_right_side(proc, table, in_right));
-		return 1;
+	/* We can assume SIDE_LEFT if we made it this far */
+	if (fifo_is_empty(in_left)) {    // && fifo_is_empty(in_right)) {
+		if (!in_left->is_open) { // && !in_right->is_open) {
+			process_disable(proc);
+		}
+		return PROC_RETURN_WAIT_ON_IN0;
 	}
+
+	enum proc_return ret = PROC_RETURN_WAIT_ON_IN0;
 
 	node** left_rg_iter = fifo_begin(in_left);
-	while (left_rg_iter != fifo_end(in_left) && fifo_receivable(out_true)
-	       && (out_false == NULL || fifo_receivable(out_false))) {
-
+	while (left_rg_iter != fifo_end(in_left)) {
 		long offset = try_(_hash_join_left_side(proc, table, *left_rg_iter));
 		if (offset == -1) {
 			if (table->join_type == JOIN_LEFT) {
@@ -257,6 +269,14 @@ int fql_hash_join(process* proc)
 				_recycle(proc, left_rg_iter);
 			}
 			left_rg_iter = fifo_iter(in_left);
+			if (!fifo_receivable(out_true)) {
+				ret = PROC_RETURN_WAIT_ON_OUT1;
+				break;
+			}
+			if (out_false && !fifo_receivable(out_false)) {
+				ret = PROC_RETURN_WAIT_ON_OUT0;
+				break;
+			}
 			continue;
 		}
 		node** right_rg = fifo_get(proc->root_ref);
@@ -287,19 +307,28 @@ int fql_hash_join(process* proc)
 			}
 			fifo_add(out_true, right_rg);
 		}
+
+		if (!fifo_receivable(out_true)) {
+			ret = PROC_RETURN_WAIT_ON_OUT1;
+			break;
+		}
+		if (out_false && !fifo_receivable(out_false)) {
+			ret = PROC_RETURN_WAIT_ON_OUT0;
+			break;
+		}
 	}
 	fifo_update(in_left);
 
-	return 1;
+	return ret;
 }
 
-int fql_logic(process* proc)
+enum proc_return fql_logic(process* proc)
 {
 	fifo* out_false = proc->fifo_out[0];
 	fifo* out_true = proc->fifo_out[1];
 	if ((out_true && !out_true->is_open) || (out_false && !out_false->is_open)) {
 		process_disable(proc);
-		return 0;
+		return PROC_RETURN_COMPLETE;
 	}
 
 	fifo* in = proc->fifo_in[0];
@@ -307,22 +336,22 @@ int fql_logic(process* proc)
 		if (!in->is_open) {
 			process_disable(proc);
 		}
-		return 1;
+		return PROC_RETURN_WAIT_ON_IN0;
 	}
 
 	logicgroup* lg = proc->proc_data;
 
 	////
 
-	node** rg_iter = fifo_begin(in);
-	for (; rg_iter != fifo_end(in) && (!out_true || fifo_receivable(out_true))
-	       && (!out_false || fifo_receivable(out_false));
-	     rg_iter = fifo_iter(in)) {
-		int ret = try_(logicgroup_eval(lg, *rg_iter, lg->join_logic));
+	enum proc_return ret = PROC_RETURN_WAIT_ON_IN0;
 
-		if (ret && out_true != NULL) {
+	node** rg_iter = fifo_begin(in);
+	while (rg_iter != fifo_end(in)) {
+		int result = try_(logicgroup_eval(lg, *rg_iter, lg->join_logic));
+
+		if (result && out_true != NULL) {
 			fifo_add(out_true, rg_iter);
-		} else if (!ret && out_false != NULL) {
+		} else if (!result && out_false != NULL) {
 			fifo_add(out_false, rg_iter);
 		} else {
 			_recycle(proc, rg_iter);
@@ -332,20 +361,31 @@ int fql_logic(process* proc)
 			process_disable(proc);
 			break;
 		}
+
+		rg_iter = fifo_iter(in);
+
+		if (out_true && !fifo_receivable(out_true)) {
+			ret = PROC_RETURN_WAIT_ON_OUT1;
+			break;
+		}
+		if (out_false && !fifo_receivable(out_false)) {
+			ret = PROC_RETURN_WAIT_ON_OUT0;
+			break;
+		}
 	}
 	fifo_update(in);
 
-	return 1;
+	return ret;
 }
 
-int fql_left_join_logic(process* proc)
+enum proc_return fql_left_join_logic(process* proc)
 {
 	// No out_false for left_join
 	//fifo* out_false = proc->fifo_out[0];
 	fifo* out_true = proc->fifo_out[1];
 	if (out_true && !out_true->is_open) {
 		process_disable(proc);
-		return 0;
+		return PROC_RETURN_COMPLETE;
 	}
 
 	fifo* in = proc->fifo_in[0];
@@ -353,20 +393,21 @@ int fql_left_join_logic(process* proc)
 		if (!in->is_open) {
 			process_disable(proc);
 		}
-		return 1;
+		return PROC_RETURN_WAIT_ON_IN0;
 	}
 
 	logicgroup* lg = proc->proc_data;
 
 	////
 
+	enum proc_return ret = PROC_RETURN_WAIT_ON_IN0;
+
 	node** rg_iter = fifo_begin(in);
-	for (; rg_iter != fifo_end(in) && fifo_receivable(out_true);
-	     rg_iter = fifo_iter(in)) {
-		/* If we are short a node, right side is already NULL.
-		 * These records have already failed a hash join.
+	while (rg_iter != fifo_end(in)) {
+		/* If the right-most expected node is missing,
+		 * these records have already failed a hash join.
 		 */
-		if (node_count(*rg_iter) == proc->out_src_count) {
+		if (record_at(*rg_iter, proc->out_src_count - 1) != NULL) {
 			if (!try_(logicgroup_eval(lg, *rg_iter, lg->join_logic))) {
 				/* our condition failed, but we still want to pass 
 				 * it on. Chop off right-most node and recycle it.
@@ -377,47 +418,60 @@ int fql_left_join_logic(process* proc)
 			}
 		}
 
-		/* TODO: handle a complex delete here */
 		fifo_add(out_true, rg_iter);
+
+
+		rg_iter = fifo_iter(in);
+		if (!out_true && !fifo_receivable(out_true)) {
+			ret = PROC_RETURN_WAIT_ON_OUT1;
+			break;
+		}
 	}
 	fifo_update(in);
 
-	return 1;
+	return ret;
 }
 
-int _group_dump(process* proc, fifo* in_fresh, fifo* out)
+enum proc_return _group_dump(process* proc, fifo* in_fresh, fifo* out)
 {
 	group* group = proc->proc_data;
 
+	enum proc_return ret = PROC_RETURN_WAIT_ON_IN0;
+
 	node** rg_iter = fifo_begin(in_fresh);
-	for (; rg_iter != fifo_end(in_fresh) && fifo_receivable(out);
-	     rg_iter = fifo_iter(in_fresh)) {
+	while (rg_iter != fifo_end(in_fresh)) {
 		record* rec = (*rg_iter)->data;
 		rec->src_idx = 0;
 
 		switch (group_dump_record(group, rec)) {
 		case FQL_FAIL:
-			return FQL_FAIL;
+			return PROC_RETURN_FAIL;
 		case FQL_GOOD:
 			fifo_add(out, rg_iter);
 			break;
 		default:
 			process_disable(proc);
-			return 0;
+			return PROC_RETURN_COMPLETE;
+		}
+
+		rg_iter = fifo_iter(in_fresh);
+		if (!fifo_receivable(out)) {
+			ret = PROC_RETURN_WAIT_ON_OUT0;
+			break;
 		}
 	}
 	fifo_update(in_fresh);
 
-	return 1;
+	return ret;
 }
 
-int fql_groupby(process* proc)
+enum proc_return fql_groupby(process* proc)
 {
 	fifo* out = proc->fifo_out[0];
 
 	if (!out->is_open) {
 		process_disable(proc);
-		return 0;
+		return PROC_RETURN_COMPLETE;
 	}
 
 	fifo* in_data = proc->fifo_in[0];
@@ -455,34 +509,37 @@ int fql_groupby(process* proc)
 		}
 	}
 	fifo_update(in_data);
-	return 1;
+	return PROC_RETURN_WAIT_ON_IN0;
 }
 
-int fql_distinct(process* proc)
+enum proc_return fql_distinct(process* proc)
 {
 	fifo* out = proc->fifo_out[0];
 	if (!out->is_open) {
 		process_disable(proc);
-		return 0;
+		return PROC_RETURN_COMPLETE;
 	}
 
 	fifo* in = proc->fifo_in[0];
 	if (fifo_is_empty(in)) {
+		// hmmm... this may be impossible...
 		if (proc->wait_for_in0 && !in->is_open) {
 			process_disable(proc);
 		}
-		return 1;
+		return PROC_RETURN_WAIT_ON_IN0;
 	}
 
 	group* group = proc->proc_data;
 
 	////
 
+	enum proc_return ret = PROC_RETURN_WAIT_ON_IN0;
+
 	node** rg_iter = fifo_begin(in);
-	for (; rg_iter != fifo_end(in) && fifo_receivable(out); rg_iter = fifo_iter(in)) {
+	while (rg_iter != fifo_end(in)) {
 		switch (group_record(group, *rg_iter)) {
 		case FQL_FAIL:
-			return FQL_FAIL;
+			return PROC_RETURN_FAIL;
 		case 1:
 			fifo_add(proc->fifo_out[0], rg_iter);
 			break;
@@ -490,12 +547,18 @@ int fql_distinct(process* proc)
 		default:
 			_recycle(proc, rg_iter);
 		}
+
+		rg_iter = fifo_iter(in);
+		if (!fifo_receivable(out)) {
+			ret = PROC_RETURN_WAIT_ON_OUT0;
+			break;
+		}
 	}
 	fifo_update(in);
-	return 1;
+	return ret;
 }
 
-int fql_select(process* proc)
+enum proc_return fql_select(process* proc)
 {
 	fqlselect* select = proc->proc_data;
 
@@ -508,13 +571,13 @@ int fql_select(process* proc)
 			union_end_proc->fifo_out[0]->is_open = false;
 		}
 		process_disable(proc);
-		return FQL_GOOD;
+		return PROC_RETURN_COMPLETE;
 	}
 
 	fifo* in = proc->fifo_in[0];
 	if (fifo_is_empty(in)) {
 		if (proc->wait_for_in0 && in->is_open) {
-			return 1;
+			return PROC_RETURN_WAIT_ON_IN0;
 		}
 		proc->wait_for_in0 = false;
 	}
@@ -526,14 +589,14 @@ int fql_select(process* proc)
 			try_(select->select__(select, NULL));
 			++select->rows_affected;
 			++proc->rows_affected;
-			return 1;
+			return PROC_RETURN_RUNNING;
 		}
 		/* subquery reads expect union schema to
 		 * be "in sync" with the subquery select's
 		 * current schema
 		 */
 		if (out && !fifo_is_empty(out)) {
-			return 1;
+			return PROC_RETURN_RUNNING;
 		}
 
 		if (fqlselect_next_union(select)) {
@@ -542,22 +605,26 @@ int fql_select(process* proc)
 			if (proc->queued_results->next != NULL) {
 				proc->queued_results = proc->queued_results->next;
 			}
-			return 1;
-		} else {
-			try_(writer_close(select->writer));
-			process_disable(proc);
-			return 0;
+			return PROC_RETURN_RUNNING;
 		}
+		try_(writer_close(select->writer));
+		process_disable(proc);
+		return PROC_RETURN_COMPLETE;
 	}
 
-	int ret = 0;
+	enum proc_return ret = PROC_RETURN_WAIT_ON_IN0;
+
 	unsigned iters = 0;
 	node** rg_iter = fifo_begin(in);
-	for (; iters++ < proc->max_recs_iter && rg_iter != fifo_end(in)
-	       && (!out || fifo_receivable(out))
-	       && select->rows_affected < select->top_count;
-	     rg_iter = fifo_iter(in)) {
-		ret = try_(select->select__(select, *rg_iter));
+	while (rg_iter != fifo_end(in)) {
+		if (iters++ >= proc->max_recs_iter
+		    || select->rows_affected >= select->top_count) {
+			ret = PROC_RETURN_RUNNING;
+			break;
+		}
+
+		//ret = try_(select->select__(select, *rg_iter));
+		try_(select->select__(select, *rg_iter));
 
 		++proc->rows_affected;
 		++select->rows_affected;
@@ -572,9 +639,14 @@ int fql_select(process* proc)
 			proc->wait_for_in0 = false;
 			break;
 		}
+
+		rg_iter = fifo_iter(in);
+
+		if (out && !fifo_receivable(out)) {
+			ret = PROC_RETURN_WAIT_ON_OUT0;
+			break;
+		}
 	}
-
-
 	fifo_update(in);
 
 	if (select->rows_affected >= select->top_count) {
@@ -583,13 +655,13 @@ int fql_select(process* proc)
 	return ret;
 }
 
-int fql_delete(process* proc)
+enum proc_return fql_delete(process* proc)
 {
 	fifo* in = proc->fifo_in[0];
 
 	if (proc->wait_for_in0 && fifo_is_empty(in)) {
 		if (in->is_open) {
-			return 1;
+			return PROC_RETURN_WAIT_ON_IN0;
 		}
 		proc->wait_for_in0 = false;
 	}
@@ -601,29 +673,36 @@ int fql_delete(process* proc)
 	if (!proc->wait_for_in0) {
 		try_(writer_close(delete->writer));
 		process_disable(proc);
-		return 0;
+		return PROC_RETURN_COMPLETE;
 	}
 
-	int ret = 0;
+	enum proc_return ret = PROC_RETURN_WAIT_ON_IN0;
+
 	node** rg_iter = fifo_begin(in);
-	for (; rg_iter != fifo_end(in) && delete->rows_affected < delete->top_count;
-	     rg_iter = fifo_iter(in)) {
-		ret = try_(delete->undelete__(delete, *rg_iter));
+	while (rg_iter != fifo_end(in)) {
+		//ret = try_(delete->undelete__(delete, *rg_iter));
+		try_(delete->undelete__(delete, *rg_iter));
 		++proc->rows_affected;
 		_recycle(proc, rg_iter);
+
+		rg_iter = fifo_iter(in);
+
+		if (delete->rows_affected >= delete->top_count) {
+			proc->wait_for_in0 = false;
+			ret = PROC_RETURN_RUNNING;
+			break;
+		}
 	}
-
-
 	fifo_update(in);
 
-	if (delete->rows_affected >= delete->top_count) {
-		proc->wait_for_in0 = false;
-	}
 	return ret;
 }
 
-void _del_passthrough(process* proc, fqldelete* delete, fifo* in_false, fifo* in_true)
+enum proc_return
+_del_passthrough(process* proc, fqldelete* delete, fifo* in_false, fifo* in_true)
 {
+	enum proc_return ret = PROC_RETURN_WAIT_ON_IN_ANY;
+
 	node** it = fifo_begin(in_false);
 	bool false_done = (it == fifo_end(in_false));
 	for (; it != fifo_end(in_false); it = fifo_iter(in_false)) {
@@ -639,21 +718,27 @@ void _del_passthrough(process* proc, fqldelete* delete, fifo* in_false, fifo* in
 	it = fifo_begin(in_true);
 	if (it == fifo_end(in_true)) {
 		delete->state = FILTER_OPEN;
+		return PROC_RETURN_RUNNING;
 	}
+
 	for (; it != fifo_end(in_true); it = fifo_iter(in_true)) {
 		record* rec = record_at(*it, delete->table_idx);
 		if (rec->rec_idx > delete->delete_idx) {
 			if (false_done) {
 				delete->state = FILTER_OPEN;
+				ret = PROC_RETURN_RUNNING;
 			}
 			break;
 		}
 		_recycle(proc, it);
 	}
 	fifo_update(in_true);
+
+	return ret;
 }
 
-int _del_filtering(process* proc, fqldelete* delete, fifo* in_false, fifo* in_true)
+enum proc_return
+_del_filtering(process* proc, fqldelete* delete, fifo* in_false, fifo* in_true)
 {
 	if (fifo_available(in_true)) {
 		node** true_node = fifo_peek(in_true);
@@ -669,7 +754,7 @@ int _del_filtering(process* proc, fqldelete* delete, fifo* in_false, fifo* in_tr
 		}
 		delete->state = FILTER_PASSTHROUGH;
 		_del_passthrough(proc, delete, in_false, in_true);
-		return FQL_GOOD;
+		return PROC_RETURN_RUNNING;
 	}
 
 	if (!in_true->is_open) {
@@ -678,14 +763,14 @@ int _del_filtering(process* proc, fqldelete* delete, fifo* in_false, fifo* in_tr
 		_recycle(proc, false_node);
 		delete->state = FILTER_PASSTHROUGH;
 		_del_passthrough(proc, delete, in_false, in_true);
-		return FQL_GOOD;
+		return PROC_RETURN_RUNNING;
 	}
 
 	node** iter_false = fifo_begin(in_false);
 	for (; iter_false != fifo_end(in_false); iter_false = fifo_iter(in_false)) {
 		node** look_ahead = fifo_look_ahead(in_false);
 		if (look_ahead == NULL) {
-			return FQL_GOOD;
+			return PROC_RETURN_RUNNING;
 		}
 		record* look_ahead_rec = record_at(*look_ahead, delete->table_idx);
 		if (look_ahead_rec->rec_idx > delete->delete_idx) {
@@ -694,10 +779,11 @@ int _del_filtering(process* proc, fqldelete* delete, fifo* in_false, fifo* in_tr
 		}
 		_recycle(proc, iter_false);
 	}
-	return FQL_GOOD;
+	return PROC_RETURN_RUNNING;
 }
 
-int _del_open(process* proc, fqldelete* delete, fifo* in_false, fifo* in_true)
+enum proc_return
+_del_open(process* proc, fqldelete* delete, fifo* in_false, fifo* in_true)
 {
 	bool process_true = false;
 
@@ -725,21 +811,21 @@ int _del_open(process* proc, fqldelete* delete, fifo* in_false, fifo* in_true)
 		++proc->rows_affected;
 		delete->delete_idx = true_rec->rec_idx;
 		delete->state = FILTER_PASSTHROUGH;
-		return FQL_GOOD;
+		return PROC_RETURN_RUNNING;
 	}
 	delete->delete_idx = false_rec->rec_idx;
 	delete->state = FILTER_FILTERING;
-	return FQL_GOOD;
+	return PROC_RETURN_RUNNING;
 }
 
-int fql_delete_filter(process* proc)
+enum proc_return fql_delete_filter(process* proc)
 {
 	fifo* in_false = proc->fifo_in[0];
 	fifo* in_true = proc->fifo_in[1];
 
 	if (fifo_is_empty(in_false) && fifo_is_empty(in_true)) {
 		if (in_true->is_open || in_false->is_open) {
-			return 1;
+			return PROC_RETURN_WAIT_ON_IN_ANY;
 		} else {
 			proc->wait_for_in0 = false;
 		}
@@ -752,32 +838,27 @@ int fql_delete_filter(process* proc)
 	if (!proc->wait_for_in0) {
 		try_(writer_close(delete->writer));
 		process_disable(proc);
-		return 0;
+		return PROC_RETURN_COMPLETE;
 	}
 
 	switch (delete->state) {
 	case FILTER_PASSTHROUGH:
-		_del_passthrough(proc, delete, in_false, in_true);
-		break;
+		return _del_passthrough(proc, delete, in_false, in_true);
 	case FILTER_FILTERING:
-		try_(_del_filtering(proc, delete, in_false, in_true));
-		break;
+		return _del_filtering(proc, delete, in_false, in_true);
 	case FILTER_OPEN:
-		try_(_del_open(proc, delete, in_false, in_true));
-		break;
-	default:;
+		return _del_open(proc, delete, in_false, in_true);
 	}
-	return FQL_GOOD;
 }
 
-int fql_update(process* proc)
+enum proc_return fql_update(process* proc)
 {
 
 	fifo* in_false = proc->fifo_in[0];
 	fifo* in_true = proc->fifo_in[1];
 	if (fifo_is_empty(in_false) && fifo_is_empty(in_true)) {
 		if (in_true->is_open || in_false->is_open) {
-			return 1;
+			return PROC_RETURN_WAIT_ON_IN_ANY;
 		} else {
 			proc->wait_for_in0 = false;
 		}
@@ -790,45 +871,50 @@ int fql_update(process* proc)
 	if (!proc->wait_for_in0) {
 		try_(writer_close(update->writer));
 		process_disable(proc);
-		return 0;
+		return PROC_RETURN_COMPLETE;
 	}
 
-	int ret = 0;
+	enum proc_return ret = PROC_RETURN_WAIT_ON_IN_ANY;
+
 	node** rg_iter = fifo_begin(in_false);
-	for (; rg_iter != fifo_end(in_false) && update->rows_affected < update->top_count;
-	     rg_iter = fifo_iter(in_false)) {
+	for (; rg_iter != fifo_end(in_false); rg_iter = fifo_iter(in_false)) {
 		record* rec = record_at(*rg_iter, update->table_idx);
 		if (rec->rec_idx > update->update_idx) {
 			break;
 		}
-		ret = try_(update->noupdate__(update, *rg_iter));
+		try_(update->noupdate__(update, *rg_iter));
 		++update->update_idx;
 		_recycle(proc, rg_iter);
 	}
 	fifo_update(in_false);
 
 	rg_iter = fifo_begin(in_true);
-	for (; rg_iter != fifo_end(in_true) && update->rows_affected < update->top_count;
-	     rg_iter = fifo_iter(in_true)) {
+	for (; rg_iter != fifo_end(in_true); rg_iter = fifo_iter(in_true)) {
 		record* rec = record_at(*rg_iter, update->table_idx);
 		if (rec->rec_idx > update->update_idx) {
 			break;
 		}
-		ret = try_(update->update__(update, *rg_iter));
+		try_(update->update__(update, *rg_iter));
 		++update->update_idx;
 		++proc->rows_affected;
 		_recycle(proc, rg_iter);
+
+		if (update->rows_affected >= update->top_count) {
+			proc->wait_for_in0 = false;
+			ret = PROC_RETURN_RUNNING;
+			break;
+		}
 	}
 	fifo_update(in_true);
 
-	if (update->rows_affected >= update->top_count) {
-		proc->wait_for_in0 = false;
-	}
 	return ret;
 }
 
-void _update_passthrough(process* proc, fqlupdate* update, fifo* in_false, fifo* in_true)
+enum proc_return
+_update_passthrough(process* proc, fqlupdate* update, fifo* in_false, fifo* in_true)
 {
+	enum proc_return ret = PROC_RETURN_WAIT_ON_IN_ANY;
+
 	node** it = fifo_begin(in_false);
 	bool false_done = (it == fifo_end(in_false));
 	for (; it != fifo_end(in_false); it = fifo_iter(in_false)) {
@@ -844,21 +930,27 @@ void _update_passthrough(process* proc, fqlupdate* update, fifo* in_false, fifo*
 	it = fifo_begin(in_true);
 	if (it == fifo_end(in_true)) {
 		update->state = FILTER_OPEN;
+		return PROC_RETURN_RUNNING;
 	}
+
 	for (; it != fifo_end(in_true); it = fifo_iter(in_true)) {
 		record* rec = record_at(*it, update->table_idx);
 		if (rec->rec_idx > update->update_idx) {
 			if (false_done) {
 				update->state = FILTER_OPEN;
+				ret = PROC_RETURN_RUNNING;
 			}
 			break;
 		}
 		_recycle(proc, it);
 	}
-	fifo_update(in_false);
+	fifo_update(in_true);
+
+	return ret;
 }
 
-int _update_filtering(process* proc, fqlupdate* update, fifo* in_false, fifo* in_true)
+enum proc_return
+_update_filtering(process* proc, fqlupdate* update, fifo* in_false, fifo* in_true)
 {
 	if (fifo_available(in_true)) {
 		node** true_node = fifo_peek(in_true);
@@ -875,7 +967,7 @@ int _update_filtering(process* proc, fqlupdate* update, fifo* in_false, fifo* in
 		}
 		update->state = FILTER_PASSTHROUGH;
 		_update_passthrough(proc, update, in_false, in_true);
-		return FQL_GOOD;
+		return PROC_RETURN_RUNNING;
 	}
 
 	if (!in_true->is_open) {
@@ -884,14 +976,14 @@ int _update_filtering(process* proc, fqlupdate* update, fifo* in_false, fifo* in
 		_recycle(proc, false_node);
 		update->state = FILTER_PASSTHROUGH;
 		_update_passthrough(proc, update, in_false, in_true);
-		return FQL_GOOD;
+		return PROC_RETURN_RUNNING;
 	}
 
 	node** iter_false = fifo_begin(in_false);
 	for (; iter_false != fifo_end(in_false); iter_false = fifo_iter(in_false)) {
 		node** look_ahead = fifo_look_ahead(in_false);
 		if (look_ahead == NULL) {
-			return FQL_GOOD;
+			return PROC_RETURN_RUNNING;
 		}
 		record* look_ahead_rec = record_at(*look_ahead, update->table_idx);
 		if (look_ahead_rec->rec_idx > update->update_idx) {
@@ -900,10 +992,11 @@ int _update_filtering(process* proc, fqlupdate* update, fifo* in_false, fifo* in
 		}
 		_recycle(proc, iter_false);
 	}
-	return FQL_GOOD;
+	return PROC_RETURN_RUNNING;
 }
 
-int _update_open(process* proc, fqlupdate* update, fifo* in_false, fifo* in_true)
+enum proc_return
+_update_open(process* proc, fqlupdate* update, fifo* in_false, fifo* in_true)
 {
 	bool process_true = false;
 
@@ -932,20 +1025,20 @@ int _update_open(process* proc, fqlupdate* update, fifo* in_false, fifo* in_true
 		++proc->rows_affected;
 		update->update_idx = true_rec->rec_idx;
 		update->state = FILTER_PASSTHROUGH;
-		return FQL_GOOD;
+		return PROC_RETURN_RUNNING;
 	}
 	update->update_idx = false_rec->rec_idx;
 	update->state = FILTER_FILTERING;
-	return FQL_GOOD;
+	return PROC_RETURN_RUNNING;
 }
 
-int fql_update_filter(process* proc)
+enum proc_return fql_update_filter(process* proc)
 {
 	fifo* in_false = proc->fifo_in[0];
 	fifo* in_true = proc->fifo_in[1];
 	if (fifo_is_empty(in_false) && fifo_is_empty(in_true)) {
 		if (in_true->is_open || in_false->is_open) {
-			return 1;
+			return PROC_RETURN_WAIT_ON_IN_ANY;
 		} else {
 			proc->wait_for_in0 = false;
 		}
@@ -958,30 +1051,28 @@ int fql_update_filter(process* proc)
 	if (!proc->wait_for_in0) {
 		try_(writer_close(update->writer));
 		process_disable(proc);
-		return 0;
+		return PROC_RETURN_COMPLETE;
 	}
 
 	switch (update->state) {
 	case FILTER_PASSTHROUGH:
-		_update_passthrough(proc, update, in_false, in_true);
-		break;
+		return _update_passthrough(proc, update, in_false, in_true);
 	case FILTER_FILTERING:
-		try_(_update_filtering(proc, update, in_false, in_true));
-		break;
+		return _update_filtering(proc, update, in_false, in_true);
 	case FILTER_OPEN:
-		try_(_update_open(proc, update, in_false, in_true));
-		break;
-	default:;
+		return _update_open(proc, update, in_false, in_true);
 	}
-	return FQL_GOOD;
 }
 
-int fql_orderby(process* proc)
+enum proc_return fql_orderby(process* proc)
 {
 	fifo* in = proc->fifo_in[0];
 	order* order = proc->proc_data;
 
 	////
+
+	enum proc_return ret = PROC_RETURN_WAIT_ON_IN0;
+
 	if (!in->is_open && fifo_is_empty(in)) {
 		if (!order->sorted) {
 			try_(order_sort(order));
@@ -989,8 +1080,9 @@ int fql_orderby(process* proc)
 		int ret = try_(order->select__(order, proc));
 		if (ret == 0 || proc->rows_affected >= order->top_count) {
 			process_disable(proc);
+			return PROC_RETURN_COMPLETE;
 		}
-		return ret;
+		return PROC_RETURN_RUNNING;
 	}
 
 	unsigned iters = 0;
@@ -1001,12 +1093,13 @@ int fql_orderby(process* proc)
 		_recycle(proc, rg_iter);
 	}
 	fifo_update(in);
-	return 0;
+	return ret;
 }
 
-int fql_no_op(process* proc)
+enum proc_return fql_no_op(process* proc)
 {
-	node** rg = fifo_get(proc->fifo_in[0]);
-	fifo_add(proc->fifo_out[0], rg);
-	return 0;
+	return PROC_RETURN_FAIL;
+	//node** rg = fifo_get(proc->fifo_in[0]);
+	//fifo_add(proc->fifo_out[0], rg);
+	//return PROC_RETURN_COMPLETE;
 }

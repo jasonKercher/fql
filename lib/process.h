@@ -3,6 +3,7 @@
 
 #define PROCESS_NO_PIPE_INDEX -1
 
+#include "fql.h"
 #include "fqlplan.h"
 #include "util/stringy.h"
 #include "util/fifo.h"
@@ -58,20 +59,31 @@ void process_add_to_wait_list(struct process*, const struct process*);
 void process_enable(struct process*);
 void process_disable(struct process*);
 
-int fql_read(struct process*);
-//int fql_read_subquery(struct process*);
-int fql_select(struct process*);
-int fql_delete(struct process*);
-int fql_delete_filter(struct process*);
-int fql_update(struct process*);
-int fql_update_filter(struct process*);
-int fql_logic(struct process*);
-int fql_left_join_logic(struct process*);
-int fql_cartesian_join(struct process*);
-int fql_hash_join(struct process*);
-int fql_distinct(struct process*);
-int fql_groupby(struct process*);
-int fql_orderby(struct process*);
-int fql_no_op(struct process*);
+enum proc_return {
+	PROC_RETURN_FAIL = FQL_FAIL,
+	PROC_RETURN_COMPLETE = 0,
+	PROC_RETURN_RUNNING,
+	PROC_RETURN_WAIT_ON_IN0,
+	PROC_RETURN_WAIT_ON_IN1,
+	PROC_RETURN_WAIT_ON_IN_ANY,
+	PROC_RETURN_WAIT_ON_IN_BOTH,
+	PROC_RETURN_WAIT_ON_OUT0,
+	PROC_RETURN_WAIT_ON_OUT1,
+};
+
+enum proc_return fql_read(struct process*);
+enum proc_return fql_select(struct process*);
+enum proc_return fql_delete(struct process*);
+enum proc_return fql_delete_filter(struct process*);
+enum proc_return fql_update(struct process*);
+enum proc_return fql_update_filter(struct process*);
+enum proc_return fql_logic(struct process*);
+enum proc_return fql_left_join_logic(struct process*);
+enum proc_return fql_cartesian_join(struct process*);
+enum proc_return fql_hash_join(struct process*);
+enum proc_return fql_distinct(struct process*);
+enum proc_return fql_groupby(struct process*);
+enum proc_return fql_orderby(struct process*);
+enum proc_return fql_no_op(struct process*);
 
 #endif /* PROCESS_H */
