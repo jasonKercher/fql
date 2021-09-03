@@ -198,8 +198,15 @@ void table_hash_join_init(table* self)
 
 	struct hashjoin* join = self->join_data;
 
-	join->hash_data = new_t_(multimap,
-	                         size_t,
-	                         guessed_row_count * 2,
-	                         HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
+	if (join->comp_type == FIELD_STRING) {
+		join->hash_data = new_t_(multimap,
+		                         size_t,
+		                         guessed_row_count * 2,
+		                         HASHMAP_PROP_NOCASE | HASHMAP_PROP_RTRIM);
+	} else {
+		join->hash_data = new_t_(multimap,
+		                         size_t,
+		                         guessed_row_count * 2,
+		                         HASHMAP_PROP_DEFAULT);
+	}
 }
