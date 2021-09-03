@@ -90,11 +90,6 @@ START_TEST(test_difficult_lazy_pivot)
 	int field_count = 0;
 	int rows = 0;
 
-	/* Going to try and literally include everything this
-	 * library supports into a single query. I actually
-	 * had to upload these files into SQL server to get
-	 * the correct result =D
-	 */
 	plan_count = fql_make_plans(
 	        fql,
 	        "select bar                                                "

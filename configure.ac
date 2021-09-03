@@ -16,6 +16,10 @@ AC_PROG_CXX
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile lib/Makefile lib/antlr/Makefile lib/antlr/gen/Makefile util/Makefile src/Makefile ])
 
+AC_CHECK_PROGS([HAVE_LIBCSV],[stdcsv])
+AS_IF([test "x$HAVE_LIBCSV" = "x"],
+      [AC_MSG_ERROR([libcsv is required: https://github.com/jasonKercher/libcsv.git])])
+
 # Check
 AC_ARG_WITH([check],
     AS_HELP_STRING([--without-check], [Ignore presence of check and disable it]))
