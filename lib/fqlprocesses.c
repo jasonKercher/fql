@@ -544,7 +544,7 @@ int fql_select(process* proc)
 			}
 			return 1;
 		} else {
-			writer_close(select->writer);
+			try_(writer_close(select->writer));
 			process_disable(proc);
 			return 0;
 		}
@@ -599,7 +599,7 @@ int fql_delete(process* proc)
 	////
 
 	if (!proc->wait_for_in0) {
-		writer_close(delete->writer);
+		try_(writer_close(delete->writer));
 		process_disable(proc);
 		return 0;
 	}
@@ -750,7 +750,7 @@ int fql_delete_filter(process* proc)
 	////
 
 	if (!proc->wait_for_in0) {
-		writer_close(delete->writer);
+		try_(writer_close(delete->writer));
 		process_disable(proc);
 		return 0;
 	}
@@ -788,7 +788,7 @@ int fql_update(process* proc)
 	////
 
 	if (!proc->wait_for_in0) {
-		writer_close(update->writer);
+		try_(writer_close(update->writer));
 		process_disable(proc);
 		return 0;
 	}
@@ -956,7 +956,7 @@ int fql_update_filter(process* proc)
 	////
 
 	if (!proc->wait_for_in0) {
-		writer_close(update->writer);
+		try_(writer_close(update->writer));
 		process_disable(proc);
 		return 0;
 	}

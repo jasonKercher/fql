@@ -132,6 +132,8 @@ const char* _get_filename(fixedwriter* self)
 	string* filename = NULL;
 	if (self->is_detached) {
 		filename = &self->tempname;
+		fqlsig_tmp_remove_node(self->tempnode);
+		self->tempnode = NULL;
 	} else {
 		filename = &self->filename;
 	}
