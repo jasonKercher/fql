@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "dgraph.h"
 #include "misc.h"
 #include "query.h"
 #include "group.h"
@@ -33,6 +34,7 @@ plan* plan_construct(plan* self, query* query, struct fql_handle* fql)
 	        NULL,                    /* op_true */
 	        NULL,                    /* op_false */
 	        NULL,                    /* current */
+	        NULL,                    /* execution_vector */
 	        NULL,                    /* _root_data */
 	        NULL,                    /* root */
 	        query,                   /* query */
@@ -89,7 +91,8 @@ void plan_destroy(void* generic_plan)
 
 int _build(query*, struct fql_handle*, dnode* entry, bool is_union);
 void _print_plan(plan*);
-void _activate_procs(plan* self);
+void _activate_procs(plan*);
+void _calculate_execution_order(plan*);
 int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg);
 void _check_all_for_special_expression(plan* self, process* proc, vec* expressions);
 
@@ -766,6 +769,7 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 	_activate_procs(self);
 	_make_pipes(self);
 	_update_pipes(self->processes);
+	_calculate_execution_order(self);
 
 	return FQL_GOOD;
 }
@@ -929,5 +933,20 @@ void _activate_procs(plan* self)
 
 	for (++procnodes; procnodes != vec_end(procnode_vec); ++procnodes) {
 		process_activate((*procnodes)->data, self, fifo_base_size);
+	}
+}
+
+void _calculate_execution_order(plan* self)
+{
+	self->execution_vector = new_t_(vec, process*);
+	dgraph_traverse_reset(self->processes);
+
+	dnode* proc_node = NULL;
+	while ((proc_node = dgraph_traverse(self->processes))) {
+		process* proc = proc_node->data;
+		if (proc_node == self->op_true) {
+			proc->is_op_true = true;
+		}
+		vec_push_back(self->execution_vector, &proc);
 	}
 }

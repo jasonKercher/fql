@@ -37,6 +37,10 @@ enum proc_return fql_read(process* proc)
 		return PROC_RETURN_COMPLETE;
 	}
 
+	if (!fifo_receivable(out)) {
+		return PROC_RETURN_WAIT_ON_OUT0;
+	}
+
 	table* table = proc->proc_data;
 	reader* reader = table->reader;
 
@@ -222,7 +226,7 @@ enum proc_return fql_hash_join(process* proc)
 {
 	fifo* out_false = proc->fifo_out[0];
 	fifo* out_true = proc->fifo_out[1];
-	if ((out_true && !out_true->is_open) || (out_false && !out_false->is_open)) {
+	if (!out_true->is_open || (out_false && !out_false->is_open)) {
 		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
@@ -247,7 +251,14 @@ enum proc_return fql_hash_join(process* proc)
 		return _hash_join_right_side(proc, table, in_right);
 	}
 
-	/* We can assume SIDE_LEFT if we made it this far */
+	//// We can assume SIDE_LEFT if we made it this far
+	if (!fifo_receivable(out_true)) {
+		return PROC_RETURN_WAIT_ON_OUT1;
+	}
+	if (out_false && !fifo_receivable(out_false)) {
+		return PROC_RETURN_WAIT_ON_OUT0;
+	}
+
 	if (fifo_is_empty(in_left)) {    // && fifo_is_empty(in_right)) {
 		if (!in_left->is_open) { // && !in_right->is_open) {
 			process_disable(proc);
@@ -339,6 +350,13 @@ enum proc_return fql_logic(process* proc)
 		return PROC_RETURN_WAIT_ON_IN0;
 	}
 
+	if (out_true && !fifo_receivable(out_true)) {
+		return PROC_RETURN_WAIT_ON_OUT1;
+	}
+	if (out_false && !fifo_receivable(out_false)) {
+		return PROC_RETURN_WAIT_ON_OUT0;
+	}
+
 	logicgroup* lg = proc->proc_data;
 
 	////
@@ -396,6 +414,10 @@ enum proc_return fql_left_join_logic(process* proc)
 		return PROC_RETURN_WAIT_ON_IN0;
 	}
 
+	if (!out_true && !fifo_receivable(out_true)) {
+		return PROC_RETURN_WAIT_ON_OUT1;
+	}
+
 	logicgroup* lg = proc->proc_data;
 
 	////
@@ -434,6 +456,10 @@ enum proc_return fql_left_join_logic(process* proc)
 
 enum proc_return _group_dump(process* proc, fifo* in_fresh, fifo* out)
 {
+	if (!fifo_receivable(out)) {
+		return PROC_RETURN_WAIT_ON_OUT0;
+	}
+
 	group* group = proc->proc_data;
 
 	enum proc_return ret = PROC_RETURN_WAIT_ON_IN0;
@@ -529,6 +555,10 @@ enum proc_return fql_distinct(process* proc)
 		return PROC_RETURN_WAIT_ON_IN0;
 	}
 
+	if (!fifo_receivable(out)) {
+		return PROC_RETURN_WAIT_ON_OUT0;
+	}
+
 	group* group = proc->proc_data;
 
 	////
@@ -580,6 +610,10 @@ enum proc_return fql_select(process* proc)
 			return PROC_RETURN_WAIT_ON_IN0;
 		}
 		proc->wait_for_in0 = false;
+	}
+
+	if (out && !fifo_receivable(out)) {
+		return PROC_RETURN_WAIT_ON_OUT0;
 	}
 
 	////

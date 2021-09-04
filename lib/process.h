@@ -40,6 +40,7 @@ struct process {
 	bool is_passive;              /* denotes process that does nothing */
 	bool is_enabled;              /* enabled means it still has work to do*/
 	bool is_const;                /* should only run 1 time */
+	bool is_op_true;              /* is proc_graph->op_true->data */
 	bool has_second_input;        /* will activate fifo_in[1] */
 	bool wait_for_in0;            /* allow start before in0 populated */
 	bool wait_for_in0_end;        /* allow more processing after in0 done */

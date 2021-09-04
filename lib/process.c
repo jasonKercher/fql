@@ -52,6 +52,7 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        false,                        /* is_passive */
 	        true,                         /* is_enabled */
 	        false,                        /* is_const */
+	        false,                        /* is_op_true */
 	        false,                        /* has_second_input */
 	        true,                         /* wait_for_in0 */
 	        false                         /* wait_for_in0_end */
@@ -196,34 +197,36 @@ bool _check_wait_list(struct vec* wait_list)
 	return enabled;
 }
 
-/* returns number of processes that executed or FQL_FAIL
- * 0 should not happen unless we are done.
+/* Pass through each process in the graph one time.
+ * Returns:
+ *   number > 0: still running
+ *   0         : finished
+ *   FQL_FAIL  : runtime error
  */
 int _exec_one_pass(plan* plan, dgraph* proc_graph)
 {
-	dnode* proc_node = NULL;
-	process* self = NULL;
 	int run_count = 0;
-	while ((proc_node = dgraph_traverse(proc_graph))) {
-		self = proc_node->data;
-		if (!self->is_enabled) {
+
+	process** it = vec_begin(plan->execution_vector);
+	for (; it != vec_end(plan->execution_vector); ++it) {
+		if (!(*it)->is_enabled) {
 			continue;
 		}
 
-		if (self->wait_list != NULL) {
-			if (_check_wait_list(self->wait_list)) {
+		if ((*it)->wait_list != NULL) {
+			if (_check_wait_list((*it)->wait_list)) {
 				++run_count;
 				continue;
 			}
 		}
 
-		int ret = try_(self->action__(self));
+		int ret = try_((*it)->action__(*it));
 
-		if (self->wait_for_in0) {
+		if ((*it)->wait_for_in0) {
 			++run_count;
 		}
-		if (proc_node == plan->op_true) {
-			plan->rows_affected = self->rows_affected;
+		if ((*it)->is_op_true) {
+			plan->rows_affected = (*it)->rows_affected;
 		}
 		run_count += ret;
 	}

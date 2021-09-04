@@ -12,6 +12,7 @@ struct fql_plan {
 	struct dnode* op_true;
 	struct dnode* op_false;
 	struct dnode* current; /* temp */
+	struct vec* execution_vector;
 	struct vec* _root_data;
 	struct fifo* root;
 	struct query* query;
