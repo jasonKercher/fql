@@ -21,8 +21,10 @@ the same as `select * from t1 where foo = 'bar'`.
 
 ### What can it *not* do?
 
+- Control flow (if, while, variables)
 - windowed-functions (like RANK)
 - temp tables not so temp
+- RIGHT and FULL JOIN. INNER and LEFT JOIN work.
 - TOP PERCENT
 - WITH / common table expressions
 - COUNT([column]) -- All counts are treated as COUNT(*)
@@ -30,11 +32,12 @@ the same as `select * from t1 where foo = 'bar'`.
 - APPLY
 - UNION without ALL
 - PIVOT/UNPIVOT
-- Implicit UPDATE/DELETE into subquery
+- Implicit UPDATE/DELETE into subqueries
 
 Most recent and possibly unstable features:
 - UPDATE 
 - DELETE
+- JOIN with either a subquery or stdin on the right side.
   
 ### Is it fast?
 
@@ -48,7 +51,7 @@ Here is a naive benchmark vs other similar projects:
 
 Benchmarks are performed on 2 tables of generic random data of 
 2 000 000 records (not including header).  The gentsv.sh script 
-can be used to build these files:
+can be used to build these files.
 
 ```sh
 :) ./gentsv.sh 2000000 > t2.temp
