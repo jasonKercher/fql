@@ -126,12 +126,23 @@ int fifo_nget(fifo* self, vec* buffer, int block_size, unsigned max)
 	unsigned transfer_size = (available > max) ? max : available;
 
 	transfer_size -= transfer_size % block_size;
-
 	unsigned i = 0;
 	for (; i < transfer_size; ++i) {
 		vec_push_back(buffer, vec_at(self->buf, self->tail));
 		_idx_adv_(self->tail);
 	}
+
+	//unsigned new_tail = (self->tail + transfer_size) % self->buf->size;
+	//if (new_tail > self->tail) {
+	//	vec_append(buffer, vec_at(self->buf, self->tail), new_tail - self->tail);
+	//} else {
+	//	vec_append(buffer,
+	//	           vec_at(self->buf, self->tail),
+	//	           self->buf->size - self->tail);
+	//	vec_append(buffer, vec_begin(self->buf), new_tail + 1);
+	//}
+
+	//self->tail = new_tail;
 
 	pthread_cond_signal(&self->cond_get);
 	pthread_mutex_unlock(&self->tail_mutex);

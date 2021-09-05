@@ -29,7 +29,7 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        0,                            /* thread */
 	        plan->fql_ref,                /* fql_ref */
 	        NULL,                         /* inbuf */
-	        NULL,                         /* outbuf */
+	        NULL,                         /* inbuf_iter */
 	        &fql_no_op,                   /* action__ */
 	        NULL,                         /* root_ref */
 	        {NULL, NULL},                 /* fifo_in */
@@ -45,8 +45,6 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        {0},                          /* wait_cond */
 	        0,                            /* rows_affected */
 	        -1,                           /* max_recs_iter */
-	        0,                            /* inbuf_idx */
-	        0,                            /* outbuf_idx */
 	        plan->source_count,           /* in_src_count */
 	        plan->source_count,           /* out_src_count */
 	        PROCESS_NO_PIPE_INDEX,        /* root_fifo */
@@ -80,7 +78,6 @@ void process_destroy(process* self, bool is_root)
 	}
 	delete_if_exists_(vec, self->wait_list);
 	delete_if_exists_(vec, self->inbuf);
-	delete_if_exists_(vec, self->outbuf);
 	delete_(vec, self->union_end_nodes);
 	delete_(string, self->plan_msg);
 	node_free_func(&self->queued_results, &fifo_free);
@@ -93,7 +90,8 @@ void process_activate(process* self,
 	self->root_ref = plan->root;
 
 	self->inbuf = new_t_(vec, node*);
-	self->outbuf = new_t_(vec, node*);
+	vec_reserve(self->inbuf, fifo_size);
+	self->inbuf_iter = vec_begin(self->inbuf);
 
 	if (self->root_fifo != PROCESS_NO_PIPE_INDEX) {
 		self->fifo_in[self->root_fifo] = self->root_ref;

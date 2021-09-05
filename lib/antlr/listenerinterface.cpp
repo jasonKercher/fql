@@ -362,14 +362,14 @@ void ListenerInterface::enterId_(TSqlParser::Id_Context* ctx)
 		}
 		break;
 	case TOK_TABLE_NAME:
-		strncpy_(_table_name, token, TABLE_NAME_MAX-1);
+		strncpy_(_table_name, token, TABLE_NAME_MAX);
 		free_(token);
 		break;
 	case TOK_TABLE_SOURCE:
 		node_push(&_source_stack, token);
 		break;
 	case TOK_TABLE_ALIAS:
-		strncpy_(_table_alias, token, TABLE_NAME_MAX-1);
+		strncpy_(_table_alias, token, TABLE_NAME_MAX);
 		free_(token);
 		break;
 	case TOK_DATA_TYPE:

@@ -35,8 +35,8 @@ class ListenerInterface : public TSqlParserBaseListener {
 	struct node* _source_stack = NULL;
 	struct node* _column_stack = NULL;
 
-	char _table_name[TABLE_NAME_MAX];
-	char _table_alias[TABLE_NAME_MAX];
+	char _table_name[TABLE_NAME_MAX + 1];
+	char _table_alias[TABLE_NAME_MAX + 1];
 
 	int _query_id = 0;
 	int _return_code = 0;

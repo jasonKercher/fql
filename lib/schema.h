@@ -12,8 +12,8 @@ struct schema {
 	multimap* expr_map;
 	string* schema_path;
 	string* name;
-	char delimiter[DELIM_LEN_MAX];
-	char rec_terminator[DELIM_LEN_MAX];
+	char delimiter[DELIM_LEN_MAX + 1];
+	char rec_terminator[DELIM_LEN_MAX + 1];
 	int strictness;
 	enum io io_type;
 	enum io write_io_type;

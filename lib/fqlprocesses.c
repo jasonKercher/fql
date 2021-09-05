@@ -102,7 +102,7 @@ enum proc_return fql_cartesian_join(process* proc)
 	fifo* in_left = proc->fifo_in[0];
 	fifo* in_right = proc->fifo_in[1];
 
-	if (fifo_is_empty(in_left)) {
+	if (vec_empty(proc->inbuf) && fifo_is_empty(in_left)) {
 		if (!in_left->is_open) {
 			process_disable(proc);
 		}
@@ -119,19 +119,18 @@ enum proc_return fql_cartesian_join(process* proc)
 	node** iter_left = fifo_begin(in_left);
 	unsigned out_space = fifo_receivable(out);
 
-	if (proc->inbuf_idx == proc->inbuf->size) {
+	if (proc->inbuf_iter == vec_end(proc->inbuf)) {
 		vec_clear(proc->inbuf);
-		proc->inbuf_idx = 0;
 		if (fifo_nget(in_right, proc->inbuf, proc->out_src_count, out_space)
 		    < proc->out_src_count) {
 			ret = PROC_RETURN_WAIT_ON_IN1;
 		}
+		proc->inbuf_iter = vec_begin(proc->inbuf);
 	}
-	node** iter_right = vec_at(proc->inbuf, proc->inbuf_idx);
-	for (; iter_right != vec_end(proc->inbuf); ++iter_right, ++proc->inbuf_idx) {
-		record* rec = (*iter_right)->data;
+	for (; proc->inbuf_iter != vec_end(proc->inbuf); ++proc->inbuf_iter) {
+		record* rec = (*proc->inbuf_iter)->data;
 		rec->src_idx = table->idx;
-		int ret = reader->get_record__(reader, *iter_right);
+		int ret = reader->get_record__(reader, *proc->inbuf_iter);
 
 		switch (ret) {
 		case FQL_GOOD:
@@ -147,15 +146,14 @@ enum proc_return fql_cartesian_join(process* proc)
 		}
 
 		node* left_rec_node = node_back(*iter_left);
-		node** right_head = iter_right;
+		node** right_head = proc->inbuf_iter;
 
 		for (; left_rec_node; left_rec_node = left_rec_node->prev) {
-			++iter_right;
-			++proc->inbuf_idx;
+			++proc->inbuf_iter;
 			record* left_rec = left_rec_node->data;
-			record* fresh_rec = (*iter_right)->data;
+			record* fresh_rec = (*proc->inbuf_iter)->data;
 			record_copy(fresh_rec, left_rec);
-			node_push_import(right_head, *iter_right);
+			node_push_import(right_head, *proc->inbuf_iter);
 		}
 		fifo_add(out, right_head);
 	}
@@ -910,6 +908,7 @@ enum proc_return fql_delete_filter(process* proc)
 	case FILTER_FILTERING:
 		return _del_filtering(proc, delete, in_false, in_true);
 	case FILTER_OPEN:
+	default:
 		return _del_open(proc, delete, in_false, in_true);
 	}
 }
@@ -1128,6 +1127,7 @@ enum proc_return fql_update_filter(process* proc)
 	case FILTER_FILTERING:
 		return _update_filtering(proc, update, in_false, in_true);
 	case FILTER_OPEN:
+	default:
 		return _update_open(proc, update, in_false, in_true);
 	}
 }

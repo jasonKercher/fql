@@ -17,7 +17,7 @@ struct process {
 	pthread_t thread;             /* pthread handle */
 	struct fql_handle* fql_ref;   /* reference to environment */
 	vec* inbuf;                   /* just a buffer to hold spare records */
-	vec* outbuf;                  /* Holds records that don't fit in pipe */
+	node** inbuf_iter;            /* iterator for inbuf */
 	process_fn* action__;         /* function pointer for process */
 	struct fifo* root_ref;        /* Reference to plan-wide root-records */
 	struct fifo* fifo_in[2];      /* input record fifos */
@@ -33,8 +33,6 @@ struct process {
 	pthread_cond_t wait_cond;     /* condition for wait list */
 	size_t rows_affected;         /* if process is true proc, track this */
 	size_t max_recs_iter;         /* Max recs allowed per iteration */
-	unsigned inbuf_idx;           /* idx for inbuf */
-	unsigned outbuf_idx;          /* idx for outbuf */
 	short in_src_count;           /* number of input sources at this step */
 	short out_src_count;          /* number of output sources at this step */
 	short root_fifo;              /* index of root for fifo_in[x] */

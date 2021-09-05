@@ -7,6 +7,8 @@ extern "C" {
 #include <stdbool.h>
 #endif
 
+#include "fqlimits.h"
+
 struct fql_handle {
 	struct node* query_list;
 	struct vec* api_vec;
@@ -17,9 +19,9 @@ struct fql_handle {
 	struct {
 		struct vec* schema_path; /* actually string but extern "C" so... */
 		struct vec* schema;      /* Same thing... this is also a string */
-		char in_delim[32];
-		char out_delim[32];
-		char rec_terminator[32];
+		char in_delim[DELIM_LEN_MAX + 1];
+		char out_delim[DELIM_LEN_MAX + 1];
+		char rec_terminator[DELIM_LEN_MAX + 1];
 		int pipe_factor;
 		int in_std;
 		int out_std;
