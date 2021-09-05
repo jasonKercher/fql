@@ -9,6 +9,7 @@ struct fql_handle;
 
 struct fql_plan {
 	struct dgraph* processes;
+	struct fql_handle* fql_ref;
 	struct dnode* op_true;
 	struct dnode* op_false;
 	struct dnode* current; /* temp */

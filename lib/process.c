@@ -27,6 +27,7 @@ process* process_construct(process* self, const char* action, plan* plan)
 {
 	*self = (process) {
 	        0,                            /* thread */
+	        plan->fql_ref,                /* fql_ref */
 	        NULL,                         /* inbuf */
 	        NULL,                         /* outbuf */
 	        &fql_no_op,                   /* action__ */
@@ -36,9 +37,12 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        NULL,                         /* org_fifo_in0 */
 	        NULL,                         /* proc_data */
 	        string_from_char_ptr(action), /* plan_msg */
-	        NULL,                         /* wait_list */
 	        new_t_(vec, dnode*),          /* union_end_nodes */
 	        NULL,                         /* queued_results */
+	        NULL,                         /* wait_list */
+	        NULL,                         /* waitee_proc */
+	        {0},                          /* wait_mutex */
+	        {0},                          /* wait_cond */
 	        0,                            /* rows_affected */
 	        -1,                           /* max_recs_iter */
 	        0,                            /* inbuf_idx */
@@ -82,7 +86,9 @@ void process_destroy(process* self, bool is_root)
 	node_free_func(&self->queued_results, &fifo_free);
 }
 
-void process_activate(process* self, plan* plan, unsigned fifo_size)
+void process_activate(process* self,
+                      plan* plan,
+                      unsigned fifo_size)
 {
 	self->root_ref = plan->root;
 
@@ -129,18 +135,32 @@ void process_activate(process* self, plan* plan, unsigned fifo_size)
 	if (self->killed_pipe != PROCESS_NO_PIPE_INDEX) {
 		self->fifo_in[self->killed_pipe]->is_open = false;
 	}
+
+	if (self->fql_ref->props.verbose) {
+		fprintf(stderr, "Activate process: %s\n", string_c_str(self->plan_msg));
+	}
 }
 
-void process_add_to_wait_list(process* self, const process* wait_proc)
+void process_add_to_wait_list(process* self, process* wait_proc)
 {
 	if (self->wait_list == NULL) {
 		self->wait_list = new_t_(vec, process*);
 	}
+	pthread_mutex_init(&self->wait_mutex, NULL);
+	pthread_cond_init(&self->wait_cond, NULL);
+	wait_proc->waitee_proc = self;
 	vec_push_back(self->wait_list, &wait_proc);
 }
 
 void process_disable(process* self)
 {
+	if (!self->is_enabled) {
+		fprintf(stderr,
+		        "process `%s' already disabled\n",
+		        string_c_str(self->plan_msg));
+		return;
+	}
+
 	if (self->fifo_out[0] != NULL) {
 		fifo_set_open(self->fifo_out[0], false);
 	}
@@ -169,6 +189,23 @@ void process_disable(process* self)
 			fifo_add(self->root_ref, it);
 		}
 		fifo_update(in);
+	}
+
+	/* This process must terminate before waitee_proc can
+	 * Begin. Time to let it know we have finished.
+	 */
+	if (self->waitee_proc != NULL) {
+		pthread_mutex_lock(&self->waitee_proc->wait_mutex);
+		pthread_cond_signal(&self->waitee_proc->wait_cond);
+		pthread_mutex_unlock(&self->waitee_proc->wait_mutex);
+	}
+
+	if (self->fql_ref->props.verbose) {
+		unsigned len = (self->plan_msg->size > 25) ? 25 : self->plan_msg->size;
+		fprintf(stderr,
+		        "Process `%.*s' stopped\n",
+		        len,
+		        string_c_str(self->plan_msg));
 	}
 }
 
@@ -242,7 +279,6 @@ int process_step(plan* plan)
 	size_t org_rows_affected = plan->rows_affected;
 
 	do {
-		dgraph_traverse_reset(proc_graph);
 		ret = _exec_one_pass(plan, proc_graph);
 	} while (ret && ret != FQL_FAIL && plan->rows_affected == org_rows_affected);
 
@@ -255,7 +291,6 @@ int process_exec_plan(plan* plan)
 	int ret = 0;
 
 	do {
-		dgraph_traverse_reset(proc_graph);
 		ret = _exec_one_pass(plan, proc_graph);
 	} while (ret && ret != FQL_FAIL);
 
@@ -272,31 +307,66 @@ void* _thread_exec(void* data)
 	fifo* out0 = self->fifo_out[0];
 	fifo* out1 = self->fifo_out[1];
 
-	// TODO: This is dumb
+	/* If there is any reason this process must wait in
+	 * order to execute, wait on that first. Then, we can
+	 * enter the regular process loop. An example of such a
+	 * case would be a subquery as an expression:
+	 *
+	 * SELECT 'hello', (select max(name) from list)
+	 *
+	 * This select process cannot execute until that subquery
+	 * has completed. In this example, the select process for
+	 * the subquery will own a reference to this process to so
+	 * it can wake it up when it is complete.
+	 */
+
 	if (self->wait_list != NULL) {
-		while (_check_wait_list(self->wait_list))
-			;
+		pthread_mutex_lock(&self->wait_mutex);
+		while (_check_wait_list(self->wait_list)) {
+			pthread_cond_wait(&self->wait_cond, &self->wait_mutex);
+		}
+		pthread_mutex_unlock(&self->wait_mutex);
 	}
 
 	while (self->is_enabled) {
 		switch (self->action__(self)) {
 		case PROC_RETURN_COMPLETE:
-			process_disable(self);
+			//process_disable(self);
 			break;
 		case PROC_RETURN_FAIL:
 			/* TODO */
 			exit(EXIT_FAILURE);
 		case PROC_RETURN_WAIT_ON_IN0:
-			fifo_wait_for_add(in0);
+			if (in0->is_open && fifo_is_empty(in0)) {
+				fifo_wait_for_add(in0);
+			}
 			break;
 		case PROC_RETURN_WAIT_ON_IN1:
-			fifo_wait_for_add(in1);
+			if (in1->is_open && fifo_is_empty(in1)) {
+				fifo_wait_for_add(in1);
+			}
 			break;
 		case PROC_RETURN_WAIT_ON_OUT0:
-			fifo_wait_for_add(out0);
+			if (out0->is_open && fifo_is_full(out0)) {
+				fifo_wait_for_get(out0);
+			}
 			break;
 		case PROC_RETURN_WAIT_ON_OUT1:
-			fifo_wait_for_add(out1);
+			if (out1->is_open && fifo_is_full(out1)) {
+				fifo_wait_for_get(out1);
+			}
+			break;
+		case PROC_RETURN_WAIT_ON_IN_EITHER:
+			if (in0->is_open && in1->is_open && fifo_is_empty(in0)
+			    && fifo_is_empty(in1)) {
+				fifo_wait_for_add_either(in0, in1);
+			}
+			break;
+		case PROC_RETURN_WAIT_ON_IN_BOTH:
+			if (in0->is_open && in1->is_open
+			    && (fifo_is_empty(in0) || fifo_is_empty(in1))) {
+				fifo_wait_for_add_both(in0, in1);
+			}
 			break;
 		}
 	}

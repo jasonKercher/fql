@@ -21,6 +21,7 @@
 
 struct fifo {
 	vec* buf;
+	ATOMIC_(struct fifo*) shared_mutex_fifo; /* for wait for either/both */
 	pthread_mutex_t head_mutex;
 	pthread_mutex_t tail_mutex;
 	pthread_mutex_t open_mutex;
@@ -72,5 +73,7 @@ void fifo_update(struct fifo*);
 /* thread conditions */
 void fifo_wait_for_add(struct fifo*);
 void fifo_wait_for_get(struct fifo*);
+void fifo_wait_for_add_either(struct fifo*, struct fifo*);
+void fifo_wait_for_add_both(struct fifo*, struct fifo*);
 
 #endif /* FIFO_H */

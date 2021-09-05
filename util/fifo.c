@@ -12,6 +12,7 @@ fifo* fifo_construct(fifo* self, size_t elem_size, unsigned buf_size)
 	memset(self, 0, sizeof(*self));
 	self->buf = new_(vec, elem_size);
 	self->is_open = true;
+	self->shared_mutex_fifo = NULL;
 
 	vec_resize_and_zero(self->buf, buf_size);
 
@@ -167,8 +168,12 @@ void fifo_add(fifo* self, void* data)
 {
 	pthread_mutex_lock(&self->head_mutex);
 	vec_set(self->buf, self->head, data);
-	_idx_adv_(self->head);
 	pthread_cond_signal(&self->cond_add);
+	if (self->shared_mutex_fifo != NULL) {
+		pthread_cond_signal(&self->shared_mutex_fifo->cond_add);
+		self->shared_mutex_fifo = NULL;
+	}
+	_idx_adv_(self->head);
 	pthread_mutex_unlock(&self->head_mutex);
 }
 
@@ -232,6 +237,28 @@ void fifo_wait_for_add(fifo* self)
 		pthread_cond_wait(&self->cond_add, &self->head_mutex);
 	}
 	pthread_mutex_unlock(&self->head_mutex);
+}
+
+void fifo_wait_for_add_either(fifo* f0, fifo* f1)
+{
+	pthread_mutex_lock(&f0->head_mutex);
+	pthread_mutex_lock(&f1->head_mutex);
+	while (fifo_is_open(f1) && fifo_is_empty(f1) && fifo_is_open(f0)
+	       && fifo_is_empty(f0)) {
+		f0->shared_mutex_fifo = f1;
+		pthread_cond_wait(&f1->cond_add, &f1->head_mutex);
+	}
+	pthread_mutex_unlock(&f1->head_mutex);
+	pthread_mutex_unlock(&f0->head_mutex);
+}
+
+void fifo_wait_for_add_both(fifo* f0, fifo* f1)
+{
+	while (fifo_is_open(f1) && fifo_is_open(f0)
+	       && (fifo_is_empty(f0) || fifo_is_empty(f1))) {
+		fifo_wait_for_add(f0);
+		fifo_wait_for_add(f1);
+	}
 }
 
 void fifo_wait_for_get(fifo* self)

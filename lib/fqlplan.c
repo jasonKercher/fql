@@ -31,6 +31,7 @@ plan* plan_construct(plan* self, query* query, struct fql_handle* fql)
 {
 	*self = (plan) {
 	        new_(dgraph),            /* processes */
+	        fql,                     /* fql_ref */
 	        NULL,                    /* op_true */
 	        NULL,                    /* op_false */
 	        NULL,                    /* current */
@@ -291,7 +292,7 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 		from_node = dgraph_add_data(self->processes, from_proc);
 		from_node->is_root = true;
 	} else {
-		from_proc = new_(process, "subquery select", self);
+		from_proc = new_(process, "subquery stream select", self);
 		from_node = dgraph_add_data(self->processes, from_proc);
 		try_(_build(table_iter->subquery, fql, from_node, false));
 		plan* subquery_plan = table_iter->subquery->plan;
@@ -309,14 +310,6 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 
 	for (++table_iter; table_iter != vec_end(query->sources); ++table_iter) {
 
-		// here goes nothing...
-		//if (table_iter->source_type == SOURCE_SUBQUERY) {
-		//	fputs("currently cannot join with a"
-		//	      "sub-query on the right side\n",
-		//	      stderr);
-		//	return FQL_FAIL;
-		//}
-
 		process* join_proc = NULL;
 		bool is_hash_join = (table_iter->condition->join_logic != NULL);
 		if (is_hash_join) {
@@ -333,10 +326,15 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 			dnode* read_node = NULL;
 
 			if (table_iter->source_type == SOURCE_TABLE) {
-				string_sprintf(&plan_msg,
-				               "%s: %s",
-				               table_iter->reader->file_name.data,
-				               "mmap read");
+				if (table_iter->is_stdin) {
+					string_strcpy(&plan_msg,
+					              "file-backed read stdin");
+				} else {
+					string_sprintf(&plan_msg,
+					               "%s: %s",
+					               table_iter->reader->file_name.data,
+					               "mmap read");
+				}
 
 				read_proc = new_(process, plan_msg.data, self);
 				read_node = dgraph_add_data(self->processes, read_proc);
@@ -344,7 +342,8 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 				read_proc->root_fifo = 0;
 			} else { /* SUBQUERY */
 				subquery_start_file_backed_input(table_iter->reader);
-				read_proc = new_(process, "subquery select (JOIN)", self);
+				read_proc =
+				        new_(process, "subquery file-backed read", self);
 				read_node = dgraph_add_data(self->processes, read_proc);
 				try_(_build(table_iter->subquery, fql, read_node, false));
 				plan* subquery_plan = table_iter->subquery->plan;
