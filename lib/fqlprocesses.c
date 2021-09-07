@@ -33,6 +33,20 @@ void _iter_states(fifo* f, string* msg)
 	        f->_iter_head);
 }
 
+int _fill_inbuf(process* proc, fifo* input)
+{
+	if (proc->inbuf_iter != vec_end(proc->inbuf)) {
+		return 1;
+	}
+	vec_clear(proc->inbuf);
+	int ret = fifo_nget(input,
+	                    proc->inbuf,
+	                    proc->out_src_count,
+	                    proc->fifo_base_size - 1);
+	proc->inbuf_iter = vec_begin(proc->inbuf);
+	return ret;
+}
+
 enum proc_return fql_read(process* proc)
 {
 	fifo* out = proc->fifo_out[0];
@@ -42,7 +56,7 @@ enum proc_return fql_read(process* proc)
 	}
 
 	fifo* in = proc->fifo_in[0];
-	if (fifo_is_empty(in)) {
+	if (fifo_is_empty(in) && (in == proc->root_ref || vec_empty(proc->inbuf))) {
 		if (!in->is_open) {
 			process_disable(proc);
 		}
@@ -59,11 +73,10 @@ enum proc_return fql_read(process* proc)
 	////
 
 	enum proc_return ret =
-	        (in == proc->root_ref) ? PROC_RETURN_RUNNING : PROC_RETURN_WAIT_ON_IN0;
+	        (_fill_inbuf(proc, in)) ? PROC_RETURN_WAIT_ON_IN0 : PROC_RETURN_RUNNING;
 
-	node** rg_iter = fifo_begin(in);
-	while (rg_iter != fifo_end(in)) {
-		switch (reader->get_record__(reader, *rg_iter)) {
+	while (proc->inbuf_iter != vec_end(proc->inbuf)) {
+		switch (reader->get_record__(reader, *proc->inbuf_iter)) {
 		case FQL_GOOD:
 			break;
 		case FQL_FAIL:
@@ -73,20 +86,18 @@ enum proc_return fql_read(process* proc)
 			return PROC_RETURN_COMPLETE;
 		}
 
-		record* rec = (*rg_iter)->data;
+		record* rec = (*proc->inbuf_iter)->data;
 		rec->src_idx = table->idx;
 
 
-		fifo_add(out, rg_iter);
+		fifo_add(out, proc->inbuf_iter);
 
-		//_iter_states(in, proc->plan_msg);
-		rg_iter = fifo_iter(in);
+		++proc->inbuf_iter;
 		if (!fifo_receivable(out)) {
 			ret = PROC_RETURN_WAIT_ON_OUT0;
 			break;
 		}
 	}
-	fifo_update(in);
 
 	return ret;
 }
@@ -115,19 +126,9 @@ enum proc_return fql_cartesian_join(process* proc)
 	////
 
 	enum proc_return ret = PROC_RETURN_RUNNING;
+	_fill_inbuf(proc, in_right);
 
 	node** iter_left = fifo_begin(in_left);
-	unsigned out_space = fifo_receivable(out);
-
-	if (proc->inbuf_iter == vec_end(proc->inbuf)) {
-		vec_clear(proc->inbuf);
-		if (fifo_nget(in_right, proc->inbuf, proc->out_src_count, out_space)
-		    < proc->out_src_count) {
-			ret = PROC_RETURN_WAIT_ON_IN1;
-		}
-		proc->inbuf_iter = vec_begin(proc->inbuf);
-	}
-
 	for (; proc->inbuf_iter != vec_end(proc->inbuf); ++proc->inbuf_iter) {
 		record* rec = (*proc->inbuf_iter)->data;
 		rec->src_idx = table->idx;

@@ -33,6 +33,7 @@ struct process {
 	pthread_cond_t wait_cond;     /* condition for wait list */
 	size_t rows_affected;         /* if process is true proc, track this */
 	size_t max_recs_iter;         /* Max recs allowed per iteration */
+	unsigned fifo_base_size;      /* non-root fifo size */
 	short in_src_count;           /* number of input sources at this step */
 	short out_src_count;          /* number of output sources at this step */
 	short root_fifo;              /* index of root for fifo_in[x] */

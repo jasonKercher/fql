@@ -45,6 +45,7 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        {0},                          /* wait_cond */
 	        0,                            /* rows_affected */
 	        -1,                           /* max_recs_iter */
+	        0,                            /* fifo_base_size */
 	        plan->source_count,           /* in_src_count */
 	        plan->source_count,           /* out_src_count */
 	        PROCESS_NO_PIPE_INDEX,        /* root_fifo */
@@ -88,7 +89,7 @@ void process_activate(process* self,
                       unsigned fifo_size)
 {
 	self->root_ref = plan->root;
-
+	self->fifo_base_size = fifo_size;
 	self->inbuf = new_t_(vec, node*);
 	vec_reserve(self->inbuf, fifo_size);
 	self->inbuf_iter = vec_begin(self->inbuf);

@@ -114,41 +114,42 @@ void fifo_set_full(fifo* self)
 
 void* fifo_get(fifo* self)
 {
+	pthread_mutex_lock(&self->tail_mutex);
 	void* data = fifo_peek(self);
-	fifo_consume(self);
+	_idx_adv_(self->tail);
+	pthread_cond_signal(&self->cond_get);
+	pthread_mutex_unlock(&self->tail_mutex);
 	return data;
 }
 
-int fifo_nget(fifo* self, vec* buffer, int block_size, unsigned max)
+int fifo_nget(fifo* self, vec* buffer, unsigned block_size, unsigned max)
 {
 	pthread_mutex_lock(&self->tail_mutex);
 	unsigned available = fifo_available(self);
-	unsigned transfer_size = (available > max) ? max : available;
+	if (available == 0) {
+		pthread_mutex_unlock(&self->tail_mutex);
+		return 0;
+	}
+	unsigned transfer_count = (available > max) ? max : available;
+	transfer_count -= transfer_count % block_size;
+	unsigned new_tail = (self->tail + transfer_count) % self->buf->size;
 
-	transfer_size -= transfer_size % block_size;
-	//unsigned i = 0;
-	//for (; i < transfer_size; ++i) {
-	//	vec_push_back(buffer, vec_at(self->buf, self->tail));
-	//	_idx_adv_(self->tail);
-	//}
-
-	unsigned new_tail = (self->tail + transfer_size) % self->buf->size;
 	if (new_tail > self->tail) {
 		vec_append(buffer, vec_at(self->buf, self->tail), new_tail - self->tail);
 	} else {
 		vec_append(buffer,
 		           vec_at(self->buf, self->tail),
 		           self->buf->size - self->tail);
-		vec_append(buffer, vec_begin(self->buf), new_tail + 1);
+		vec_append(buffer, vec_begin(self->buf), new_tail);
 	}
 
-	//self->tail = new_tail;
+	self->tail = new_tail;
 
 	pthread_cond_signal(&self->cond_get);
 	pthread_mutex_unlock(&self->tail_mutex);
 
 	/* Return what we *know* is available */
-	return available - transfer_size;
+	return available - transfer_count;
 }
 
 void* fifo_peek(const fifo* self)

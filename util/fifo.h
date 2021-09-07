@@ -50,7 +50,7 @@ unsigned fifo_receivable(struct fifo*);
 void fifo_set_full(struct fifo*);
 
 void* fifo_get(struct fifo*);
-int fifo_nget(struct fifo*, struct vec*, int block_size, unsigned max);
+int fifo_nget(struct fifo*, struct vec*, unsigned block_size, unsigned max);
 void* fifo_peek(const struct fifo*);
 void* fifo_look_ahead(const struct fifo*);
 void fifo_consume(struct fifo*);

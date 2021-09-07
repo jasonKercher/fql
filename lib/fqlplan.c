@@ -885,7 +885,7 @@ void _activate_procs(plan* self)
 	unsigned pipe_count = graph_size + union_pipes;
 
 	unsigned fifo_base_size = pipe_count * self->pipe_factor;
-	unsigned root_size = fifo_base_size * pipe_count;
+	unsigned root_size = fifo_base_size * pipe_count * 2;
 
 	self->_root_data = new_t_(vec, node);
 	vec_resize_and_zero(self->_root_data, root_size);
