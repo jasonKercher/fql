@@ -102,7 +102,7 @@ enum proc_return fql_cartesian_join(process* proc)
 	fifo* in_left = proc->fifo_in[0];
 	fifo* in_right = proc->fifo_in[1];
 
-	if (vec_empty(proc->inbuf) && fifo_is_empty(in_left)) {
+	if (fifo_is_empty(in_left)) {
 		if (!in_left->is_open) {
 			process_disable(proc);
 		}
@@ -127,6 +127,7 @@ enum proc_return fql_cartesian_join(process* proc)
 		}
 		proc->inbuf_iter = vec_begin(proc->inbuf);
 	}
+
 	for (; proc->inbuf_iter != vec_end(proc->inbuf); ++proc->inbuf_iter) {
 		record* rec = (*proc->inbuf_iter)->data;
 		rec->src_idx = table->idx;
@@ -140,7 +141,10 @@ enum proc_return fql_cartesian_join(process* proc)
 		default: { /* eof */
 			reader->reset__(reader);
 			//_iter_states(in_left, proc->plan_msg);
-			fifo_iter(in_left);
+			iter_left = fifo_iter(in_left);
+			if (iter_left == fifo_end(in_left)) {
+				return PROC_RETURN_WAIT_ON_IN0;
+			}
 			return PROC_RETURN_RUNNING;
 		}
 		}
