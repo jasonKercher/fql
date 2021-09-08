@@ -38,6 +38,7 @@ plan* plan_construct(plan* self, query* query, struct fql_handle* fql)
 	        NULL,                    /* execution_vector */
 	        NULL,                    /* _root_data */
 	        NULL,                    /* root */
+	        NULL,                    /* root_fifos */
 	        query,                   /* query */
 	        0,                       /* rows_affected */
 	        0,                       /* iterations */
@@ -77,7 +78,7 @@ void plan_destroy(void* generic_plan)
 		delete_(dgraph, self->processes);
 	}
 
-	if (self->root == NULL) {
+	if (self->global_root == NULL) {
 		return;
 	}
 
@@ -86,8 +87,9 @@ void plan_destroy(void* generic_plan)
 		delete_(record, it->data);
 		//node_free(&it);
 	}
+	delete_(fifo, self->global_root);
+	delete_(vec, self->root_fifo_vec);
 	delete_(vec, self->_root_data);
-	delete_(fifo, self->root);
 }
 
 int _build(query*, struct fql_handle*, dnode* entry, bool is_union);
@@ -882,57 +884,92 @@ void _activate_procs(plan* self)
 	/* First, build root record pipe */
 	unsigned graph_size = self->processes->nodes->size;
 	unsigned union_pipes = _get_union_pipe_count(self->processes->nodes);
-	unsigned pipe_count = graph_size + union_pipes;
+	unsigned proc_count = graph_size + union_pipes;
+	unsigned fifo_base_size = proc_count * self->pipe_factor;
 
-	unsigned fifo_base_size = pipe_count * self->pipe_factor;
-	unsigned root_size = fifo_base_size * pipe_count * 2;
 
-	self->_root_data = new_t_(vec, node);
-	vec_resize_and_zero(self->_root_data, root_size);
-	self->root = new_t_(fifo, node*, root_size);
+	/* Hard-code the starting buffer size. We will resize it after the
+	 * processes have been activated and we can calculate an accurate
+	 * size how big the root *should* be.
+	 */
+	self->global_root = new_t_(fifo, node*, 2);
+	self->root_fifo_vec = new_t_(vec, fifo*);
+	vec_push_back(self->root_fifo_vec, &self->global_root);
 
-	unsigned i = 0;
-	node* it = vec_begin(self->_root_data);
-	for (; it != vec_end(self->_root_data); ++it, ++i) {
-		it->data = new_(record, i);
-		vec_set(self->root->buf, i, &it);
-	}
-
-	vec* procnode_vec = self->processes->nodes;
-	dnode** procnodes = vec_begin(procnode_vec);
-
-	if (self->is_const) {
-		fifo_advance(self->root);
-	} else {
-		fifo_set_full(self->root);
-	}
-
-	/* (*nodes)->data is passing the process...
-	 * in the ugliest possible way.
+	/* (*node_it)->data is passing the process...
+	 * in the ugliest possible way. Sending a pipe_count
+	 * in order to accurately count the number of pipes
+	 * and input buffers.
 	 *
 	 * This could all be done using the bottom loop,
 	 * but I unrolled a few for easier tracking.
 	 */
-	process_activate((*procnodes)->data, self, fifo_base_size);
-	if (++procnodes == vec_end(procnode_vec))
-		return;
-	process_activate((*procnodes)->data, self, fifo_base_size);
-	if (++procnodes == vec_end(procnode_vec))
-		return;
-	process_activate((*procnodes)->data, self, fifo_base_size);
-	if (++procnodes == vec_end(procnode_vec))
-		return;
-	process_activate((*procnodes)->data, self, fifo_base_size);
-	if (++procnodes == vec_end(procnode_vec))
-		return;
-	process_activate((*procnodes)->data, self, fifo_base_size);
-	if (++procnodes == vec_end(procnode_vec))
-		return;
-	process_activate((*procnodes)->data, self, fifo_base_size);
+	vec* nodes = self->processes->nodes;
+	unsigned pipe_count = 0;
 
-	for (++procnodes; procnodes != vec_end(procnode_vec); ++procnodes) {
-		process_activate((*procnodes)->data, self, fifo_base_size);
+	dnode** node_it = vec_begin(nodes);
+	process_activate((*node_it)->data, self, fifo_base_size, &pipe_count);
+	if (++node_it == vec_end(nodes))
+		goto unrolled_break;
+	process_activate((*node_it)->data, self, fifo_base_size, &pipe_count);
+	if (++node_it == vec_end(nodes))
+		goto unrolled_break;
+	process_activate((*node_it)->data, self, fifo_base_size, &pipe_count);
+	if (++node_it == vec_end(nodes))
+		goto unrolled_break;
+	process_activate((*node_it)->data, self, fifo_base_size, &pipe_count);
+	if (++node_it == vec_end(nodes))
+		goto unrolled_break;
+	process_activate((*node_it)->data, self, fifo_base_size, &pipe_count);
+	if (++node_it == vec_end(nodes))
+		goto unrolled_break;
+	process_activate((*node_it)->data, self, fifo_base_size, &pipe_count);
+
+	for (++node_it; node_it != vec_end(nodes); ++node_it) {
+		process_activate((*node_it)->data, self, fifo_base_size, &pipe_count);
 	}
+
+unrolled_break : {
+
+	/* Now that the processes have been activated, we can get a real count
+	 * for the number of pipes. The goal is to make the root the exact size
+	 * necessary to fill all pipes and input buffers. No more or less. This
+	 * can possibly cause a deadlock (even without threads) if we were to
+	 * lose records in the pipeline. We should never lose records, and if we
+	 * do, it should cause a problem.
+	 */
+	unsigned root_size = fifo_base_size * pipe_count;
+
+	//fifo_resize(self->root, root_size);
+	self->_root_data = new_t_(vec, node);
+	vec_resize_and_zero(self->_root_data, root_size);
+
+	fifo** root_fifos = vec_begin(self->root_fifo_vec);
+
+	/* Clear these so we can insert root records 1 by 1... */
+	unsigned i = 0;
+	for (; i < self->root_fifo_vec->size; ++i) {
+		vec_clear(root_fifos[i]->buf);
+	}
+
+	/* Evenly divide the records amongst the root fifos */
+	node* it = vec_begin(self->_root_data);
+	for (i = 0; it != vec_end(self->_root_data); ++it, ++i) {
+		record* new_rec = new_(record, i);
+		it->data = new_rec;
+		new_rec->root_fifo_idx = i % self->root_fifo_vec->size;
+		vec_push_back(root_fifos[new_rec->root_fifo_idx]->buf, &it);
+	}
+
+	/* Preempt the pipes */
+	for (i = 0; i < self->root_fifo_vec->size; ++i) {
+		if (self->is_const) {
+			fifo_advance(root_fifos[i]);
+		} else {
+			fifo_set_full(root_fifos[i]);
+		}
+	}
+}
 }
 
 void _calculate_execution_order(plan* self)

@@ -18,6 +18,7 @@ record* record_construct(record* self, unsigned idx)
 	        0,    /* select_len */
 	        0,    /* max_subquery_strings */
 	        0,    /* max_group_strings */
+	        0,    /* root_fifo_idx */
 	};
 
 	vec_construct_(&self->fields, stringview);

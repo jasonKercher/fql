@@ -23,6 +23,7 @@ struct record {
 	unsigned select_len;
 	unsigned max_subquery_count;
 	unsigned max_group_count;
+	unsigned root_fifo_idx;
 };
 typedef struct record record;
 

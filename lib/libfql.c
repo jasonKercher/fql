@@ -229,6 +229,12 @@ void fql_set_record_terminator(struct fql_handle* fql, const char* term)
 
 void fql_set_threading(struct fql_handle* fql, int threading)
 {
+	if (threading && sysconf(_SC_NPROCESSORS_ONLN) < 2) {
+		fprintf(stderr,
+		        "Request to enable threading ignored due "
+		        "hardware configuration\n");
+		return;
+	}
 	fql->props.threading = threading;
 }
 
@@ -249,7 +255,7 @@ void fql_set_pipe_factor(struct fql_handle* fql, int pipe_factor)
 		        "pipe factor (%d) invalid, pipe factor set to %d\n",
 		        pipe_factor,
 		        PIPE_FACTOR_DEFAULT);
-		fql->props.pipe_factor = 2;
+		fql->props.pipe_factor = PIPE_FACTOR_DEFAULT;
 	} else {
 		fql->props.pipe_factor = pipe_factor;
 	}

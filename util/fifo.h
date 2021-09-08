@@ -24,7 +24,6 @@ struct fifo {
 	ATOMIC_(struct fifo*) shared_mutex_fifo; /* for wait for either/both */
 	pthread_mutex_t head_mutex;
 	pthread_mutex_t tail_mutex;
-	pthread_mutex_t open_mutex;
 	pthread_cond_t cond_add;
 	pthread_cond_t cond_get;
 	ATOMIC_ unsigned head;
@@ -45,7 +44,6 @@ void fifo_resize(struct fifo*, unsigned);
 unsigned fifo_available(const struct fifo*);
 bool fifo_is_empty(const struct fifo*);
 bool fifo_is_full(const struct fifo*);
-bool fifo_is_open(struct fifo*);
 unsigned fifo_receivable(struct fifo*);
 void fifo_set_full(struct fifo*);
 
@@ -55,6 +53,7 @@ void* fifo_peek(const struct fifo*);
 void* fifo_look_ahead(const struct fifo*);
 void fifo_consume(struct fifo*);
 
+void fifo_add_eager(struct fifo*, void*);
 void fifo_add(struct fifo*, void*);
 void fifo_nadd(struct fifo*, struct vec*, unsigned start_idx);
 void fifo_advance(struct fifo*);

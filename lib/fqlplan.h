@@ -15,7 +15,8 @@ struct fql_plan {
 	struct dnode* current; /* temp */
 	struct vec* execution_vector;
 	struct vec* _root_data;
-	struct fifo* root;
+	struct fifo* global_root;
+	struct vec* root_fifo_vec;
 	struct query* query;
 	size_t rows_affected;
 	size_t iterations;

@@ -19,7 +19,7 @@ struct process {
 	vec* inbuf;                   /* just a buffer to hold spare records */
 	node** inbuf_iter;            /* iterator for inbuf */
 	process_fn* action__;         /* function pointer for process */
-	struct fifo* root_ref;        /* Reference to plan-wide root-records */
+	struct fifo* global_root_ref; /* Reference to plan-wide root-records */
 	struct fifo* fifo_in[2];      /* input record fifos */
 	struct fifo* fifo_out[2];     /* output record fifos */
 	struct fifo* org_fifo_in0;    /* Used to avoid memory leak with UNION */
@@ -29,6 +29,7 @@ struct process {
 	struct node* queued_results;  /* list of additional input fifos */
 	struct vec* wait_list;        /* list of fifos that we wait for */
 	struct process* waitee_proc;  /* pointer to a waiting process */
+	struct vec* rootvec_ref;      /* reference to plan->root_fifo_vec */
 	pthread_mutex_t wait_mutex;   /* mutex used be woken up */
 	pthread_cond_t wait_cond;     /* condition for wait list */
 	size_t rows_affected;         /* if process is true proc, track this */
@@ -56,12 +57,12 @@ void process_node_free(struct dnode* proc_node);
 
 void process_activate(struct process*,
                       struct fql_plan*,
-                      unsigned fifo_size);
+                      unsigned fifo_size,
+                      unsigned* pipe_count);
 int process_step(struct fql_plan*);
 int process_exec_plan(struct fql_plan*);
 int process_exec_plan_thread(struct fql_plan*);
 void process_add_to_wait_list(struct process*, struct process*);
-void process_enable(struct process*);
 void process_disable(struct process*);
 
 enum proc_return {
@@ -75,6 +76,8 @@ enum proc_return {
 	PROC_RETURN_WAIT_ON_OUT0,
 	PROC_RETURN_WAIT_ON_OUT1,
 };
+
+void fqlprocess_recycle(process*, node**);
 
 enum proc_return fql_read(struct process*);
 enum proc_return fql_select(struct process*);

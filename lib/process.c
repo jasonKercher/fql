@@ -41,6 +41,7 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        NULL,                         /* queued_results */
 	        NULL,                         /* wait_list */
 	        NULL,                         /* waitee_proc */
+	        NULL,                         /* rootvec_ref */
 	        {0},                          /* wait_mutex */
 	        {0},                          /* wait_cond */
 	        0,                            /* rows_affected */
@@ -71,10 +72,10 @@ void process_node_free(dnode* proc_node)
 
 void process_destroy(process* self, bool is_root)
 {
-	if (self->org_fifo_in0 != NULL && self->org_fifo_in0 != self->root_ref) {
+	if (self->org_fifo_in0 != NULL && self->root_fifo != 0) {
 		delete_(fifo, self->org_fifo_in0);
 	}
-	if (self->fifo_in[1] != NULL && self->fifo_in[1] != self->root_ref) {
+	if (self->fifo_in[1] != NULL && self->root_fifo != 1) {
 		delete_(fifo, self->fifo_in[1]);
 	}
 	delete_if_exists_(vec, self->wait_list);
@@ -84,18 +85,28 @@ void process_destroy(process* self, bool is_root)
 	node_free_func(&self->queued_results, &fifo_free);
 }
 
-void process_activate(process* self,
-                      plan* plan,
-                      unsigned fifo_size)
+void process_activate(process* self, plan* plan, unsigned base_size, unsigned* pipe_count)
 {
-	self->root_ref = plan->root;
-	self->fifo_base_size = fifo_size;
+	self->global_root_ref = plan->global_root;
+	self->rootvec_ref = plan->root_fifo_vec;
+	self->fifo_base_size = base_size;
+
+	/* inbuf is not a pipe, but we should count it because it
+	 * can pull records out of the pipeline and hold them. If
+	 * we do not account for the input buffers, we could run
+	 * out of records in the pipeline and deadlock.
+	 */
+	++(*pipe_count);
 	self->inbuf = new_t_(vec, node*);
-	vec_reserve(self->inbuf, fifo_size);
+	vec_reserve(self->inbuf, base_size);
 	self->inbuf_iter = vec_begin(self->inbuf);
 
 	if (self->root_fifo != PROCESS_NO_PIPE_INDEX) {
-		self->fifo_in[self->root_fifo] = self->root_ref;
+		//self->fifo_in[self->root_fifo] = self->root_ref;
+		/* Ignore the 2, this will be resized later */
+		fifo* new_root = new_t_(fifo, node*, 2);
+		self->fifo_in[self->root_fifo] = new_root;
+		vec_push_back(plan->root_fifo_vec, &new_root);
 	}
 
 	if (self->action__ == &fql_select) {
@@ -106,13 +117,15 @@ void process_activate(process* self,
 	dnode** it = vec_begin(self->union_end_nodes);
 	for (; it != vec_end(self->union_end_nodes); ++it) {
 		process* select_proc = (*it)->data;
-		select_proc->fifo_out[0] = new_t_(fifo, node*, fifo_size);
+		++(*pipe_count);
+		select_proc->fifo_out[0] = new_t_(fifo, node*, base_size);
 		select_proc->fifo_out[0]->input_count = 1;
 		node_enqueue(&self->queued_results, select_proc->fifo_out[0]);
 	}
 
 	if (self->fifo_in[0] == NULL) {
-		self->fifo_in[0] = new_t_(fifo, node*, fifo_size);
+		++(*pipe_count);
+		self->fifo_in[0] = new_t_(fifo, node*, base_size);
 		self->org_fifo_in0 = self->fifo_in[0];
 		/* NOTE: GROUP BY hack. a constant query expression
 		 *       containing a group by essentially has 2 roots.
@@ -128,7 +141,8 @@ void process_activate(process* self,
 			fputs("Useless has_second_input\n", stderr);
 			return;
 		}
-		self->fifo_in[1] = new_t_(fifo, node*, fifo_size);
+		++(*pipe_count);
+		self->fifo_in[1] = new_t_(fifo, node*, base_size);
 	}
 
 	if (self->killed_pipe != PROCESS_NO_PIPE_INDEX) {
@@ -166,26 +180,28 @@ void process_disable(process* self)
 	if (self->fifo_out[1] != NULL) {
 		fifo_set_open(self->fifo_out[1], false);
 	}
-	fifo_set_open(self->fifo_in[0], false);
 	self->is_enabled = false;
+	fifo_set_open(self->fifo_in[0], false);
 
 	/* Now we want to recycle any records sitting
 	 * in the input fifos
 	 */
 
-	if (self->fifo_in[0] != NULL && self->fifo_in[0] != self->root_ref) {
+	if (self->fifo_in[0] != NULL && self->root_fifo != 0) {
 		fifo* in = self->fifo_in[0];
 		node** it = fifo_begin(in);
+		fqlprocess_recycle(self, it);
 		for (; it != fifo_end(in); it = fifo_iter(in)) {
-			fifo_add(self->root_ref, it);
+			fqlprocess_recycle(self, it);
 		}
 		fifo_update(in);
 	}
-	if (self->fifo_in[1] != NULL && self->fifo_in[1] != self->root_ref) {
+	if (self->fifo_in[1] != NULL && self->root_fifo != 1) {
+		//fifo_set_open(self->fifo_in[1], false);
 		fifo* in = self->fifo_in[1];
 		node** it = fifo_begin(in);
 		for (; it != fifo_end(in); it = fifo_iter(in)) {
-			fifo_add(self->root_ref, it);
+			fqlprocess_recycle(self, it);
 		}
 		fifo_update(in);
 	}
@@ -206,18 +222,6 @@ void process_disable(process* self)
 		        len,
 		        string_c_str(self->plan_msg));
 	}
-}
-
-void process_enable(process* self)
-{
-	if (self->fifo_out[0] != NULL) {
-		fifo_set_open(self->fifo_out[0], true);
-	}
-	if (self->fifo_out[1] != NULL) {
-		fifo_set_open(self->fifo_out[1], true);
-	}
-	fifo_set_open(self->fifo_in[0], true);
-	self->is_enabled = true;
 }
 
 bool _check_wait_list(struct vec* wait_list)
@@ -315,7 +319,7 @@ void* _thread_exec(void* data)
 	 *
 	 * This select process cannot execute until that subquery
 	 * has completed. In this example, the select process for
-	 * the subquery will own a reference to this process to so
+	 * the subquery will own a reference to this process so
 	 * it can wake it up when it is complete.
 	 */
 
