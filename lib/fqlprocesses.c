@@ -13,16 +13,6 @@
 #include "fqlupdate.h"
 #include "util/fifo.h"
 
-void fqlprocess_recycle(process* proc, node** rg)
-{
-	while (*rg) {
-		node* rg_node = node_pop_export(rg);
-		record* rec = rg_node->data;
-		fifo** root_fifo = vec_at(proc->rootvec_ref, rec->root_fifo_idx);
-		fifo_add(*root_fifo, &rg_node);
-	}
-}
-
 void _iter_states(fifo* f, string* msg)
 {
 	unsigned len = (msg->size > 25) ? 25 : msg->size;
@@ -45,6 +35,16 @@ int _fill_inbuf(process* proc, fifo* input)
 	        fifo_nget(input, proc->inbuf, proc->out_src_count, proc->fifo_base_size);
 	proc->inbuf_iter = vec_begin(proc->inbuf);
 	return ret;
+}
+
+void fqlprocess_recycle(process* proc, node** rg)
+{
+	while (*rg) {
+		node* rg_node = node_pop_export(rg);
+		record* rec = rg_node->data;
+		fifo** root_fifo = vec_at(proc->rootvec_ref, rec->root_fifo_idx);
+		fifo_add(*root_fifo, &rg_node);
+	}
 }
 
 enum proc_return fql_read(process* proc)

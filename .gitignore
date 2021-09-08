@@ -17,8 +17,11 @@ check_order
 check_top
 check_difficult
 check_operations
+check_output
 check_stdin
 check_failure
+
+results/
 
 *.vgreport
 

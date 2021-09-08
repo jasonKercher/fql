@@ -15,6 +15,7 @@ TESTS =              \
 	check_union      \
 	check_difficult  \
 	check_operations \
+	check_output     \
 	check_stdin      \
 	check_failure
 check_PROGRAMS =     \
@@ -34,6 +35,7 @@ check_PROGRAMS =     \
 	check_union      \
 	check_difficult  \
 	check_operations \
+	check_output     \
 	check_stdin      \
 	check_failure
 
@@ -106,6 +108,10 @@ check_stdin_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 check_operations_SOURCES = $(common_src) check_operations.c
 check_operations_CFLAGS = @CHECK_CFLAGS@
 check_operations_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+
+check_output_SOURCES = $(common_src) check_output.c
+check_output_CFLAGS = @CHECK_CFLAGS@
+check_output_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 
 check_failure_SOURCES = $(common_src) check_failure.c
 check_failure_CFLAGS = @CHECK_CFLAGS@
