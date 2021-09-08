@@ -55,7 +55,7 @@ const char* _help =
         " -R, --rec-term arg     set a record terminator for delimited output\n"
         " -s, --in-delim arg     for delimited, specify an input seperator\n"
         " -S, --out-delim arg    for delimited, speficy seperator for SELECT\n"
-        //" -t, --thread           Utilize pthreads to run processes in parallel\n"
+        " -t, --thread           Utilize pthreads to run processes in parallel\n"
         " -v, --verbose          print additional information to stderr\n"
         " --in-std arg           for delimited, set input standard. see below...\n"
         " --out-std arg          for delimited, set output standard. see below...\n"
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
 	        {"pipe-factor", required_argument, 0, 'P'},
 	        {"in-delim", required_argument, 0, 's'},
 	        {"out-delim", required_argument, 0, 'S'},
-	        {"threading", no_argument, 0, 't'},
+	        {"thread", no_argument, 0, 't'},
 	        {"verbose", no_argument, 0, 'v'},
 	        {"crlf", no_argument, 0, 'W'},
 	        {"help", no_argument, 0, HELP_ARG},

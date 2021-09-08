@@ -2,7 +2,7 @@
 
 while read -r cpath; do
 	if [ -d "${cpath}/antlr4-runtime" ]; then
-		printf "%s/antlr4-runtime" "$cpath"
+		printf "%s/" "$cpath"
 		break
 	fi
 done < <(cpp -v /dev/null -o /dev/null 2>&1 \

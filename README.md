@@ -126,9 +126,14 @@ csvsql|2m6.498s
 - [libpcre2](https://www.pcre.org/): for LIKE statement implementation
 - [libcheck](https://github.com/libcheck/check): This is only for `make check`.
 
-Once antlr4 runtime is installed, we want to use the find_antlr_cpath.sh script to set ANTLR4_CPATH for the configure script:
+Once antlr4 runtime is installed, we need to tell the configure script where to find the antlr header files.
+These headers are installed at `${PREFIX}/include/antlr4-runtime` where `$PREFIX` is the install prefix for 
+the antlr4-runtime. So we need to set ANTLR4_CPATH (`ANTLR4_CPATH=${PREFIX}/include`) Rather than searching 
+for it manually, you can use the find_antlr_cpath.sh script to find it for you:
 ```sh
 ANTLR4_CPATH=$(./find_antlr_cpath.sh) ./configure
+# Or if you know what it is...
+ANTLR4_CPATH=/usr/lib ./configure
 make
 make check   # optional
 make install
@@ -142,7 +147,8 @@ Installed library: libfql.so
 
 ### Library
 
-Here is a quick example of how to use the library API:
+The `fql` program was designed to work within a shell environment, however, it can also be utilized as a library. In fact, the `fql` program is really just a thin
+wrapper for `fql_exec` library function. Here is a quick example of how to use the library API:
 
 ```c
 #include <stdlib.h>
@@ -186,7 +192,3 @@ int main(int argc, char** argv)
 	fql_free(handle);
 }
 ```
-
-
-
-

@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include "check_common.h"
 
 void thread_setup(void)
@@ -297,6 +300,9 @@ Suite* fql_thread_output_suite(void)
 
 int main(void)
 {
+
+	mkdir("results", 0775);
+
 	int number_failed;
 	Suite* output_suite = fql_output_suite();
 	SRunner* output_runner = srunner_create(output_suite);
