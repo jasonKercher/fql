@@ -6,17 +6,17 @@
 |_|  \__, |_|
         |_|
 ```
-This is an [ANTLR](https://www.antlr.org/) powered text processing language for Linux.  
+This is an [ANTLR](https://www.antlr.org/) powered text processing language for Linux.
 Similar in spirit to awk which uses a C-like syntax, fql uses SQL (T-SQL specifically).
 
 
 ### What can it do?
 
-fql gives you the power of SQL for your delimited or fixed-width data files 
-without the need to import them into a database. fql aims to be fast as well 
-as memory efficient. Most queries should use relatively a low amount of memory. 
-Keep in mind that memory consumption increases for things like GROUP BY, ORDER BY 
-and JOIN. Queries are case insensitive so `SELECT * FROM T1 WHERE FOO = 'BAR'` is 
+fql gives you the power of SQL for your delimited or fixed-width data files
+without the need to import them into a database. fql aims to be fast as well
+as memory efficient. Most queries should use a relatively low amount of memory.
+Keep in mind that memory consumption increases for things like GROUP BY, ORDER BY
+and JOIN. Queries are case insensitive so `SELECT * FROM T1 WHERE FOO = 'BAR'` is
 the same as `select * from t1 where foo = 'bar'`.
 
 ### What can it *not* do?
@@ -34,11 +34,10 @@ the same as `select * from t1 where foo = 'bar'`.
 - PIVOT/UNPIVOT
 - Implicit UPDATE/DELETE into subqueries
 
-Most recent and possibly unstable features:
-- UPDATE 
-- DELETE
+Most recent and possibly unstable feature(s):
 - JOIN with either a subquery or stdin on the right side.
-  
+
+
 ### Is it fast?
 
 Here is a naive benchmark vs other similar projects:
@@ -49,8 +48,8 @@ Here is a naive benchmark vs other similar projects:
 - base benchmark with shell tools
 
 
-Benchmarks are performed on 2 tables of generic random data of 
-2 000 000 records (not including header).  The gentsv.sh script 
+Benchmarks are performed on 2 tables of generic random data of
+2 000 000 records (not including header).  The gentsv.sh script
 can be used to build these files.
 
 ```sh
