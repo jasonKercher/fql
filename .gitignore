@@ -40,7 +40,6 @@ fql
 
 # temp files
 *.temp
-out*
 
 # vim swap file
 *.swp
