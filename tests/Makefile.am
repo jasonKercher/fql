@@ -1,42 +1,44 @@
-TESTS =              \
-	check_hashmap    \
-	check_constants  \
-	check_read       \
-	check_logic      \
-	check_scalar     \
-	check_switch     \
-	check_null       \
-	check_join       \
-	check_subquery   \
-	check_group      \
-	check_having     \
-	check_order      \
-	check_top        \
-	check_union      \
-	check_difficult  \
-	check_operations \
-	check_output     \
-	check_stdin      \
+TESTS =                        \
+	check_hashmap          \
+	check_constants        \
+	check_read             \
+	check_logic            \
+	check_scalar           \
+	check_switch           \
+	check_null             \
+	check_join             \
+	check_subquery         \
+	check_group            \
+	check_having           \
+	check_order            \
+	check_top              \
+	check_union            \
+	check_difficult        \
+	check_operations       \
+	check_output           \
+	check_thread_output    \
+	check_stdin            \
 	check_failure
-check_PROGRAMS =     \
-	check_hashmap    \
-	check_constants  \
-	check_read       \
-	check_logic      \
-	check_scalar     \
-	check_switch     \
-	check_null       \
-	check_join       \
-	check_subquery   \
-	check_group      \
-	check_having     \
-	check_order      \
-	check_top        \
-	check_union      \
-	check_difficult  \
-	check_operations \
-	check_output     \
-	check_stdin      \
+check_PROGRAMS =               \
+	check_hashmap          \
+	check_constants        \
+	check_read             \
+	check_logic            \
+	check_scalar           \
+	check_switch           \
+	check_null             \
+	check_join             \
+	check_subquery         \
+	check_group            \
+	check_having           \
+	check_order            \
+	check_top              \
+	check_union            \
+	check_difficult        \
+	check_operations       \
+	check_output           \
+	check_thread_output    \
+	check_stdin            \
 	check_failure
 
 common_src = $(top_builddir)/lib/include/fql.h check_common.h check_common.c
@@ -109,9 +111,13 @@ check_operations_SOURCES = $(common_src) check_operations.c
 check_operations_CFLAGS = @CHECK_CFLAGS@
 check_operations_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 
-check_output_SOURCES = $(common_src) check_output.c
+check_output_SOURCES = $(common_src) check_output.c output.h output.c
 check_output_CFLAGS = @CHECK_CFLAGS@
 check_output_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+
+check_thread_output_SOURCES = $(common_src) check_thread_output.c output.h output.c
+check_thread_output_CFLAGS = @CHECK_CFLAGS@
+check_thread_output_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 
 check_failure_SOURCES = $(common_src) check_failure.c
 check_failure_CFLAGS = @CHECK_CFLAGS@
