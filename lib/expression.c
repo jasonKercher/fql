@@ -182,7 +182,7 @@ void expression_cat_description(expression* self, string* msg)
 			string_push_back(msg, '\'');
 			break;
 		case FIELD_INT: {
-			char buf[20];
+			char buf[21];
 			sprintf(buf, "%ld", self->field.i);
 			string_strcat(msg, buf);
 			break;
