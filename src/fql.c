@@ -102,7 +102,7 @@ int main(int argc, char** argv)
 	        {"command", required_argument, 0, 'c'},
 	        {"cartesian", no_argument, 0, 'C'},
 	        {"dry-run", no_argument, 0, 'd'},
-	        {"expeceted", required_argument, 0, 'E'},
+	        {"expect", required_argument, 0, 'E'},
 	        {"no-header", no_argument, 0, 'h'},
 	        {"add-header", no_argument, 0, 'H'},
 	        {"summarize", no_argument, 0, 'L'},

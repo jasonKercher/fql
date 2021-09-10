@@ -120,7 +120,13 @@ csvsql|2m6.498s
 \* See benchmark.sh for additional notes
 
 ### Installation
-**Requirements**
+
+**Arch Linux**
+If you are using an Arch Linux based distribution, fql can be retrieved from the [aur](https://aur.archlinux.org/packages/fql/).
+
+**Compiling from source**
+
+*Requirements*
 - [libcsv](https://github.com/jasonKercher/libcsv): for reading and writing correct csv files based on [RFC 4180](https://www.ietf.org/rfc/rfc4180.txt)
 - [antlr4 C++ runtime library](https://github.com/antlr/antlr4/tree/master/runtime/Cpp): This is available though pacman (`pacman -S antlr4-runtime`) if you have an Arch Linux based distribution.  I struggled getting this installed on Ubuntu and just wound up compiling it.
 - [libpcre2](https://www.pcre.org/): for LIKE statement implementation
@@ -158,37 +164,39 @@ int main(int argc, char** argv)
 {
 	struct fql_handle* handle = fql_new();
 	int ret = fql_make_plans(handle,
-	                         "select t1.foo "
-	                         "from t1 "
-	                         "join t2 "
+	                         "select t1.*           "
+	                         "from t1               "
+	                         "join t2               "
 	                         "    on t1.foo = t2.foo");
 
 	if (ret == FQL_FAIL) {
+		fql_free(handle);
 		return EXIT_FAILURE;
 	}
 
-	// In case we don't know. We know
-	// it is 1 based on the query...
+	// In case we don't know how many fields will return...
 	int field_count = fql_field_count(handle);
 
 	// fql_step will initialize this for us
 	struct fql_field* fields = NULL;
 
-	// fql_step returns:
-	// 0 at EOF
-	// FQL_FAIL on runtime error
+	// fql_step returns...
+	//     FQL_FAIL: runtime error
+	//     0:        complete
+	//     1:        still running
 	while ((ret = fql_step(handle, &fields)) == 1) {
-		// Since we are pulling from a file, we
-		// can assume this is of type FQL_STRING
+
+		// Since we are using the default schema,
+		// we can assume this is of type FQL_STRING.
+		// If we had to check though...
 		if (fields[0].type == FQL_STRING) {
 			const char* foo = fields[0].data.s;
-			// Do something with foo
+			// foo now contains the first value of
+			// the first field returned by the query
 		}
-	}
-	if (ret == FQL_FAIL) {
-		return EXIT_FAILURE;
 	}
 
 	fql_free(handle);
+	return ret;
 }
 ```
