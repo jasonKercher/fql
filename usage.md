@@ -57,12 +57,12 @@ join __stdin s
     on s.ID = N.ID
 where s.fullname like '[rb]ob%'
 ```
-
+Now, we can do this:
 ```sh
 cat namelist.txt | fql nameupdate.sql
 ```
 
-In the spirit of the caseless nature of fql, tables names are also caselessly matched to files. And... In the spirit of not 
+In the spirit of the caseless nature of SQL, tables names are also caselessly matched to files. And... In the spirit of not 
 having to use brackets around each table name, the extension of the file can be ommited as well. So these 2 queries are 
 equivalent (if we assume no ambiguity in file names):
 
@@ -82,11 +82,11 @@ ignore extension       t1.txt,t1.csv
 ignore extension/case  t1.txt,T1.csv
 ```
 
-### Schema
-
 If the brackets are missing from a table name with an extension, the parser will
 see that as a `SCHEMA.TABLE` combination, and will probably not find the file you
 were looking for.
+
+### Schema
 
 The schema can be defined to tell fql what kind of file we are
 working with. Let's assume a table structure like our example from earlier.  Except these are the art
