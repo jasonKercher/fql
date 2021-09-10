@@ -50,6 +50,7 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	                QUOTE_RFC4180,       /* in_quotes */
 	                QUOTE_RFC4180,       /* out_quotes */
 	                0,                   /* strictness */
+	                0,                   /* expected_count */
 	                false,               /* dry_run */
 	                false,               /* force_cartesian */
 	                false,               /* overwrite */
@@ -303,6 +304,11 @@ void fql_set_allow_stdin(struct fql_handle* fql, int allow_stdin)
 	fql->props.allow_stdin = allow_stdin;
 }
 
+void fql_set_expected_count(struct fql_handle* fql, int expected)
+{
+	fql->props.expected_count = expected;
+}
+
 /**
  * Methods
  */
@@ -369,6 +375,13 @@ int fql_exec_all_plans(struct fql_handle* fql)
 int fql_exec(struct fql_handle* fql, const char* query_str)
 {
 	int plan_count = try_(fql_make_plans(fql, query_str));
+	if (fql->props.expected_count && plan_count > fql->props.expected_count) {
+		fprintf(stderr,
+		        "Number of expected queries (%d) exceeded (%d)\n",
+		        fql->props.expected_count,
+		        plan_count);
+		return FQL_FAIL;
+	}
 	int ret = 0;
 	if (!fql->props.dry_run) {
 		ret = fql_exec_plans(fql, plan_count);

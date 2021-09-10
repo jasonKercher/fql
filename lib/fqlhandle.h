@@ -26,6 +26,7 @@ struct fql_handle {
 		int in_std;
 		int out_std;
 		int strictness;
+		int expected_count;
 		bool dry_run;
 		bool force_cartesian;
 		bool overwrite;

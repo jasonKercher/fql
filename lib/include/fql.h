@@ -212,6 +212,12 @@ int fql_set_out_std(struct fql_handle* fql, const char*);
  */
 void fql_set_allow_stdin(struct fql_handle* fql, int);
 
+/**
+ * Use this to limit the number of queries fql_exec
+ * will run through.
+ */
+void fql_set_expected_count(struct fql_handle* fql, int);
+
 /** executing **/
 
 /**

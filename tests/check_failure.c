@@ -1,5 +1,6 @@
 #include "check.h"
 #include "check_common.h"
+#include "fql.h"
 
 /* t1.tsv
 foo	bar	baz
@@ -29,7 +30,6 @@ f95b84ce,18,229701
 
 START_TEST(test_failure_syntax)
 {
-	struct fql_field* fields = NULL;
 	int plan_count = 0;
 
 	/* [column] [alias] [??] */
@@ -64,7 +64,6 @@ END_TEST
 
 START_TEST(test_failure_columns)
 {
-	struct fql_field* fields = NULL;
 	int plan_count = 0;
 
 	/* column doesn't exist */
@@ -99,7 +98,6 @@ END_TEST
 
 START_TEST(test_failure_fql_specific)
 {
-	struct fql_field* fields = NULL;
 	int plan_count = 0;
 
 	/* Function not yet implemented */
@@ -115,12 +113,15 @@ START_TEST(test_failure_fql_specific)
 	                            "join __stdin x2       "
 	                            "    on x1.foo = x2.foo");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
+
+	/* Exceed props.expected_count */
+	fql_set_expected_count(fql, 1);
+	ck_assert_int_eq(fql_exec(fql, "select 1 select 2"), FQL_FAIL);
 }
 END_TEST
 
 START_TEST(test_failure_multioperation)
 {
-	struct fql_field* fields = NULL;
 	int plan_count = 0;
 
 	/* INTO column missing from fresh file */
@@ -170,7 +171,6 @@ END_TEST
 
 START_TEST(test_failure_const_runtime)
 {
-	struct fql_field* fields = NULL;
 	int plan_count = 0;
 
 	/* non-numeric data where not expected */
