@@ -34,8 +34,10 @@ struct fql_handle* fql_new()
 struct fql_handle* fql_construct(struct fql_handle* fql)
 {
 	*fql = (struct fql_handle) {
-	        NULL,                                                     /* queries */
-	        new_t_(vec, struct fql_field),                            /* api_vec */
+	        NULL,                          /* active_iter */
+	        new_t_(vec, query*),           /* query_vec */
+	        new_t_(vec, struct fql_field), /* api_vec */
+	        new_(hashmap, sizeof(expression*), 16, HASHMAP_PROP_NOCASE), /* var_map */
 	        new_(hashmap, sizeof(schema*), 16, HASHMAP_PROP_DEFAULT), /* schema_map */
 	        NULL,  /* schema_paths */
 	        NULL,  /* query_str */
@@ -47,10 +49,9 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	                "",                  /* out_delim */
 	                "",                  /* rec_terminator */
 	                PIPE_FACTOR_DEFAULT, /* pipe_factor */
-	                QUOTE_RFC4180,       /* in_quotes */
-	                QUOTE_RFC4180,       /* out_quotes */
+	                QUOTE_RFC4180,       /* in_std */
+	                QUOTE_RFC4180,       /* out_std */
 	                0,                   /* strictness */
-	                0,                   /* expected_count */
 	                false,               /* dry_run */
 	                false,               /* force_cartesian */
 	                false,               /* overwrite */
@@ -68,6 +69,8 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	        }                            /* props */
 	};
 
+	fql->active_iter = vec_begin(fql->query_vec);
+
 	fqlsig_init_sig();
 
 	return fql;
@@ -75,6 +78,8 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 
 void fql_free(struct fql_handle* fql)
 {
+	fql_reset(fql);
+
 	if (fql->schema_paths != NULL) {
 		string** it = vec_begin(fql->schema_paths);
 		for (; it != vec_end(fql->schema_paths); ++it) {
@@ -83,11 +88,31 @@ void fql_free(struct fql_handle* fql)
 		delete_(vec, fql->schema_paths);
 	}
 	delete_(hashmap, fql->schema_map);
+	delete_(hashmap, fql->variable_map);
 	delete_(string, fql->props.schema_path);
 	delete_(string, fql->props.schema);
+	delete_(vec, fql->query_vec);
 	delete_if_exists_(vec, fql->api_vec);
 	free_if_exists_(fql->query_str);
-	free_if_exists_(fql);
+	free_(fql);
+}
+
+int fql_reset(struct fql_handle* fql)
+{
+	query** it = vec_begin(fql->query_vec);
+	for (; it != vec_end(fql->query_vec); ++it) {
+		delete_(query, *it);
+	}
+	vec_clear(fql->query_vec);
+	fql->active_iter = vec_begin(fql->query_vec);
+
+	fqlsig_tmp_removeall();
+
+	/* lol I never implemented clear... */
+	delete_(hashmap, fql->schema_map);
+	fql->schema_map = new_(hashmap, sizeof(schema*), 16, HASHMAP_PROP_DEFAULT);
+
+	return FQL_GOOD;
 }
 
 int _api_connect(struct fql_handle* fql, query* query)
@@ -123,8 +148,8 @@ int _api_connect(struct fql_handle* fql, query* query)
 
 int fql_field_count(struct fql_handle* fql)
 {
-	if (fql->query_list && vec_empty(fql->api_vec)) {
-		try_(_api_connect(fql, fql->query_list->data));
+	if (!vec_empty(fql->query_vec) && vec_empty(fql->api_vec)) {
+		try_(_api_connect(fql, *fql->active_iter));
 	}
 	return fql->api_vec->size;
 }
@@ -304,11 +329,6 @@ void fql_set_allow_stdin(struct fql_handle* fql, int allow_stdin)
 	fql->props.allow_stdin = allow_stdin;
 }
 
-void fql_set_expected_count(struct fql_handle* fql, int expected)
-{
-	fql->props.expected_count = expected;
-}
-
 /**
  * Methods
  */
@@ -316,9 +336,8 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 {
 	int i = 0;
 	int ret = 0;
-	for (; fql->query_list && i < plan_count; ++i) {
-		query* query = fql->query_list->data;
-		plan* plan = query->plan;
+	for (; fql->active_iter != vec_end(fql->query_vec) && i < plan_count; ++i) {
+		plan* plan = (*fql->active_iter)->plan;
 		if (plan->has_stepped) {
 			fputs("Cannot execute plan that has been"
 			      " stepped through\n",
@@ -344,24 +363,15 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 			}
 		}
 
-		query_free(query);
-		node_dequeue(&fql->query_list);
 		if (ret == FQL_FAIL) {
 			break;
 		}
+
+		++fql->active_iter;
 	}
 
-	if (ret != FQL_GOOD) {
-		node_free_func(&fql->query_list, query_free);
-	}
-
-	/* TODO: hashmap_clear() */
-	if (node_count(fql->query_list) == 0) {
-		fqlsig_tmp_removeall();
-
-		delete_(hashmap, fql->schema_map);
-		fql->schema_map =
-		        new_(hashmap, sizeof(schema*), 16, HASHMAP_PROP_DEFAULT);
+	if (ret != FQL_GOOD || fql->active_iter == vec_end(fql->query_vec)) {
+		fql_reset(fql);
 	}
 
 	return ret;
@@ -374,18 +384,13 @@ int fql_exec_all_plans(struct fql_handle* fql)
 
 int fql_exec(struct fql_handle* fql, const char* query_str)
 {
-	int plan_count = try_(fql_make_plans(fql, query_str));
-	if (fql->props.expected_count && plan_count > fql->props.expected_count) {
-		fprintf(stderr,
-		        "Number of expected queries (%d) exceeded (%d)\n",
-		        fql->props.expected_count,
-		        plan_count);
-		return FQL_FAIL;
-	}
-	int ret = 0;
+	int ret = fql_make_plans(fql, query_str);
+
 	if (!fql->props.dry_run) {
-		ret = fql_exec_plans(fql, plan_count);
+		ret = fql_exec_all_plans(fql);
 	}
+
+	fql_reset(fql);
 
 	return ret;
 }
@@ -402,26 +407,25 @@ int fql_make_plans(struct fql_handle* fql, const char* query_str)
 	fql->query_str = strdup(query_str);
 
 	if (analyze_query(fql)) {
-		goto make_plans_fail;
+		fql_reset(fql);
+		return FQL_FAIL;
 	}
 
 	if (schema_resolve(fql)) {
-		goto make_plans_fail;
+		fql_reset(fql);
+		return FQL_FAIL;
 	}
 
 	if (build_plans(fql)) {
-		goto make_plans_fail;
+		fql_reset(fql);
+		return FQL_FAIL;
 	}
 
 	if (fql->props.print_plan) {
-		print_plans(fql->query_list);
+		print_plans(fql);
 	}
 
-	return node_count(fql->query_list);
-
-make_plans_fail:
-	node_free_func(&fql->query_list, query_free);
-	return FQL_FAIL;
+	return fql->query_vec->size;
 }
 
 void _free_api_strings(vec* api)
@@ -436,7 +440,7 @@ void _free_api_strings(vec* api)
 
 int fql_step(struct fql_handle* fql, struct fql_field** fields)
 {
-	query* query = fql->query_list->data;
+	query* query = *fql->active_iter;
 	struct fql_plan* plan = query->plan;
 	if (!plan->has_stepped) {
 		if (vec_empty(fql->api_vec)) {
@@ -461,18 +465,13 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 		*fields = vec_begin(fql->api_vec);
 		return ret;
 	}
-	struct query* q = node_dequeue(&fql->query_list);
-	query_free(q);
 	_free_api_strings(fql->api_vec);
 	vec_clear(fql->api_vec);
 
-	/* TODO: hashmap_clear() */
-	if (node_count(fql->query_list) == 0) {
-		fqlsig_tmp_removeall();
+	++fql->active_iter;
 
-		delete_(hashmap, fql->schema_map);
-		fql->schema_map =
-		        new_(hashmap, sizeof(schema*), 16, HASHMAP_PROP_DEFAULT);
+	if (fql->active_iter == vec_end(fql->query_vec)) {
+		fql_reset(fql);
 	}
 
 	return ret;

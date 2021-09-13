@@ -33,6 +33,6 @@ struct fql_plan* plan_construct(struct fql_plan*, struct query*, struct fql_hand
 void plan_destroy(void*);
 
 int build_plans(struct fql_handle*);
-void print_plans(struct node* plans);
+void print_plans(struct fql_handle*);
 
 #endif /* FQLPLAN_H */

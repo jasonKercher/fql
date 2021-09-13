@@ -78,6 +78,8 @@ void plan_destroy(void* generic_plan)
 		delete_(dgraph, self->processes);
 	}
 
+	delete_if_exists_(vec, self->execution_vector);
+
 	if (self->global_root == NULL) {
 		return;
 	}
@@ -87,8 +89,15 @@ void plan_destroy(void* generic_plan)
 		delete_(record, it->data);
 		//node_free(&it);
 	}
-	delete_(fifo, self->global_root);
+
+	fifo** fifo_iter = vec_begin(self->root_fifo_vec);
+	for (; fifo_iter != vec_end(self->root_fifo_vec); ++fifo_iter) {
+		delete_(fifo, *fifo_iter);
+	}
 	delete_(vec, self->root_fifo_vec);
+
+	/* this will be freed in above loop */
+	//delete_(fifo, self->global_root);
 	delete_(vec, self->_root_data);
 }
 
@@ -777,11 +786,9 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 
 int build_plans(struct fql_handle* fql)
 {
-	node* node = fql->query_list;
-
-	for (; node; node = node->next) {
-		query* query = node->data;
-		try_(_build(query, fql, NULL, false));
+	query** it = vec_begin(fql->query_vec);
+	for (; it != vec_end(fql->query_vec); ++it) {
+		try_(_build(*it, fql, NULL, false));
 	}
 
 	return FQL_GOOD;
@@ -857,14 +864,13 @@ void _print_plan(plan* self)
 	fputs("\n", stderr);
 }
 
-void print_plans(node* query_list)
+void print_plans(struct fql_handle* fql)
 {
-	int i = 0;
-	node* node = query_list;
-	for (; node; node = node->next, ++i) {
-		query* query = query_list->data;
+	unsigned i = 0;
+	for (; i < fql->query_vec->size; ++i) {
+		query** query = vec_at(fql->query_vec, i);
 		fprintf(stderr, "\nQUERY %d\n", ++i);
-		_print_plan(query->plan);
+		_print_plan((*query)->plan);
 	}
 }
 
@@ -972,6 +978,10 @@ unrolled_break : {
 }
 }
 
+/* The execution order is defined by a graph traversal. The order should
+ * really never change, so we just traverse one time here and record
+ * the order into a vector.
+ */
 void _calculate_execution_order(plan* self)
 {
 	self->execution_vector = new_t_(vec, process*);

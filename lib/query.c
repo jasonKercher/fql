@@ -103,6 +103,12 @@ void query_free(void* data)
 	delete_if_exists_(query, data);
 }
 
+void query_add_query(struct fql_handle* fql, struct query* newquery)
+{
+	vec_push_back(fql->query_vec, &newquery);
+	fql->active_iter = vec_begin(fql->query_vec);
+}
+
 int _add_logic_expression(query* self, expression* expr)
 {
 	if (self->logic_mode != LOGIC_HAVING && expr->expr == EXPR_AGGREGATE) {
@@ -300,6 +306,7 @@ int query_add_source(query* self,
 	                self->sources->size - 1,
 	                self->join);
 
+
 	if (schema_name != NULL) {
 		new_table->schema->name = string_take(schema_name);
 	}
@@ -307,6 +314,7 @@ int query_add_source(query* self,
 	char* unused = node_pop(source_stack);
 	while (unused != NULL) {
 		fprintf(stderr, "Ignored table qualification: `%s'\n", unused);
+		free_(unused);
 		unused = node_pop(source_stack);
 	}
 

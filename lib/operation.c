@@ -173,7 +173,7 @@ void op_set_top_count(enum op* self, size_t top_count)
 
 int op_preop(struct fql_handle* fql)
 {
-	query* query = fql->query_list->data;
+	query* query = *fql->active_iter;
 	enum op* type = query->op;
 
 	table* it = vec_begin(query->sources);

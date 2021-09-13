@@ -49,6 +49,7 @@ class ListenerInterface : public TSqlParserBaseListener {
 
       public:
 	ListenerInterface(struct fql_handle*, TreeWalker*, const std::vector<std::string>&);
+	~ListenerInterface();
 	int get_return_code();
 
 	virtual void enterTsql_file(TSqlParser::Tsql_fileContext * /*ctx*/) override;

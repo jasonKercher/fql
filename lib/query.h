@@ -172,7 +172,9 @@ struct query* query_new(int id);
 struct query* query_construct(struct query*, int id);
 void query_destroy(struct query*);
 void query_release_sources(struct query*);
-void query_free(void*);
+
+/* lol */
+void query_add_query(struct fql_handle*, struct query*);
 
 int query_add_constant(struct query*, const char*, int);
 int query_add_null_expression(struct query*);

@@ -9,9 +9,13 @@ extern "C" {
 
 #include "fqlimits.h"
 
+struct query;
+
 struct fql_handle {
-	struct node* query_list;
+	struct query** active_iter;
+	struct vec* query_vec;
 	struct vec* api_vec;
+	struct hashmap* variable_map;
 	struct hashmap* schema_map;
 	struct vec* schema_paths;
 	char* query_str;
@@ -26,7 +30,6 @@ struct fql_handle {
 		int in_std;
 		int out_std;
 		int strictness;
-		int expected_count;
 		bool dry_run;
 		bool force_cartesian;
 		bool overwrite;

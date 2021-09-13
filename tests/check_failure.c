@@ -113,9 +113,9 @@ START_TEST(test_failure_fql_specific)
 	                            "    on x1.foo = x2.foo");
 	ck_assert_int_eq(plan_count, FQL_FAIL);
 
-	/* Exceed props.expected_count */
-	fql_set_expected_count(fql, 1);
-	ck_assert_int_eq(fql_exec(fql, "select 1 select 2"), FQL_FAIL);
+	///* Exceed props.expected_count */
+	//fql_set_expected_count(fql, 1);
+	//ck_assert_int_eq(fql_exec(fql, "select 1 select 2"), FQL_FAIL);
 }
 END_TEST
 

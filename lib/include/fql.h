@@ -41,6 +41,13 @@ struct fql_handle* fql_new();
  */
 void fql_free(struct fql_handle*);
 
+/**
+ * retain instance of fql, but free any existing
+ * queries and states.
+ */
+int fql_reset(struct fql_handle*);
+
+
 /** Properties **/
 
 /**
@@ -211,12 +218,6 @@ int fql_set_out_std(struct fql_handle* fql, const char*);
  * stdin so by default, __STDIN, is not available.
  */
 void fql_set_allow_stdin(struct fql_handle* fql, int);
-
-/**
- * Use this to limit the number of queries fql_exec
- * will run through.
- */
-void fql_set_expected_count(struct fql_handle* fql, int);
 
 /** executing **/
 

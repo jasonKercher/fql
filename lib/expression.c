@@ -72,12 +72,12 @@ expression* expression_construct(expression* self,
 		break;
 	case EXPR_NULL:
 		self->field_type = FIELD_STRING;
-		string_construct(&self->alias);
+		break;
 	default:;
 	}
 
-	        string_construct(&self->alias);
-	        return self;
+	string_construct(&self->alias);
+	return self;
 }
 
 void expression_destroy(void* generic_expr)

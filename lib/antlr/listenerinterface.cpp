@@ -41,6 +41,13 @@ ListenerInterface::ListenerInterface(struct fql_handle* fql,
 	_tok_type = TOK_UNDEFINED;
 }
 
+ListenerInterface::~ListenerInterface()
+{
+	node_free(&_query_stack);
+	node_free_data(&_source_stack);
+	node_free_data(&_column_stack);
+}
+
 int ListenerInterface::get_return_code()
 {
 	return _return_code;
@@ -264,6 +271,7 @@ void ListenerInterface::exitFull_column_name(TSqlParser::Full_column_nameContext
 	}
 	free_(column_name);
 
+	node_free_data(&_column_stack);
 }
 
 void ListenerInterface::enterTsql_file(TSqlParser::Tsql_fileContext * ctx) { }
@@ -276,7 +284,7 @@ void ListenerInterface::enterSql_clauses(TSqlParser::Sql_clausesContext* ctx)
 {
 	_query = query_new(0);
 	_query_id = 0;
-	node_enqueue(&_fql->query_list, _query);
+	query_add_query(_fql, _query);
 	node_push(&_query_stack, _query);
 }
 void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext* ctx)

@@ -45,7 +45,6 @@ const char* _help =
         " -b, --char-as-byte     scalar functions assume single-byte encoding\n"
         " -C, --cartesian        use cartesian join algorithm (less memory use)\n"
         " -d, --dry-run          validate and build a plan, but do not execute\n"
-        " -E, --expect           set expected query count that cannot be exceeded\n"
         " -h, --no-header        for default schema, do not print a header\n"
         " -H, --add-header       for no-header delimited, add a header\n"
         " -L, --summarize        allow SELECTion outside of groups.\n"
@@ -102,7 +101,6 @@ int main(int argc, char** argv)
 	        {"command", required_argument, 0, 'c'},
 	        {"cartesian", no_argument, 0, 'C'},
 	        {"dry-run", no_argument, 0, 'd'},
-	        {"expect", required_argument, 0, 'E'},
 	        {"no-header", no_argument, 0, 'h'},
 	        {"add-header", no_argument, 0, 'H'},
 	        {"summarize", no_argument, 0, 'L'},
@@ -128,7 +126,7 @@ int main(int argc, char** argv)
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
 
-	char opt_string[64] = "Abc:CdE:hHLoOpP:s:S:tvW";
+	char opt_string[64] = "Abc:CdhHLoOpP:s:S:tvW";
 	char* opt_iter = opt_string + strlen(opt_string) - 1;
 	*++opt_iter = HELP_ARG;
 	*++opt_iter = IN_STD_ARG;
@@ -274,9 +272,6 @@ void _parse_args(struct fql_handle* handle, int c)
 		break;
 	case 'd':
 		fql_set_dry_run(handle, 1);
-		break;
-	case 'E':
-		fql_set_expected_count(handle, atoi(optarg));
 		break;
 	case 'h':
 		fql_set_print_header(handle, 0);

@@ -410,6 +410,8 @@ int process_exec_plan_thread(plan* plan)
 		fail_if_(pthread_join(self->thread, &status));
 	}
 
+	vec_destroy(&tdata_vec);
+
 	pthread_exit(NULL);
 
 	return FQL_GOOD;

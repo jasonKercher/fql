@@ -1392,19 +1392,17 @@ int schema_resolve(struct fql_handle* fql)
 {
 	try_(_resolve_schema_paths(fql));
 
-	node* query_node = fql->query_list;
-	for (; query_node; query_node = query_node->next) {
-		query* query = query_node->data;
-
+	query** it = vec_begin(fql->query_vec);
+	for (; it != vec_end(fql->query_vec); ++it) {
 		if (fql->_out_delim_set) {
-			op_set_delim(query->op, fql->props.out_delim);
+			op_set_delim((*it)->op, fql->props.out_delim);
 		}
 
 		if (fql->props.rec_terminator[0]) {
-			op_set_rec_terminator(query->op, fql->props.rec_terminator);
+			op_set_rec_terminator((*it)->op, fql->props.rec_terminator);
 		}
 
-		try_(_resolve_query(fql, query, IO_UNDEFINED));
+		try_(_resolve_query(fql, *it, IO_UNDEFINED));
 	}
 
 	return FQL_GOOD;
