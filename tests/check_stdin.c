@@ -1,5 +1,4 @@
 #include "check_common.h"
-#include "fql.h"
 #include <stdio.h>
 
 /* t1.tsv
@@ -19,7 +18,9 @@ void stdin_setup()
 {
 	fql_setup();
 	fql_set_allow_stdin(fql, true);
-	freopen("t1.tsv", "r", stdin);
+	if (freopen("t1.tsv", "r", stdin) == NULL) {
+		perror("t1.tsv");
+	}
 }
 
 START_TEST(test_stdin_t1)

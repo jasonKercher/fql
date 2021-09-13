@@ -1,6 +1,5 @@
 #include "check.h"
 #include "check_common.h"
-#include "fql.h"
 
 /* t1.tsv
 foo	bar	baz
