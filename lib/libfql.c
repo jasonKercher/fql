@@ -7,6 +7,7 @@
 #include "schema.h"
 #include "reader.h"
 #include "fqlsig.h"
+#include "control.h"
 #include "process.h"
 #include "fqlplan.h"
 #include "fqlselect.h"
@@ -21,26 +22,26 @@
 
 /**
  * No need to expose this function. A user will
- * not know the size of struct fql_handle.
+ * not know the size of struct fqlhandle.
  */
-struct fql_handle* fql_construct(struct fql_handle* fql);
+struct fqlhandle* fql_construct(struct fqlhandle* fql);
 
-struct fql_handle* fql_new()
+struct fqlhandle* fql_new()
 {
-	struct fql_handle* new_handle = malloc_(sizeof(*new_handle));
+	struct fqlhandle* new_handle = malloc_(sizeof(*new_handle));
 	return fql_construct(new_handle);
 }
 
-struct fql_handle* fql_construct(struct fql_handle* fql)
+struct fqlhandle* fql_construct(struct fqlhandle* fql)
 {
-	*fql = (struct fql_handle) {
-	        NULL,                          /* active_iter */
-	        new_t_(vec, query*),           /* query_vec */
-	        new_t_(vec, struct fql_field), /* api_vec */
-	        new_(hashmap, sizeof(expression*), 16, HASHMAP_PROP_NOCASE), /* var_map */
+	*fql = (struct fqlhandle) {
+	        new_t_(vec, query*),                                      /* query_vec */
+	        new_t_(vec, struct fql_field),                            /* api_vec */
+	        new_t_(vec, struct control),                              /* cfl_stack */
 	        new_(hashmap, sizeof(schema*), 16, HASHMAP_PROP_DEFAULT), /* schema_map */
 	        NULL,  /* schema_paths */
 	        NULL,  /* query_str */
+	        0,     /* query_idx */
 	        false, /* _out_delim_set */
 	        {
 	                new_(string),        /* schema_path */
@@ -69,14 +70,16 @@ struct fql_handle* fql_construct(struct fql_handle* fql)
 	        }                            /* props */
 	};
 
-	fql->active_iter = vec_begin(fql->query_vec);
+	control* bottom = vec_add_one(fql->cfl_stack);
+	control_construct(bottom);
+	bottom->idx = fql->cfl_stack->size - 1;
 
 	fqlsig_init_sig();
 
 	return fql;
 }
 
-void fql_free(struct fql_handle* fql)
+void fql_free(struct fqlhandle* fql)
 {
 	fql_reset(fql);
 
@@ -88,7 +91,6 @@ void fql_free(struct fql_handle* fql)
 		delete_(vec, fql->schema_paths);
 	}
 	delete_(hashmap, fql->schema_map);
-	delete_(hashmap, fql->variable_map);
 	delete_(string, fql->props.schema_path);
 	delete_(string, fql->props.schema);
 	delete_(vec, fql->query_vec);
@@ -97,14 +99,14 @@ void fql_free(struct fql_handle* fql)
 	free_(fql);
 }
 
-int fql_reset(struct fql_handle* fql)
+int fql_reset(struct fqlhandle* fql)
 {
 	query** it = vec_begin(fql->query_vec);
 	for (; it != vec_end(fql->query_vec); ++it) {
 		delete_(query, *it);
 	}
 	vec_clear(fql->query_vec);
-	fql->active_iter = vec_begin(fql->query_vec);
+	fql->query_idx = 0;
 
 	fqlsig_tmp_removeall();
 
@@ -115,24 +117,25 @@ int fql_reset(struct fql_handle* fql)
 	return FQL_GOOD;
 }
 
-int _api_connect(struct fql_handle* fql, query* query)
+int _api_connect(struct fqlhandle* fql)
 {
-	process* true_proc = query->plan->op_true->data;
-	if (true_proc->action__ != fql_select
-	    && true_proc->action__ != fql_orderby) {
+	query** query = vec_at(fql->query_vec, fql->query_idx);
+
+	enum op operation = *(enum op*)(*query)->op;
+	if (operation != OP_SELECT || (*query)->into_table_name != NULL) {
 		fputs("can only step through SELECT queries\n", stderr);
 		return FQL_FAIL;
 	}
 
-	try_(fqlselect_connect_api(query, fql->api_vec));
-	if (query->orderby != NULL) {
-		order_connect_api(query, fql->api_vec);
+	try_(fqlselect_connect_api(*query, fql->api_vec));
+	if ((*query)->orderby != NULL) {
+		order_connect_api(*query, fql->api_vec);
 	}
 
 	/* Since we are using the api, we want to make sure
 	 * we parse all fields.
 	 */
-	vec* node_vec = query->plan->processes->nodes;
+	vec* node_vec = (*query)->plan->processes->nodes;
 	dnode** it = vec_begin(node_vec);
 	for (; it != vec_end(node_vec); ++it) {
 		process* proc = (*it)->data;
@@ -146,10 +149,10 @@ int _api_connect(struct fql_handle* fql, query* query)
 	return FQL_GOOD;
 }
 
-int fql_field_count(struct fql_handle* fql)
+int fql_field_count(struct fqlhandle* fql)
 {
 	if (!vec_empty(fql->query_vec) && vec_empty(fql->api_vec)) {
-		try_(_api_connect(fql, *fql->active_iter));
+		try_(_api_connect(fql));
 	}
 	return fql->api_vec->size;
 }
@@ -157,47 +160,47 @@ int fql_field_count(struct fql_handle* fql)
 /**
  * Property mutators
  */
-void fql_set_verbose(struct fql_handle* fql, int verbose)
+void fql_set_verbose(struct fqlhandle* fql, int verbose)
 {
 	fql->props.verbose = verbose;
 }
 
-void fql_set_parse_only(struct fql_handle* fql, int parse_only)
+void fql_set_parse_only(struct fqlhandle* fql, int parse_only)
 {
 	fql->props.parse_only = parse_only;
 }
 
-void fql_set_dry_run(struct fql_handle* fql, int dry_run)
+void fql_set_dry_run(struct fqlhandle* fql, int dry_run)
 {
 	fql->props.dry_run = dry_run;
 }
 
-void fql_set_overwrite(struct fql_handle* fql, int overwrite)
+void fql_set_overwrite(struct fqlhandle* fql, int overwrite)
 {
 	fql->props.overwrite = overwrite;
 }
 
-void fql_set_override_warnings(struct fql_handle* fql, int override)
+void fql_set_override_warnings(struct fqlhandle* fql, int override)
 {
 	fql->props.override_warnings = override;
 }
 
-void fql_set_print_header(struct fql_handle* fql, int print_header)
+void fql_set_print_header(struct fqlhandle* fql, int print_header)
 {
 	fql->props.print_header = print_header;
 }
 
-void fql_set_add_header(struct fql_handle* fql, int add_header)
+void fql_set_add_header(struct fqlhandle* fql, int add_header)
 {
 	fql->props.add_header = add_header;
 }
 
-void fql_set_print_plan(struct fql_handle* fql, int print_plan)
+void fql_set_print_plan(struct fqlhandle* fql, int print_plan)
 {
 	fql->props.print_plan = print_plan;
 }
 
-int fql_set_in_std(struct fql_handle* fql, const char* std)
+int fql_set_in_std(struct fqlhandle* fql, const char* std)
 {
 	if (istring_eq(std, "ALL")) {
 		fql->props.in_std = QUOTE_ALL;
@@ -217,7 +220,7 @@ int fql_set_in_std(struct fql_handle* fql, const char* std)
 	return FQL_GOOD;
 }
 
-int fql_set_out_std(struct fql_handle* fql, const char* std)
+int fql_set_out_std(struct fqlhandle* fql, const char* std)
 {
 	if (istring_eq(std, "ALL")) {
 		fql->props.out_std = QUOTE_ALL;
@@ -237,23 +240,23 @@ int fql_set_out_std(struct fql_handle* fql, const char* std)
 	return FQL_GOOD;
 }
 
-void fql_set_in_delim(struct fql_handle* fql, const char* delim)
+void fql_set_in_delim(struct fqlhandle* fql, const char* delim)
 {
 	strncpy_(fql->props.in_delim, delim, DELIM_LEN_MAX);
 }
 
-void fql_set_out_delim(struct fql_handle* fql, const char* delim)
+void fql_set_out_delim(struct fqlhandle* fql, const char* delim)
 {
 	strncpy_(fql->props.out_delim, delim, DELIM_LEN_MAX);
 	fql->_out_delim_set = true;
 }
 
-void fql_set_record_terminator(struct fql_handle* fql, const char* term)
+void fql_set_record_terminator(struct fqlhandle* fql, const char* term)
 {
 	strncpy_(fql->props.rec_terminator, term, 32);
 }
 
-void fql_set_threading(struct fql_handle* fql, int threading)
+void fql_set_threading(struct fqlhandle* fql, int threading)
 {
 	if (threading && sysconf(_SC_NPROCESSORS_ONLN) < 2) {
 		fprintf(stderr,
@@ -264,17 +267,17 @@ void fql_set_threading(struct fql_handle* fql, int threading)
 	fql->props.threading = threading;
 }
 
-void fql_set_char_as_byte(struct fql_handle* fql, int char_as_byte)
+void fql_set_char_as_byte(struct fqlhandle* fql, int char_as_byte)
 {
 	fql->props.char_as_byte = char_as_byte;
 }
 
-void fql_set_force_cartesian(struct fql_handle* fql, int force_cartesian)
+void fql_set_force_cartesian(struct fqlhandle* fql, int force_cartesian)
 {
 	fql->props.force_cartesian = force_cartesian;
 }
 
-void fql_set_pipe_factor(struct fql_handle* fql, int pipe_factor)
+void fql_set_pipe_factor(struct fqlhandle* fql, int pipe_factor)
 {
 	if (pipe_factor < 2) {
 		fprintf(stderr,
@@ -287,32 +290,32 @@ void fql_set_pipe_factor(struct fql_handle* fql, int pipe_factor)
 	}
 }
 
-void fql_set_strict_mode(struct fql_handle* fql, int strictness)
+void fql_set_strict_mode(struct fqlhandle* fql, int strictness)
 {
 	fql->props.strictness = strictness;
 }
 
-void fql_set_schema_path(struct fql_handle* fql, const char* schema_path)
+void fql_set_schema_path(struct fqlhandle* fql, const char* schema_path)
 {
 	string_strcpy(fql->props.schema_path, schema_path);
 }
 
-void fql_set_schema(struct fql_handle* fql, const char* schema)
+void fql_set_schema(struct fqlhandle* fql, const char* schema)
 {
 	string_strcpy(fql->props.schema, schema);
 }
 
-void fql_set_loose_groups(struct fql_handle* fql, int loose_groups)
+void fql_set_loose_groups(struct fqlhandle* fql, int loose_groups)
 {
 	fql->props.loose_groups = loose_groups;
 }
 
-void fql_set_stable(struct fql_handle* fql, int stable)
+void fql_set_stable(struct fqlhandle* fql, int stable)
 {
 	fql->props.stable = stable;
 }
 
-void fql_set_crlf_output(struct fql_handle* fql, int crlf)
+void fql_set_crlf_output(struct fqlhandle* fql, int crlf)
 {
 	if (crlf) {
 		fql->props.rec_terminator[0] = '\r';
@@ -324,7 +327,7 @@ void fql_set_crlf_output(struct fql_handle* fql, int crlf)
 	}
 }
 
-void fql_set_allow_stdin(struct fql_handle* fql, int allow_stdin)
+void fql_set_allow_stdin(struct fqlhandle* fql, int allow_stdin)
 {
 	fql->props.allow_stdin = allow_stdin;
 }
@@ -332,12 +335,13 @@ void fql_set_allow_stdin(struct fql_handle* fql, int allow_stdin)
 /**
  * Methods
  */
-int fql_exec_plans(struct fql_handle* fql, int plan_count)
+int fql_exec_plans(struct fqlhandle* fql, int plan_count)
 {
 	int i = 0;
 	int ret = 0;
-	for (; fql->active_iter != vec_end(fql->query_vec) && i < plan_count; ++i) {
-		plan* plan = (*fql->active_iter)->plan;
+	for (; fql->query_idx < fql->query_vec->size && i < plan_count; ++i) {
+		query** query = vec_at(fql->query_vec, fql->query_idx);
+		plan* plan = (*query)->plan;
 		if (plan->has_stepped) {
 			fputs("Cannot execute plan that has been"
 			      " stepped through\n",
@@ -367,22 +371,22 @@ int fql_exec_plans(struct fql_handle* fql, int plan_count)
 			break;
 		}
 
-		++fql->active_iter;
+		fql->query_idx = (*query)->next_idx;
 	}
 
-	if (ret != FQL_GOOD || fql->active_iter == vec_end(fql->query_vec)) {
+	if (ret == FQL_FAIL || fql->query_idx >= fql->query_vec->size) {
 		fql_reset(fql);
 	}
 
 	return ret;
 }
 
-int fql_exec_all_plans(struct fql_handle* fql)
+int fql_exec_all_plans(struct fqlhandle* fql)
 {
 	return fql_exec_plans(fql, INT_MAX);
 }
 
-int fql_exec(struct fql_handle* fql, const char* query_str)
+int fql_exec(struct fqlhandle* fql, const char* query_str)
 {
 	int ret = fql_make_plans(fql, query_str);
 
@@ -395,7 +399,7 @@ int fql_exec(struct fql_handle* fql, const char* query_str)
 	return ret;
 }
 
-int fql_make_plans(struct fql_handle* fql, const char* query_str)
+int fql_make_plans(struct fqlhandle* fql, const char* query_str)
 {
 	if (fql->props.verbose) {
 		fprintf(stderr, "\n[fql] Making Plan for:\n%s\n", query_str);
@@ -416,13 +420,13 @@ int fql_make_plans(struct fql_handle* fql, const char* query_str)
 		return FQL_FAIL;
 	}
 
-	if (build_plans(fql)) {
+	if (plan_build(fql)) {
 		fql_reset(fql);
 		return FQL_FAIL;
 	}
 
 	if (fql->props.print_plan) {
-		print_plans(fql);
+		plan_print(fql);
 	}
 
 	return fql->query_vec->size;
@@ -438,13 +442,13 @@ void _free_api_strings(vec* api)
 	}
 }
 
-int fql_step(struct fql_handle* fql, struct fql_field** fields)
+int fql_step(struct fqlhandle* fql, struct fql_field** fields)
 {
-	query* query = *fql->active_iter;
-	struct fql_plan* plan = query->plan;
+	query** query = vec_at(fql->query_vec, fql->query_idx);
+	struct fqlplan* plan = (*query)->plan;
 	if (!plan->has_stepped) {
 		if (vec_empty(fql->api_vec)) {
-			_api_connect(fql, query);
+			_api_connect(fql);
 		}
 		plan->has_stepped = true;
 
@@ -468,9 +472,9 @@ int fql_step(struct fql_handle* fql, struct fql_field** fields)
 	_free_api_strings(fql->api_vec);
 	vec_clear(fql->api_vec);
 
-	++fql->active_iter;
+	fql->query_idx = (*query)->next_idx;
 
-	if (fql->active_iter == vec_end(fql->query_vec)) {
+	if (ret == FQL_FAIL || fql->query_idx >= fql->query_vec->size) {
 		fql_reset(fql);
 	}
 

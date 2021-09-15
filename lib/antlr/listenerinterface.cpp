@@ -27,7 +27,7 @@ void _find_replace(std::string& s, const std::string& match, const std::string r
 	}
 }
 
-ListenerInterface::ListenerInterface(struct fql_handle* fql,
+ListenerInterface::ListenerInterface(struct fqlhandle* fql,
 		                     TreeWalker* walker,
 		                     const std::vector<std::string>& rules)
 {
@@ -51,6 +51,47 @@ ListenerInterface::~ListenerInterface()
 int ListenerInterface::get_return_code()
 {
 	return _return_code;
+}
+
+void ListenerInterface::enterTsql_file(TSqlParser::Tsql_fileContext * ctx) { }
+void ListenerInterface::exitTsql_file(TSqlParser::Tsql_fileContext * ctx) { }
+
+void ListenerInterface::enterBatch(TSqlParser::BatchContext * ctx) { }
+void ListenerInterface::exitBatch(TSqlParser::BatchContext * ctx) { }
+
+void ListenerInterface::enterCfl_statement(TSqlParser::Cfl_statementContext * ctx) { }
+void ListenerInterface::exitCfl_statement(TSqlParser::Cfl_statementContext * ctx) { }
+
+void ListenerInterface::enterIf_statement(TSqlParser::If_statementContext * ctx) 
+{
+	_query->mode = MODE_IF;
+	_operation = OP_IF;
+
+	/* TODO if (ctx->ELSE()) */
+
+	if (query_init_op(_query, _fql, _operation)) {
+		_set_failure();
+	}
+}
+void ListenerInterface::exitIf_statement(TSqlParser::If_statementContext * ctx) 
+{
+	_query->query_total = _query_id + 1;
+	node_free(&_query_stack);
+}
+
+void ListenerInterface::enterDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
+void ListenerInterface::exitDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
+
+void ListenerInterface::enterSql_clauses(TSqlParser::Sql_clausesContext* ctx)
+{
+	_query = query_add_query(_fql);
+	_query_id = 0;
+	node_push(&_query_stack, _query);
+}
+void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext* ctx)
+{
+	_query->query_total = _query_id + 1;
+	node_free(&_query_stack);
 }
 
 void ListenerInterface::enterSelect_statement_standalone(TSqlParser::Select_statement_standaloneContext* ctx) { }
@@ -97,7 +138,7 @@ void ListenerInterface::exitExpression_elem(TSqlParser::Expression_elemContext *
 
 void ListenerInterface::enterSelect_list_elem(TSqlParser::Select_list_elemContext * ctx)
 {
-	_query->mode = MODE_SELECT;
+	_query->mode = MODE_SELECTLIST;
 	_tok_type = TOK_COLUMN_NAME;
 }
 void ListenerInterface::exitSelect_list_elem(TSqlParser::Select_list_elemContext * ctx)
@@ -273,29 +314,6 @@ void ListenerInterface::exitFull_column_name(TSqlParser::Full_column_nameContext
 
 	node_free_data(&_column_stack);
 }
-
-void ListenerInterface::enterTsql_file(TSqlParser::Tsql_fileContext * ctx) { }
-void ListenerInterface::exitTsql_file(TSqlParser::Tsql_fileContext * ctx) { }
-
-void ListenerInterface::enterBatch(TSqlParser::BatchContext * ctx) { }
-void ListenerInterface::exitBatch(TSqlParser::BatchContext * ctx) { }
-
-void ListenerInterface::enterSql_clauses(TSqlParser::Sql_clausesContext* ctx)
-{
-	_query = query_new(0);
-	_query_id = 0;
-	query_add_query(_fql, _query);
-	node_push(&_query_stack, _query);
-}
-void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext* ctx)
-{
-	_query->query_total = _query_id + 1;
-	node_free(&_query_stack);
-}
-
-
-void ListenerInterface::enterDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
-void ListenerInterface::exitDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
 
 void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx)
 {
@@ -497,8 +515,9 @@ void ListenerInterface::exitScalar_function_name(TSqlParser::Scalar_function_nam
 
 void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContext * ctx)
 {
-	_query->mode = MODE_SELECT;
-	if (query_init_op(_query)) {
+	_query->mode = MODE_SELECTLIST;
+	_operation = OP_SELECT;
+	if (query_init_op(_query, _fql, _operation)) {
 		_set_failure();
 	}
 }
@@ -507,8 +526,8 @@ void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext
 
 void ListenerInterface::enterDelete_statement(TSqlParser::Delete_statementContext * ctx) 
 { 
-	_query->mode = MODE_DELETE;
-	if (query_init_op(_query)) {
+	_operation = OP_DELETE;
+	if (query_init_op(_query, _fql, _operation)) {
 		_set_failure();
 	}
 	if (ctx->WHERE()) {
@@ -532,8 +551,9 @@ void ListenerInterface::exitDelete_statement_from(TSqlParser::Delete_statement_f
 
 void ListenerInterface::enterUpdate_statement(TSqlParser::Update_statementContext * ctx) 
 {
-	_query->mode = MODE_UPDATE;
-	if (query_init_op(_query)) {
+	_query->mode = MODE_UPDATELIST;
+	_operation = OP_UPDATE;
+	if (query_init_op(_query, _fql, _operation)) {
 		_set_failure();
 	}
 	if (ctx->WHERE()) {
@@ -646,8 +666,11 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 	/* Check if an operation is already defined.
 	 * If it is, this is a sub-query
 	 */
+
 	query* subquery = query_new(++_query_id);
 	node_push(&_query_stack, subquery);
+
+	_operation = OP_SELECT;
 
 	/* subquery as constant */
 	if (_query->in_bracket_expression) {
@@ -676,6 +699,8 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 	_subquery = (struct query*) node_pop(&_query_stack);
 	_query = (struct query*) _query_stack->data;
 
+	_operation = *(enum op*)_query->op;
+
 	/* subquery as constant */
 	if (_query->in_bracket_expression) {
 		query_add_subquery_const(_query, _subquery);
@@ -688,7 +713,9 @@ void ListenerInterface::enterSearch_condition(TSqlParser::Search_conditionContex
 		return;
 	}
 	if (_query->logic_mode == LOGIC_UNDEFINED) {
-		if (_query->expect_where && !_query->where) {
+		if (_query->mode == MODE_IF) {
+			_query->logic_mode = LOGIC_IF;
+		} else if (_query->expect_where && !_query->where) {
 			_query->logic_mode = LOGIC_WHERE;
 		} else {
 			_query->logic_mode = LOGIC_HAVING;
@@ -859,7 +886,7 @@ void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx)
 
 	_query = union_query;
 	node_push(&_query_stack, _query);
-	_query->mode = MODE_SELECT;
+	_query->mode = MODE_SELECTLIST;
 }
 
 void ListenerInterface::exitSql_union(TSqlParser::Sql_unionContext * ctx)
@@ -924,9 +951,6 @@ void ListenerInterface::_set_failure()
 void ListenerInterface::enterDdl_clause(TSqlParser::Ddl_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitDdl_clause(TSqlParser::Ddl_clauseContext * ctx) { }
 
-void ListenerInterface::enterCfl_statement(TSqlParser::Cfl_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitCfl_statement(TSqlParser::Cfl_statementContext * ctx) { }
-
 void ListenerInterface::enterBlock_statement(TSqlParser::Block_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitBlock_statement(TSqlParser::Block_statementContext * ctx) { }
 
@@ -941,9 +965,6 @@ void ListenerInterface::exitGoto_statement(TSqlParser::Goto_statementContext * c
 
 void ListenerInterface::enterReturn_statement(TSqlParser::Return_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitReturn_statement(TSqlParser::Return_statementContext * ctx) { }
-
-void ListenerInterface::enterIf_statement(TSqlParser::If_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitIf_statement(TSqlParser::If_statementContext * ctx) { }
 
 void ListenerInterface::enterThrow_statement(TSqlParser::Throw_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitThrow_statement(TSqlParser::Throw_statementContext * ctx) { }

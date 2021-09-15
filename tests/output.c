@@ -35,7 +35,7 @@ int _testdiff(const char* s, const char* resultdir)
 	return ret;
 }
 
-void output_const(struct fql_handle* fql, const char* resultdir)
+void output_const(struct fqlhandle* fql, const char* resultdir)
 {
 	char query[4096];
 	sprintf(query,
@@ -89,7 +89,7 @@ void output_const(struct fql_handle* fql, const char* resultdir)
 	}
 }
 
-void output_read(struct fql_handle* fql, const char* resultdir)
+void output_read(struct fqlhandle* fql, const char* resultdir)
 {
 	char query[4096];
 	sprintf(query,
@@ -122,7 +122,7 @@ void output_read(struct fql_handle* fql, const char* resultdir)
 	}
 }
 
-void output_logic(struct fql_handle* fql, const char* resultdir)
+void output_logic(struct fqlhandle* fql, const char* resultdir)
 {
 	char query[4096];
 	sprintf(query,
@@ -266,7 +266,7 @@ void output_logic(struct fql_handle* fql, const char* resultdir)
 	}
 }
 
-void output_scalar(struct fql_handle* fql, const char* resultdir)
+void output_scalar(struct fqlhandle* fql, const char* resultdir)
 {
 	char query[4096];
 	sprintf(query,
@@ -376,7 +376,7 @@ void output_scalar(struct fql_handle* fql, const char* resultdir)
 	}
 }
 
-void output_switch(struct fql_handle* fql, const char* resultdir)
+void output_switch(struct fqlhandle* fql, const char* resultdir)
 {
 	char query[4096];
 	sprintf(query,

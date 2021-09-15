@@ -52,7 +52,7 @@ void reader_destroy(reader* self)
 	if (self->random_access_filename != NULL) { }
 }
 
-int reader_assign(reader* self, table* table, struct fql_handle* fql)
+int reader_assign(reader* self, table* table, struct fqlhandle* fql)
 {
 	switch (self->type) {
 	case IO_LIBCSV: {

@@ -78,7 +78,7 @@ const char* _help =
 
         "More info: https://www.ietf.org/rfc/rfc4180.txt\n";
 
-void _parse_args(struct fql_handle* handle, int c);
+void _parse_args(struct fqlhandle* handle, int c);
 void _print_field(struct fql_field* field);
 
 static int use_api = 0;
@@ -88,7 +88,7 @@ int main(int argc, char** argv)
 {
 	int c = 0;
 
-	struct fql_handle* handle = fql_new();
+	struct fqlhandle* handle = fql_new();
 	if (handle == NULL) {
 		fputs("fql failed to initialize\n", stderr);
 		exit(EXIT_FAILURE);
@@ -254,7 +254,7 @@ err_exit:
 	return EXIT_FAILURE;
 }
 
-void _parse_args(struct fql_handle* handle, int c)
+void _parse_args(struct fqlhandle* handle, int c)
 {
 	switch (c) {
 	case 'A':

@@ -9,6 +9,7 @@
 #include "group.h"
 #include "order.h"
 #include "field.h"
+#include "fqlbranch.h"
 #include "function.h"
 #include "fqlselect.h"
 #include "fqldelete.h"
@@ -40,6 +41,8 @@ query* query_construct(query* self, int id)
 	        new_t_(vec, query*), /* unions */
 	        NULL,                /* into_table_name */
 	        -1,                  /* top_count */
+	        0,                   /* idx */
+	        0,                   /* next_idx */
 	        0,                   /* union_id */
 	        id,                  /* query_id */
 	        0,                   /* query_total */
@@ -97,16 +100,13 @@ void query_release_sources(query* self)
 	vec_resize(self->sources, 0);
 }
 
-/* only here for address */
-void query_free(void* data)
+query* query_add_query(struct fqlhandle* fql)
 {
-	delete_if_exists_(query, data);
-}
-
-void query_add_query(struct fql_handle* fql, struct query* newquery)
-{
+	query* newquery = new_(query, 0);
+	newquery->idx = fql->query_vec->size;
+	newquery->next_idx = fql->query_vec->size + 1;
 	vec_push_back(fql->query_vec, &newquery);
-	fql->active_iter = vec_begin(fql->query_vec);
+	return newquery;
 }
 
 int _add_logic_expression(query* self, expression* expr)
@@ -160,10 +160,10 @@ int _distribute_expression(query* self, expression* expr)
 		return FQL_GOOD;
 	}
 	switch (self->mode) {
-	case MODE_SELECT:
+	case MODE_SELECTLIST:
 		fqlselect_add_expression(self->op, expr);
 		break;
-	case MODE_UPDATE:
+	case MODE_UPDATELIST:
 		try_(fqlupdate_add_expression(self->op, expr));
 		break;
 	case MODE_TOP:
@@ -217,7 +217,8 @@ int query_add_expression(query* self, char* expr_name, const char* table_id)
 		expr->field.s = &expr->buf;
 	} else if (istring_eq(expr_name, "__rec")) {
 		expr = new_(expression, EXPR_FULL_RECORD, expr_name, table_id);
-	} else if (istring_eq(expr_name, "__rownum")) { // && self->mode == MODE_SELECT) {
+	} else if (istring_eq(expr_name,
+	                      "__rownum")) { // && self->mode == MODE_SELECTLIST) {
 		expr = new_(expression, EXPR_ROW_NUMBER, expr_name, table_id);
 		expr->field_type = FIELD_INT;
 		op_assign_rownum_ref(self->op, expr);
@@ -283,15 +284,14 @@ int query_add_null_expression(query* self)
 	return FQL_GOOD;
 }
 
-/**
- * create new table and source object
+/* create new table and source object
  * assign name and schema if provided. source_stack
  * is a stack of allocated char* of the form:
  * object->schema->database->server
  * we ignore database and server for now.
  */
 int query_add_source(query* self,
-                     struct fql_handle* fql,
+                     struct fqlhandle* fql,
                      node** source_stack,
                      const char* alias)
 {
@@ -416,17 +416,21 @@ int query_exit_aggregate(query* self)
 	return FQL_GOOD;
 }
 
-int query_init_op(query* self)
+int query_init_op(query* self, struct fqlhandle* fql, enum op operation)
 {
-	switch (self->mode) {
-	case MODE_SELECT:
+	switch (operation) {
+	case OP_SELECT:
 		self->op = new_(fqlselect);
 		break;
-	case MODE_DELETE:
+	case OP_DELETE:
 		self->op = new_(fqldelete);
 		break;
-	case MODE_UPDATE:
+	case OP_UPDATE:
 		self->op = new_(fqlupdate);
+		break;
+	case OP_IF:
+		self->op = new_(fqlbranch, self);
+		//vec_push_back(fql->cfl_stack, &self->idx);
 		break;
 	default:
 		fprintf(stderr, "unexpected operation mode `%d'\n", self->mode);
@@ -590,7 +594,7 @@ int query_apply_data_type(query* self, const char* type_str)
 	return FQL_GOOD;
 }
 
-void query_exit_non_select_op(query* self, struct fql_handle* fql)
+void query_exit_non_select_op(query* self, struct fqlhandle* fql)
 {
 	if (!vec_empty(self->sources)) {
 		return;
@@ -703,6 +707,10 @@ void query_set_logic_isnull(query* self, bool negation)
 void _assign_logic(query* self, logicgroup* lg)
 {
 	switch (self->logic_mode) {
+	case LOGIC_IF:
+		fqlbranch_add_logicgroup(self->op, lg);
+		lg->jump_location = self->idx + 1;
+		break;
 	case LOGIC_JOIN: {
 		table* table = vec_back(self->sources);
 		table->condition = lg;

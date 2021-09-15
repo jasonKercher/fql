@@ -280,7 +280,7 @@ int fqlselect_next_union(fqlselect* self)
  * is true, then we must check that there is indeed an
  * aggregate function to warrant forcing a SELECT. We
  * wouldn't want "must_run_once" set true for a query like
- *   SELECT 1 
+ *   SELECT 1
  *   WHERE 1=0
  *
  * TODO: Verify this behavior when UNION is involved
@@ -303,7 +303,7 @@ void fqlselect_verify_must_run(fqlselect* self)
 }
 
 
-void fqlselect_preop(fqlselect* self, query* query, struct fql_handle* fql)
+void fqlselect_preop(fqlselect* self, query* query, struct fqlhandle* fql)
 {
 	if (self->schema->write_io_type != IO_LIBCSV
 	    || (!self->schema->is_default && !fql->props.add_header)

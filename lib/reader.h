@@ -12,7 +12,7 @@
 struct table;
 struct reader;
 struct fqlselect;
-struct fql_handle;
+struct fqlhandle;
 
 typedef int (*read_fn)(struct reader*, struct node*);
 typedef int (*read_at_fn)(struct reader*, struct node*, size_t off);
@@ -42,7 +42,7 @@ typedef struct reader reader;
 struct reader* reader_construct(struct reader*);
 void reader_destroy(struct reader*);
 
-int reader_assign(struct reader*, struct table*, struct fql_handle*);
+int reader_assign(struct reader*, struct table*, struct fqlhandle*);
 int reader_reopen(struct reader*);
 size_t reader_get_file_size(struct reader*);
 int reader_start_file_backed_input(struct reader*);

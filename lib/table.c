@@ -87,7 +87,7 @@ void table_destroy(table* self)
 	delete_if_exists_(query, self->subquery);
 }
 
-int table_resolve_schema(table* self, struct fql_handle* fql)
+int table_resolve_schema(table* self, struct fqlhandle* fql)
 {
 	reader* reader = self->reader;
 	const char* delim = NULL;

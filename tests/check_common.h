@@ -7,7 +7,7 @@
 #include <check.h>
 #include "../lib/include/fql.h"
 
-extern struct fql_handle* fql;
+extern struct fqlhandle* fql;
 
 void fql_setup();
 void fql_teardown();

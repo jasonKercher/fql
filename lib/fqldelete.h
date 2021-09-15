@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "operation.h"
+#include "query.h"
 
 struct node;
 struct fqldelete;
@@ -28,7 +29,7 @@ typedef struct fqldelete fqldelete;
 struct fqldelete* fqldelete_construct(struct fqldelete*);
 void fqldelete_destroy(struct fqldelete*);
 
-int fqldelete_apply_process(struct query*, struct fql_plan*);
+int fqldelete_apply_process(struct query*, struct fqlplan*);
 void fqldelete_preop(struct fqldelete*, struct query*);
 
 

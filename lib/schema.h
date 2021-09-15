@@ -40,7 +40,7 @@ void schema_set_delim(struct schema*, const char*);
 
 bool schema_eq(const struct schema*, const struct schema*);
 
-int schema_resolve(struct fql_handle*);
+int schema_resolve(struct fqlhandle*);
 
 void schema_add_expression(struct schema*, struct expression*, int src_idx);
 void schema_apply_expression_alias(struct schema* schema, const char* alias);

@@ -1,5 +1,5 @@
-#ifndef FQL_HANDLE_H
-#define FQL_HANDLE_H
+#ifndef FQLHANDLE_H
+#define FQLHANDLE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,17 +11,17 @@ extern "C" {
 
 struct query;
 
-struct fql_handle {
-	struct query** active_iter;
+struct fqlhandle {
 	struct vec* query_vec;
 	struct vec* api_vec;
-	struct hashmap* variable_map;
+	struct vec* cfl_stack;
 	struct hashmap* schema_map;
 	struct vec* schema_paths;
 	char* query_str;
+	unsigned query_idx;
 	bool _out_delim_set;
 	struct {
-		struct vec* schema_path; /* actually string but extern "C" so... */
+		struct vec* schema_path; /* actually string but extern "C" so.. */
 		struct vec* schema;      /* Same thing... this is also a string */
 		char in_delim[DELIM_LEN_MAX + 1];
 		char out_delim[DELIM_LEN_MAX + 1];
@@ -46,9 +46,11 @@ struct fql_handle {
 		bool allow_stdin;
 	} props;
 };
+/* internal typedef.. library user still require "struct" */
+typedef struct fqlhandle fqlhandle;
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* FQL_HANDLE_H */
+#endif /* FQLHANDLE_H */

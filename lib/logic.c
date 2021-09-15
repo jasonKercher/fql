@@ -158,6 +158,7 @@ logicgroup* logicgroup_construct(logicgroup* self, enum logicgroup_type type)
 	        NULL,         /* joinable */
 	        NULL,         /* join_logic */
 	        NULL,         /* condition */
+	        0,            /* jump_location */
 	        false,        /* negation */
 	};
 

@@ -6,7 +6,7 @@
 #include "errorlistener.h"
 #include "listenerinterface.h"
 
-int analyze_query(struct fql_handle* fql)
+int analyze_query(struct fqlhandle* fql)
 {
 	/* SQL grammar assumes all keywords are upper case */
 	UpperStream input(fql->query_str);
@@ -30,7 +30,7 @@ int analyze_query(struct fql_handle* fql)
 
 	if (myLexerErrorListener.getError()
 	    || myParserErrorListener.getError()) {
-		return 1;
+		return FQL_FAIL;
 	}
 
 	std::vector<std::string> rule_names = parser.getRuleNames();

@@ -22,7 +22,7 @@
 #include "util/vec.h"
 #include "util/stringview.h"
 
-int _resolve_query(struct fql_handle*, query*, enum io union_io);
+int _resolve_query(struct fqlhandle*, query*, enum io union_io);
 
 schema* schema_construct(schema* self)
 {
@@ -91,6 +91,10 @@ void schema_apply_expression_alias(schema* self, const char* alias)
 
 void schema_preflight(schema* self)
 {
+	if (self == NULL) {
+		return;
+	}
+
 	/* Let's not leak if this was called from order.c */
 	if (self->expr_map != NULL) {
 		return;
@@ -218,7 +222,7 @@ fuzzy_file_match_return:
 	return ret;
 }
 
-int _resolve_file(struct fql_handle* fql, query* query, table* table)
+int _resolve_file(struct fqlhandle* fql, query* query, table* table)
 {
 	if (table->is_stdin) {
 		return FQL_GOOD;
@@ -369,7 +373,7 @@ int _add_expression_from_rec(table* table,
 	return rec->size;
 }
 
-int _parse_schema_file(table* table, struct fql_handle* fql, int src_idx)
+int _parse_schema_file(table* table, struct fqlhandle* fql, int src_idx)
 {
 	schema* self = table->schema;
 	struct csv_reader* schema_csv = csv_reader_new();
@@ -442,7 +446,7 @@ parse_schema_return:
 	return FQL_GOOD;
 }
 
-int _load_by_name(table* table, struct fql_handle* fql, int src_idx)
+int _load_by_name(table* table, struct fqlhandle* fql, int src_idx)
 {
 	schema* self = table->schema;
 	string* full_path_temp = new_(string);
@@ -482,7 +486,7 @@ int _load_by_name(table* table, struct fql_handle* fql, int src_idx)
 	return FQL_GOOD;
 }
 
-int _resolve_source(struct fql_handle* fql, query* query, table* table, int src_idx)
+int _resolve_source(struct fqlhandle* fql, query* query, table* table, int src_idx)
 {
 	schema* self = table->schema;
 	if (self && !vec_empty(self->expressions)) {
@@ -681,6 +685,9 @@ int _assign_expression_limited(expression* expr, vec* sources, int limit, int st
 
 int _assign_expressions_limited(vec* expressions, vec* sources, int limit, int strictness)
 {
+	if (expressions == NULL) {
+		return FQL_GOOD;
+	}
 	expression** it = vec_begin(expressions);
 	for (; it != vec_end(expressions); ++it) {
 		try_(_assign_expression_limited(*it, sources, limit, strictness));
@@ -997,7 +1004,7 @@ int _op_find_group(compositemap* expr_map, expression* expr, vec* key, bool loos
 	return FQL_FAIL;
 }
 
-int _map_groups(struct fql_handle* fql, query* query)
+int _map_groups(struct fqlhandle* fql, query* query)
 {
 	/* verify group expressions and build composite key for each */
 	vec* group_exprs = &query->groupby->expressions;
@@ -1059,7 +1066,7 @@ int _group_validation(query* query, vec* exprs, vec* op_exprs, bool loose_groups
 	return FQL_GOOD;
 }
 
-int _resolve_unions(struct fql_handle* fql, query* aquery)
+int _resolve_unions(struct fqlhandle* fql, query* aquery)
 {
 	/* As we loop through union queries, we want to
 	 * also verify that we have the same number of
@@ -1087,7 +1094,7 @@ int _resolve_unions(struct fql_handle* fql, query* aquery)
 
 
 /* Tie everything together and verify correctness. */
-int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
+int _resolve_query(struct fqlhandle* fql, query* aquery, enum io union_io)
 {
 	/* First let's resolve any subqueries that can be
 	 * classified as an expression.  They should be
@@ -1177,7 +1184,7 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	}
 
 	schema* op_schema = op_get_schema(aquery->op);
-	if (op_schema->write_io_type == IO_UNDEFINED) {
+	if (op_schema != NULL && op_schema->write_io_type == IO_UNDEFINED) {
 		op_set_schema(aquery->op, NULL);
 	}
 
@@ -1257,7 +1264,7 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 
 	try_(op_writer_init(aquery, fql));
 
-	if (aquery->groupby == NULL && aquery->orderby) {
+	if (aquery->groupby == NULL && aquery->orderby != NULL) {
 		/* This is normally handled in _op_find_group,
 		 * but if there is no GROUP BY, just assign the
 		 * pre-resolved ORDER BY expressions.
@@ -1313,7 +1320,7 @@ int _resolve_query(struct fql_handle* fql, query* aquery, enum io union_io)
 	return FQL_GOOD;
 }
 
-int _add_schema_path(struct fql_handle* fql, string* schema_path)
+int _add_schema_path(struct fqlhandle* fql, string* schema_path)
 {
 	DIR* schema_dir = opendir(string_c_str(schema_path));
 	if (!schema_dir) {
@@ -1334,7 +1341,7 @@ int _add_schema_path(struct fql_handle* fql, string* schema_path)
  *  3. $HOME/.config/fql/schema/
  *  4. $datarootdir/fql/schema/
  */
-int _resolve_schema_paths(struct fql_handle* fql)
+int _resolve_schema_paths(struct fqlhandle* fql)
 {
 	if (fql->schema_paths != NULL) {
 		return FQL_GOOD;
@@ -1388,7 +1395,7 @@ int _resolve_schema_paths(struct fql_handle* fql)
 	return FQL_GOOD;
 }
 
-int schema_resolve(struct fql_handle* fql)
+int schema_resolve(struct fqlhandle* fql)
 {
 	try_(_resolve_schema_paths(fql));
 

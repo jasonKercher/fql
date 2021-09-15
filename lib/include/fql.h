@@ -29,23 +29,23 @@ struct fql_field {
 	bool is_null;
 };
 
-struct fql_handle;
+struct fqlhandle;
 
 /**
  * constructor to make a new fql handle
  */
-struct fql_handle* fql_new();
+struct fqlhandle* fql_new();
 
 /**
  * destructor for fql handle
  */
-void fql_free(struct fql_handle*);
+void fql_free(struct fqlhandle*);
 
 /**
  * retain instance of fql, but free any existing
  * queries and states.
  */
-int fql_reset(struct fql_handle*);
+int fql_reset(struct fqlhandle*);
 
 
 /** Properties **/
@@ -53,18 +53,18 @@ int fql_reset(struct fql_handle*);
 /**
  * set verbose to receive extra output via stderr
  */
-void fql_set_verbose(struct fql_handle*, int);
+void fql_set_verbose(struct fqlhandle*, int);
 
 /**
  * Do nothing other than run the parser.
  */
-void fql_set_parse_only(struct fql_handle*, int);
+void fql_set_parse_only(struct fqlhandle*, int);
 
 /**
  * set dry run to avoid execution. Useful if you
  * just want to look at the generated plan.
  */
-void fql_set_dry_run(struct fql_handle*, int);
+void fql_set_dry_run(struct fqlhandle*, int);
 
 /**
  * TODO: currently no-op
@@ -78,7 +78,7 @@ void fql_set_dry_run(struct fql_handle*, int);
  * fql also observes this behavior, however,
  * it can be turned off by setting overwrite.
  */
-void fql_set_overwrite(struct fql_handle*, int);
+void fql_set_overwrite(struct fqlhandle*, int);
 
 /**
  * The grammar for this language is for the
@@ -89,45 +89,45 @@ void fql_set_overwrite(struct fql_handle*, int);
  * execution. By setting override_warnings, one
  * can continue execution anyway.
  */
-void fql_set_override_warnings(struct fql_handle*, int);
+void fql_set_override_warnings(struct fqlhandle*, int);
 
 /**
  * set print header to whether or not a header is
  * printed (default schema only).
  */
-void fql_set_print_header(struct fql_handle*, int);
+void fql_set_print_header(struct fqlhandle*, int);
 
 /**
  * TODO: currently no-op
  * For a schema that does not have a header, one
  * can be added.
  */
-void fql_set_add_header(struct fql_handle*, int);
+void fql_set_add_header(struct fqlhandle*, int);
 
 /**
  * Set print plan to print the execution plan to
  * stderr prior to execution.
  */
-void fql_set_print_plan(struct fql_handle*, int);
+void fql_set_print_plan(struct fqlhandle*, int);
 
 /**
  * Set an input delimiter if it is something weird
  * (default schema only). The default schema will
  * attempt to resolve a delimiter from < , | ; TAB >
  */
-void fql_set_in_delim(struct fql_handle*, const char*);
+void fql_set_in_delim(struct fqlhandle*, const char*);
 
 /**
  * Set an output delimiter to override whatever the
  * default schema chooses.
  */
-void fql_set_out_delim(struct fql_handle*, const char*);
+void fql_set_out_delim(struct fqlhandle*, const char*);
 
 /**
  * Set an output record terminator for delimited
  * output.  Default is line feed (\n).
  */
-void fql_set_record_terminator(struct fql_handle*, const char*);
+void fql_set_record_terminator(struct fqlhandle*, const char*);
 
 /**
  * Turn on threading for individual queries
@@ -135,45 +135,45 @@ void fql_set_record_terminator(struct fql_handle*, const char*);
  * When it works 100% of the time, it will become
  * the default.
  */
-void fql_set_threading(struct fql_handle*, int);
+void fql_set_threading(struct fqlhandle*, int);
 
 /**
  * By default, we are expecting UTF-8 input. If
  * you want to treat each byte as a character, set
  * char_as_byte.
  */
-void fql_set_char_as_byte(struct fql_handle*, int);
+void fql_set_char_as_byte(struct fqlhandle*, int);
 
 /**
  * More for testing purposes, we can instruct fql to
  * use a brute force cartesian join over something
  * more efficient like a hash join.
  */
-void fql_set_force_cartesian(struct fql_handle*, int);
+void fql_set_force_cartesian(struct fqlhandle*, int);
 
 /**
  * set a multiplier for the size of the pipes used to
  * pass data to different processes. Default: 4
  */
-void fql_set_pipe_factor(struct fql_handle*, int pipe_factor);
+void fql_set_pipe_factor(struct fqlhandle*, int pipe_factor);
 
 /**
  * This setting takes precedence over the
  * FQL_SCHEMA_PATHenvironment variable and
  * "$HOME/.config/fql/"
  */
-void fql_set_schema_path(struct fql_handle* fql, const char* schema_path);
+void fql_set_schema_path(struct fqlhandle* fql, const char* schema_path);
 
 /**
  * Use this option to set a default schema
  */
-void fql_set_schema(struct fql_handle* fql, const char* schema);
+void fql_set_schema(struct fqlhandle* fql, const char* schema);
 
 /**
  * set strict to make the validation pickier
  * (and safer) at the expense of verbosity
  */
-void fql_set_strict_mode(struct fql_handle*, int);
+void fql_set_strict_mode(struct fqlhandle*, int);
 
 /**
  * Allow SELECTing of non-grouped data while using
@@ -190,7 +190,7 @@ void fql_set_strict_mode(struct fql_handle*, int);
  * Here bar will just be the *first* bar for
  * each unique foo.
  */
-void fql_set_loose_groups(struct fql_handle* fql, int);
+void fql_set_loose_groups(struct fqlhandle* fql, int);
 
 /**
  * Preserve the input order of the records.
@@ -198,26 +198,26 @@ void fql_set_loose_groups(struct fql_handle* fql, int);
  * TODO: Currently no-op because input order
  *       cannot be broken (on paper anyway).
  */
-void fql_set_stable(struct fql_handle* fql, int);
+void fql_set_stable(struct fqlhandle* fql, int);
 
 /**
  * Use Windows style CR + LF as output line ending instead
  * of Unix style LF only.
  */
-void fql_set_crlf_output(struct fql_handle* fql, int);
+void fql_set_crlf_output(struct fqlhandle* fql, int);
 
 /**
  * Set input/output settings for text qualifying
  */
-int fql_set_in_std(struct fql_handle* fql, const char*);
-int fql_set_out_std(struct fql_handle* fql, const char*);
+int fql_set_in_std(struct fqlhandle* fql, const char*);
+int fql_set_out_std(struct fqlhandle* fql, const char*);
 
 /**
  * Determine if we are allowed to use the internal
  * table "__STDIN." The user should be in control of
  * stdin so by default, __STDIN, is not available.
  */
-void fql_set_allow_stdin(struct fql_handle* fql, int);
+void fql_set_allow_stdin(struct fqlhandle* fql, int);
 
 /** executing **/
 
@@ -227,14 +227,14 @@ void fql_set_allow_stdin(struct fql_handle* fql, int);
  * Returns:
  *   The FQL_GOOD or FQL_FAIL
  */
-int fql_exec(struct fql_handle*, const char*);
+int fql_exec(struct fqlhandle*, const char*);
 
 /**
  * Any query not run through fql_exec, starts here.
  * Returns:
  *   The number of plans made or FQL_FAIL
  */
-int fql_make_plans(struct fql_handle*, const char*);
+int fql_make_plans(struct fqlhandle*, const char*);
 
 /**
  * Retrieve a single record result
@@ -243,26 +243,26 @@ int fql_make_plans(struct fql_handle*, const char*);
  *   1        : one record
  *   FQL_FAIL : error
  */
-int fql_step(struct fql_handle* fql, struct fql_field**);
+int fql_step(struct fqlhandle* fql, struct fql_field**);
 
 /**
  * Runs all plans that have been made
  * Returns any number or FQL_FAIL on error
  */
-int fql_exec_all_plans(struct fql_handle* fql);
+int fql_exec_all_plans(struct fqlhandle* fql);
 
 /**
  * Same as fql_exec_all_plans, except also send a
  * limit for the number of queries you would like executed.
  */
-int fql_exec_plans(struct fql_handle* fql, int plan_count);
+int fql_exec_plans(struct fqlhandle* fql, int plan_count);
 
 /**
  * If a plan has been built, you can use this to retrieve
  * the number of fields coming your way.
  * If no plan has been built, this will return 0.
  */
-int fql_field_count(struct fql_handle*);
+int fql_field_count(struct fqlhandle*);
 
 #ifdef __cplusplus
 }  /* extern "C" */

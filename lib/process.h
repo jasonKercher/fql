@@ -15,7 +15,7 @@ typedef int(process_fn)(struct process*);
 
 struct process {
 	pthread_t thread;             /* pthread handle */
-	struct fql_handle* fql_ref;   /* reference to environment */
+	struct fqlhandle* fql_ref;    /* reference to environment */
 	vec* inbuf;                   /* just a buffer to hold spare records */
 	node** inbuf_iter;            /* iterator for inbuf */
 	process_fn* action__;         /* function pointer for process */
@@ -51,17 +51,17 @@ struct process {
 };
 typedef struct process process;
 
-struct process* process_construct(struct process*, const char*, struct fql_plan*);
+struct process* process_construct(struct process*, const char*, struct fqlplan*);
 void process_destroy(struct process*, bool);
 void process_node_free(struct dnode* proc_node);
 
 void process_activate(struct process*,
-                      struct fql_plan*,
+                      struct fqlplan*,
                       unsigned fifo_size,
                       unsigned* pipe_count);
-int process_step(struct fql_plan*);
-int process_exec_plan(struct fql_plan*);
-int process_exec_plan_thread(struct fql_plan*);
+int process_step(struct fqlplan*);
+int process_exec_plan(struct fqlplan*);
+int process_exec_plan_thread(struct fqlplan*);
 void process_add_to_wait_list(struct process*, struct process*);
 void process_disable(struct process*);
 
@@ -79,6 +79,10 @@ enum proc_return {
 
 void fqlprocess_recycle(process*, node**);
 
+/* control flow processes */
+enum proc_return fql_if(struct process*);
+
+/* query processes */
 enum proc_return fql_read(struct process*);
 enum proc_return fql_select(struct process*);
 enum proc_return fql_delete(struct process*);

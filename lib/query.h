@@ -16,8 +16,50 @@ struct vec;
 struct group;
 struct logicgroup;
 struct expression;
-struct fql_handle;
+struct fqlhandle;
 typedef struct vec string;
+
+enum op {
+	OP_NONE,
+	OP_IF,
+	OP_SELECT,
+	OP_DELETE,
+	OP_UPDATE,
+};
+
+enum mode {
+	MODE_UNDEFINED,
+	MODE_IF,
+	MODE_IN,
+	MODE_TOP,
+	MODE_CASE,
+	MODE_INTO,
+	MODE_UPDATELIST,
+	MODE_SELECTLIST,
+	MODE_SEARCH,
+	MODE_SOURCES,
+	MODE_GROUPBY,
+	MODE_ORDERBY,
+	MODE_AGGREGATE,
+};
+
+enum logic_mode {
+	LOGIC_UNDEFINED,
+	LOGIC_IF,
+	LOGIC_WHERE,
+	LOGIC_JOIN,
+	LOGIC_HAVING,
+	LOGIC_CASE,
+};
+
+enum join_type {
+	JOIN_FROM,
+	JOIN_INNER,
+	JOIN_LEFT,
+	JOIN_RIGHT,
+	JOIN_FULL,
+	JOIN_CROSS,
+};
 
 enum sql_type {
 	SQL_BIT,
@@ -97,42 +139,9 @@ enum scalar_function {
 	SCALAR_YEAR,
 };
 
-enum mode {
-	MODE_UNDEFINED,
-	MODE_IN,
-	MODE_TOP,
-	MODE_CASE,
-	MODE_INTO,
-	MODE_UPDATE,
-	MODE_SELECT,
-	MODE_DELETE,
-	MODE_SEARCH,
-	MODE_SOURCES,
-	MODE_GROUPBY,
-	MODE_ORDERBY,
-	MODE_AGGREGATE,
-};
-
-enum logic_mode {
-	LOGIC_UNDEFINED,
-	LOGIC_WHERE,
-	LOGIC_JOIN,
-	LOGIC_HAVING,
-	LOGIC_CASE,
-};
-
-enum join_type {
-	JOIN_FROM,
-	JOIN_INNER,
-	JOIN_LEFT,
-	JOIN_RIGHT,
-	JOIN_FULL,
-	JOIN_CROSS,
-};
-
 /** query **/
 struct query {
-	struct fql_plan* plan;
+	struct fqlplan* plan;
 	struct vec* sources;
 	struct logicgroup* where;
 	struct group* groupby;
@@ -145,6 +154,8 @@ struct query {
 	struct vec* unions;
 	const char* into_table_name;
 	size_t top_count;
+	unsigned idx;
+	unsigned next_idx;
 	int union_id;
 	int query_id;
 	int query_total;
@@ -174,13 +185,13 @@ void query_destroy(struct query*);
 void query_release_sources(struct query*);
 
 /* lol */
-void query_add_query(struct fql_handle*, struct query*);
+struct query* query_add_query(struct fqlhandle*);
 
 int query_add_constant(struct query*, const char*, int);
 int query_add_null_expression(struct query*);
 int query_add_expression(struct query*, char*, const char* table);
 int query_add_asterisk(struct query*, const char* table);
-int query_add_source(struct query*, struct fql_handle*, struct node**, const char*);
+int query_add_source(struct query*, struct fqlhandle*, struct node**, const char*);
 void query_add_subquery_source(struct query*, struct query*, const char*);
 void query_apply_table_alias(struct query*, const char*);
 void query_apply_expression_alias(struct query*, const char*);
@@ -189,7 +200,7 @@ int query_set_into_table(struct query*, const char*);
 void query_set_distinct(struct query*);
 int query_enter_aggregate(struct query*, enum aggregate_function);
 int query_exit_aggregate(struct query*);
-int query_init_op(struct query*);
+int query_init_op(struct query*, struct fqlhandle*, enum op);
 void query_set_op_table(struct query*, const char*);
 void query_init_groupby(struct query*);
 int query_init_orderby(struct query*);
@@ -199,7 +210,7 @@ void query_assign_in_subquery(struct query*, struct query*);
 void query_add_subquery_const(struct query*, struct query*);
 void query_set_order_desc(struct query*);
 int query_apply_data_type(struct query*, const char*);
-void query_exit_non_select_op(struct query*, struct fql_handle*);
+void query_exit_non_select_op(struct query*, struct fqlhandle*);
 
 int query_enter_union(struct query*, struct query*);
 int query_exit_union(struct query*, struct query*);

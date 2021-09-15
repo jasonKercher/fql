@@ -27,7 +27,7 @@ class ListenerInterface : public TSqlParserBaseListener {
 
 	TreeWalker* _walker = NULL;
 
-	struct fql_handle* _fql = NULL;
+	struct fqlhandle* _fql = NULL;
 	struct node* _query_stack = NULL;
 	struct query* _subquery = NULL;
 	struct query* _query = NULL;
@@ -42,13 +42,16 @@ class ListenerInterface : public TSqlParserBaseListener {
 	int _return_code = 0;
 	enum tok_type _next_tok_type;
 	enum tok_type _tok_type;
+	enum op _operation;
 	bool _on_asterisk = false;
 
 	void _set_failure();
 	void _no_impl(const std::string&, int);
 
       public:
-	ListenerInterface(struct fql_handle*, TreeWalker*, const std::vector<std::string>&);
+	ListenerInterface(struct fqlhandle*,
+	                  TreeWalker*,
+	                  const std::vector<std::string>&);
 	~ListenerInterface();
 	int get_return_code();
 

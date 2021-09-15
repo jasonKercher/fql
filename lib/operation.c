@@ -5,6 +5,7 @@
 #include "table.h"
 #include "group.h"
 #include "order.h"
+#include "fqlbranch.h"
 #include "reader.h"
 #include "fqlhandle.h"
 #include "fqlselect.h"
@@ -26,14 +27,21 @@ void op_destroy(enum op* self)
 	case OP_UPDATE:
 		fqlupdate_destroy((fqlupdate*)self);
 		break;
-	default:;
+	case OP_IF:
+		fqlbranch_destroy((fqlbranch*)self);
+		break;
+	case OP_NONE:;
 	}
 }
 
 
 vec* op_get_expressions(enum op* self)
 {
-	return op_get_schema(self)->expressions;
+	schema* op_schema = op_get_schema(self);
+	if (op_schema == NULL) {
+		return NULL;
+	}
+	return op_schema->expressions;
 }
 
 vec* op_get_additional_exprs(enum op* self)
@@ -45,7 +53,8 @@ vec* op_get_additional_exprs(enum op* self)
 	}
 	case OP_SELECT:
 	case OP_DELETE:
-	default:
+	case OP_IF:
+	case OP_NONE:
 		return NULL;
 	}
 }
@@ -65,7 +74,8 @@ schema* op_get_schema(enum op* self)
 		fqlupdate* update = (fqlupdate*)self;
 		return update->schema;
 	}
-	default:
+	case OP_IF:
+	case OP_NONE:
 		return NULL;
 	}
 }
@@ -84,7 +94,8 @@ const char* op_get_table_name(enum op* self)
 		return string_c_str(&(*fake_asterisk)->table_name);
 	}
 	case OP_SELECT:
-	default:
+	case OP_IF:
+	case OP_NONE:
 		return NULL;
 	}
 }
@@ -119,7 +130,8 @@ void op_match_table_alias(enum op* self, table* check_table)
 		break;
 	}
 	case OP_SELECT:
-	default:
+	case OP_IF:
+	case OP_NONE:
 		return;
 	}
 
@@ -167,37 +179,41 @@ void op_set_top_count(enum op* self, size_t top_count)
 		update->top_count = top_count;
 		break;
 	}
-	default:;
+	case OP_IF:
+	case OP_NONE:;
 	}
 }
 
-int op_preop(struct fql_handle* fql)
+int op_preop(struct fqlhandle* fql)
 {
-	query* query = *fql->active_iter;
-	enum op* type = query->op;
+	query** query = vec_at(fql->query_vec, fql->query_idx);
+	enum op* type = (*query)->op;
 
-	table* it = vec_begin(query->sources);
-	for (; it != vec_end(query->sources); ++it) {
+	table* it = vec_begin((*query)->sources);
+	for (; it != vec_end((*query)->sources); ++it) {
 		if (it->must_reopen) {
 			try_(reader_reopen(it->reader));
 		}
 	}
 
-	if (query->plan->has_stepped) {
+	if ((*query)->plan->has_stepped) {
 		return FQL_GOOD;
 	}
 
 	switch (*type) {
 	case OP_SELECT:
-		fqlselect_preop(query->op, query, fql);
+		fqlselect_preop((*query)->op, *query, fql);
 		break;
 	case OP_DELETE:
-		fqldelete_preop(query->op, query);
+		fqldelete_preop((*query)->op, *query);
 		break;
 	case OP_UPDATE:
-		fqlupdate_preop(query->op, query);
+		fqlupdate_preop((*query)->op, *query);
 		break;
-	default:;
+	case OP_IF:
+		fqlbranch_preop((*query)->op, *query);
+		break;
+	case OP_NONE:;
 	}
 
 	return FQL_GOOD;
@@ -218,7 +234,8 @@ writer* op_get_writer(enum op* self)
 		fqlupdate* update = (fqlupdate*)self;
 		return update->writer;
 	}
-	default:
+	case OP_IF:
+	case OP_NONE:
 		return NULL;
 	}
 }
@@ -251,7 +268,8 @@ void op_set_writer(enum op* self, writer* src_writer)
 		update->writer = src_writer;
 		break;
 	}
-	default:;
+	case OP_IF:
+	case OP_NONE:;
 	}
 }
 
@@ -289,18 +307,20 @@ void op_assign_rownum_ref(enum op* self, expression* expr)
 		expr->rownum_ref = &update->rownum;
 		break;
 	}
-	default:
+	case OP_DELETE:
+	case OP_IF:
+	case OP_NONE:
 		break;
 	}
 }
 
 /* NOTE: do not allow any writer initialization if a union query */
-int op_writer_init(query* query, struct fql_handle* fql)
+int op_writer_init(query* query, struct fqlhandle* fql)
 {
 	enum op* self = query->op;
 	schema* op_schema = op_get_schema(query->op);
 	writer* op_writer = NULL;
-	if (!query->union_id) {
+	if (op_schema != NULL && !query->union_id) {
 		op_writer = new_(writer, op_schema->write_io_type, fql);
 		op_set_writer(self, op_writer);
 	}
@@ -320,7 +340,8 @@ int op_writer_init(query* query, struct fql_handle* fql)
 		break;
 	}
 	case OP_SELECT:
-	default:;
+	case OP_IF:
+	case OP_NONE:;
 	}
 
 	if (op_table != NULL) {
@@ -398,7 +419,9 @@ int op_apply_process(query* query, plan* plan, bool is_subquery)
 		return fqldelete_apply_process(query, plan);
 	case OP_UPDATE:
 		return fqlupdate_apply_process(query, plan);
-	default:
+	case OP_IF:
+		return fqlbranch_apply_process(query, plan);
+	case OP_NONE:
 		return FQL_GOOD;
 	}
 }
@@ -411,7 +434,8 @@ int op_resolve_final_types(enum op* self)
 	case OP_UPDATE:
 		return fqlupdate_resolve_final_types((fqlupdate*)self);
 	case OP_DELETE:
-	default:
+	case OP_IF:
+	case OP_NONE:
 		return FQL_GOOD;
 	}
 }

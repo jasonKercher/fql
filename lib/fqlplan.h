@@ -5,11 +5,13 @@
 #include "util/dgraph.h"
 
 struct query;
-struct fql_handle;
+struct fqlhandle;
+struct logicgroup;
+struct process;
 
-struct fql_plan {
+struct fqlplan {
 	struct dgraph* processes;
-	struct fql_handle* fql_ref;
+	struct fqlhandle* fql_ref;
 	struct dnode* op_true;
 	struct dnode* op_false;
 	struct dnode* current; /* temp */
@@ -27,12 +29,18 @@ struct fql_plan {
 	bool has_stepped;
 	bool loose_groups;
 };
-typedef struct fql_plan plan;
+typedef struct fqlplan plan;
 
-struct fql_plan* plan_construct(struct fql_plan*, struct query*, struct fql_handle*);
+struct fqlplan* plan_construct(struct fqlplan*, struct query*, struct fqlhandle*);
 void plan_destroy(void*);
 
-int build_plans(struct fql_handle*);
-void print_plans(struct fql_handle*);
+int plan_logic_to_process(struct fqlplan*, struct process*, struct logicgroup*);
+int plan_logicgroup_to_process(struct fqlplan*,
+                               struct logicgroup*,
+                               struct process** ret,
+                               bool is_from_hash_join);
+
+int plan_build(struct fqlhandle*);
+void plan_print(struct fqlhandle*);
 
 #endif /* FQLPLAN_H */

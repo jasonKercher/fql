@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "operation.h"
+#include "query.h"
 
 struct node;
 struct fqlupdate;
@@ -35,7 +36,7 @@ void fqlupdate_destroy(struct fqlupdate*);
 
 int fqlupdate_add_expression(struct fqlupdate*, const struct expression*);
 int fqlupdate_resolve_additional(struct fqlupdate*, struct query*);
-int fqlupdate_apply_process(struct query*, struct fql_plan*);
+int fqlupdate_apply_process(struct query*, struct fqlplan*);
 void fqlupdate_preop(struct fqlupdate*, struct query*);
 
 /* operation.c? */

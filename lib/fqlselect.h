@@ -37,13 +37,13 @@ void fqlselect_destroy(struct fqlselect*);
 unsigned fqlselect_get_field_count(struct fqlselect*, const struct vec*);
 void fqlselect_add_expression(struct fqlselect*, struct expression*);
 int fqlselect_connect_api(struct query*, struct vec*);
-void fqlselect_apply_process(struct query*, struct fql_plan*, bool);
+void fqlselect_apply_process(struct query*, struct fqlplan*, bool);
 void fqlselect_apply_expression_alias(struct fqlselect*, const char* alias);
 int fqlselect_set_as_inlist(struct fqlselect*, struct inlist*);
 int fqlselect_resolve_type_from_subquery(struct expression*);
 int fqlselect_resolve_final_types(struct fqlselect*);
 void fqlselect_verify_must_run(struct fqlselect*);
 int fqlselect_next_union(struct fqlselect*);
-void fqlselect_preop(struct fqlselect*, struct query*, struct fql_handle*);
+void fqlselect_preop(struct fqlselect*, struct query*, struct fqlhandle*);
 
 #endif /* SELECT_H */

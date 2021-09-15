@@ -7,9 +7,8 @@
 extern "C" {
 #endif
 
-#include "fqlhandle.h"
-
-int analyze_query(struct fql_handle*);
+struct fqlhandle;
+int analyze_query(struct fqlhandle*);
 
 #ifdef __cplusplus
 }

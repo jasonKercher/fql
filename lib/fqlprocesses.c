@@ -4,13 +4,14 @@
 #include "group.h"
 #include "logic.h"
 #include "order.h"
+#include "fqlbranch.h"
 #include "record.h"
-#include "expression.h"
 #include "reader.h"
 #include "aggregate.h"
 #include "fqlselect.h"
 #include "fqldelete.h"
 #include "fqlupdate.h"
+#include "expression.h"
 #include "util/fifo.h"
 
 void _iter_states(fifo* f, string* msg)
@@ -45,6 +46,33 @@ void fqlprocess_recycle(process* proc, node** rg)
 		fifo** root_fifo = vec_at(proc->rootvec_ref, rec->root_fifo_idx);
 		fifo_add(*root_fifo, &rg_node);
 	}
+}
+
+enum proc_return fql_if(process* proc)
+{
+	fqlbranch* ifstmt = proc->proc_data;
+
+	////
+
+	logicgroup** it = vec_begin(&ifstmt->conditions);
+	for (; it != vec_end(&ifstmt->conditions); ++it) {
+		switch (logicgroup_eval(*it, NULL, NULL)) {
+		case 1:
+			*ifstmt->next_query_idx_ref = (*it)->jump_location;
+			goto ifelse_break;
+		case 0:
+			break;
+		case FQL_FAIL:
+		default:
+			return PROC_RETURN_FAIL;
+		}
+	}
+
+	*ifstmt->next_query_idx_ref = ifstmt->next_idx;
+
+ifelse_break:
+	process_disable(proc);
+	return PROC_RETURN_COMPLETE;
 }
 
 enum proc_return fql_read(process* proc)

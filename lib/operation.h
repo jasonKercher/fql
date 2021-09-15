@@ -15,15 +15,9 @@ enum filter_state {
 	FILTER_FILTERING,
 };
 
-/** operation **/
-enum op {
-	OP_NONE,
-	OP_SELECT,
-	OP_DELETE,
-	OP_UPDATE,
-};
+enum op;
 
-int op_preop(struct fql_handle*);
+int op_preop(struct fqlhandle*);
 struct vec* op_get_expressions(enum op*);
 struct vec* op_get_additional_exprs(enum op*);
 struct schema* op_get_schema(enum op*);
@@ -37,9 +31,9 @@ void op_set_schema(enum op*, const struct schema*);
 void op_set_rec_terminator(enum op*, const char* term);
 void op_set_delim(enum op*, const char* delim);
 void op_assign_rownum_ref(enum op*, struct expression*);
-int op_apply_process(struct query*, struct fql_plan*, bool is_subquery);
+int op_apply_process(struct query*, struct fqlplan*, bool is_subquery);
 int op_resolve_final_types(enum op*);
-int op_writer_init(struct query*, struct fql_handle*);
+int op_writer_init(struct query*, struct fqlhandle*);
 void op_expand_asterisks(struct query*, bool force_expansion);
 
 void op_destroy(enum op*);

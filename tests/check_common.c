@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-struct fql_handle* fql = NULL;
+struct fqlhandle* fql = NULL;
 
 void fql_setup()
 {

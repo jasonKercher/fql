@@ -4,9 +4,9 @@
 #include "fql.h"
 #include "misc.h"
 
-void _assign(writer*, struct fql_handle*);
+void _assign(writer*, struct fqlhandle*);
 
-writer* writer_construct(writer* self, enum io io, struct fql_handle* fql)
+writer* writer_construct(writer* self, enum io io, struct fqlhandle* fql)
 {
 	*self = (writer) {
 	        io,                    /* type */
@@ -46,7 +46,7 @@ void writer_destroy(writer* self)
 	delete_(vec, self->raw_rec);
 }
 
-void _assign(writer* self, struct fql_handle* fql)
+void _assign(writer* self, struct fqlhandle* fql)
 {
 	switch (self->type) {
 	case IO_LIBCSV: {

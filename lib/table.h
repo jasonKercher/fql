@@ -41,7 +41,7 @@ struct table* table_construct_subquery(struct table*,
                                        size_t idx,
                                        enum join_type);
 void table_destroy(struct table*);
-int table_resolve_schema(struct table*, struct fql_handle*);
+int table_resolve_schema(struct table*, struct fqlhandle*);
 
 #define HASH_JOIN_MIN_SIZE 128
 

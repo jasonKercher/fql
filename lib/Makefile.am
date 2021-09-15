@@ -10,25 +10,27 @@ include_HEADERS = include/fql.h
 lib_LTLIBRARIES = libfql.la
 schema_DATA = schema/noheader
 libfql_la_SOURCES = include/fql.h fqlhandle.h libfql.c 	    \
-	query.h query.c                                     \
-		table.h table.c                             \
-			schema.h schema.c                   \
-		expression.h expression.c                   \
-			switchcase.h switchcase.c           \
-			function.h function.c               \
-				scalarfn.c                  \
-		logic.h logic.c                             \
-			fqllogic.c                          \
-				like.c                      \
-				inlist.c                    \
-		group.h group.c                             \
-			aggregate.h aggregate.c             \
-				aggregatefn.c               \
-		operation.h operation.c                     \
-			fqlselect.h fqlselect.c             \
-			fqldelete.h fqldelete.c             \
-			fqlupdate.h fqlupdate.c             \
-		order.h order.c                             \
+	control.h control.c                                 \
+		query.h query.c                             \
+			table.h table.c                     \
+				schema.h schema.c           \
+			expression.h expression.c           \
+				switchcase.h switchcase.c   \
+				function.h function.c       \
+					scalarfn.c          \
+			logic.h logic.c                     \
+				fqllogic.c                  \
+					like.c              \
+					inlist.c            \
+			group.h group.c                     \
+				aggregate.h aggregate.c     \
+					aggregatefn.c       \
+			operation.h operation.c             \
+				fqlbranch.h fqlbranch.c     \
+				fqlselect.h fqlselect.c     \
+				fqldelete.h fqldelete.c     \
+				fqlupdate.h fqlupdate.c     \
+			order.h order.c                     \
 	                                                    \
 	fqlplan.h fqlplan.c                                 \
 		process.h process.c                         \

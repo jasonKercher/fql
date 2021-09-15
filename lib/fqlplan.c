@@ -10,6 +10,7 @@
 #include "group.h"
 #include "order.h"
 #include "logic.h"
+#include "fqlbranch.h"
 #include "reader.h"
 #include "process.h"
 #include "function.h"
@@ -27,7 +28,7 @@
  * where each node represents a process
  */
 
-plan* plan_construct(plan* self, query* query, struct fql_handle* fql)
+plan* plan_construct(plan* self, query* query, fqlhandle* fql)
 {
 	*self = (plan) {
 	        new_(dgraph),            /* processes */
@@ -101,11 +102,10 @@ void plan_destroy(void* generic_plan)
 	delete_(vec, self->_root_data);
 }
 
-int _build(query*, struct fql_handle*, dnode* entry, bool is_union);
+int _build(query*, fqlhandle*, dnode* entry, bool is_union);
 void _print_plan(plan*);
 void _activate_procs(plan*);
 void _calculate_execution_order(plan*);
-int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg);
 void _check_all_for_special_expression(plan* self, process* proc, vec* expressions);
 
 void _check_for_special_expression(plan* self, process* proc, expression* expr)
@@ -121,7 +121,7 @@ void _check_for_special_expression(plan* self, process* proc, expression* expr)
 	case EXPR_SWITCH_CASE: {
 		logicgroup** it = vec_begin(&expr->field.sc->tests);
 		for (; it != vec_end(&expr->field.sc->tests); ++it) {
-			_logic_to_process(self, proc, *it);
+			plan_logic_to_process(self, proc, *it);
 		}
 		_check_all_for_special_expression(self, proc, &expr->field.sc->values);
 
@@ -160,7 +160,7 @@ int _subquery_inlist(plan* self, process* logic_proc, logicgroup* lg)
 /* build process nodes from logic graph
  * assign processes for true and false
  */
-int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
+int plan_logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 {
 	switch (lg->type) {
 	case LG_OR:
@@ -194,31 +194,29 @@ int _logic_to_process(plan* self, process* logic_proc, logicgroup* lg)
 	}
 
 	if (lg->items[0] != NULL) {
-		try_(_logic_to_process(self, logic_proc, lg->items[0]));
+		try_(plan_logic_to_process(self, logic_proc, lg->items[0]));
 		string_strcat(logic_proc->plan_msg, ",");
 	}
 	if (lg->items[1] != NULL) {
-		try_(_logic_to_process(self, logic_proc, lg->items[1]));
+		try_(plan_logic_to_process(self, logic_proc, lg->items[1]));
 	}
 
 	string_strcat(logic_proc->plan_msg, ")");
 	return FQL_GOOD;
 }
 
-int _logicgroup_process(plan* self,
-                        logicgroup* lg,
-                        bool is_from_hash_join,
-                        bool is_from_having,
-                        bool is_from_left_join)
+int plan_logicgroup_to_process(plan* self,
+                               logicgroup* lg,
+                               process** ret,
+                               bool is_from_hash_join)
 {
 	process* logic_proc = new_(process, "", self);
-	if (is_from_left_join) {
-		logic_proc->action__ = &fql_left_join_logic;
-	} else {
-		logic_proc->action__ = &fql_logic;
+	if (ret != NULL) {
+		*ret = logic_proc;
 	}
+	logic_proc->action__ = &fql_logic;
 	logic_proc->proc_data = lg;
-	try_(_logic_to_process(self, logic_proc, lg));
+	try_(plan_logic_to_process(self, logic_proc, lg));
 	dnode* logic_node = dgraph_add_data(self->processes, logic_proc);
 
 	/* If we are dealing with join logic that
@@ -279,7 +277,7 @@ process* _new_join_proc(enum join_type type, const char* algorithm, plan* self)
 	return new_(process, buffer, self);
 }
 
-int _from(plan* self, query* query, struct fql_handle* fql)
+int _from(plan* self, query* query, fqlhandle* fql)
 {
 	if (query->sources->size == 0) {
 		return FQL_GOOD;
@@ -394,11 +392,14 @@ int _from(plan* self, query* query, struct fql_handle* fql)
 		self->current = join_node;
 
 		if (table_iter->condition != NULL) {
-			try_(_logicgroup_process(self,
-			                         table_iter->condition,
-			                         is_hash_join,
-			                         false,
-			                         (table_iter->join_type == JOIN_LEFT)));
+			process* join_logic_proc = NULL;
+			try_(plan_logicgroup_to_process(self,
+			                                table_iter->condition,
+			                                &join_logic_proc,
+			                                is_hash_join));
+			if (table_iter->join_type == JOIN_LEFT) {
+				join_logic_proc->action__ = &fql_left_join_logic;
+			}
 		}
 	}
 
@@ -413,7 +414,7 @@ int _where(plan* self, query* query)
 		return FQL_GOOD;
 	}
 
-	return _logicgroup_process(self, query->where, false, false, false);
+	return plan_logicgroup_to_process(self, query->where, NULL, false);
 }
 
 /* NOTE: If there is a grouping, the grouping becomes the
@@ -466,10 +467,10 @@ int _having(plan* self, query* query)
 		return FQL_GOOD;
 	}
 
-	return _logicgroup_process(self, query->having, false, true, false);
+	return plan_logicgroup_to_process(self, query->having, NULL, false);
 }
 
-int _operation(plan* self, query* query, dnode* entry, bool is_union)
+int _operation(plan* self, query* query, fqlhandle* fql, dnode* entry, bool is_union)
 {
 	dnode* prev = self->current;
 	prev->out[0] = self->op_true;
@@ -489,6 +490,7 @@ int _operation(plan* self, query* query, dnode* entry, bool is_union)
 			return FQL_GOOD;
 		}
 	}
+
 	try_(op_apply_process(query, self, (is_union || entry != NULL)));
 
 	_check_all_for_special_expression(self,
@@ -512,7 +514,7 @@ int _operation(plan* self, query* query, dnode* entry, bool is_union)
 	return FQL_GOOD;
 }
 
-int _union(plan* self, query* aquery, struct fql_handle* fql)
+int _union(plan* self, query* aquery, fqlhandle* fql)
 {
 	if (vec_empty(aquery->unions)) {
 		return FQL_GOOD;
@@ -714,7 +716,7 @@ bool _all_roots_are_const(vec* roots)
 	return true;
 }
 
-int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
+int _build(query* aquery, fqlhandle* fql, dnode* entry, bool is_union)
 {
 	/* Loop through constant value subqueries and
 	 * build their plans
@@ -732,7 +734,7 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 	try_(_where(self, aquery));
 	_group(self, aquery);
 	try_(_having(self, aquery));
-	try_(_operation(self, aquery, entry, is_union));
+	try_(_operation(self, aquery, fql, entry, is_union));
 
 	/* Uncomment this to view the plan *with* passive nodes */
 	//_print_plan(self);
@@ -784,7 +786,7 @@ int _build(query* aquery, struct fql_handle* fql, dnode* entry, bool is_union)
 	return FQL_GOOD;
 }
 
-int build_plans(struct fql_handle* fql)
+int plan_build(fqlhandle* fql)
 {
 	query** it = vec_begin(fql->query_vec);
 	for (; it != vec_end(fql->query_vec); ++it) {
@@ -864,12 +866,12 @@ void _print_plan(plan* self)
 	fputs("\n", stderr);
 }
 
-void print_plans(struct fql_handle* fql)
+void plan_print(fqlhandle* fql)
 {
 	unsigned i = 0;
 	for (; i < fql->query_vec->size; ++i) {
 		query** query = vec_at(fql->query_vec, i);
-		fprintf(stderr, "\nQUERY %d\n", ++i);
+		fprintf(stderr, "\nQUERY %d\n", i + 1);
 		_print_plan((*query)->plan);
 	}
 }
