@@ -2,28 +2,29 @@
 
 #include "util.h"
 
-stringview* stringview_construct(stringview* sv, char* s, unsigned len)
+stringview* stringview_construct(stringview* restrict sv, char* restrict s, unsigned len)
 {
 	stringview_nset(sv, s, len);
 	return sv;
 }
 
-void stringview_set(stringview* sv, const char* s)
+void stringview_set(stringview* restrict sv, const char* restrict s)
 {
 	*sv = (stringview) {s, strlen(s)};
 }
 
-void stringview_nset(stringview* sv, const void* s, unsigned n)
+void stringview_nset(stringview* restrict sv, const void* restrict s, unsigned n)
 {
 	*sv = (stringview) {s, n};
 }
 
-void stringview_set_string(stringview* sv, string* s)
+void stringview_set_string(stringview* restrict sv, string* restrict s)
 {
 	*sv = (stringview) {s->data, s->size};
 }
 
-int stringview_compare_nocase(const stringview* sv0, const stringview* sv1)
+int stringview_compare_nocase(const stringview* restrict sv0,
+                              const stringview* restrict sv1)
 {
 	int len = (sv0->len > sv1->len) ? sv1->len : sv0->len;
 	int ret = num_compare_(sv0->len, sv1->len);
@@ -34,7 +35,7 @@ int stringview_compare_nocase(const stringview* sv0, const stringview* sv1)
 	return ret;
 }
 
-int stringview_compare(const stringview* sv0, const stringview* sv1)
+int stringview_compare(const stringview* restrict sv0, const stringview* restrict sv1)
 {
 	int len = (sv0->len > sv1->len) ? sv1->len : sv0->len;
 	int ret = num_compare_(sv0->len, sv1->len);
@@ -81,8 +82,8 @@ int stringview_compare_nocase_rtrim(const stringview* sv0, const stringview* sv1
 		long_sv = sv0;
 	}
 
-	const unsigned char *s0 = (unsigned char*) sv0->data;
-	const unsigned char *s1 = (unsigned char*) sv1->data;
+	const unsigned char* s0 = (unsigned char*)sv0->data;
+	const unsigned char* s1 = (unsigned char*)sv1->data;
 
 	int ret = 0;
 	unsigned i = 0;

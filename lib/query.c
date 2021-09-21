@@ -15,6 +15,7 @@
 #include "fqldelete.h"
 #include "fqlupdate.h"
 #include "aggregate.h"
+#include "fqldeclare.h"
 #include "expression.h"
 #include "switchcase.h"
 #include "util/util.h"
@@ -100,7 +101,7 @@ void query_release_sources(query* self)
 	vec_resize(self->sources, 0);
 }
 
-query* query_add_query(struct fqlhandle* fql)
+query* query_add_query(fqlhandle* fql)
 {
 	query* newquery = new_(query, 0);
 	newquery->idx = fql->query_vec->size;
@@ -187,8 +188,14 @@ int _distribute_expression(query* self, expression* expr)
 		aggregate_add_expression(*back, expr);
 		break;
 	}
-
-	default:
+	case MODE_DECLARE:
+		fqldeclare_set_init_expression(self->op, expr);
+		break;
+	case MODE_IF:
+	case MODE_INTO:
+	case MODE_SOURCES:
+	case MODE_UNDEFINED:
+		fprintf(stderr, "unhandled expression: %d\n", self->mode);
 		return FQL_FAIL;
 	}
 	return FQL_GOOD;
@@ -226,10 +233,7 @@ int query_add_expression(query* self, char* expr_name, const char* table_id)
 		expr = new_(expression, EXPR_COLUMN_NAME, expr_name, table_id);
 	}
 
-	if (_distribute_expression(self, expr)) {
-		fprintf(stderr, "unhandled COLUMN_NAME: %s\n", expr_name);
-		return FQL_FAIL;
-	}
+	try_(_distribute_expression(self, expr));
 
 	return FQL_GOOD;
 }
@@ -237,11 +241,7 @@ int query_add_expression(query* self, char* expr_name, const char* table_id)
 int query_add_asterisk(query* self, const char* table_id)
 {
 	expression* expr = new_(expression, EXPR_ASTERISK, NULL, table_id);
-
-	if (_distribute_expression(self, expr)) {
-		fprintf(stderr, "unhandled asterisk\n");
-		return FQL_FAIL;
-	}
+	try_(_distribute_expression(self, expr));
 	return FQL_GOOD;
 }
 
@@ -267,12 +267,7 @@ int query_add_constant(query* self, const char* s, int len)
 	}
 
 	expr->field_type = type;
-	if (_distribute_expression(self, expr)) {
-		fprintf(stderr,
-		        "unhandled constant expression: %d\n",
-		        self->mode);
-		return FQL_FAIL;
-	}
+	try_(_distribute_expression(self, expr));
 
 	return FQL_GOOD;
 }
@@ -290,10 +285,7 @@ int query_add_null_expression(query* self)
  * object->schema->database->server
  * we ignore database and server for now.
  */
-int query_add_source(query* self,
-                     struct fqlhandle* fql,
-                     node** source_stack,
-                     const char* alias)
+int query_add_source(query* self, fqlhandle* fql, node** source_stack, const char* alias)
 {
 	char* table_name = node_pop(source_stack);
 	char* schema_name = node_pop(source_stack);
@@ -416,9 +408,15 @@ int query_exit_aggregate(query* self)
 	return FQL_GOOD;
 }
 
-int query_init_op(query* self, struct fqlhandle* fql, enum op operation)
+int query_init_op(query* self, fqlhandle* fql, enum op operation)
 {
 	switch (operation) {
+	case OP_DECLARE:
+		self->op = new_(fqldeclare);
+		break;
+	case OP_IF:
+		self->op = new_(fqlbranch, self);
+		break;
 	case OP_SELECT:
 		self->op = new_(fqlselect);
 		break;
@@ -428,12 +426,8 @@ int query_init_op(query* self, struct fqlhandle* fql, enum op operation)
 	case OP_UPDATE:
 		self->op = new_(fqlupdate);
 		break;
-	case OP_IF:
-		self->op = new_(fqlbranch, self);
-		//vec_push_back(fql->cfl_stack, &self->idx);
-		break;
-	default:
-		fprintf(stderr, "unexpected operation mode `%d'\n", self->mode);
+	case OP_NONE:
+		fputs("unexpected operation mode\n", stderr);
 		return FQL_FAIL;
 	}
 	return FQL_GOOD;
@@ -475,12 +469,6 @@ void query_enter_in_statement(query* self)
 	lg->condition->in_data->return_mode = self->mode;
 	self->mode = MODE_IN;
 }
-
-//void query_exit_in_statement(query* self)
-//{
-//	logicgroup* lg = self->logic_stack->data;
-//	self->mode = lg->condition->in_data->return_mode;
-//}
 
 
 void query_assign_in_subquery(query* self, query* subquery)
@@ -533,10 +521,7 @@ int _add_function(query* self, function* func, enum field_type type)
 	expression* expr = new_(expression, EXPR_FUNCTION, func, "");
 	expr->field_type = type;
 
-	if (_distribute_expression(self, expr)) {
-		fprintf(stderr, "unhandled function: %s\n", function_get_name(func));
-		return FQL_FAIL;
-	}
+	try_(_distribute_expression(self, expr));
 	node_push(&self->function_stack, expr);
 	return FQL_GOOD;
 }
@@ -565,36 +550,41 @@ int query_enter_operator(query* self, enum scalar_function op)
 int query_apply_data_type(query* self, const char* type_str)
 {
 	expression* cast_expr = self->function_stack->data;
-	if (istring_eq(type_str, "int") || istring_eq(type_str, "bigint")
-	    || istring_eq(type_str, "tinyint") || istring_eq(type_str, "smallint")) {
+
+	switch (libfql_get_sql_type(type_str)) {
+	case SQL_INT:
 		cast_expr->field.fn->call__ = &fql_cast_int;
 		cast_expr->field_type = FIELD_INT;
-	} else if (istring_eq(type_str, "bit")) {
+		break;
+	case SQL_BIT:
 		cast_expr->field.fn->call__ = &fql_cast_bit;
 		cast_expr->field_type = FIELD_INT;
-	} else if (istring_eq(type_str, "float") || istring_eq(type_str, "real")) {
+		break;
+	case SQL_FLOAT:
 		cast_expr->field.fn->call__ = &fql_cast_float;
 		cast_expr->field_type = FIELD_FLOAT;
-	} else if (istring_eq(type_str, "varchar") || istring_eq(type_str, "nvarchar")
-	           || istring_eq(type_str, "text") || istring_eq(type_str, "ntext")) {
+		break;
+	case SQL_TEXT:
+	case SQL_VARCHAR:
 		if (cast_expr->field.fn->args->size == 2) {
 			cast_expr->field.fn->call__ = &fql_left;
 		} else {
 			cast_expr->field.fn->call__ = &fql_cast_string;
 		}
 		cast_expr->field_type = FIELD_STRING;
-	} else if (istring_eq(type_str, "char") || istring_eq(type_str, "nchar")) {
+		break;
+	case SQL_CHAR:
 		cast_expr->field.fn->call__ = &fql_cast_char;
 		cast_expr->field_type = FIELD_STRING;
-	} else {
-		fprintf(stderr, "Type not implemented: `%s'\n", type_str);
+		break;
+	case SQL_UNDEFINED:
 		return FQL_FAIL;
 	}
 
 	return FQL_GOOD;
 }
 
-void query_exit_non_select_op(query* self, struct fqlhandle* fql)
+void query_exit_non_select_op(query* self, fqlhandle* fql)
 {
 	if (!vec_empty(self->sources)) {
 		return;
@@ -610,6 +600,53 @@ void query_exit_non_select_op(query* self, struct fqlhandle* fql)
 	/* query_add_source will free the stack and its data */
 }
 
+void query_set_expect_else(query* self)
+{
+	fputs("hello from expect_else\n", stderr);
+}
+
+void query_set_variable_idx(query* self, int idx)
+{
+	fqldeclare* declare = self->op;
+	declare->variable_idx = idx;
+}
+
+int query_add_variable_expression(query* self, fqlhandle* fql, const char* varname)
+{
+	int idx = scope_get_var_index(fql->_scope, varname);
+	if (idx == FQL_FAIL) {
+		return FQL_FAIL;
+	}
+
+	variable* var = vec_at(fql->variables, idx);
+
+	expression* expr = new_(expression, EXPR_CONST, NULL, "");
+	switch (var->type) {
+	case SQL_INT:
+	case SQL_BIT:
+		expr->field_type = FIELD_INT;
+		expr->field.i = var->value.i;
+		break;
+	case SQL_FLOAT:
+		expr->field_type = FIELD_FLOAT;
+		expr->field.f = var->value.f;
+		break;
+	case SQL_TEXT:
+	case SQL_VARCHAR:
+	case SQL_CHAR:
+		expr->field_type = FIELD_STRING;
+		string_copy(&expr->buf, var->value.s);
+		expr->field.s = &expr->buf;
+		break;
+	case SQL_UNDEFINED:
+		return FQL_FAIL;
+	}
+
+	try_(_distribute_expression(self, expr));
+
+	return FQL_GOOD;
+}
+
 void query_exit_function(query* self)
 {
 	node_pop(&self->function_stack);
@@ -621,10 +658,7 @@ int query_enter_case_expression(query* self)
 	expression* expr = new_(expression, EXPR_SWITCH_CASE, new_sc, "");
 	expr->field_type = FIELD_UNDEFINED;
 
-	if (_distribute_expression(self, expr)) {
-		fputs("unhandled switch case\n", stderr);
-		return FQL_FAIL;
-	}
+	try_(_distribute_expression(self, expr));
 	node_push(&self->switchcase_stack, new_sc);
 
 	new_sc->return_mode = self->mode;

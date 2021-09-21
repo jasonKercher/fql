@@ -21,6 +21,7 @@ typedef struct vec string;
 
 enum op {
 	OP_NONE,
+	OP_DECLARE,
 	OP_IF,
 	OP_SELECT,
 	OP_DELETE,
@@ -29,6 +30,7 @@ enum op {
 
 enum mode {
 	MODE_UNDEFINED,
+	MODE_DECLARE,
 	MODE_IF,
 	MODE_IN,
 	MODE_TOP,
@@ -62,6 +64,7 @@ enum join_type {
 };
 
 enum sql_type {
+	SQL_UNDEFINED,
 	SQL_BIT,
 	SQL_INT,
 	SQL_FLOAT,
@@ -154,8 +157,8 @@ struct query {
 	struct vec* unions;
 	const char* into_table_name;
 	size_t top_count;
-	unsigned idx;
-	unsigned next_idx;
+	int idx;
+	int next_idx;
 	int union_id;
 	int query_id;
 	int query_total;
@@ -211,6 +214,9 @@ void query_add_subquery_const(struct query*, struct query*);
 void query_set_order_desc(struct query*);
 int query_apply_data_type(struct query*, const char*);
 void query_exit_non_select_op(struct query*, struct fqlhandle*);
+void query_set_expect_else(struct query*);
+void query_set_variable_idx(struct query*, int);
+int query_add_variable_expression(struct query*, struct fqlhandle*, const char*);
 
 int query_enter_union(struct query*, struct query*);
 int query_exit_union(struct query*, struct query*);
@@ -229,8 +235,6 @@ int query_exit_switch_search(struct query*);
 /* search building functions */
 void query_set_logic_comparison(struct query*, const char*);
 void query_set_logic_isnull(struct query*, bool negation);
-//void query_enter_search(struct query*);
-//void query_exit_search(struct query*, bool exit_and);
 void query_enter_search_or(struct query*);
 void query_enter_search_and(struct query*);
 void query_exit_search_item(struct query*);

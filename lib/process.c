@@ -260,7 +260,10 @@ int _exec_one_pass(plan* plan, dgraph* proc_graph)
 			}
 		}
 
-		int ret = try_((*it)->action__(*it));
+		enum proc_return ret = try_((*it)->action__(*it));
+		if (ret == PROC_RETURN_COMPLETE) {
+			process_disable(*it);
+		}
 
 		if ((*it)->wait_for_in0) {
 			++run_count;
@@ -334,7 +337,7 @@ void* _thread_exec(void* data)
 	while (self->is_enabled) {
 		switch (self->action__(self)) {
 		case PROC_RETURN_COMPLETE:
-			//process_disable(self);
+			process_disable(self);
 			break;
 		case PROC_RETURN_FAIL:
 			/* TODO */

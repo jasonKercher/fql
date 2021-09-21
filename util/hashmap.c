@@ -17,19 +17,19 @@ size_t _next_power_of_2(const size_t n)
 	return value;
 }
 
-uint64_t _hash(const hashmap* m, const char* key, unsigned* n);
-uint64_t _hash_nocase(const hashmap* m, const char* key, unsigned* n);
-uint64_t _hash_rtrim(const hashmap* m, const char* key, unsigned* n);
-uint64_t _hash_nocase_rtrim(const hashmap* m, const char* key, unsigned* n);
+uint64_t _hash(const hashmap* restrict m, const char* restrict key, unsigned* restrict n);
+uint64_t _hash_nocase(const hashmap* restrict m, const char* restrict key, unsigned* restrict n);
+uint64_t _hash_rtrim(const hashmap* restrict m, const char* restrict key, unsigned* restrict n);
+uint64_t _hash_nocase_rtrim(const hashmap* restrict m, const char* restrict key, unsigned* restrict n);
 
-void _increase_size(hashmap* m);
-struct hm_entry* _get_entry(hashmap*, const char* k, unsigned* n, uint64_t* h);
-struct hm_entry* _composite_get_entry(compositemap* m,
-                                      const vec* key,
-                                      unsigned* key_len,
-                                      uint64_t* hash);
+void _increase_size(hashmap* restrict m);
+struct hm_entry* _get_entry(hashmap* restrict, const char* restrict k, unsigned* restrict n, uint64_t* restrict h);
+struct hm_entry* _composite_get_entry(compositemap* restrict m,
+                                      const vec* restrict key,
+                                      unsigned* restrict key_len,
+                                      uint64_t* restrict hash);
 
-set* set_construct(set* self, size_t limit, const unsigned props)
+set* set_construct(set* restrict self, size_t limit, const unsigned props)
 {
 	limit = _next_power_of_2(limit);
 
@@ -69,13 +69,13 @@ set* set_construct(set* self, size_t limit, const unsigned props)
 	return self;
 }
 
-void set_destroy(set* self)
+void set_destroy(set* restrict self)
 {
 	free_(self->_entries);
 	free_(self->_keybuf);
 }
 
-void set_nadd(set* self, const char* key, unsigned n)
+void set_nadd(set* restrict self, const char* restrict key, unsigned n)
 {
 	uint64_t hash = 0;
 	struct hm_entry* entry = _get_entry(self, key, &n, &hash);
@@ -97,14 +97,14 @@ void set_nadd(set* self, const char* key, unsigned n)
 	}
 }
 
-bool set_nhas(set* self, const char* key, unsigned n)
+bool set_nhas(set* restrict self, const char* restrict key, unsigned n)
 {
 	uint64_t hash = 0;
 	struct hm_entry* entry = _get_entry(self, key, &n, &hash);
 	return (entry->val_idx != _NONE);
 }
 
-hashmap* hashmap_construct(hashmap* m,
+hashmap* hashmap_construct(hashmap* restrict m,
                            const unsigned elem_size,
                            size_t limit,
                            const unsigned props)
@@ -118,13 +118,13 @@ hashmap* hashmap_construct(hashmap* m,
 	return m;
 }
 
-void hashmap_destroy(hashmap* m)
+void hashmap_destroy(hashmap* restrict m)
 {
 	set_destroy(m);
 	delete_(vec, m->values);
 }
 
-void hashmap_nset(hashmap* m, const char* key, void* data, unsigned n)
+void hashmap_nset(hashmap* restrict m, const char* restrict key, void* restrict data, unsigned n)
 {
 	uint64_t hash = 0;
 	struct hm_entry* entry = _get_entry(m, key, &n, &hash);
@@ -144,7 +144,7 @@ void hashmap_nset(hashmap* m, const char* key, void* data, unsigned n)
 	}
 }
 
-void* hashmap_nget(hashmap* m, const char* key, unsigned n)
+void* hashmap_nget(hashmap* restrict m, const char* restrict key, unsigned n)
 {
 	uint64_t hash = 0;
 	struct hm_entry* entry = _get_entry(m, key, &n, &hash);
@@ -157,19 +157,19 @@ void* hashmap_nget(hashmap* m, const char* key, unsigned n)
 }
 
 /* elem size is vec elements now */
-multimap* multimap_construct(multimap* m,
+multimap* multimap_construct(multimap* restrict m,
                              const unsigned elem_size,
                              size_t limit,
                              const unsigned props)
 {
 	hashmap_construct(m, sizeof(vec), limit, props);
 	m->elem_size = elem_size; /* this parameter is the elem_size of
-				    * of the vectors created for each entry
-				    */
+				   * of the vectors created for each entry
+				   */
 	return m;
 }
 
-void multimap_destroy(multimap* m)
+void multimap_destroy(multimap* restrict m)
 {
 	vec* it = vec_begin(m->values);
 	for (; it != vec_end(m->values); ++it) {
@@ -178,7 +178,7 @@ void multimap_destroy(multimap* m)
 	hashmap_destroy(m);
 }
 
-void multimap_nset(multimap* m, const char* key, void* data, unsigned n)
+void multimap_nset(multimap* restrict m, const char* restrict key, void* restrict data, unsigned n)
 {
 	uint64_t hash = 0;
 	struct hm_entry* entry = _get_entry(m, key, &n, &hash);
@@ -202,7 +202,7 @@ void multimap_nset(multimap* m, const char* key, void* data, unsigned n)
 	}
 }
 
-compositemap* compositemap_construct(compositemap* m,
+compositemap* compositemap_construct(compositemap* restrict m,
                                      const unsigned elem_size,
                                      size_t limit,
                                      const unsigned props)
@@ -213,13 +213,13 @@ compositemap* compositemap_construct(compositemap* m,
 	return m;
 }
 
-void compositemap_free(compositemap* m)
+void compositemap_free(compositemap* restrict m)
 {
 	compositemap_destroy(m);
 	free_(m);
 }
 
-void compositemap_destroy(compositemap* m)
+void compositemap_destroy(compositemap* restrict m)
 {
 	delete_(vec, m->_keys);
 	delete_if_exists_(vec, m->_key_temp);
@@ -234,7 +234,7 @@ void compositemap_destroy(compositemap* m)
  *       individual keys. key_len represents the
  *       number of elements in the key.
  */
-void compositemap_set(compositemap* m, const struct vec* key, void* data)
+void compositemap_set(compositemap* restrict m, const struct vec* restrict key, void* restrict data)
 {
 	/* should only execute one time */
 	if (m->_key_temp == NULL) {
@@ -262,7 +262,7 @@ void compositemap_set(compositemap* m, const struct vec* key, void* data)
 	}
 }
 
-void* compositemap_get(compositemap* m, const struct vec* key)
+void* compositemap_get(compositemap* restrict m, const struct vec* restrict key)
 {
 	/* should only execute one time */
 	if (m->_key_temp == NULL) {
@@ -281,10 +281,10 @@ void* compositemap_get(compositemap* m, const struct vec* key)
 	return vec_at(m->values, entry->val_idx);
 }
 
-bool _composite_eq(compositemap* m, struct hm_entry* ent)
+bool _composite_eq(compositemap* restrict m, struct hm_entry* restrict ent)
 {
-	struct _keyloc* kl0 = vec_at(m->_keys, ent->key_idx);
-	struct _keyloc* kl1 = vec_begin(m->_key_temp);
+	struct _keyloc* restrict kl0 = vec_at(m->_keys, ent->key_idx);
+	struct _keyloc* restrict kl1 = vec_begin(m->_key_temp);
 	unsigned i = 0;
 	for (; i < ent->key_len; ++i) {
 		if (kl0[i].len != kl1[i].len
@@ -298,10 +298,10 @@ bool _composite_eq(compositemap* m, struct hm_entry* ent)
 	return true;
 }
 
-struct hm_entry* _composite_get_entry(compositemap* m,
-                                      const vec* key,
-                                      unsigned* key_len,
-                                      uint64_t* hash)
+struct hm_entry* _composite_get_entry(compositemap* restrict m,
+                                      const vec* restrict key,
+                                      unsigned* restrict key_len,
+                                      uint64_t* restrict hash)
 {
 	stringview* it = vec_begin(key);
 
@@ -330,7 +330,8 @@ struct hm_entry* _composite_get_entry(compositemap* m,
 	struct hm_entry* entry = &m->_entries[idx];
 
 	while (entry->val_idx != _NONE
-	       && (entry->key_len != key->size || !_composite_eq(m, entry))) {
+	       && (entry->key_len != key->size || entry->hash != *hash
+	           || !_composite_eq(m, entry))) {
 		idx = (idx + 1) % m->_limit;
 		entry = &m->_entries[idx];
 	}
@@ -340,7 +341,7 @@ struct hm_entry* _composite_get_entry(compositemap* m,
 	return entry;
 }
 
-uint64_t _hash(const hashmap* m, const char* key, unsigned* n)
+uint64_t _hash(const hashmap* restrict m, const char* restrict key, unsigned* restrict n)
 {
 	uint64_t hash = _FNV1_INIT;
 	char* keyptr = &m->_keybuf[m->_keybuf_head];
@@ -355,7 +356,7 @@ uint64_t _hash(const hashmap* m, const char* key, unsigned* n)
 	return hash;
 }
 
-uint64_t _hash_nocase(const hashmap* m, const char* key, unsigned* n)
+uint64_t _hash_nocase(const hashmap* restrict m, const char* restrict key, unsigned* restrict n)
 {
 	uint64_t hash = _FNV1_INIT;
 	char* keyptr = &m->_keybuf[m->_keybuf_head];
@@ -370,7 +371,7 @@ uint64_t _hash_nocase(const hashmap* m, const char* key, unsigned* n)
 	return hash;
 }
 
-uint64_t _hash_rtrim(const hashmap* m, const char* key, unsigned* n)
+uint64_t _hash_rtrim(const hashmap* restrict m, const char* restrict key, unsigned* restrict n)
 {
 	unsigned last_not_space_n = *n;
 	uint64_t hash = _FNV1_INIT;
@@ -392,7 +393,7 @@ uint64_t _hash_rtrim(const hashmap* m, const char* key, unsigned* n)
 	return last_not_space_hash;
 }
 
-uint64_t _hash_nocase_rtrim(const hashmap* m, const char* key, unsigned* n)
+uint64_t _hash_nocase_rtrim(const hashmap* restrict m, const char* restrict key, unsigned* restrict n)
 {
 	unsigned last_not_space_n = *n;
 	uint64_t hash = _FNV1_INIT;
@@ -415,7 +416,7 @@ uint64_t _hash_nocase_rtrim(const hashmap* m, const char* key, unsigned* n)
 }
 
 struct hm_entry*
-_get_entry(hashmap* m, const char* key, unsigned* key_len, uint64_t* hash)
+_get_entry(hashmap* restrict m, const char* restrict key, unsigned* restrict key_len, uint64_t* restrict hash)
 {
 	while (m->_keybuf_head + *key_len > m->_keybuf_len) {
 		m->_keybuf_len *= 2;
@@ -428,7 +429,7 @@ _get_entry(hashmap* m, const char* key, unsigned* key_len, uint64_t* hash)
 	/* use memcmp instead of strcmp in case non-char* key */
 	struct hm_entry* entry = &m->_entries[idx];
 	while (entry->val_idx != _NONE
-	       && (entry->key_len != *key_len
+	       && (entry->key_len != *key_len || entry->hash != *hash
 	           || memcmp(&m->_keybuf[entry->key_idx],
 	                     &m->_keybuf[m->_keybuf_head],
 	                     *key_len)
@@ -440,7 +441,7 @@ _get_entry(hashmap* m, const char* key, unsigned* key_len, uint64_t* hash)
 	return entry;
 }
 
-void _increase_size(hashmap* m)
+void _increase_size(hashmap* restrict m)
 {
 	size_t old_limit = m->_limit;
 	struct hm_entry* src_entries = m->_entries;

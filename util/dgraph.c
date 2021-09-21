@@ -2,7 +2,7 @@
 
 #include "util.h"
 
-dnode* dnode_construct(dnode* node, void* data)
+dnode* dnode_construct(dnode* restrict node, void* restrict data)
 {
 	*node = (dnode) {
 	        data,         /* data */
@@ -14,9 +14,12 @@ dnode* dnode_construct(dnode* node, void* data)
 	return node;
 }
 
-void dnode_destroy(dnode* node) { }
+void dnode_destroy(dnode* restrict _unused)
+{
+	_unused = NULL;
+}
 
-dgraph* dgraph_construct(dgraph* self)
+dgraph* dgraph_construct(dgraph* restrict self)
 {
 	*self = (dgraph) {
 	        new_t_(vec, dnode*),     /* nodes */
@@ -30,20 +33,20 @@ dgraph* dgraph_construct(dgraph* self)
 	return self;
 }
 
-void dgraph_shallow_free(dgraph* self)
+void dgraph_shallow_free(dgraph* restrict self)
 {
 	dgraph_shallow_destroy(self);
 	free_(self);
 }
 
-void dgraph_shallow_destroy(dgraph* self)
+void dgraph_shallow_destroy(dgraph* restrict self)
 {
 	delete_(vec, self->nodes);
 	delete_(vec, self->_roots);
 	delete_(fifo, self->_trav);
 }
 
-void dgraph_destroy(dgraph* self)
+void dgraph_destroy(dgraph* restrict self)
 {
 	unsigned i = 0;
 	dnode** node = vec_begin(self->nodes);
@@ -54,7 +57,7 @@ void dgraph_destroy(dgraph* self)
 }
 
 /* making a copy here */
-dnode* dgraph_add_node(dgraph* self, dnode* node)
+dnode* dgraph_add_node(dgraph* restrict self, dnode* node)
 {
 	vec_push_back(self->nodes, &node);
 	self->newest = node;
@@ -62,20 +65,20 @@ dnode* dgraph_add_node(dgraph* self, dnode* node)
 	return node;
 }
 
-dnode* dgraph_add_data(dgraph* self, void* data)
+dnode* dgraph_add_data(dgraph* restrict self, void* restrict data)
 {
 	dnode* node = new_(dnode, data);
 	return dgraph_add_node(self, node);
 }
 
-void dgraph_consume(dgraph* dest, dgraph* src)
+void dgraph_consume(dgraph* restrict dest, dgraph* restrict src)
 {
 	dest->_roots_good = false;
 	vec_extend(dest->nodes, src->nodes);
 	dgraph_shallow_free(src);
 }
 
-void* dgraph_remove(dgraph* self, dnode** node)
+void* dgraph_remove(dgraph* restrict self, dnode** node)
 {
 	dnode** it = vec_begin(self->nodes);
 	for (; it != vec_end(self->nodes); ++it) {
@@ -93,7 +96,7 @@ void* dgraph_remove(dgraph* self, dnode** node)
 	return data;
 }
 
-int _assume_roots(dgraph* self)
+int _assume_roots(dgraph* restrict self)
 {
 	if (vec_empty(self->nodes)) {
 		return 0;
@@ -129,12 +132,12 @@ int _assume_roots(dgraph* self)
 	return self->_roots->size;
 }
 
-unsigned dgraph_root_count(dgraph* self)
+unsigned dgraph_root_count(dgraph* restrict self)
 {
 	return self->_roots->size;
 }
 
-vec* dgraph_get_roots(dgraph* self)
+vec* dgraph_get_roots(dgraph* restrict self)
 {
 	if (self->_roots_good) {
 		return self->_roots;
@@ -157,7 +160,7 @@ vec* dgraph_get_roots(dgraph* self)
 	return self->_roots;
 }
 
-void dgraph_traverse_reset(dgraph* self)
+void dgraph_traverse_reset(dgraph* restrict self)
 {
 	dgraph_get_roots(self);
 
@@ -176,7 +179,7 @@ void dgraph_traverse_reset(dgraph* self)
 	fifo_add(self->_trav, it);
 }
 
-dnode* dgraph_traverse(dgraph* self)
+dnode* dgraph_traverse(dgraph* restrict self)
 {
 	while (fifo_is_empty(self->_trav)) {
 		if (self->_root_idx >= self->_roots->size) {

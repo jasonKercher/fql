@@ -80,6 +80,7 @@ enum proc_return {
 void fqlprocess_recycle(process*, node**);
 
 /* control flow processes */
+enum proc_return fql_declare(struct process*);
 enum proc_return fql_if(struct process*);
 
 /* query processes */

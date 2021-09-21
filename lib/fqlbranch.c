@@ -13,11 +13,13 @@ fqlbranch* fqlbranch_construct(fqlbranch* self, query* query)
 	*self = (fqlbranch) {
 	        OP_IF,               /* oper_type */
 	        {0},                 /* conditions */
+	        {0},                 /* scope */
 	        &query->next_idx,    /* next_query_idx_ref */
 	        query->next_idx + 1, /* next_idx */
 	};
 
 	vec_construct_(&self->conditions, logicgroup*);
+	scope_construct(&self->scope);
 
 	return self;
 }

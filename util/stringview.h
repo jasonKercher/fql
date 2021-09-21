@@ -16,18 +16,17 @@ struct stringview {
 };
 typedef struct stringview stringview;
 
-struct stringview* stringview_construct(struct stringview*, char*, unsigned);
-void stringview_set(struct stringview*, const char*);
-void stringview_nset(struct stringview* sv, const void* s, unsigned n);
-void stringview_set_string(struct stringview* sv, string* s);
+struct stringview*
+stringview_construct(struct stringview* restrict, char* restrict, unsigned);
+void stringview_set(struct stringview* restrict, const char* restrict);
+void stringview_nset(struct stringview* restrict sv, const void* restrict s, unsigned n);
+void stringview_set_string(struct stringview* restrict sv, string* restrict s);
 
-int stringview_compare(const struct stringview* sv0,
-                       const struct stringview* sv1);
-int stringview_compare_nocase(const struct stringview* sv0,
-                              const struct stringview* sv1);
-int stringview_compare_rtrim(const struct stringview* sv0,
-                             const struct stringview* sv1);
-int stringview_compare_nocase_rtrim(const struct stringview* sv0,
-                                    const struct stringview* sv1);
+int stringview_compare(const struct stringview* restrict,
+                       const struct stringview* restrict);
+int stringview_compare_nocase(const struct stringview* restrict,
+                              const struct stringview* restrict);
+int stringview_compare_rtrim(const struct stringview*, const struct stringview*);
+int stringview_compare_nocase_rtrim(const struct stringview*, const struct stringview*);
 
 #endif /* STRINGVIEW_H */

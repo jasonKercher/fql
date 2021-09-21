@@ -10,13 +10,14 @@
 #include "group.h"
 #include "order.h"
 #include "logic.h"
-#include "fqlbranch.h"
 #include "reader.h"
 #include "process.h"
 #include "function.h"
+#include "fqlbranch.h"
 #include "fqlselect.h"
 #include "operation.h"
 #include "aggregate.h"
+#include "fqldeclare.h"
 #include "switchcase.h"
 #include "expression.h"
 #include "util/util.h"
@@ -502,6 +503,12 @@ int _operation(plan* self, query* query, fqlhandle* fql, dnode* entry, bool is_u
 		_check_all_for_special_expression(self,
 		                                  self->op_true->data,
 		                                  op_add_exprs);
+	}
+
+	enum op* operation = query->op;
+	if (*operation == OP_DECLARE) {
+		fqldeclare* decl = query->op;
+		_check_for_special_expression(self, self->op_true->data, decl->init_expr);
 	}
 
 

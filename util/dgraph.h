@@ -14,8 +14,8 @@ struct dnode {
 };
 typedef struct dnode dnode;
 
-struct dnode* dnode_construct(struct dnode*, void*);
-void dnode_destroy(struct dnode*);
+struct dnode* dnode_construct(struct dnode* restrict, void* restrict);
+void dnode_destroy(struct dnode* restrict);
 
 struct dgraph {
 	struct vec* nodes;
@@ -27,20 +27,20 @@ struct dgraph {
 };
 typedef struct dgraph dgraph;
 
-struct dgraph* dgraph_construct(struct dgraph*);
-void dgraph_shallow_free(struct dgraph*);
-void dgraph_shallow_destroy(struct dgraph*);
-void dgraph_destroy(struct dgraph*);
+struct dgraph* dgraph_construct(struct dgraph* restrict);
+void dgraph_shallow_free(struct dgraph* restrict);
+void dgraph_shallow_destroy(struct dgraph* restrict);
+void dgraph_destroy(struct dgraph* restrict);
 
-struct dnode* dgraph_add_node(struct dgraph*, struct dnode*);
-struct dnode* dgraph_add_data(struct dgraph*, void*);
-void dgraph_consume(struct dgraph* dest, struct dgraph* src);
+struct dnode* dgraph_add_node(struct dgraph* restrict, struct dnode*);
+struct dnode* dgraph_add_data(struct dgraph* restrict, void* restrict);
+void dgraph_consume(struct dgraph* restrict dest, struct dgraph* restrict src);
 
-void* dgraph_remove(struct dgraph*, struct dnode**);
+void* dgraph_remove(struct dgraph* restrict, struct dnode**);
 
-unsigned dgraph_root_count(struct dgraph*);
-struct vec* dgraph_get_roots(struct dgraph*);
-void dgraph_traverse_reset(struct dgraph*);
-struct dnode* dgraph_traverse(struct dgraph*);
+unsigned dgraph_root_count(struct dgraph* restrict);
+struct vec* dgraph_get_roots(struct dgraph* restrict);
+void dgraph_traverse_reset(struct dgraph* restrict);
+struct dnode* dgraph_traverse(struct dgraph* restrict);
 
 #endif /* DGRAPH_H */

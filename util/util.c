@@ -5,7 +5,7 @@
 
 #include "util.h"
 
-int str2longbase(long* ret, const char* s, int base)
+int str2longbase(long* restrict ret, const char* restrict s, int base)
 {
 	char* endptr = NULL;
 	errno = 0;
@@ -21,12 +21,12 @@ int str2longbase(long* ret, const char* s, int base)
 	return 1;
 }
 
-int str2long10(long* ret, const char* s)
+int str2long10(long* restrict ret, const char* restrict s)
 {
 	return str2longbase(ret, s, 10);
 }
 
-int str2long(long* ret, const char* s)
+int str2long(long* restrict ret, const char* restrict s)
 {
 	if (s[0] == '0' && s[1] == 'x') {
 		return str2longbase(ret, s, 16);
@@ -34,7 +34,7 @@ int str2long(long* ret, const char* s)
 	return str2longbase(ret, s, 10);
 }
 
-int str2double(double* ret, const char* s)
+int str2double(double* restrict ret, const char* restrict s)
 {
 	char* endptr = NULL;
 	errno = 0;
@@ -51,7 +51,7 @@ int str2double(double* ret, const char* s)
 	return 1;
 }
 
-int charncount(const char* s, char c, unsigned n)
+int charncount(const char* restrict s, char c, unsigned n)
 {
 	int count = 0;
 	unsigned i = 0;
@@ -62,7 +62,7 @@ int charncount(const char* s, char c, unsigned n)
 	return count;
 }
 
-int charcount(const char* s, char c)
+int charcount(const char* restrict s, char c)
 {
 	int count = 0;
 	int i = 0;
@@ -73,7 +73,7 @@ int charcount(const char* s, char c)
 	return count;
 }
 
-int strhaschar(const char* s, char c)
+int strhaschar(const char* restrict s, char c)
 {
 	int i = 0;
 	for (; s[i] != '\0'; ++i)
@@ -83,14 +83,14 @@ int strhaschar(const char* s, char c)
 	return false;
 }
 
-void removecharat(char* s, int i)
+void removecharat(char* restrict s, int i)
 {
 	for (; s[i] != '\0'; ++i)
 		s[i] = s[i+1];
 	s[i] = '\0';
 }
 
-char* randstr(char* s, const int len)
+char* randstr(char* restrict s, const int len)
 {
 	static const char alphanum[] =
 		"0123456789"
@@ -111,7 +111,7 @@ char* randstr(char* s, const int len)
  * converted to leave user in control of allocation
  * assumption: dest space >= filename space
  */
-void getnoext(char* dest, const char* filename)
+void getnoext(char* dest, const char* restrict filename)
 {
 	char* lastdot = NULL;
 	char* lastsep = NULL;
@@ -148,23 +148,23 @@ char* getext(char* filename)
 	return "";
 }
 
-int string_eq(const char* s1, const char* s2)
+int string_eq(const char* restrict s1, const char* restrict s2)
 {
 	return !strcmp(s1, s2);
 }
 
-int istring_eq(const char* s1, const char* s2)
+int istring_eq(const char* restrict s1, const char* restrict s2)
 {
 	return !strcasecmp(s1, s2);
 }
 
-void string_to_lower(char* s)
+void string_to_lower(char* restrict s)
 {
 	for ( ; *s; ++s)
 		*s = tolower(*s);
 }
 
-char * strnstr(const char *s, const char *find, size_t slen)
+char* strnstr(const char* restrict s, const char* restrict find, size_t slen)
 {
 	char c, sc;
 	size_t len;
@@ -184,7 +184,7 @@ char * strnstr(const char *s, const char *find, size_t slen)
 	return ((char *)s);
 }
 
-node* dir_list_files(const char* dir)
+node* dir_list_files(const char* restrict dir)
 {
 	/* read file names into node */
 	node* files = NULL;

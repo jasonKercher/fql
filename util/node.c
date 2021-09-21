@@ -2,28 +2,26 @@
 #include "node.h"
 
 /* STACK FUNCTIONS */
-node* node_top(node* self)
+node* node_top(node* restrict self)
 {
 	if (!self)
 		return NULL;
 
-	node* head = self;
-	while (head && head->prev)
-		head = head->prev;
+	while (self && self->prev)
+		self = self->prev;
 
-	return head;
+	return self;
 }
 
-node* node_bottom(node* self)
+node* node_bottom(node* restrict self)
 {
 	if (!self)
 		return NULL;
 
-	node* last = self;
-	while (last && last->next)
-		last = last->next;
+	while (self && self->next)
+		self = self->next;
 
-	return last;
+	return self;
 }
 
 node* node_pop_export(node** head)
@@ -36,7 +34,7 @@ void* node_pop(node** head)
 	return node_remove(head, *head);
 }
 
-node* node_push(node** head, void* data)
+node* node_push(node** head, void* restrict data)
 {
 	node* newnode = malloc_(sizeof(*newnode));
 	*newnode = (node) {
@@ -49,46 +47,43 @@ node* node_push(node** head, void* data)
 	return newnode;
 }
 
-node* node_push_import(node** head, node* import)
+node* node_push_import(node** head, node* restrict import)
 {
 	import->next = *head;
 
 	if (*head)
 		(*head)->prev = import;
-	*head = import;
 
 	import->prev = NULL;
 
+	*head = import;
 	return import;
 }
 
 /* QUEUE FUNCTIONS */
-
-node* node_front(node* self)
+node* node_front(node* restrict self)
 {
 	if (!self)
 		return NULL;
 
-	node* head = self;
-	while (head && head->prev)
-		head = head->prev;
+	while (self && self->prev)
+		self = self->prev;
 
-	return head;
+	return self;
 }
 
-node* node_back(node* self)
+node* node_back(node* restrict self)
 {
 	if (!self)
 		return NULL;
 
-	node* back = self;
-	while (back && back->next)
-		back = back->next;
+	while (self && self->next)
+		self = self->next;
 
-	return back;
+	return self;
 }
 
-node* node_enqueue_import(node** head, node* import)
+node* node_enqueue_import(node** head, node* restrict import)
 {
 	node* back = node_back(*head);
 
@@ -105,7 +100,7 @@ node* node_enqueue_import(node** head, node* import)
 	return import;
 }
 
-node* node_enqueue(node** head, void* data)
+node* node_enqueue(node** head, void* restrict data)
 {
 	node* newnode = malloc_(sizeof(*newnode));
 	*newnode = (node) {
@@ -130,7 +125,7 @@ void* node_dequeue(node** head)
 
 
 /** generic linked list functions **/
-node* node_at(node* head, unsigned idx)
+node* node_at(node* restrict head, unsigned idx)
 {
 	unsigned i = 0;
 	for (; head && i < idx; ++i) {
@@ -140,7 +135,7 @@ node* node_at(node* head, unsigned idx)
 	return head;
 }
 
-void* node_data_at(node* head, unsigned idx)
+void* node_data_at(node* restrict head, unsigned idx)
 {
 	node* node = node_at(head, idx);
 	if (node == NULL) {
@@ -149,20 +144,19 @@ void* node_data_at(node* head, unsigned idx)
 	return node->data;
 }
 
-int node_count(node* head)
+int node_count(node* restrict head)
 {
 	if (!head)
 		return 0;
 
 	int count = 1;
-	node* last = head;
-	while ((last = last->next))
+	while ((head = head->next))
 		++count;
 
 	return count;
 }
 
-void node_delete(node** head, node* node)
+void node_delete(node** head, node* restrict node)
 {
 	if (!node)
 		return;
@@ -171,7 +165,7 @@ void node_delete(node** head, node* node)
 	free_(data);
 }
 
-node* node_export(node** head, node* export)
+node* node_export(node** head, node* restrict export)
 {
 	if (!export)
 		return NULL;
@@ -189,7 +183,7 @@ node* node_export(node** head, node* export)
 	return export;
 }
 
-void* node_remove(node** head, node* node)
+void* node_remove(node** head, node* restrict node)
 {
 	if (!node)
 		return NULL;

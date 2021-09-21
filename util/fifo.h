@@ -34,45 +34,48 @@ struct fifo {
 };
 typedef struct fifo fifo;
 
-struct fifo* fifo_construct(struct fifo*, size_t elem_size, unsigned buf_size);
+struct fifo* fifo_construct(struct fifo* restrict, size_t elem_size, unsigned buf_size);
 #define fifo_construct_(this_, T_, n_) fifo_construct(this_, sizeof(T_), n_)
-void fifo_free(void*);
-void fifo_destroy(struct fifo*);
+void fifo_free(void* restrict);
+void fifo_destroy(struct fifo* restrict);
 
-void fifo_set_open(struct fifo*, int);
-void fifo_resize(struct fifo*, unsigned);
-unsigned fifo_available(const struct fifo*);
-bool fifo_is_empty(const struct fifo*);
-bool fifo_is_full(const struct fifo*);
-unsigned fifo_receivable(struct fifo*);
-void fifo_set_full(struct fifo*);
+void fifo_set_open(struct fifo* restrict, int);
+void fifo_resize(struct fifo* restrict, unsigned);
+unsigned fifo_available(const struct fifo* restrict);
+bool fifo_is_empty(const struct fifo* restrict);
+bool fifo_is_full(const struct fifo* restrict);
+unsigned fifo_receivable(struct fifo* restrict);
+void fifo_set_full(struct fifo* restrict);
 
-void* fifo_get(struct fifo*);
-int fifo_nget(struct fifo*, struct vec*, unsigned block_size, unsigned max);
-void* fifo_peek(const struct fifo*);
-void* fifo_look_ahead(const struct fifo*);
-void fifo_consume(struct fifo*);
+void* fifo_get(struct fifo* restrict);
+int fifo_nget(struct fifo* restrict,
+              struct vec* restrict,
+              unsigned block_size,
+              unsigned max);
+void* fifo_peek(const struct fifo* restrict);
+void* fifo_look_ahead(const struct fifo* restrict);
+void fifo_consume(struct fifo* restrict);
 
-void fifo_add_eager(struct fifo*, void*);
-void fifo_add(struct fifo*, void*);
-void fifo_nadd(struct fifo*, struct vec*, unsigned start_idx);
-void fifo_advance(struct fifo*);
+void fifo_add_eager(struct fifo* restrict, void* restrict);
+void fifo_add(struct fifo* restrict, void* restrict);
+void fifo_nadd(struct fifo* restrict, struct vec* restrict, unsigned start_idx);
+void fifo_advance(struct fifo* restrict);
 
 
 /* these iterators do not touch mutexes
  * and do not send signals. Up to user
  * to call update() after done iterating.
  */
-void* fifo_begin(struct fifo*);
-void* fifo_iter(struct fifo*);
-void* fifo_end(const struct fifo*);
-void fifo_update(struct fifo*);
+void* fifo_begin(struct fifo* restrict);
+void* fifo_iter(struct fifo* restrict);
+void* fifo_end(const struct fifo* restrict);
+void fifo_update(struct fifo* restrict);
 //#define fifo_iter(f_) fifo_get(f_)
 
 /* thread conditions */
-void fifo_wait_for_add(struct fifo*);
-void fifo_wait_for_get(struct fifo*);
-void fifo_wait_for_add_either(struct fifo*, struct fifo*);
-void fifo_wait_for_add_both(struct fifo*, struct fifo*);
+void fifo_wait_for_add(struct fifo* restrict);
+void fifo_wait_for_get(struct fifo* restrict);
+void fifo_wait_for_add_either(struct fifo* restrict, struct fifo* restrict);
+void fifo_wait_for_add_both(struct fifo* restrict, struct fifo* restrict);
 
 #endif /* FIFO_H */

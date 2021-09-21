@@ -3,7 +3,7 @@
 
 #define _idx_adv_(idx_) idx_ = (idx_ + 1) % self->buf->size;
 
-fifo* fifo_construct(fifo* self, size_t elem_size, unsigned buf_size)
+fifo* fifo_construct(fifo* restrict self, size_t elem_size, unsigned buf_size)
 {
 	/* fifo requires a buffer of atleast size 2 */
 	if (buf_size <= 1) {
@@ -24,7 +24,7 @@ fifo* fifo_construct(fifo* self, size_t elem_size, unsigned buf_size)
 	return self;
 }
 
-void fifo_destroy(fifo* self)
+void fifo_destroy(fifo* restrict self)
 {
 	delete_(vec, self->buf);
 	pthread_mutex_destroy(&self->head_mutex);
@@ -33,7 +33,7 @@ void fifo_destroy(fifo* self)
 	pthread_cond_destroy(&self->cond_get);
 }
 
-void fifo_free(void* self)
+void fifo_free(void* restrict self)
 {
 	fifo_destroy(self);
 	free_(self);
@@ -44,7 +44,7 @@ void fifo_free(void* self)
  * losing all currently held data... yea...
  * go for it. (definitely not thread-safe)
  */
-void fifo_resize(fifo* self, unsigned n)
+void fifo_resize(fifo* restrict self, unsigned n)
 {
 	/* fifo requires a buffer of atleast size 2 */
 	if (n <= 1) {
@@ -55,7 +55,7 @@ void fifo_resize(fifo* self, unsigned n)
 	self->tail = 0;
 }
 
-void fifo_set_open(fifo* self, int is_open)
+void fifo_set_open(fifo* restrict self, int is_open)
 {
 	pthread_mutex_lock(&self->tail_mutex);
 	pthread_mutex_lock(&self->head_mutex);
@@ -69,7 +69,7 @@ void fifo_set_open(fifo* self, int is_open)
 	pthread_mutex_unlock(&self->tail_mutex);
 }
 
-unsigned fifo_available(const fifo* self)
+unsigned fifo_available(const fifo* restrict self)
 {
 	size_t available = self->head - self->tail;
 	if (self->head < self->tail) {
@@ -78,29 +78,29 @@ unsigned fifo_available(const fifo* self)
 	return available;
 }
 
-bool fifo_is_empty(const fifo* self)
+bool fifo_is_empty(const fifo* restrict self)
 {
 	return (self->head == self->tail);
 }
 
-bool fifo_is_full(const fifo* self)
+bool fifo_is_full(const fifo* restrict self)
 {
 	return ((self->head + 1) % self->buf->size == self->tail);
 }
 
-unsigned fifo_receivable(fifo* self)
+unsigned fifo_receivable(fifo* restrict self)
 {
 	unsigned avail = fifo_available(self);
 	return self->buf->size - avail - self->input_count;
 }
 
-void fifo_set_full(fifo* self)
+void fifo_set_full(fifo* restrict self)
 {
 	self->tail = 0;
 	self->head = self->buf->size - 1;
 }
 
-void* fifo_get(fifo* self)
+void* fifo_get(fifo* restrict self)
 {
 	pthread_mutex_lock(&self->tail_mutex);
 	void* data = fifo_peek(self);
@@ -110,7 +110,10 @@ void* fifo_get(fifo* self)
 	return data;
 }
 
-int fifo_nget(fifo* self, vec* buffer, unsigned block_size, unsigned max)
+int fifo_nget(fifo* restrict self,
+              vec* restrict buffer,
+              unsigned block_size,
+              unsigned max)
 {
 	pthread_mutex_lock(&self->tail_mutex);
 	unsigned available = fifo_available(self);
@@ -140,12 +143,12 @@ int fifo_nget(fifo* self, vec* buffer, unsigned block_size, unsigned max)
 	return available - transfer_count;
 }
 
-void* fifo_peek(const fifo* self)
+void* fifo_peek(const fifo* restrict self)
 {
 	return vec_at(self->buf, self->tail);
 }
 
-void* fifo_look_ahead(const fifo* self)
+void* fifo_look_ahead(const fifo* restrict self)
 {
 	if (fifo_available(self) < 2) {
 		return NULL;
@@ -156,7 +159,7 @@ void* fifo_look_ahead(const fifo* self)
 	return vec_at(self->buf, look_ahead_idx);
 }
 
-void fifo_consume(fifo* self)
+void fifo_consume(fifo* restrict self)
 {
 	pthread_mutex_lock(&self->tail_mutex);
 	_idx_adv_(self->tail);
@@ -164,13 +167,13 @@ void fifo_consume(fifo* self)
 	pthread_mutex_unlock(&self->tail_mutex);
 }
 
-void fifo_add_eager(fifo* self, void* data)
+void fifo_add_eager(fifo* restrict self, void* restrict data)
 {
 	vec_set(self->buf, self->head, data);
 	_idx_adv_(self->head);
 }
 
-void fifo_add(fifo* self, void* data)
+void fifo_add(fifo* restrict self, void* restrict data)
 {
 	pthread_mutex_lock(&self->head_mutex);
 	vec_set(self->buf, self->head, data);
@@ -183,7 +186,7 @@ void fifo_add(fifo* self, void* data)
 	pthread_mutex_unlock(&self->head_mutex);
 }
 
-void fifo_nadd(fifo* self, vec* src, unsigned start_idx)
+void fifo_nadd(fifo* restrict self, vec* restrict src, unsigned start_idx)
 {
 	pthread_mutex_lock(&self->head_mutex);
 
@@ -201,7 +204,7 @@ void fifo_nadd(fifo* self, vec* src, unsigned start_idx)
 	}
 }
 
-void fifo_advance(fifo* self)
+void fifo_advance(fifo* restrict self)
 {
 	pthread_mutex_lock(&self->head_mutex);
 	_idx_adv_(self->head);
@@ -210,25 +213,25 @@ void fifo_advance(fifo* self)
 }
 
 
-void* fifo_begin(fifo* self)
+void* fifo_begin(fifo* restrict self)
 {
 	self->_iter_head = self->head % self->buf->size;
 	return fifo_peek(self);
 }
 
-void* fifo_iter(fifo* self)
+void* fifo_iter(fifo* restrict self)
 {
 	/* consume without mutexes */
 	_idx_adv_(self->tail);
 	return fifo_peek(self);
 }
 
-void* fifo_end(const fifo* self)
+void* fifo_end(const fifo* restrict self)
 {
 	return vec_at(self->buf, self->_iter_head);
 }
 
-void fifo_update(fifo* self)
+void fifo_update(fifo* restrict self)
 {
 	pthread_mutex_lock(&self->tail_mutex);
 	pthread_cond_signal(&self->cond_get);
@@ -236,7 +239,7 @@ void fifo_update(fifo* self)
 }
 
 
-void fifo_wait_for_add(fifo* self)
+void fifo_wait_for_add(fifo* restrict self)
 {
 	pthread_mutex_lock(&self->head_mutex);
 	while (self->is_open && fifo_is_empty(self)) {
@@ -245,7 +248,7 @@ void fifo_wait_for_add(fifo* self)
 	pthread_mutex_unlock(&self->head_mutex);
 }
 
-void fifo_wait_for_add_either(fifo* f0, fifo* f1)
+void fifo_wait_for_add_either(fifo* restrict f0, fifo* restrict f1)
 {
 	pthread_mutex_lock(&f0->head_mutex);
 	pthread_mutex_lock(&f1->head_mutex);
@@ -257,7 +260,7 @@ void fifo_wait_for_add_either(fifo* f0, fifo* f1)
 	pthread_mutex_unlock(&f0->head_mutex);
 }
 
-void fifo_wait_for_add_both(fifo* f0, fifo* f1)
+void fifo_wait_for_add_both(fifo* restrict f0, fifo* restrict f1)
 {
 	while (f1->is_open && f0->is_open && (fifo_is_empty(f0) || fifo_is_empty(f1))) {
 		fifo_wait_for_add(f0);
@@ -265,7 +268,7 @@ void fifo_wait_for_add_both(fifo* f0, fifo* f1)
 	}
 }
 
-void fifo_wait_for_get(fifo* self)
+void fifo_wait_for_get(fifo* restrict self)
 {
 	pthread_mutex_lock(&self->tail_mutex);
 	while (!fifo_receivable(self)) {

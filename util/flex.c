@@ -13,36 +13,36 @@ struct _pair {
 	unsigned len;
 };
 
-flex* flex_construct(flex* self)
+flex* flex_construct(flex* restrict self)
 {
 	vec_construct_(&self->_pairs, struct _pair);
 	vec_construct_(&self->_raw, char);
 	return self;
 }
 
-void flex_destroy(flex* self)
+void flex_destroy(flex* restrict self)
 {
 	vec_destroy(&self->_pairs);
 	vec_destroy(&self->_raw);
 }
 
-bool flex_empty(const flex* self)
+bool flex_empty(const flex* restrict self)
 {
 	return vec_empty(&self->_pairs);
 }
 
-size_t flex_size(const flex* self)
+size_t flex_size(const flex* restrict self)
 {
 	return self->_pairs.size;
 }
 
-void* flex_at(const flex* self, size_t idx)
+void* flex_at(const flex* restrict self, size_t idx)
 {
 	struct _pair* pair = vec_at(&self->_pairs, idx);
 	return vec_at(&self->_raw, pair->idx);
 }
 
-stringview flex_pair_at(const flex* self, size_t idx)
+stringview flex_pair_at(const flex* restrict self, size_t idx)
 {
 	struct _pair* pair = vec_at(&self->_pairs, idx);
 	return (stringview) {
@@ -51,13 +51,13 @@ stringview flex_pair_at(const flex* self, size_t idx)
 	};
 }
 
-void flex_reserve(flex* self, size_t size)
+void flex_reserve(flex* restrict self, size_t size)
 {
 	vec_reserve(&self->_pairs, size);
 	vec_reserve(&self->_raw, size);
 }
 
-void flex_resize(flex* self, size_t size)
+void flex_resize(flex* restrict self, size_t size)
 {
 	if (size > self->_pairs.size) {
 		vec_resize(&self->_pairs, size);
@@ -67,18 +67,18 @@ void flex_resize(flex* self, size_t size)
 	       flex_pop_back(self));
 }
 
-void flex_clear(flex* self)
+void flex_clear(flex* restrict self)
 {
 	vec_clear(&self->_pairs);
 	vec_clear(&self->_raw);
 }
 
-void flex_shrink_to_fit(flex* self)
+void flex_shrink_to_fit(flex* restrict self)
 {
 	vec_shrink_to_fit(&self->_pairs);
 }
 
-void flex_pop_back(flex* self)
+void flex_pop_back(flex* restrict self)
 {
 	struct _pair* pair = vec_back(&self->_pairs);
 	/* Is the last pair also last in _raw? */
@@ -88,7 +88,10 @@ void flex_pop_back(flex* self)
 	vec_pop_back(&self->_pairs);
 }
 
-void flex_insert(flex* self, size_t idx, const void* data, unsigned datalen)
+void flex_insert(flex* restrict self,
+                 size_t idx,
+                 const void* restrict data,
+                 unsigned datalen)
 {
 	struct _pair pair = {
 		 self->_raw.size
@@ -98,7 +101,7 @@ void flex_insert(flex* self, size_t idx, const void* data, unsigned datalen)
 	vec_append(&self->_raw, data, datalen);
 }
 
-void flex_push_back(flex* self, const void* data, unsigned datalen)
+void flex_push_back(flex* restrict self, const void* restrict data, unsigned datalen)
 {
 	struct _pair pair = {
 		 self->_raw.size
@@ -108,7 +111,7 @@ void flex_push_back(flex* self, const void* data, unsigned datalen)
 	vec_append(&self->_raw, data, datalen);
 }
 
-void flex_push_back_str_int(struct flex* self, long num)
+void flex_push_back_str_int(struct flex* restrict self, long num)
 {
 	struct _pair pair = {
 		 self->_raw.size
@@ -119,7 +122,7 @@ void flex_push_back_str_int(struct flex* self, long num)
 	char* end = vec_at(&self->_raw, pair.idx);
 	snprintf(end, pair.len+1, "%ld", num);
 }
-void flex_push_back_str_float(struct flex* self, double num)
+void flex_push_back_str_float(struct flex* restrict self, double num)
 {
 	struct _pair pair = {
 		 self->_raw.size
@@ -131,7 +134,7 @@ void flex_push_back_str_float(struct flex* self, double num)
 	snprintf(end, pair.len+1, "%f", num);
 }
 
-void flex_remove(flex* self, size_t idx)
+void flex_remove(flex* restrict self, size_t idx)
 {
 	vec_erase_at(&self->_pairs, idx, 1);
 }

@@ -67,17 +67,47 @@ void ListenerInterface::enterIf_statement(TSqlParser::If_statementContext * ctx)
 	_query->mode = MODE_IF;
 	_operation = OP_IF;
 
-	/* TODO if (ctx->ELSE()) */
-
 	if (query_init_op(_query, _fql, _operation)) {
 		_set_failure();
 	}
+	if (ctx->ELSE()) {
+		query_set_expect_else(_query);
+	}
+
 }
 void ListenerInterface::exitIf_statement(TSqlParser::If_statementContext * ctx) 
 {
 	_query->query_total = _query_id + 1;
 	node_free(&_query_stack);
 }
+
+void ListenerInterface::enterAnother_statement(TSqlParser::Another_statementContext * ctx) { }
+void ListenerInterface::exitAnother_statement(TSqlParser::Another_statementContext * ctx) { }
+
+void ListenerInterface::enterDeclare_statement(TSqlParser::Declare_statementContext * ctx)
+{
+	_query->mode = MODE_DECLARE;
+	_operation = OP_DECLARE;
+	if (query_init_op(_query, _fql, _operation)) {
+		_set_failure();
+	}
+}
+void ListenerInterface::exitDeclare_statement(TSqlParser::Declare_statementContext * ctx)
+{
+	_query->mode = MODE_UNDEFINED;
+}
+
+void ListenerInterface::enterDeclare_local(TSqlParser::Declare_localContext * ctx) 
+{
+	int idx = libfql_declare_variable(_fql, ctx->LOCAL_ID()->getText().c_str());
+	if (idx == FQL_FAIL) {
+		_set_failure();
+		return;
+	}
+
+	query_set_variable_idx(_query, idx);
+}
+void ListenerInterface::exitDeclare_local(TSqlParser::Declare_localContext * ctx) { }
 
 void ListenerInterface::enterDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
 void ListenerInterface::exitDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
@@ -162,11 +192,7 @@ void ListenerInterface::exitTable_sources(TSqlParser::Table_sourcesContext * ctx
 }
 
 void ListenerInterface::enterTable_source(TSqlParser::Table_sourceContext * ctx) { }
-void ListenerInterface::exitTable_source(TSqlParser::Table_sourceContext * ctx)
-{
-	/* Can this be combined with exittable_source_item? */
-	//query_apply_table_alias(_query, _table_alias);
-}
+void ListenerInterface::exitTable_source(TSqlParser::Table_sourceContext * ctx) { }
 
 void ListenerInterface::enterTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
 void ListenerInterface::exitTable_source_item_joined(TSqlParser::Table_source_item_joinedContext * ctx) { }
@@ -275,12 +301,7 @@ void ListenerInterface::enterTable_name(TSqlParser::Table_nameContext * ctx)
 	}
 	_tok_type = _next_tok_type;
 }
-void ListenerInterface::exitTable_name(TSqlParser::Table_nameContext * ctx)
-{
-	//if (_tok_type == TOK_TABLE_NAME) {
-	//	_tok_type = TOK_COLUMN_NAME;
-	//}
-}
+void ListenerInterface::exitTable_name(TSqlParser::Table_nameContext * ctx) { }
 
 void ListenerInterface::enterFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * ctx) { }
 void ListenerInterface::exitFunc_proc_name_schema(TSqlParser::Func_proc_name_schemaContext * ctx) { }
@@ -399,8 +420,14 @@ void ListenerInterface::enterId_(TSqlParser::Id_Context* ctx)
 		free_(token);
 		break;
 	case TOK_DATA_TYPE:
-		if (query_apply_data_type(_query, token)) {
-			_set_failure();
+		if (_query->mode == MODE_DECLARE) {
+			if (libfql_set_variable_type(_fql, token)) {
+				_set_failure();
+			}
+		} else {
+			if (query_apply_data_type(_query, token)) {
+				_set_failure();
+			}
 		}
 		free_(token);
 		break;
@@ -609,6 +636,12 @@ void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx)
 
 void ListenerInterface::enterPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx)
 {
+	if (ctx->LOCAL_ID()) {
+		if (query_add_variable_expression(_query, _fql, ctx->LOCAL_ID()->getText().c_str())) {
+			_set_failure();
+		}
+		return;
+	}
 	if (ctx->NULL_()) {
 		query_add_null_expression(_query);
 	}
@@ -646,8 +679,17 @@ void ListenerInterface::enterData_type(TSqlParser::Data_typeContext * ctx)
 		return;
 	}
 
-	if (query_add_constant(_query, numstr, num_iter - numstr)) {
-		_set_failure();
+	switch (_query->mode) {
+	case MODE_DECLARE:
+		if (libfql_set_variable_limit(_fql, numstr)) {
+			_set_failure();
+		}
+		break;
+	default:  /* TODO: actually be explicit here... */
+		if (query_add_constant(_query, numstr, num_iter - numstr)) {
+			_set_failure();
+		}
+		break;
 	}
 }
 void ListenerInterface::exitData_type(TSqlParser::Data_typeContext * ctx) { }
@@ -993,9 +1035,6 @@ void ListenerInterface::exitRaiseerror_statement(TSqlParser::Raiseerror_statemen
 void ListenerInterface::enterEmpty_statement(TSqlParser::Empty_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitEmpty_statement(TSqlParser::Empty_statementContext * ctx) { }
 
-void ListenerInterface::enterAnother_statement(TSqlParser::Another_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitAnother_statement(TSqlParser::Another_statementContext * ctx) { }
-
 void ListenerInterface::enterEntity_to(TSqlParser::Entity_toContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitEntity_to(TSqlParser::Entity_toContext * ctx) { }
 
@@ -1086,9 +1125,6 @@ void ListenerInterface::exitDrop_function(TSqlParser::Drop_functionContext * ctx
 void ListenerInterface::enterDrop_table(TSqlParser::Drop_tableContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitDrop_table(TSqlParser::Drop_tableContext * ctx) { }
 
-void ListenerInterface::enterDeclare_statement(TSqlParser::Declare_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitDeclare_statement(TSqlParser::Declare_statementContext * ctx) { }
-
 void ListenerInterface::enterCursor_statement(TSqlParser::Cursor_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitCursor_statement(TSqlParser::Cursor_statementContext * ctx) { }
 
@@ -1136,9 +1172,6 @@ void ListenerInterface::exitDbcc_options(TSqlParser::Dbcc_optionsContext * ctx) 
 
 void ListenerInterface::enterExecute_clause(TSqlParser::Execute_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitExecute_clause(TSqlParser::Execute_clauseContext * ctx) { }
-
-void ListenerInterface::enterDeclare_local(TSqlParser::Declare_localContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitDeclare_local(TSqlParser::Declare_localContext * ctx) { }
 
 void ListenerInterface::enterTable_type_definition(TSqlParser::Table_type_definitionContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitTable_type_definition(TSqlParser::Table_type_definitionContext * ctx) { }

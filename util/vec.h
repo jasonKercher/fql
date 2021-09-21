@@ -35,42 +35,45 @@ typedef struct vec vec;
 
 typedef int (*qsort_r_cmp_fn)(const void*, const void*, void*);
 
-struct vec* vec_construct(struct vec*, size_t);
+struct vec* vec_construct(struct vec* restrict, size_t);
 #define vec_construct_(v_, T_) vec_construct(v_, sizeof(T_))
-void vec_destroy(struct vec*);
+void vec_destroy(struct vec* restrict);
 
-bool vec_empty(const struct vec*);
-void* vec_at(const struct vec*, size_t);
-void* vec_begin(const struct vec*);
-void* vec_back(const struct vec*);
-void* vec_end(const struct vec*);
+bool vec_empty(const struct vec* restrict);
+void* vec_at(const struct vec* restrict, size_t);
+void* vec_begin(const struct vec* restrict);
+void* vec_back(const struct vec* restrict);
+void* vec_end(const struct vec* restrict);
 
-void vec_reserve(struct vec*, size_t);
-void vec_resize(struct vec*, size_t);
-void vec_resize_and_zero(struct vec*, size_t);
-void vec_clear(struct vec*);
-void vec_shrink_to_fit(struct vec*);
-void* vec_pop_back(struct vec*);
+void vec_reserve(struct vec* restrict, size_t);
+void vec_resize(struct vec* restrict, size_t);
+void vec_resize_and_zero(struct vec* restrict, size_t);
+void vec_clear(struct vec* restrict);
+void vec_shrink_to_fit(struct vec* restrict);
+void* vec_pop_back(struct vec* restrict);
 
-void* vec_add_one(struct vec*);
-void* vec_add_one_front(struct vec*);
-void vec_set(struct vec*, size_t, const void*);
-void vec_push_back(struct vec*, const void*);
+void* vec_add_one(struct vec* restrict);
+void* vec_add_one_front(struct vec* restrict);
+void vec_set(struct vec* restrict, size_t, const void* restrict);
+void vec_push_back(struct vec* restrict, const void* restrict);
 
-void vec_insert_iter(struct vec*, void* pos, const void* begin, const void* back);
-void vec_insert_one(struct vec*, void* pos, const void* elem);
-void vec_insert_at(struct vec*, size_t idx, const void* data, size_t len);
-void vec_insert(struct vec*, void* pos, const void* begin, size_t len);
+void vec_insert_iter(struct vec* restrict,
+                     void* pos,
+                     const void* begin,
+                     const void* back);
+void vec_insert_one(struct vec* restrict, void* pos, const void* restrict data);
+void vec_insert_at(struct vec* restrict, size_t idx, const void* begin, size_t len);
+void vec_insert(struct vec* restrict, void* pos, const void* begin, size_t len);
 
-void vec_erase_iter(struct vec*, void* begin, void* back);
-void vec_erase_one(struct vec*, void* elem);
-void vec_erase_at(struct vec*, size_t idx, size_t len);
-void vec_erase(struct vec*, void* begin, size_t len);
+void vec_erase_iter(struct vec* restrict, void* begin, const void* back);
+void vec_erase_one(struct vec* restrict, void* elem);
+void vec_erase_at(struct vec* restrict, size_t idx, size_t len);
+void vec_erase(struct vec* restrict, void* begin, size_t len);
 
-void vec_append(struct vec*, const void* src, size_t);
-void vec_extend(struct vec* dest, const struct vec* src);
+void vec_append(struct vec* restrict, const void* restrict src, size_t);
+void vec_extend(struct vec* restrict dest, const struct vec* restrict src);
 
-void vec_sort_r(struct vec*, qsort_r_cmp_fn, void* context);
+void vec_sort_r(struct vec* restrict, qsort_r_cmp_fn, void* context);
 
 #define vec_iter_size_(v_, begin_, back_)                                      \
 	(((const char*)back_ - (const char*)begin_) / v_->_elem_size) + 1
@@ -78,10 +81,10 @@ void vec_sort_r(struct vec*, qsort_r_cmp_fn, void* context);
 #define vec_get_idx_(v_, pos_) vec_iter_size_(v_, vec_begin(v_), pos_) - 1
 
 typedef struct vec bitvec;
-bitvec* bitvec_construct(bitvec*);
-void bitvec_destroy(bitvec*);
-void bitvec_resize(bitvec*, size_t);
-bool bitvec_at(const bitvec*, size_t idx);
+bitvec* bitvec_construct(bitvec* restrict);
+void bitvec_destroy(bitvec* restrict);
+void bitvec_resize(bitvec* restrict, size_t);
+bool bitvec_at(const bitvec* restrict, size_t idx);
 void bitvec_set(bitvec*, size_t idx, bool);
 void bitvec_push_back(bitvec*, bool);
 

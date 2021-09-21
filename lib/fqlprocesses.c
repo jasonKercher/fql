@@ -11,6 +11,7 @@
 #include "fqlselect.h"
 #include "fqldelete.h"
 #include "fqlupdate.h"
+#include "fqldeclare.h"
 #include "expression.h"
 #include "util/fifo.h"
 
@@ -48,6 +49,47 @@ void fqlprocess_recycle(process* proc, node** rg)
 	}
 }
 
+enum proc_return fql_declare(process* proc)
+{
+	fqldeclare* declstmt = proc->proc_data;
+
+	////
+
+	variable* var = vec_at(proc->fql_ref->variables, declstmt->variable_idx);
+
+	if (declstmt->init_expr == NULL) {
+		variable_clear(var);
+		return PROC_RETURN_COMPLETE;
+	}
+
+	switch (var->type) {
+	case SQL_INT:
+		try_(expression_get_int(&var->value.i, declstmt->init_expr, NULL));
+		break;
+	case SQL_BIT:
+		try_(expression_get_int(&var->value.i, declstmt->init_expr, NULL));
+		if (var->value.i) {
+			var->value.i = 1;
+		}
+		break;
+	case SQL_FLOAT:
+		try_(expression_get_float(&var->value.f, declstmt->init_expr, NULL));
+		break;
+	case SQL_TEXT:
+	case SQL_CHAR:
+	case SQL_VARCHAR: {
+		stringview sv;
+		try_(expression_get_stringview(&sv, declstmt->init_expr, NULL));
+		variable_set_stringview(var, &sv);
+		break;
+	}
+	case SQL_UNDEFINED:
+		return PROC_RETURN_FAIL;
+	}
+
+	return PROC_RETURN_COMPLETE;
+}
+
 enum proc_return fql_if(process* proc)
 {
 	fqlbranch* ifstmt = proc->proc_data;
@@ -71,7 +113,6 @@ enum proc_return fql_if(process* proc)
 	*ifstmt->next_query_idx_ref = ifstmt->next_idx;
 
 ifelse_break:
-	process_disable(proc);
 	return PROC_RETURN_COMPLETE;
 }
 
@@ -79,16 +120,15 @@ enum proc_return fql_read(process* proc)
 {
 	fifo* out = proc->fifo_out[0];
 	if (!out->is_open) {
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
 	fifo* in = proc->fifo_in[0];
 	if (fifo_is_empty(in) && (proc->root_fifo == 0 || vec_empty(proc->inbuf))) {
 		if (!in->is_open) {
-			process_disable(proc);
+			return PROC_RETURN_COMPLETE;
 		}
-		return PROC_RETURN_COMPLETE;
+		return PROC_RETURN_WAIT_ON_IN0;
 	}
 
 	if (!fifo_receivable(out)) {
@@ -111,7 +151,6 @@ enum proc_return fql_read(process* proc)
 		case FQL_FAIL:
 			return PROC_RETURN_FAIL;
 		default: /* eof */
-			process_disable(proc);
 			return PROC_RETURN_COMPLETE;
 		}
 
@@ -137,7 +176,6 @@ enum proc_return fql_cartesian_join(process* proc)
 {
 	fifo* out = proc->fifo_out[0];
 	if (!out->is_open) {
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
@@ -146,7 +184,7 @@ enum proc_return fql_cartesian_join(process* proc)
 
 	if (fifo_is_empty(in_left)) {
 		if (!in_left->is_open) {
-			process_disable(proc);
+			return PROC_RETURN_COMPLETE;
 		}
 		return PROC_RETURN_WAIT_ON_IN0;
 	}
@@ -278,7 +316,6 @@ enum proc_return fql_hash_join(process* proc)
 	fifo* out_false = proc->fifo_out[0];
 	fifo* out_true = proc->fifo_out[1];
 	if (!out_true->is_open || (out_false && !out_false->is_open)) {
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
@@ -312,7 +349,7 @@ enum proc_return fql_hash_join(process* proc)
 
 	if (fifo_is_empty(in_left)) {    // && fifo_is_empty(in_right)) {
 		if (!in_left->is_open) { // && !in_right->is_open) {
-			process_disable(proc);
+			return PROC_RETURN_COMPLETE;
 		}
 		return PROC_RETURN_WAIT_ON_IN0;
 	}
@@ -391,14 +428,13 @@ enum proc_return fql_logic(process* proc)
 	fifo* out_false = proc->fifo_out[0];
 	fifo* out_true = proc->fifo_out[1];
 	if ((out_true && !out_true->is_open) || (out_false && !out_false->is_open)) {
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
 	fifo* in = proc->fifo_in[0];
 	if (fifo_is_empty(in)) {
 		if (!in->is_open) {
-			process_disable(proc);
+			return PROC_RETURN_COMPLETE;
 		}
 		return PROC_RETURN_WAIT_ON_IN0;
 	}
@@ -429,7 +465,7 @@ enum proc_return fql_logic(process* proc)
 		}
 
 		if (proc->is_const) {
-			process_disable(proc);
+			ret = PROC_RETURN_COMPLETE;
 			break;
 		}
 
@@ -456,14 +492,13 @@ enum proc_return fql_left_join_logic(process* proc)
 	//fifo* out_false = proc->fifo_out[0];
 	fifo* out_true = proc->fifo_out[1];
 	if (out_true && !out_true->is_open) {
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
 	fifo* in = proc->fifo_in[0];
 	if (fifo_is_empty(in)) {
 		if (!in->is_open) {
-			process_disable(proc);
+			return PROC_RETURN_COMPLETE;
 		}
 		return PROC_RETURN_WAIT_ON_IN0;
 	}
@@ -531,7 +566,6 @@ enum proc_return _group_dump(process* proc, fifo* in_fresh, fifo* out)
 			fifo_add(out, rg_iter);
 			break;
 		default:
-			process_disable(proc);
 			return PROC_RETURN_COMPLETE;
 		}
 
@@ -552,7 +586,6 @@ enum proc_return fql_groupby(process* proc)
 	fifo* out = proc->fifo_out[0];
 
 	if (!out->is_open) {
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
@@ -566,6 +599,8 @@ enum proc_return fql_groupby(process* proc)
 	if (!in_data->is_open && fifo_is_empty(in_data)) {
 		return _group_dump(proc, in_fresh, out);
 	}
+
+	enum proc_return ret = PROC_RETURN_WAIT_ON_IN0;
 
 	node** rg_iter = fifo_begin(in_data);
 	for (; rg_iter != fifo_end(in_data); rg_iter = fifo_iter(in_data)) {
@@ -586,20 +621,19 @@ enum proc_return fql_groupby(process* proc)
 			rec->src_idx = 0;
 			try_(group_dump_record(group, rec));
 			fifo_add(out, rg);
-			process_disable(proc);
+			ret = PROC_RETURN_COMPLETE;
 			break;
 		}
 		//_iter_states(in_data, proc->plan_msg);
 	}
 	fifo_update(in_data);
-	return PROC_RETURN_WAIT_ON_IN0;
+	return ret;
 }
 
 enum proc_return fql_distinct(process* proc)
 {
 	fifo* out = proc->fifo_out[0];
 	if (!out->is_open) {
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
@@ -607,7 +641,7 @@ enum proc_return fql_distinct(process* proc)
 	if (fifo_is_empty(in)) {
 		// hmmm... this may be impossible...
 		if (proc->wait_for_in0 && !in->is_open) {
-			process_disable(proc);
+			return PROC_RETURN_COMPLETE;
 		}
 		return PROC_RETURN_WAIT_ON_IN0;
 	}
@@ -658,7 +692,6 @@ enum proc_return fql_select(process* proc)
 			process* union_end_proc = (*it)->data;
 			union_end_proc->fifo_out[0]->is_open = false;
 		}
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
@@ -700,7 +733,6 @@ enum proc_return fql_select(process* proc)
 			return PROC_RETURN_RUNNING;
 		}
 		try_(writer_close(select->writer));
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
@@ -765,7 +797,6 @@ enum proc_return fql_delete(process* proc)
 
 	if (!proc->wait_for_in0) {
 		try_(writer_close(delete->writer));
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
@@ -934,7 +965,6 @@ enum proc_return fql_delete_filter(process* proc)
 
 	if (!proc->wait_for_in0) {
 		try_(writer_close(delete->writer));
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
@@ -968,7 +998,6 @@ enum proc_return fql_update(process* proc)
 
 	if (!proc->wait_for_in0) {
 		try_(writer_close(update->writer));
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
@@ -1153,7 +1182,6 @@ enum proc_return fql_update_filter(process* proc)
 
 	if (!proc->wait_for_in0) {
 		try_(writer_close(update->writer));
-		process_disable(proc);
 		return PROC_RETURN_COMPLETE;
 	}
 
@@ -1183,7 +1211,6 @@ enum proc_return fql_orderby(process* proc)
 		}
 		int ret = try_(order->select__(order, proc));
 		if (ret == 0 || proc->rows_affected >= order->top_count) {
-			process_disable(proc);
 			return PROC_RETURN_COMPLETE;
 		}
 		return PROC_RETURN_RUNNING;

@@ -3,6 +3,7 @@
 
 #ifdef __cplusplus
 extern "C" {
+#define restrict
 #endif
 
 #include <libgen.h>
@@ -120,15 +121,15 @@ typedef int (*int_generic_data_fn)(void*);
  * this function is a wrapper for the standard strtol
  * function that also handles all errors internally.
  */
-int str2long(long*, const char* s);
-int str2double(double*, const char* s);
+int str2long(long* restrict, const char* restrict s);
+int str2double(double* restrict, const char* restrict s);
 
 /**
  * charcount simply counts the occurences of char c
  * in the string s.
  */
-int charcount(const char* s, char c);
-int charncount(const char* s, char c, unsigned n);
+int charcount(const char* restrict s, char c);
+int charncount(const char* restrict s, char c, unsigned n);
 
 /**
  * strhaschar checks whether a char c exists within string s.
@@ -137,14 +138,14 @@ int charncount(const char* s, char c, unsigned n);
  *      - 1 if yes
  *      - 0 if no
  */
-int strhaschar(const char* s, char c);
+int strhaschar(const char* restrict s, char c);
 
 /**
  * removecharat shifts all characters left 1 at the
  * provided index i in order to essentially remove that
  * character from the string.
  */
-void removecharat(char* s, int i);
+void removecharat(char* restrict s, int i);
 
 /**
  * randstr generates a random string of length n
@@ -153,12 +154,12 @@ void removecharat(char* s, int i);
  * returns:
  *      - char* of random characters
  */
-char* randstr(char* s, const int n);
+char* randstr(char* restrict s, const int n);
 
 /**
  * getnoext assigns a filename with no extension
  */
-void getnoext(char* dest, const char* filename);
+void getnoext(char* dest, const char* restrict filename);
 
 /**
  * getext returns the extension from a provided filename
@@ -170,28 +171,28 @@ char* getext(char* filename);
 /**
  * string_eq returns true if two strings are equal
  */
-int string_eq(const char* s1, const char* s2);
+int string_eq(const char* s1, const char* restrict s2);
 
 /**
  * istring_eq returns true if two strings are equal
  * while ignoring case.  it basically just inverts
  * the return of strcasecmp.
  */
-int istring_eq(const char* s1, const char* s2);
+int istring_eq(const char* restrict s1, const char* restrict s2);
 
 /**
  * lower case a char* in place
  * NOTE:
  * null terminator is assumed. don't be stupid.
  */
-void string_to_lower(char* s);
+void string_to_lower(char* restrict s);
 
 /**
  * copy BSD's strnstr
  */
-char* strnstr(const char* s, const char* find, size_t slen);
+char* strnstr(const char* restrict s, const char* restrict find, size_t slen);
 
-struct node* dir_list_files(const char* dir);
+struct node* dir_list_files(const char* restrict dir);
 
 #ifdef __cplusplus
 }

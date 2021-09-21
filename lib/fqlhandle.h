@@ -9,13 +9,17 @@ extern "C" {
 
 #include "fqlimits.h"
 
+struct scope;
 struct query;
+struct hashmap;
 
 struct fqlhandle {
+	struct scope* _scope; /* current scope */
+	struct scope* global_scope;
+	struct hashmap* schema_map;
 	struct vec* query_vec;
 	struct vec* api_vec;
-	struct vec* cfl_stack;
-	struct hashmap* schema_map;
+	struct vec* variables;
 	struct vec* schema_paths;
 	char* query_str;
 	unsigned query_idx;
@@ -46,8 +50,13 @@ struct fqlhandle {
 		bool allow_stdin;
 	} props;
 };
-/* internal typedef.. library user still require "struct" */
 typedef struct fqlhandle fqlhandle;
+
+int libfql_declare_variable(struct fqlhandle*, const char*);
+int libfql_set_variable_limit(struct fqlhandle*, const char*);
+int libfql_set_variable_type(struct fqlhandle*, const char*);
+/* actually enum but extern "C" */
+int libfql_get_sql_type(const char* type_str);
 
 #ifdef __cplusplus
 } /* extern "C" */

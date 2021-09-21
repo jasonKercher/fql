@@ -2,14 +2,16 @@
 #define FQLBRANCH_H
 
 #include "query.h"
+#include "scope.h"
 #include "fqlplan.h"
 #include "util/vec.h"
 
 struct fqlbranch {
 	enum op oper_type;
 	struct vec conditions;
-	unsigned* next_query_idx_ref;
-	unsigned next_idx;
+	struct scope scope;
+	int* next_query_idx_ref;
+	int next_idx;
 };
 typedef struct fqlbranch fqlbranch;
 
