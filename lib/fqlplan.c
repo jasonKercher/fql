@@ -492,13 +492,6 @@ int _operation(plan* self, query* query, fqlhandle* fql, dnode* entry, bool is_u
 		                                  op_add_exprs);
 	}
 
-	//enum fql_operation* operation = query->op;
-	//if (*operation == FQL_SET) {
-	//	fqlset* decl = query->op;
-	//	_check_for_special_expression(self, self->op_true->data, decl->init_expr);
-	//}
-
-
 	if (entry == NULL) {
 		return FQL_GOOD;
 	}
@@ -883,7 +876,6 @@ unsigned _get_union_pipe_count(vec* nodes)
 
 void _activate_procs(plan* self)
 {
-	/* First, build root record pipe */
 	unsigned graph_size = self->processes->nodes->size;
 	unsigned union_pipes = _get_union_pipe_count(self->processes->nodes);
 	unsigned proc_count = graph_size + union_pipes;
