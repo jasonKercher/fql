@@ -12,17 +12,21 @@ fqlset* fqlset_construct(fqlset* self)
 	        .variable_idx = 0,
 	};
 
+	vec_construct_(&self->_expr_vec, expression*);
+
 	return self;
 }
 
 void fqlset_destroy(fqlset* self)
 {
 	delete_if_exists_(expression, self->init_expr);
+	vec_destroy(&self->_expr_vec);
 }
 
 void fqlset_set_init_expression(fqlset* self, expression* expr)
 {
 	self->init_expr = expr;
+	vec_push_back(&self->_expr_vec, &expr);
 }
 
 void fqlset_preop(fqlset* self, query* query) { }

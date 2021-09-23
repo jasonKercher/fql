@@ -234,13 +234,8 @@ void query_set_variable_idx(query* self, int idx)
 	declare->variable_idx = idx;
 }
 
-int query_add_variable_expression(query* self, fqlhandle* fql, const char* varname)
+int _add_variable_expression_by_index(query* self, fqlhandle* fql, int idx)
 {
-	int idx = scope_get_var_index(fql->_scope, varname);
-	if (idx == FQL_FAIL) {
-		return FQL_FAIL;
-	}
-
 	variable* var = vec_at(fql->variables, idx);
 
 	expression* expr = new_(expression, EXPR_VARIABLE, NULL, "");
@@ -268,6 +263,16 @@ int query_add_variable_expression(query* self, fqlhandle* fql, const char* varna
 	try_(_distribute_expression(self, expr));
 
 	return FQL_GOOD;
+}
+
+int query_add_variable_expression(query* self, fqlhandle* fql, const char* varname)
+{
+	int idx = scope_get_var_index(fql->_scope, varname);
+	if (idx == FQL_FAIL) {
+		return FQL_FAIL;
+	}
+
+	return _add_variable_expression_by_index(self, fql, idx);
 }
 
 /** expressions **/
@@ -417,6 +422,32 @@ int query_enter_operator(query* self, enum scalar_function op)
 	enum field_type type = FIELD_UNDEFINED;
 	function* func = new_(function, op, &type, true);
 	try_(_add_function(self, func, FIELD_UNDEFINED));
+	return FQL_GOOD;
+}
+
+int query_enter_assignment_operator(query* self, fqlhandle* fql, enum scalar_function op)
+{
+	try_(query_enter_operator(self, op));
+	enum fql_operation* operation = self->op;
+
+	switch (*operation) {
+	case FQL_SET: {
+		fqlset* setstmt = self->op;
+		return _add_variable_expression_by_index(self,
+		                                         fql,
+		                                         setstmt->variable_idx);
+	}
+	case FQL_UPDATE: {
+		fqlupdate* update = self->op;
+		expression** set_expr = vec_back(&update->set_columns);
+		expression* set_expr_cpy = expression_copy(*set_expr);
+		return _distribute_expression(self, set_expr_cpy);
+	}
+	default:
+		fprintf(stderr, "unexpected operation(%d) for assignment\n", *operation);
+		return FQL_FAIL;
+	}
+
 	return FQL_GOOD;
 }
 

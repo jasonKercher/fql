@@ -41,6 +41,13 @@ void op_destroy(enum fql_operation* self)
 
 vec* op_get_expressions(enum fql_operation* self)
 {
+	/* fqlset has no schema, but it does
+	 * have a useless vector of expressions
+	 */
+	if (*self == FQL_SET) {
+		fqlset* setstmt = (fqlset*)self;
+		return &setstmt->_expr_vec;
+	}
 	schema* op_schema = op_get_schema(self);
 	if (op_schema == NULL) {
 		return NULL;

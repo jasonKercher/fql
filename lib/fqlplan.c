@@ -505,11 +505,11 @@ int _operation(plan* self, query* query, fqlhandle* fql, dnode* entry, bool is_u
 		                                  op_add_exprs);
 	}
 
-	enum fql_operation* operation = query->op;
-	if (*operation == FQL_SET) {
-		fqlset* decl = query->op;
-		_check_for_special_expression(self, self->op_true->data, decl->init_expr);
-	}
+	//enum fql_operation* operation = query->op;
+	//if (*operation == FQL_SET) {
+	//	fqlset* decl = query->op;
+	//	_check_for_special_expression(self, self->op_true->data, decl->init_expr);
+	//}
 
 
 	if (entry == NULL) {

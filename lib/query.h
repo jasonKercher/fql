@@ -212,6 +212,9 @@ int query_apply_data_type(struct query*, const char*);
 int query_enter_function(struct query*, enum scalar_function, int char_as_byte);
 void query_exit_function(struct query*);
 int query_enter_operator(struct query*, enum scalar_function op);
+int query_enter_assignment_operator(struct query*,
+                                    struct fqlhandle*,
+                                    enum scalar_function op);
 
 /* sources */
 int query_add_source(struct query*, struct fqlhandle*, struct node**, const char*);

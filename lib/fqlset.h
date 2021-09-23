@@ -4,9 +4,13 @@
 #include "query.h"
 #include "variable.h"
 
+/* _expr_vec is a vector of a single expression.
+ * Its existence is just for convenience.
+ */
 struct fqlset {
 	enum fql_operation oper_type;
 	struct expression* init_expr;
+	struct vec _expr_vec;
 	int variable_idx;
 };
 typedef struct fqlset fqlset;

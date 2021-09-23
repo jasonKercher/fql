@@ -126,6 +126,28 @@ void ListenerInterface::enterSet_statement(TSqlParser::Set_statementContext * ct
 }
 void ListenerInterface::exitSet_statement(TSqlParser::Set_statementContext * ctx) { }
 
+void ListenerInterface::enterAssignment_operator(TSqlParser::Assignment_operatorContext * ctx)
+{
+	enum scalar_function op = SCALAR_UNDEFINED;
+	if      (ctx->PLUS_ASSIGN())    op = SCALAR_OP_PLUS;
+	else if (ctx->MINUS_ASSIGN())   op = SCALAR_OP_MINUS;
+	else if (ctx->MULT_ASSIGN())    op = SCALAR_OP_MULTIPY;
+	else if (ctx->DIV_ASSIGN())  op = SCALAR_OP_DIVIDE;
+	else if (ctx->MOD_ASSIGN())  op = SCALAR_OP_MODULE;
+	else if (ctx->OR_ASSIGN())  op = SCALAR_OP_BIT_OR;
+	else if (ctx->AND_ASSIGN()) op = SCALAR_OP_BIT_AND;
+	else if (ctx->XOR_ASSIGN()) op = SCALAR_OP_BIT_XOR;
+	if (op == SCALAR_UNDEFINED) {
+		//_return_code = FQL_FAIL;
+		return;
+	}
+
+	if (query_enter_assignment_operator(_query, _fql, op)) {
+		_set_failure();
+	}
+}
+void ListenerInterface::exitAssignment_operator(TSqlParser::Assignment_operatorContext * ctx) { }
+
 void ListenerInterface::enterDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
 void ListenerInterface::exitDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
 
@@ -1429,9 +1451,6 @@ void ListenerInterface::exitNull_or_default(TSqlParser::Null_or_defaultContext *
 
 void ListenerInterface::enterDefault_value(TSqlParser::Default_valueContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitDefault_value(TSqlParser::Default_valueContext * ctx) { }
-
-void ListenerInterface::enterAssignment_operator(TSqlParser::Assignment_operatorContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitAssignment_operator(TSqlParser::Assignment_operatorContext * ctx) { }
 
 void ListenerInterface::enterId_or_string(TSqlParser::Id_or_stringContext* ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitId_or_string(TSqlParser::Id_or_stringContext* ctx) { }
