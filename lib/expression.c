@@ -331,6 +331,11 @@ int expression_cast(expression* self, enum field_type new_type)
 
 int expression_set_variable(expression* self, variable* var)
 {
+	if (var->is_null) {
+		self->expr = EXPR_NULL;
+		return FQL_GOOD;
+	}
+
 	self->expr = EXPR_CONST;
 	switch (var->type) {
 	case SQL_INT:
@@ -371,6 +376,7 @@ void expression_update_indicies(vec* expr_vec)
 int expression_get_int(long* ret, expression* self, node* rg)
 {
 	switch (self->expr) {
+	case EXPR_SUBQUERY:
 	case EXPR_NULL:
 		*ret = 0;
 		return FQL_NULL;
@@ -439,6 +445,7 @@ int expression_get_int(long* ret, expression* self, node* rg)
 int expression_get_float(double* ret, expression* self, node* rg)
 {
 	switch (self->expr) {
+	case EXPR_SUBQUERY:
 	case EXPR_NULL:
 		*ret = -0;
 		return FQL_NULL;
@@ -507,6 +514,7 @@ int expression_get_float(double* ret, expression* self, node* rg)
 int expression_get_stringview(stringview* ret, expression* self, node* rg)
 {
 	switch (self->expr) {
+	case EXPR_SUBQUERY:
 	case EXPR_NULL:
 		ret->len = 0;
 		return FQL_NULL;

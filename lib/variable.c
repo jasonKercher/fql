@@ -8,6 +8,7 @@ variable* variable_construct(variable* self)
 	*self = (variable) {
 	        .type = SQL_UNDEFINED,
 	        .limit = INT_MAX,
+	        .is_null = true,
 	};
 	return self;
 }
@@ -29,6 +30,8 @@ void _append_space(variable* self)
 
 void variable_clear(variable* self)
 {
+	self->is_null = true;
+
 	switch (self->type) {
 	case SQL_INT:
 	case SQL_BIT:

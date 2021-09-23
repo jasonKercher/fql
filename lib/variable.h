@@ -10,6 +10,7 @@ struct variable {
 	string* _data;
 	string* _import_value;
 	unsigned limit;
+	bool is_null;
 	bool can_be_redeclared;
 };
 typedef struct variable variable;

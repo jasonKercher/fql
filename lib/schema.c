@@ -225,14 +225,10 @@ int _resolve_file(struct fqlhandle* fql, query* query, table* table)
 	                            &table->name,
 	                            fql->props.strictness)) {
 	case FUZZY_AMBIGUOUS:
-		fprintf(stderr,
-		        "Table name ambiguous: %s\n",
-		        string_c_str(&table->reader->file_name));
+		fprintf(stderr, "Table name ambiguous: %s\n", string_c_str(&table->name));
 		return FQL_FAIL;
 	case FUZZY_NOTFOUND:
-		fprintf(stderr,
-		        "Table not resolved: %s\n",
-		        string_c_str(&table->reader->file_name));
+		fprintf(stderr, "Table not resolved: %s\n", string_c_str(&table->name));
 		return FQL_FAIL;
 	default:;
 	}

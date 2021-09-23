@@ -23,6 +23,7 @@
 
 
 int _add_function(query* self, function* func, enum field_type type);
+int _add_variable_expression_by_index(query* self, fqlhandle* fql, int idx);
 int _add_logic_expression(query* self, expression* expr);
 int _add_switchcase_expression(query* self, expression* expr);
 int _distribute_expression(query* self, expression* expr);
@@ -210,37 +211,6 @@ void query_set_variable_idx(query* self, int idx)
 {
 	fqlset* declare = self->op;
 	declare->variable_idx = idx;
-}
-
-int _add_variable_expression_by_index(query* self, fqlhandle* fql, int idx)
-{
-	variable* var = vec_at(fql->variables, idx);
-
-	expression* expr = new_(expression, EXPR_VARIABLE, NULL, "");
-	switch (var->type) {
-	case SQL_INT:
-	case SQL_BIT:
-		expr->field_type = FIELD_INT;
-		break;
-	case SQL_FLOAT:
-		expr->field_type = FIELD_FLOAT;
-		break;
-	case SQL_TEXT:
-	case SQL_VARCHAR:
-	case SQL_CHAR:
-		var->_data = new_(string);
-		expr->field_type = FIELD_STRING;
-		break;
-	case SQL_UNDEFINED:
-		return FQL_FAIL;
-	}
-
-	vec_push_back(self->variable_indicies, &idx);
-	vec_push_back(self->variable_expressions, &expr);
-
-	try_(_distribute_expression(self, expr));
-
-	return FQL_GOOD;
 }
 
 int query_add_variable_expression(query* self, fqlhandle* fql, const char* varname)
@@ -881,6 +851,37 @@ int _add_function(query* self, function* func, enum field_type type)
 
 	try_(_distribute_expression(self, expr));
 	node_push(&self->function_stack, expr);
+	return FQL_GOOD;
+}
+
+int _add_variable_expression_by_index(query* self, fqlhandle* fql, int idx)
+{
+	variable* var = vec_at(fql->variables, idx);
+
+	expression* expr = new_(expression, EXPR_VARIABLE, NULL, "");
+	switch (var->type) {
+	case SQL_INT:
+	case SQL_BIT:
+		expr->field_type = FIELD_INT;
+		break;
+	case SQL_FLOAT:
+		expr->field_type = FIELD_FLOAT;
+		break;
+	case SQL_TEXT:
+	case SQL_VARCHAR:
+	case SQL_CHAR:
+		var->_data = new_(string);
+		expr->field_type = FIELD_STRING;
+		break;
+	case SQL_UNDEFINED:
+		return FQL_FAIL;
+	}
+
+	vec_push_back(self->variable_indicies, &idx);
+	vec_push_back(self->variable_expressions, &expr);
+
+	try_(_distribute_expression(self, expr));
+
 	return FQL_GOOD;
 }
 

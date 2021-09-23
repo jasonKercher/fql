@@ -62,29 +62,39 @@ enum proc_return fql_set(process* proc)
 		return PROC_RETURN_COMPLETE;
 	}
 
+	int expr_ret = 0;
+
 	switch (var->type) {
 	case SQL_INT:
-		try_(expression_get_int(&var->value.i, declstmt->init_expr, NULL));
+		expr_ret = try_(
+		        expression_get_int(&var->value.i, declstmt->init_expr, NULL));
 		break;
 	case SQL_BIT:
-		try_(expression_get_int(&var->value.i, declstmt->init_expr, NULL));
+		expr_ret = try_(
+		        expression_get_int(&var->value.i, declstmt->init_expr, NULL));
 		if (var->value.i) {
 			var->value.i = 1;
 		}
 		break;
 	case SQL_FLOAT:
-		try_(expression_get_float(&var->value.f, declstmt->init_expr, NULL));
+		expr_ret = try_(
+		        expression_get_float(&var->value.f, declstmt->init_expr, NULL));
 		break;
 	case SQL_TEXT:
 	case SQL_CHAR:
 	case SQL_VARCHAR: {
 		stringview sv;
-		try_(expression_get_stringview(&sv, declstmt->init_expr, NULL));
+		expr_ret =
+		        try_(expression_get_stringview(&sv, declstmt->init_expr, NULL));
 		variable_set_stringview(var, &sv);
 		break;
 	}
 	case SQL_UNDEFINED:
 		return PROC_RETURN_FAIL;
+	}
+
+	if (expr_ret == FQL_NULL) {
+		var->is_null = true;
 	}
 
 	return PROC_RETURN_COMPLETE;
