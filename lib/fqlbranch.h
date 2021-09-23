@@ -1,21 +1,27 @@
 #ifndef FQLBRANCH_H
 #define FQLBRANCH_H
 
+#include "fql.h"
 #include "query.h"
 #include "scope.h"
 #include "fqlplan.h"
 #include "util/vec.h"
 
 struct fqlbranch {
-	enum op oper_type;
-	struct vec conditions;
-	struct scope scope;
+	enum fql_operation oper_type;
+	struct logicgroup* condition;
 	int* next_query_idx_ref;
-	int next_idx;
+	struct query* last_true_block_query;
+	struct scope* scope;
+	struct scope* else_scope;
+	int true_idx;
+	int false_idx;
+	bool expect_else;
 };
 typedef struct fqlbranch fqlbranch;
 
-struct fqlbranch* fqlbranch_construct(struct fqlbranch*, struct query*);
+struct fqlbranch*
+fqlbranch_construct(struct fqlbranch*, struct fqlhandle*, struct query*);
 void fqlbranch_destroy(struct fqlbranch*);
 
 void fqlbranch_add_logicgroup(struct fqlbranch*, struct logicgroup*);

@@ -13,17 +13,17 @@ int _delete_writer(fqldelete*, node*);
 fqldelete* fqldelete_construct(fqldelete* self)
 {
 	*self = (fqldelete) {
-	        OP_DELETE,       /* oper_type */
-	        new_(schema),    /* schema */
-	        NULL,            /* writer */
-	        &_delete_writer, /* undelete__ */
-	        0,               /* delete_idx */
-	        NULL,            /* delete_node */
-	        0,               /* rows_affected */
-	        -1,              /* top_count */
-	        -1,              /* table_idx */
-	        FILTER_OPEN,     /* state */
-	        false,           /* has_matched_alias */
+	        .oper_type = FQL_DELETE,
+	        .schema = new_(schema),
+	        .writer = NULL,
+	        .undelete__ = &_delete_writer,
+	        .delete_idx = 0,
+	        .delete_node = NULL,
+	        .rows_affected = 0,
+	        .top_count = -1,
+	        .table_idx = -1,
+	        .state = FILTER_OPEN,
+	        .has_matched_alias = false,
 	};
 
 	expression* lol_expr = new_(expression, EXPR_ASTERISK, NULL, "");
@@ -46,7 +46,7 @@ void fqldelete_destroy(fqldelete* self)
  * renaming that file over top of the original.
  * This protects data from a runtime error. So,
  * the Primary process for delete is the op_false
- * node. If I match a record, the record is *not* 
+ * node. If I match a record, the record is *not*
  * written to the output.  The only resulting ID
  * should come from NOT matching. example:
  *

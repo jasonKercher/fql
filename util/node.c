@@ -38,9 +38,9 @@ node* node_push(node** head, void* restrict data)
 {
 	node* newnode = malloc_(sizeof(*newnode));
 	*newnode = (node) {
-	        data, /* data */
-	        NULL, /* prev */
-	        *head /* next */
+	        .data = data,
+	        .prev = NULL,
+	        .next = *head,
 	};
 
 	node_push_import(head, newnode);
@@ -104,9 +104,9 @@ node* node_enqueue(node** head, void* restrict data)
 {
 	node* newnode = malloc_(sizeof(*newnode));
 	*newnode = (node) {
-	        data, /* data */
-	        NULL, /* prev */
-	        NULL  /* next */
+	        .data = data,
+	        .prev = NULL,
+	        .next = NULL,
 	};
 
 	node_enqueue_import(head, newnode);
@@ -188,8 +188,8 @@ void* node_remove(node** head, node* restrict node)
 	if (!node)
 		return NULL;
 
-	node_export(head, node);
 	void* data = node->data;
+	node_export(head, node);
 	free_(node);
 	return data;
 }

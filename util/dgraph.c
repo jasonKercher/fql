@@ -5,10 +5,10 @@
 dnode* dnode_construct(dnode* restrict node, void* restrict data)
 {
 	*node = (dnode) {
-	        data,         /* data */
-	        {NULL, NULL}, /* out */
-	        0,            /* visit_count */
-	        false         /* is_root */
+	        .data = data,
+	        .out = {NULL, NULL},
+	        .visit_count = 0,
+	        .is_root = false,
 	};
 
 	return node;
@@ -22,12 +22,12 @@ void dnode_destroy(dnode* restrict _unused)
 dgraph* dgraph_construct(dgraph* restrict self)
 {
 	*self = (dgraph) {
-	        new_t_(vec, dnode*),     /* nodes */
-	        NULL,                    /* newest */
-	        new_t_(fifo, dnode*, 5), /* _trav */
-	        new_t_(vec, dnode*),     /* _roots */
-	        0,                       /* _root_idx */
-	        false                    /* _roots_good */
+	        .nodes = new_t_(vec, dnode*),
+	        .newest = NULL,
+	        ._trav = new_t_(fifo, dnode*, 5),
+	        ._roots = new_t_(vec, dnode*),
+	        ._root_idx = 0,
+	        ._roots_good = false,
 	};
 
 	return self;

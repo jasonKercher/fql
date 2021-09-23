@@ -6,8 +6,9 @@
 scope* scope_construct(scope* self)
 {
 	*self = (scope) {
-	        NULL, /* parent_scope */
-	        {0},  /* variable_map */
+	        .parent_scope = NULL,
+	        .variable_map = {0},
+	        .is_in_block = false,
 	};
 	hashmap_construct_(&self->variable_map, int, 16, HASHMAP_PROP_NOCASE);
 	return self;
@@ -23,7 +24,7 @@ int scope_get_var_index(scope* self, const char* varname)
 	int* idx = NULL;
 	scope* it = self;
 	for (; it && idx == NULL; it = it->parent_scope) {
-		idx = hashmap_get(&self->variable_map, varname);
+		idx = hashmap_get(&it->variable_map, varname);
 	}
 
 	if (idx == NULL) {

@@ -28,7 +28,7 @@ libfql_la_SOURCES = \
 				aggregate.h aggregate.c     \
 					aggregatefn.c       \
 			operation.h operation.c             \
-				fqldeclare.h fqldeclare.c   \
+				fqlset.h fqlset.c           \
 				fqlbranch.h fqlbranch.c     \
 				fqlselect.h fqlselect.c     \
 				fqldelete.h fqldelete.c     \

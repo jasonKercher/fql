@@ -43,12 +43,12 @@ function* function_construct(function* self,
                              int char_as_byte)
 {
 	*self = (function) {
-	        &_not_implemented,        /* call__ */
-	        new_t_(vec, expression*), /* args */
-	        scalar_type,              /* type */
-	        0,                        /* arg_min */
-	        0,                        /* arg_max */
-	        char_as_byte              /* char_as_byte */
+	        .call__ = &_not_implemented,
+	        .args = new_t_(vec, expression*),
+	        .type = scalar_type,
+	        .arg_min = 0,
+	        .arg_max = 0,
+	        .char_as_byte = char_as_byte,
 	};
 
 	/* if this is an operator, we don't have enough info */

@@ -11,7 +11,7 @@
 #include "fqlselect.h"
 #include "fqldelete.h"
 #include "fqlupdate.h"
-#include "fqldeclare.h"
+#include "fqlset.h"
 #include "expression.h"
 #include "util/fifo.h"
 
@@ -49,16 +49,16 @@ void fqlprocess_recycle(process* proc, node** rg)
 	}
 }
 
-enum proc_return fql_declare(process* proc)
+enum proc_return fql_set(process* proc)
 {
-	fqldeclare* declstmt = proc->proc_data;
+	fqlset* declstmt = proc->proc_data;
 
 	////
 
 	variable* var = vec_at(proc->fql_ref->variables, declstmt->variable_idx);
 
 	if (declstmt->init_expr == NULL) {
-		variable_clear(var);
+		variable_reset(var);
 		return PROC_RETURN_COMPLETE;
 	}
 
@@ -96,23 +96,10 @@ enum proc_return fql_if(process* proc)
 
 	////
 
-	logicgroup** it = vec_begin(&ifstmt->conditions);
-	for (; it != vec_end(&ifstmt->conditions); ++it) {
-		switch (logicgroup_eval(*it, NULL, NULL)) {
-		case 1:
-			*ifstmt->next_query_idx_ref = (*it)->jump_location;
-			goto ifelse_break;
-		case 0:
-			break;
-		case FQL_FAIL:
-		default:
-			return PROC_RETURN_FAIL;
-		}
-	}
+	logicgroup* condition = ifstmt->condition;
+	int result = try_(logicgroup_eval(condition, NULL, NULL));
+	*ifstmt->next_query_idx_ref = (result) ? ifstmt->true_idx : ifstmt->false_idx;
 
-	*ifstmt->next_query_idx_ref = ifstmt->next_idx;
-
-ifelse_break:
 	return PROC_RETURN_COMPLETE;
 }
 

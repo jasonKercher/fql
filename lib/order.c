@@ -173,9 +173,9 @@ int order_add_record(order* self, node* rg)
 {
 	record* top = rg->data;
 	struct _entry entry = {
-	        flex_size(&self->order_data), /* idx */
-	        top->offset,                  /* offset */
-	        top->select_len,              /* len */
+	        .idx = flex_size(&self->order_data),
+	        .offset = top->offset,
+	        .len = top->select_len,
 	};
 
 	expression** exprs = vec_begin(&self->expressions);

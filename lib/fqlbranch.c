@@ -8,34 +8,34 @@
 #include <stdio.h>
 #include <string.h>
 
-fqlbranch* fqlbranch_construct(fqlbranch* self, query* query)
+fqlbranch* fqlbranch_construct(fqlbranch* self, fqlhandle* fql, query* query)
 {
 	*self = (fqlbranch) {
-	        OP_IF,               /* oper_type */
-	        {0},                 /* conditions */
-	        {0},                 /* scope */
-	        &query->next_idx,    /* next_query_idx_ref */
-	        query->next_idx + 1, /* next_idx */
+	        .oper_type = FQL_IF,
+	        .condition = NULL,
+	        .next_query_idx_ref = &query->next_idx,
+	        .last_true_block_query = NULL,
+	        .scope = new_(scope),
+	        .else_scope = NULL,
+	        .true_idx = query->idx + 1,
+	        .false_idx = -1,
+	        .expect_else = false,
 	};
 
-	vec_construct_(&self->conditions, logicgroup*);
-	scope_construct(&self->scope);
+	self->scope->parent_scope = fql->_scope;
+	fql->_scope = self->scope;
 
 	return self;
 }
 
 void fqlbranch_destroy(fqlbranch* self)
 {
-	logicgroup** it = vec_begin(&self->conditions);
-	for (; it != vec_end(&self->conditions); ++it) {
-		delete_(logicgroup, *it);
-	}
-	vec_destroy(&self->conditions);
+	delete_if_exists_(logicgroup, self->condition);
 }
 
 void fqlbranch_add_logicgroup(fqlbranch* self, logicgroup* lg)
 {
-	vec_push_back(&self->conditions, &lg);
+	self->condition = lg;
 }
 
 void fqlbranch_preop(fqlbranch* self, query* query) { }
@@ -48,10 +48,7 @@ int fqlbranch_apply_process(query* query, plan* plan)
 	fqlbranch* self = query->op;
 	process* logic_proc = plan->op_true->data;
 
-	logicgroup** it = vec_begin(&self->conditions);
-	for (; it != vec_end(&self->conditions); ++it) {
-		try_(plan_logic_to_process(plan, logic_proc, *it));
-	}
+	try_(plan_logic_to_process(plan, logic_proc, self->condition));
 	logic_proc->action__ = fql_if;
 	logic_proc->proc_data = self;
 

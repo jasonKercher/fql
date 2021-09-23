@@ -15,19 +15,19 @@ table* table_construct(table* self,
                        enum join_type join_type)
 {
 	*self = (table) {
-	        {0},          /* name */
-	        {0},          /* alias */
-	        NULL,         /* subquery */
-	        new_(reader), /* reader */
-	        new_(schema), /* schema */
-	        NULL,         /* condition */
-	        NULL,         /* read_proc */
-	        NULL,         /* join_data */
-	        idx,          /* idx */
-	        SOURCE_TABLE, /* source_type */
-	        join_type,    /* join_type */
-	        false,        /* must_reopen */
-	        false,        /* is_stdin */
+	        .name = {0},
+	        .alias = {0},
+	        .subquery = NULL,
+	        .reader = new_(reader),
+	        .schema = new_(schema),
+	        .condition = NULL,
+	        .read_proc = NULL,
+	        .join_data = NULL,
+	        .idx = idx,
+	        .source_type = SOURCE_TABLE,
+	        .join_type = join_type,
+	        .must_reopen = false,
+	        .is_stdin = false,
 	};
 
 	string_construct_take(&self->name, name);
@@ -48,19 +48,19 @@ table* table_construct_subquery(table* self,
                                 enum join_type join_type)
 {
 	*self = (table) {
-	        {0},             /* name */
-	        {0},             /* alias */
-	        subquery,        /* subquery */
-	        new_(reader),    /* reader */
-	        NULL,            /* schema */
-	        NULL,            /* condition */
-	        NULL,            /* read_proc */
-	        NULL,            /* join_data */
-	        idx,             /* idx */
-	        SOURCE_SUBQUERY, /* source_type */
-	        join_type,       /* join_type */
-	        false,           /* must_reopen */
-	        false,           /* is_stdin */
+	        .name = {0},
+	        .alias = {0},
+	        .subquery = subquery,
+	        .reader = new_(reader),
+	        .schema = NULL,
+	        .condition = NULL,
+	        .read_proc = NULL,
+	        .join_data = NULL,
+	        .idx = idx,
+	        .source_type = SOURCE_SUBQUERY,
+	        .join_type = join_type,
+	        .must_reopen = false,
+	        .is_stdin = false,
 	};
 
 	string_construct(&self->name);
@@ -124,13 +124,13 @@ int table_resolve_schema(table* self, struct fqlhandle* fql)
 hashjoin* hashjoin_construct(hashjoin* join)
 {
 	*join = (struct hashjoin) {
-	        NULL,            /* hash_data */
-	        NULL,            /* left_expr */
-	        NULL,            /* right_expr */
-	        NULL,            /* recs */
-	        SIDE_RIGHT,      /* state */
-	        FIELD_UNDEFINED, /* comp_type */
-	        0                /* rec_idx */
+	        .hash_data = NULL,
+	        .left_expr = NULL,
+	        .right_expr = NULL,
+	        .recs = NULL,
+	        .state = SIDE_RIGHT,
+	        .comp_type = FIELD_UNDEFINED,
+	        .rec_idx = 0,
 	};
 
 	return join;

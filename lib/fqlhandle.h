@@ -23,6 +23,12 @@ struct fqlhandle {
 	struct vec* schema_paths;
 	char* query_str;
 	unsigned query_idx;
+	enum {
+		BRANCH_NO_BRANCH,
+		BRANCH_EXPECT_EXPR,
+		BRANCH_EXPECT_ELSE,
+		BRANCH_EXPECT_EXIT,
+	} branch_state;
 	bool _out_delim_set;
 	struct {
 		struct vec* schema_path; /* actually string but extern "C" so.. */

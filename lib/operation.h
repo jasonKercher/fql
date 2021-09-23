@@ -15,27 +15,27 @@ enum filter_state {
 	FILTER_FILTERING,
 };
 
-enum op;
+enum fql_operation;
 
 int op_preop(struct fqlhandle*);
-struct vec* op_get_expressions(enum op*);
-struct vec* op_get_additional_exprs(enum op*);
-struct schema* op_get_schema(enum op*);
-const char* op_get_table_name(enum op*);
-void op_match_table_alias(enum op*, struct table*);
-void op_set_table(enum op*, struct table*);
-void op_set_table_name(enum op*, const char*);
-void op_set_top_count(enum op*, size_t);
-void op_set_writer(enum op*, struct writer*);
-void op_set_schema(enum op*, const struct schema*);
-void op_set_rec_terminator(enum op*, const char* term);
-void op_set_delim(enum op*, const char* delim);
-void op_assign_rownum_ref(enum op*, struct expression*);
+struct vec* op_get_expressions(enum fql_operation*);
+struct vec* op_get_additional_exprs(enum fql_operation*);
+struct schema* op_get_schema(enum fql_operation*);
+const char* op_get_table_name(enum fql_operation*);
+void op_match_table_alias(enum fql_operation*, struct table*);
+void op_set_table(enum fql_operation*, struct table*);
+void op_set_table_name(enum fql_operation*, const char*);
+void op_set_top_count(enum fql_operation*, size_t);
+void op_set_writer(enum fql_operation*, struct writer*);
+void op_set_schema(enum fql_operation*, const struct schema*);
+void op_set_rec_terminator(enum fql_operation*, const char* term);
+void op_set_delim(enum fql_operation*, const char* delim);
+void op_assign_rownum_ref(enum fql_operation*, struct expression*);
 int op_apply_process(struct query*, struct fqlplan*, bool is_subquery);
-int op_resolve_final_types(enum op*);
+int op_resolve_final_types(enum fql_operation*);
 int op_writer_init(struct query*, struct fqlhandle*);
 void op_expand_asterisks(struct query*, bool force_expansion);
 
-void op_destroy(enum op*);
+void op_destroy(enum fql_operation*);
 
 #endif /* OPERATION_H */

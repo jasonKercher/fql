@@ -13,7 +13,7 @@ struct inlist;
 typedef int (*select_fn)(struct fqlselect*, struct node*);
 
 struct fqlselect {
-	enum op oper_type;
+	enum fql_operation oper_type;
 	struct vec* api;
 	struct schema* schema;
 	struct writer* writer;

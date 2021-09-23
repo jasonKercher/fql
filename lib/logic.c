@@ -36,12 +36,12 @@ static const char* _compare_strs[] = {
 logic* logic_construct(logic* self)
 {
 	*self = (logic) {
-	        {NULL, NULL},    /* expr */
-	        NULL,            /* like_data */
-	        NULL,            /* in_data */
-	        NULL,            /* logic__ */
-	        FIELD_UNDEFINED, /* data_type */
-	        COMP_NOT_SET,    /* comp_type */
+	        .expr = {NULL, NULL},
+	        .like_data = NULL,
+	        .in_data = NULL,
+	        .logic__ = NULL,
+	        .data_type = FIELD_UNDEFINED,
+	        .comp_type = COMP_NOT_SET,
 	};
 
 	return self;
@@ -152,14 +152,13 @@ void logic_set_comparison(logic* self, const char* op)
 logicgroup* logicgroup_construct(logicgroup* self, enum logicgroup_type type)
 {
 	*self = (logicgroup) {
-	        type,         /* type */
-	        {NULL, NULL}, /* items */
-	        NULL,         /* expressions */
-	        NULL,         /* joinable */
-	        NULL,         /* join_logic */
-	        NULL,         /* condition */
-	        0,            /* jump_location */
-	        false,        /* negation */
+	        .type = type,
+	        .items = {NULL, NULL},
+	        .expressions = NULL,
+	        .joinable = NULL,
+	        .join_logic = NULL,
+	        .condition = NULL,
+	        .negation = false,
 	};
 
 	return self;

@@ -7,6 +7,7 @@
 #include "fqlimits.h"
 #include "util/stringy.h"
 
+struct variable;
 struct stringview;
 
 /** expression **/
@@ -17,6 +18,7 @@ enum expr_type {
 	EXPR_ROW_NUMBER,  /* keyword __ROWNUM */
 	EXPR_FULL_RECORD, /* keyword __REC */
 	EXPR_REFERENCE,
+	EXPR_VARIABLE,
 	EXPR_GROUPING,
 	EXPR_CONST,
 	EXPR_NULL,
@@ -64,6 +66,7 @@ int expression_try_assign_source(struct expression*, struct table*);
 bool expression_is_const(struct expression*);
 int expression_type_check(struct expression*, struct node*);
 int expression_cast(struct expression*, enum field_type);
+int expression_set_variable(struct expression*, struct variable*);
 
 void expression_update_indicies(struct vec*);
 

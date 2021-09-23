@@ -6,19 +6,19 @@
 record* record_construct(record* self, unsigned idx)
 {
 	*self = (record) {
-	        {0},  /* fields */
-	        NULL, /* subquery_strings */
-	        NULL, /* group_strings */
-	        NULL, /* libcsv_rec */
-	        NULL, /* _cpy */
-	        {0},  /* rec_ref */
-	        0,    /* offset */
-	        -1,   /* src_idx */
-	        idx,  /* rec_idx */
-	        0,    /* select_len */
-	        0,    /* max_subquery_strings */
-	        0,    /* max_group_strings */
-	        0,    /* root_fifo_idx */
+	        .fields = {0},
+	        .subquery_strings = NULL,
+	        .group_strings = NULL,
+	        .libcsv_rec = NULL,
+	        ._cpy = NULL,
+	        .rec_ref = {0},
+	        .offset = 0,
+	        .src_idx = -1,
+	        .rec_idx = idx,
+	        .select_len = 0,
+	        .max_subquery_count = 0,
+	        .max_group_count = 0,
+	        .root_fifo_idx = 0,
 	};
 
 	vec_construct_(&self->fields, stringview);
@@ -147,9 +147,9 @@ string* record_generate_groupby_string(record* self)
 //recgroup* recgroup_construct(recgroup* self, unsigned fifo_idx)
 //{
 //	*self = (recgroup) {
-//	        NULL,     /* rec_list */
-//	        0,        /* select_len */
-//	        fifo_idx, /* _fifo_idx */
+//	        .rec_list = NULL,
+//	        .select_len = 0,
+//	        ._fifo_idx = fifo_idx,
 //	};
 //	return self;
 //}

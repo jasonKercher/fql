@@ -3,8 +3,9 @@
 
 #include <stdlib.h>
 
-#include "operation.h"
+#include "fql.h"
 #include "query.h"
+#include "operation.h"
 
 struct node;
 struct fqldelete;
@@ -12,7 +13,7 @@ struct fqldelete;
 typedef int (*delete_fn)(struct fqldelete*, struct node*);
 
 struct fqldelete {
-	enum op oper_type;
+	enum fql_operation oper_type;
 	struct schema* schema;
 	struct writer* writer;
 	delete_fn undelete__;

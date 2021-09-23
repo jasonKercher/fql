@@ -15,12 +15,12 @@
 fixedwriter* fixedwriter_construct(fixedwriter* self)
 {
 	*self = (fixedwriter) {
-	        stdout, /* file */
-	        NULL,   /* tempnode */
-	        {0},    /* tempname */
-	        {0},    /* filename */
-	        {0},    /* buffer */
-	        false,  /* is_detached */
+	        .file = stdout,
+	        .tempnode = NULL,
+	        .tempname = {0},
+	        .filename = {0},
+	        .buffer = {0},
+	        .is_detached = false,
 	};
 
 	string_construct(&self->tempname);

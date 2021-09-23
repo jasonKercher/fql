@@ -15,21 +15,21 @@ int _noupdate_writer(fqlupdate*, node*);
 fqlupdate* fqlupdate_construct(fqlupdate* self)
 {
 	*self = (fqlupdate) {
-	        OP_UPDATE,         /* oper_type */
-	        new_(schema),      /* schema */
-	        NULL,              /* writer */
-	        &_update_writer,   /* update__ */
-	        &_noupdate_writer, /* noupdate__ */
-	        0,                 /* update_idx */
-	        0,                 /* rows_affected */
-	        -1,                /* top_count */
-	        {0},               /* update_expressions */
-	        {0},               /* set_columns */
-	        {0},               /* value_expressions */
-	        -1,                /* table_idx */
-	        0,                 /* rownum */
-	        FILTER_OPEN,       /* state */
-	        false,             /* has_matched_alias */
+	        .oper_type = FQL_UPDATE,
+	        .schema = new_(schema),
+	        .writer = NULL,
+	        .update__ = &_update_writer,
+	        .noupdate__ = &_noupdate_writer,
+	        .update_idx = 0,
+	        .rows_affected = 0,
+	        .top_count = -1,
+	        .update_expressions = {0},
+	        .set_columns = {0},
+	        .value_expressions = {0},
+	        .table_idx = -1,
+	        .rownum = 0,
+	        .state = FILTER_OPEN,
+	        .has_matched_alias = false,
 	};
 
 	expression* lol_expr = new_(expression, EXPR_ASTERISK, NULL, "");
@@ -62,7 +62,7 @@ void fqlupdate_destroy(fqlupdate* self)
 		delete_(expression, *it);
 	}
 	vec_destroy(&self->set_columns);
-	/* these should all have been copied to update_expressions, 
+	/* these should all have been copied to update_expressions,
 	 * so no need to free these individually.
 	 */
 	vec_destroy(&self->value_expressions);
@@ -186,7 +186,7 @@ int fqlupdate_resolve_additional(fqlupdate* self, query* query)
 {
 	table* update_table = vec_at(query->sources, self->table_idx);
 
-	/* Identify an "okay to overwrite" record by verifying 
+	/* Identify an "okay to overwrite" record by verifying
 	 * this "is_passthrough" flag on a match.
 	 */
 	expression** it = vec_begin(&self->update_expressions);

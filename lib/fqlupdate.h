@@ -3,8 +3,9 @@
 
 #include <stdlib.h>
 
-#include "operation.h"
+#include "fql.h"
 #include "query.h"
+#include "operation.h"
 
 struct node;
 struct fqlupdate;
@@ -13,7 +14,7 @@ struct expression;
 typedef int (*update_fn)(struct fqlupdate*, struct node*);
 
 struct fqlupdate {
-	enum op oper_type;
+	enum fql_operation oper_type;
 	struct schema* schema;
 	struct writer* writer;
 	update_fn update__;

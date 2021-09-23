@@ -35,41 +35,42 @@ fqlhandle* fql_new()
 fqlhandle* fql_construct(fqlhandle* fql)
 {
 	*fql = (fqlhandle) {
-	        NULL,                          /* _scope */
-	        new_(scope),                   /* glopal_scope */
-	        NULL,                          /* schema_map */
-	        new_t_(vec, query*),           /* query_vec */
-	        new_t_(vec, struct fql_field), /* api_vec */
-	        new_t_(vec, variable),         /* variables */
-	        NULL,                          /* schema_paths */
-	        NULL,                          /* query_str */
-	        0,                             /* query_idx */
-	        false,                         /* _out_delim_set */
+	        ._scope = NULL,
+	        .global_scope = new_(scope),
+	        .schema_map = NULL,
+	        .query_vec = new_t_(vec, query*),
+	        .api_vec = new_t_(vec, struct fql_field),
+	        .variables = new_t_(vec, variable),
+	        .schema_paths = NULL,
+	        .query_str = NULL,
+	        .query_idx = 0,
+	        .branch_state = BRANCH_EXPECT_EXPR,
+	        ._out_delim_set = false,
 	        {
-	                new_(string),        /* schema_path */
-	                new_(string),        /* schema */
-	                "",                  /* in_delim */
-	                "",                  /* out_delim */
-	                "",                  /* rec_terminator */
-	                PIPE_FACTOR_DEFAULT, /* pipe_factor */
-	                QUOTE_RFC4180,       /* in_std */
-	                QUOTE_RFC4180,       /* out_std */
-	                0,                   /* strictness */
-	                false,               /* dry_run */
-	                false,               /* force_cartesian */
-	                false,               /* overwrite */
-	                false,               /* override_warnings */
-	                true,                /* print_header */
-	                false,               /* add_header */
-	                false,               /* print_plan */
-	                false,               /* threading */
-	                false,               /* verbose */
-	                false,               /* parse_only */
-	                false,               /* char_as_byte */
-	                false,               /* loose_groups */
-	                false,               /* stable */
-	                false,               /* allow_stdin */
-	        }                            /* props */
+	                .schema_path = new_(string),
+	                .schema = new_(string),
+	                .in_delim = "",
+	                .out_delim = "",
+	                .rec_terminator = "",
+	                .pipe_factor = PIPE_FACTOR_DEFAULT,
+	                .in_std = QUOTE_RFC4180,
+	                .out_std = QUOTE_RFC4180,
+	                .strictness = 0,
+	                .dry_run = false,
+	                .force_cartesian = false,
+	                .overwrite = false,
+	                .override_warnings = false,
+	                .print_header = true,
+	                .add_header = false,
+	                .print_plan = false,
+	                .threading = false,
+	                .verbose = false,
+	                .parse_only = false,
+	                .char_as_byte = false,
+	                .loose_groups = false,
+	                .stable = false,
+	                .allow_stdin = false,
+	        }, /* props */
 	};
 
 	fql->_scope = fql->global_scope;
@@ -126,7 +127,9 @@ int libfql_get_sql_type(const char* type_str)
 int libfql_set_variable_type(fqlhandle* fql, const char* type_str)
 {
 	variable* var = vec_back(fql->variables);
-	var->type = libfql_get_sql_type(type_str);
+
+	try_(variable_set_type(var, libfql_get_sql_type(type_str)));
+
 	if (var->type == SQL_UNDEFINED) {
 		return FQL_FAIL;
 	}
@@ -137,6 +140,11 @@ int libfql_declare_variable(fqlhandle* fql, const char* varname)
 {
 	int* var_idx = hashmap_get(&fql->_scope->variable_map, varname);
 	if (var_idx != NULL) {
+		variable* var = vec_at(fql->variables, *var_idx);
+		if (var->can_be_redeclared) {
+			var->can_be_redeclared = false;
+			return *var_idx;
+		}
 		fprintf(stderr, "variable `%s' already declared\n", varname);
 		return FQL_FAIL;
 	}
@@ -144,7 +152,8 @@ int libfql_declare_variable(fqlhandle* fql, const char* varname)
 	int new_var_idx = fql->variables->size;
 	hashmap_set(&fql->_scope->variable_map, varname, &new_var_idx);
 
-	vec_add_one(fql->variables);
+	variable* var = vec_add_one(fql->variables);
+	variable_construct(var);
 
 	return new_var_idx;
 }
@@ -186,8 +195,8 @@ int _api_connect(fqlhandle* fql)
 {
 	query** query = vec_at(fql->query_vec, fql->query_idx);
 
-	enum op operation = *(enum op*)(*query)->op;
-	if (operation != OP_SELECT || (*query)->into_table_name != NULL) {
+	enum fql_operation operation = *(enum fql_operation*)(*query)->op;
+	if (operation != FQL_SELECT || (*query)->into_table_name != NULL) {
 		fputs("can only step through SELECT queries\n", stderr);
 		return FQL_FAIL;
 	}
@@ -395,6 +404,59 @@ void fql_set_crlf_output(fqlhandle* fql, int crlf)
 void fql_set_allow_stdin(fqlhandle* fql, int allow_stdin)
 {
 	fql->props.allow_stdin = allow_stdin;
+}
+
+int fql_import_variable(fqlhandle* fql, const char* assign_expression)
+{
+	/* skip leading space */
+	for (; isspace(*assign_expression); ++assign_expression)
+		;
+
+	int len = strlen(assign_expression);
+	char* expr_cpy = malloc_(len + 2); /* Null byte + Maybe adding @ */
+
+	if (*assign_expression == '@') {
+		strcpy(expr_cpy, assign_expression);
+	} else {
+		sprintf(expr_cpy, "@%s", assign_expression);
+	}
+
+	char* iter = expr_cpy + 1;
+	if (*iter == '=' || *iter == '\0') {
+		fputs("Cannot assign 0 length variable\n", stderr);
+		free_(expr_cpy);
+		return FQL_FAIL;
+	}
+
+	const char* varname = expr_cpy;
+
+	/* read to = */
+	for (; *iter && *iter != '='; ++iter)
+		;
+
+	const char* value = iter;
+	if (*value) {
+		++value;
+	}
+
+	*iter = '\0';
+
+	/* back over any trailing space and make them NULL bytes */
+	for (--iter; isspace(*iter); --iter) {
+		*iter = '\0';
+	}
+
+	int idx = try_(libfql_declare_variable(fql, varname));
+
+	variable* var = vec_at(fql->variables, idx);
+	var->can_be_redeclared = true;
+
+	if (*value) {
+		variable_set_import_value(var, value);
+	}
+
+	free_(expr_cpy);
+	return FQL_GOOD;
 }
 
 /**

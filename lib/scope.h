@@ -7,6 +7,7 @@
 struct scope {
 	struct scope* parent_scope;
 	struct hashmap variable_map;
+	bool is_in_block;
 };
 typedef struct scope scope;
 

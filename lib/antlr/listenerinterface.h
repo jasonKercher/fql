@@ -42,8 +42,10 @@ class ListenerInterface : public TSqlParserBaseListener {
 	int _return_code = 0;
 	enum tok_type _next_tok_type;
 	enum tok_type _tok_type;
-	enum op _operation;
+	enum fql_operation _operation;
 	bool _on_asterisk = false;
+	bool _entering_block_stmt = false;
+	bool _exiting_block_stmt = false;
 
 	void _set_failure();
 	void _no_impl(const std::string&, int);

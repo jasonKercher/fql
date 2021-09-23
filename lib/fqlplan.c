@@ -17,7 +17,7 @@
 #include "fqlselect.h"
 #include "operation.h"
 #include "aggregate.h"
-#include "fqldeclare.h"
+#include "fqlset.h"
 #include "switchcase.h"
 #include "expression.h"
 #include "util/util.h"
@@ -32,31 +32,31 @@
 plan* plan_construct(plan* self, query* query, fqlhandle* fql)
 {
 	*self = (plan) {
-	        new_(dgraph),            /* processes */
-	        fql,                     /* fql_ref */
-	        NULL,                    /* op_true */
-	        NULL,                    /* op_false */
-	        NULL,                    /* current */
-	        NULL,                    /* execution_vector */
-	        NULL,                    /* _root_data */
-	        NULL,                    /* root */
-	        NULL,                    /* root_fifos */
-	        query,                   /* query */
-	        0,                       /* rows_affected */
-	        0,                       /* iterations */
-	        0,                       /* source_count */
-	        0,                       /* plan_id */
-	        fql->props.pipe_factor,  /* pipe_factor */
-	        false,                   /* is_const */
-	        false,                   /* has_stepped */
-	        fql->props.loose_groups, /* loose_groups */
+	        .processes = new_(dgraph),
+	        .fql_ref = fql,
+	        .op_true = NULL,
+	        .op_false = NULL,
+	        .current = NULL,
+	        .execution_vector = NULL,
+	        ._root_data = NULL,
+	        .global_root = NULL,
+	        .root_fifo_vec = NULL,
+	        .query = query,
+	        .rows_affected = 0,
+	        .iterations = 0,
+	        .source_count = 0,
+	        .plan_id = 0,
+	        .pipe_factor = fql->props.pipe_factor,
+	        .is_const = false,
+	        .has_stepped = false,
+	        .loose_groups = fql->props.loose_groups,
 	};
 
 	self->plan_id = query->query_id;
 	self->source_count = query->sources->size;
 
-	self->op_true = new_(dnode, new_(process, "OP_TRUE", self));
-	self->op_false = new_(dnode, new_(process, "OP_FALSE", self));
+	self->op_true = new_(dnode, new_(process, "FQL_TRUE", self));
+	self->op_false = new_(dnode, new_(process, "FQL_FALSE", self));
 
 	self->source_count = 0;
 
@@ -505,9 +505,9 @@ int _operation(plan* self, query* query, fqlhandle* fql, dnode* entry, bool is_u
 		                                  op_add_exprs);
 	}
 
-	enum op* operation = query->op;
-	if (*operation == OP_DECLARE) {
-		fqldeclare* decl = query->op;
+	enum fql_operation* operation = query->op;
+	if (*operation == FQL_SET) {
+		fqlset* decl = query->op;
 		_check_for_special_expression(self, self->op_true->data, decl->init_expr);
 	}
 
@@ -755,7 +755,7 @@ int _build(query* aquery, fqlhandle* fql, dnode* entry, bool is_union)
 	dgraph_get_roots(self->processes);
 
 	/* No logic DELETE = TRUNCATE */
-	if (*(enum op*)self->query->op == OP_DELETE) {
+	if (*(enum fql_operation*)self->query->op == FQL_DELETE) {
 		_disable_stranded_roots(self);
 	}
 

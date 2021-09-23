@@ -12,11 +12,21 @@ extern "C" {
 #define FQL_GOOD 0
 
 enum fql_type {
-       FQL_UNDEFINED = -1,
-       FQL_INT,
-       FQL_FLOAT,
-       FQL_STRING,
+	FQL_UNDEFINED = -1,
+	FQL_INT,
+	FQL_FLOAT,
+	FQL_STRING,
 };
+
+enum fql_operation {
+	FQL_NONE,
+	FQL_IF,
+	FQL_SET,
+	FQL_SELECT,
+	FQL_DELETE,
+	FQL_UPDATE,
+};
+
 
 struct fql_field {
 	void* _in;
@@ -67,7 +77,6 @@ void fql_set_parse_only(struct fqlhandle*, int);
 void fql_set_dry_run(struct fqlhandle*, int);
 
 /**
- * TODO: currently no-op
  * Like most database engines, the following will
  * throw an error if table T1 already exists:
  * ```sql
@@ -207,7 +216,7 @@ void fql_set_stable(struct fqlhandle* fql, int);
 void fql_set_crlf_output(struct fqlhandle* fql, int);
 
 /**
- * Set input/output settings for text qualifying
+ * Set input/output standards for text qualifying
  */
 int fql_set_in_std(struct fqlhandle* fql, const char*);
 int fql_set_out_std(struct fqlhandle* fql, const char*);
@@ -218,6 +227,29 @@ int fql_set_out_std(struct fqlhandle* fql, const char*);
  * stdin so by default, __STDIN, is not available.
  */
 void fql_set_allow_stdin(struct fqlhandle* fql, int);
+
+/**
+ * Import a variable assignment expression, and declare
+ * the variable. This is the safest method of importing
+ * variables while avoiding SQL injection. Examples:
+ *
+ *   INPUT             EQUIVALENT SQL
+ *   varname = value   declare @varname varchar = 'value'
+ *   varname           declare @varname varchar
+ *
+ * Variables declared with this method are allowed to
+ * be re-declared within the SQL code if you wanted for
+ * the purpose of changing type. For example:
+ *
+ *     struct fqlhandle* fql = fql_new();
+ *     fql_import_variable(fql, "mynum=5");
+ *     fql_exec(fql, "declare @mynum int");
+ *
+ * This would be the functional equivalent of:
+ *
+ *     declare @mynum int = 5
+ */
+int fql_import_variable(struct fqlhandle* fql, const char*);
 
 /** executing **/
 

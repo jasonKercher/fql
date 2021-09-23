@@ -7,10 +7,10 @@
 vec* vec_construct(vec* restrict self, size_t elem_size)
 {
 	*self = (vec) {
-	        NULL,     /* data */
-	        0,        /* size */
-	        2,        /* _alloc */
-	        elem_size /* _elem_s */
+	        .data = NULL,
+	        .size = 0,
+	        ._alloc = 2,
+	        ._elem_size = elem_size,
 	};
 
 	self->data = malloc_(2 * self->_elem_size);

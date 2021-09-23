@@ -26,40 +26,40 @@ struct thread_data {
 process* process_construct(process* self, const char* action, plan* plan)
 {
 	*self = (process) {
-	        0,                            /* thread */
-	        plan->fql_ref,                /* fql_ref */
-	        NULL,                         /* inbuf */
-	        NULL,                         /* inbuf_iter */
-	        &fql_no_op,                   /* action__ */
-	        NULL,                         /* root_ref */
-	        {NULL, NULL},                 /* fifo_in */
-	        {NULL, NULL},                 /* fifo_out */
-	        NULL,                         /* org_fifo_in0 */
-	        NULL,                         /* proc_data */
-	        string_from_char_ptr(action), /* plan_msg */
-	        new_t_(vec, dnode*),          /* union_end_nodes */
-	        NULL,                         /* queued_results */
-	        NULL,                         /* wait_list */
-	        NULL,                         /* waitee_proc */
-	        NULL,                         /* rootvec_ref */
-	        {0},                          /* wait_mutex */
-	        {0},                          /* wait_cond */
-	        0,                            /* rows_affected */
-	        -1,                           /* max_recs_iter */
-	        0,                            /* fifo_base_size */
-	        plan->source_count,           /* in_src_count */
-	        plan->source_count,           /* out_src_count */
-	        PROCESS_NO_PIPE_INDEX,        /* root_fifo */
-	        PROCESS_NO_PIPE_INDEX,        /* killed_pipe */
-	        false,                        /* is_secondary */
-	        false,                        /* is_dual_link */
-	        false,                        /* is_passive */
-	        true,                         /* is_enabled */
-	        false,                        /* is_const */
-	        false,                        /* is_op_true */
-	        false,                        /* has_second_input */
-	        true,                         /* wait_for_in0 */
-	        false                         /* wait_for_in0_end */
+	        .thread = 0,
+	        .fql_ref = plan->fql_ref,
+	        .inbuf = NULL,
+	        .inbuf_iter = NULL,
+	        .action__ = &fql_no_op,
+	        .global_root_ref = NULL,
+	        .fifo_in = {NULL, NULL},
+	        .fifo_out = {NULL, NULL},
+	        .org_fifo_in0 = NULL,
+	        .proc_data = NULL,
+	        .plan_msg = string_from_char_ptr(action),
+	        .union_end_nodes = new_t_(vec, dnode*),
+	        .queued_results = NULL,
+	        .wait_list = NULL,
+	        .waitee_proc = NULL,
+	        .rootvec_ref = NULL,
+	        .wait_mutex = {0},
+	        .wait_cond = {0},
+	        .rows_affected = 0,
+	        .max_recs_iter = -1,
+	        .fifo_base_size = 0,
+	        .in_src_count = plan->source_count,
+	        .out_src_count = plan->source_count,
+	        .root_fifo = PROCESS_NO_PIPE_INDEX,
+	        .killed_pipe = PROCESS_NO_PIPE_INDEX,
+	        .is_secondary = false,
+	        .is_dual_link = false,
+	        .is_passive = false,
+	        .is_enabled = true,
+	        .is_const = false,
+	        .is_op_true = false,
+	        .has_second_input = false,
+	        .wait_for_in0 = true,
+	        .wait_for_in0_end = false,
 	};
 
 	return self;

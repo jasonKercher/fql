@@ -9,12 +9,12 @@ void _assign(writer*, struct fqlhandle*);
 writer* writer_construct(writer* self, enum io io, struct fqlhandle* fql)
 {
 	*self = (writer) {
-	        io,                    /* type */
-	        NULL,                  /* writer_data */
-	        NULL,                  /* write_record__ */
-	        new_t_(vec, string),   /* raw_rec */
-	        {0},                   /* file_name */
-	        fql->props.strictness, /* strict */
+	        .type = io,
+	        .writer_data = NULL,
+	        .write_record__ = NULL,
+	        .raw_rec = new_t_(vec, string),
+	        .file_name = {0},
+	        .strict = fql->props.strictness,
 	};
 
 	string_construct(&self->file_name);

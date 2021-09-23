@@ -27,18 +27,18 @@ int _resolve_query(struct fqlhandle*, query*, enum io union_io);
 schema* schema_construct(schema* self)
 {
 	*self = (schema) {
-	        new_t_(vec, expression*), /* expressions */
-	        NULL,                     /* expr_map */
-	        new_(string),             /* schema_path */
-	        NULL,                     /* name */
-	        "",                       /* delimiter */
-	        "",                       /* line_ending */
-	        0,                        /* strictness */
-	        IO_UNDEFINED,             /* io_type */
-	        IO_UNDEFINED,             /* write_io_type */
-	        true,                     /* is_default */
-	        false,                    /* delim_is_set */
-	        false,                    /* is_preresolved */
+	        .expressions = new_t_(vec, expression*),
+	        .expr_map = NULL,
+	        .schema_path = new_(string),
+	        .name = NULL,
+	        .delimiter = "",
+	        .rec_terminator = "",
+	        .strictness = 0,
+	        .io_type = IO_UNDEFINED,
+	        .write_io_type = IO_UNDEFINED,
+	        .is_default = true,
+	        .delim_is_set = false,
+	        .is_preresolved = false,
 	};
 
 	return self;
@@ -1199,7 +1199,7 @@ int _resolve_query(struct fqlhandle* fql, query* aquery, enum io union_io)
 	 * (e.g. expressions listed in SELECT).
 	 */
 	vec* op_exprs = op_get_expressions(aquery->op);
-	if (*(enum op*)aquery->op == OP_SELECT) {
+	if (*(enum fql_operation*)aquery->op == FQL_SELECT) {
 		try_(_resolve_asterisk(op_exprs, sources));
 	}
 	try_(_assign_expressions(op_exprs, sources, fql->props.strictness));
@@ -1401,6 +1401,13 @@ int schema_resolve(struct fqlhandle* fql)
 
 	query** it = vec_begin(fql->query_vec);
 	for (; it != vec_end(fql->query_vec); ++it) {
+
+		/* resolve next idx if not done already */
+		if ((*it)->next_idx_ref != NULL) {
+			(*it)->next_idx = *(*it)->next_idx_ref;
+			(*it)->next_idx_ref = NULL;
+		}
+
 		if (fql->_out_delim_set) {
 			op_set_delim((*it)->op, fql->props.out_delim);
 		}

@@ -65,20 +65,27 @@ void ListenerInterface::exitCfl_statement(TSqlParser::Cfl_statementContext * ctx
 void ListenerInterface::enterIf_statement(TSqlParser::If_statementContext * ctx) 
 {
 	_query->mode = MODE_IF;
-	_operation = OP_IF;
+	_operation = FQL_IF;
 
-	if (query_init_op(_query, _fql, _operation)) {
+	/* enter_if will call query_init_op */
+	if (query_enter_if(_query, _fql, _operation, (ctx->ELSE() != NULL))) {
 		_set_failure();
 	}
-	if (ctx->ELSE()) {
-		query_set_expect_else(_query);
-	}
-
 }
 void ListenerInterface::exitIf_statement(TSqlParser::If_statementContext * ctx) 
 {
-	_query->query_total = _query_id + 1;
-	node_free(&_query_stack);
+	query_exit_if(_query, _fql);
+}
+
+void ListenerInterface::enterBlock_statement(TSqlParser::Block_statementContext * ctx) 
+{
+	_entering_block_stmt = true;
+	query_enter_block(_fql);
+}
+void ListenerInterface::exitBlock_statement(TSqlParser::Block_statementContext * ctx)
+{
+	_exiting_block_stmt = true;
+	query_exit_block(_query, _fql);
 }
 
 void ListenerInterface::enterAnother_statement(TSqlParser::Another_statementContext * ctx) { }
@@ -87,8 +94,8 @@ void ListenerInterface::exitAnother_statement(TSqlParser::Another_statementConte
 void ListenerInterface::enterDeclare_statement(TSqlParser::Declare_statementContext * ctx)
 {
 	_query->mode = MODE_DECLARE;
-	_operation = OP_DECLARE;
-	if (query_init_op(_query, _fql, _operation)) {
+	_operation = FQL_SET;
+	if (query_init_op(_query, _fql, _operation, _query_stack)) {
 		_set_failure();
 	}
 }
@@ -109,19 +116,47 @@ void ListenerInterface::enterDeclare_local(TSqlParser::Declare_localContext * ct
 }
 void ListenerInterface::exitDeclare_local(TSqlParser::Declare_localContext * ctx) { }
 
+void ListenerInterface::enterSet_statement(TSqlParser::Set_statementContext * ctx)
+{
+	_query->mode = MODE_SET;
+	_operation = FQL_SET;
+	if (query_init_op(_query, _fql, _operation, _query_stack)) {
+		_set_failure();
+	}
+}
+void ListenerInterface::exitSet_statement(TSqlParser::Set_statementContext * ctx) { }
+
 void ListenerInterface::enterDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
 void ListenerInterface::exitDml_clause(TSqlParser::Dml_clauseContext * ctx) { }
 
 void ListenerInterface::enterSql_clauses(TSqlParser::Sql_clausesContext* ctx)
 {
-	_query = query_add_query(_fql);
+	/* block statements pass through here, and we don't want
+	 * to initialize a query for that...
+	 */
+	if (_entering_block_stmt) {
+		_entering_block_stmt = false;
+		return;
+	}
+	_query = query_enter_query(_fql);
 	_query_id = 0;
 	node_push(&_query_stack, _query);
 }
 void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext* ctx)
 {
+	if (_exiting_block_stmt) {
+		_exiting_block_stmt = false;
+		return;
+	}
 	_query->query_total = _query_id + 1;
-	node_free(&_query_stack);
+	query* prev = (query*) node_pop(&_query_stack);
+	int last_idx = prev->idx;
+	_query = (_query_stack == NULL) ? NULL : (query*) _query_stack->data;
+
+	if (query_exit_query(_query, prev, _fql)) {
+		_set_failure();
+	}
+
 }
 
 void ListenerInterface::enterSelect_statement_standalone(TSqlParser::Select_statement_standaloneContext* ctx) { }
@@ -543,8 +578,8 @@ void ListenerInterface::exitScalar_function_name(TSqlParser::Scalar_function_nam
 void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContext * ctx)
 {
 	_query->mode = MODE_SELECTLIST;
-	_operation = OP_SELECT;
-	if (query_init_op(_query, _fql, _operation)) {
+	_operation = FQL_SELECT;
+	if (query_init_op(_query, _fql, _operation, _query_stack)) {
 		_set_failure();
 	}
 }
@@ -553,8 +588,8 @@ void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext
 
 void ListenerInterface::enterDelete_statement(TSqlParser::Delete_statementContext * ctx) 
 { 
-	_operation = OP_DELETE;
-	if (query_init_op(_query, _fql, _operation)) {
+	_operation = FQL_DELETE;
+	if (query_init_op(_query, _fql, _operation, _query_stack)) {
 		_set_failure();
 	}
 	if (ctx->WHERE()) {
@@ -579,8 +614,8 @@ void ListenerInterface::exitDelete_statement_from(TSqlParser::Delete_statement_f
 void ListenerInterface::enterUpdate_statement(TSqlParser::Update_statementContext * ctx) 
 {
 	_query->mode = MODE_UPDATELIST;
-	_operation = OP_UPDATE;
-	if (query_init_op(_query, _fql, _operation)) {
+	_operation = FQL_UPDATE;
+	if (query_init_op(_query, _fql, _operation, _query_stack)) {
 		_set_failure();
 	}
 	if (ctx->WHERE()) {
@@ -712,7 +747,7 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 	query* subquery = query_new(++_query_id);
 	node_push(&_query_stack, subquery);
 
-	_operation = OP_SELECT;
+	_operation = FQL_SELECT;
 
 	/* subquery as constant */
 	if (_query->in_bracket_expression) {
@@ -741,7 +776,7 @@ void ListenerInterface::exitSubquery(TSqlParser::SubqueryContext * ctx)
 	_subquery = (struct query*) node_pop(&_query_stack);
 	_query = (struct query*) _query_stack->data;
 
-	_operation = *(enum op*)_query->op;
+	_operation = *(enum fql_operation*)_query->op;
 
 	/* subquery as constant */
 	if (_query->in_bracket_expression) {
@@ -993,9 +1028,6 @@ void ListenerInterface::_set_failure()
 void ListenerInterface::enterDdl_clause(TSqlParser::Ddl_clauseContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitDdl_clause(TSqlParser::Ddl_clauseContext * ctx) { }
 
-void ListenerInterface::enterBlock_statement(TSqlParser::Block_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitBlock_statement(TSqlParser::Block_statementContext * ctx) { }
-
 void ListenerInterface::enterBreak_statement(TSqlParser::Break_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitBreak_statement(TSqlParser::Break_statementContext * ctx) { }
 
@@ -1148,9 +1180,6 @@ void ListenerInterface::exitExecute_statement_arg(TSqlParser::Execute_statement_
 
 void ListenerInterface::enterExecute_var_string(TSqlParser::Execute_var_stringContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitExecute_var_string(TSqlParser::Execute_var_stringContext * ctx) { }
-
-void ListenerInterface::enterSet_statement(TSqlParser::Set_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
-void ListenerInterface::exitSet_statement(TSqlParser::Set_statementContext * ctx) { }
 
 void ListenerInterface::enterTransaction_statement(TSqlParser::Transaction_statementContext * ctx) { _no_impl(ctx->getStart()->getText(), ctx->getRuleIndex()); }
 void ListenerInterface::exitTransaction_statement(TSqlParser::Transaction_statementContext * ctx) { }

@@ -23,13 +23,13 @@ aggregate* aggregate_construct(aggregate* self,
                                enum aggregate_function agg_type)
 {
 	*self = (aggregate) {
-	        NULL,                     /* call__ */
-	        new_t_(vec, expression*), /* args */
-	        {0},                      /* results */
-	        NULL,                     /* linked_expression */
-	        agg_type,                 /* agg_type */
-	        FIELD_UNDEFINED,          /* data_type */
-	        MODE_UNDEFINED,           /* return_mode */
+	        .call__ = NULL,
+	        .args = new_t_(vec, expression*),
+	        .results = {0},
+	        .linked_expression = NULL,
+	        .agg_type = agg_type,
+	        .data_type = FIELD_UNDEFINED,
+	        .return_mode = MODE_UNDEFINED,
 	};
 
 	vec_construct(&self->results, sizeof(struct aggresult));

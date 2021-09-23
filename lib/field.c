@@ -109,3 +109,41 @@ int field_to_stringview(stringview* ret,
 
 	return FQL_GOOD;
 }
+
+int field_to_stringview_limited(stringview* ret,
+                                string* dest,
+                                union field* field,
+                                enum field_type* type,
+                                unsigned limit)
+{
+	switch (*type) {
+	case FIELD_STRING:
+		if (dest->size > limit) {
+			string_resize(dest, limit);
+		}
+		break;
+	case FIELD_INT: {
+		*type = FIELD_STRING;
+		string_sprintf(dest, "%ld", field->i);
+		if (dest->size > limit) {
+			string_resize(dest, limit);
+		}
+		break;
+	}
+	case FIELD_FLOAT: {
+		*type = FIELD_STRING;
+		string_sprintf(dest, "%lf", field->f);
+		if (dest->size > limit) {
+			string_resize(dest, limit);
+		}
+		break;
+	}
+	default:
+		return FQL_FAIL;
+	}
+
+	stringview_set_string(ret, dest);
+	field->s = dest;
+
+	return FQL_GOOD;
+}

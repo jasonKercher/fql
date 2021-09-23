@@ -11,35 +11,35 @@
 #include "fqlselect.h"
 #include "fqldelete.h"
 #include "fqlupdate.h"
-#include "fqldeclare.h"
+#include "fqlset.h"
 #include "util/util.h"
 
 int _expand_asterisk(vec* expr_vec, table* table, unsigned src_idx, unsigned* expr_idx);
 
-void op_destroy(enum op* self)
+void op_destroy(enum fql_operation* self)
 {
 	switch (*self) {
-	case OP_DECLARE:
-		fqldeclare_destroy((fqldeclare*)self);
+	case FQL_SET:
+		fqlset_destroy((fqlset*)self);
 		break;
-	case OP_IF:
+	case FQL_IF:
 		fqlbranch_destroy((fqlbranch*)self);
 		break;
-	case OP_SELECT:
+	case FQL_SELECT:
 		fqlselect_destroy((fqlselect*)self);
 		break;
-	case OP_DELETE:
+	case FQL_DELETE:
 		fqldelete_destroy((fqldelete*)self);
 		break;
-	case OP_UPDATE:
+	case FQL_UPDATE:
 		fqlupdate_destroy((fqlupdate*)self);
 		break;
-	case OP_NONE:;
+	case FQL_NONE:;
 	}
 }
 
 
-vec* op_get_expressions(enum op* self)
+vec* op_get_expressions(enum fql_operation* self)
 {
 	schema* op_schema = op_get_schema(self);
 	if (op_schema == NULL) {
@@ -48,73 +48,73 @@ vec* op_get_expressions(enum op* self)
 	return op_schema->expressions;
 }
 
-vec* op_get_additional_exprs(enum op* self)
+vec* op_get_additional_exprs(enum fql_operation* self)
 {
 	switch (*self) {
-	case OP_UPDATE: {
+	case FQL_UPDATE: {
 		fqlupdate* update = (fqlupdate*)self;
 		return &update->value_expressions;
 	}
-	case OP_SELECT:
-	case OP_DELETE:
-	case OP_DECLARE:
-	case OP_IF:
-	case OP_NONE:
+	case FQL_SELECT:
+	case FQL_DELETE:
+	case FQL_SET:
+	case FQL_IF:
+	case FQL_NONE:
 		return NULL;
 	}
 }
 
-schema* op_get_schema(enum op* self)
+schema* op_get_schema(enum fql_operation* self)
 {
 	switch (*self) {
-	case OP_SELECT: {
+	case FQL_SELECT: {
 		fqlselect* select = (fqlselect*)self;
 		return select->schema;
 	}
-	case OP_DELETE: {
+	case FQL_DELETE: {
 		fqldelete* delete = (fqldelete*)self;
 		return delete->schema;
 	}
-	case OP_UPDATE: {
+	case FQL_UPDATE: {
 		fqlupdate* update = (fqlupdate*)self;
 		return update->schema;
 	}
-	case OP_DECLARE:
-	case OP_IF:
-	case OP_NONE:
+	case FQL_SET:
+	case FQL_IF:
+	case FQL_NONE:
 		return NULL;
 	}
 }
 
-const char* op_get_table_name(enum op* self)
+const char* op_get_table_name(enum fql_operation* self)
 {
 	switch (*self) {
-	case OP_DELETE: {
+	case FQL_DELETE: {
 		fqldelete* delete = (fqldelete*)self;
 		expression** fake_asterisk = vec_begin(delete->schema->expressions);
 		return string_c_str(&(*fake_asterisk)->table_name);
 	}
-	case OP_UPDATE: {
+	case FQL_UPDATE: {
 		fqlupdate* update = (fqlupdate*)self;
 		expression** fake_asterisk = vec_begin(update->schema->expressions);
 		return string_c_str(&(*fake_asterisk)->table_name);
 	}
-	case OP_SELECT:
-	case OP_DECLARE:
-	case OP_IF:
-	case OP_NONE:
+	case FQL_SELECT:
+	case FQL_SET:
+	case FQL_IF:
+	case FQL_NONE:
 		return NULL;
 	}
 }
 
-void op_match_table_alias(enum op* self, table* check_table)
+void op_match_table_alias(enum fql_operation* self, table* check_table)
 {
 	bool* has_matched_alias = NULL;
 	const char* op_table_name = NULL;
 	unsigned* table_idx = NULL;
 
 	switch (*self) {
-	case OP_DELETE: {
+	case FQL_DELETE: {
 		fqldelete* delete = (fqldelete*)self;
 		has_matched_alias = &delete->has_matched_alias;
 		if (*has_matched_alias) {
@@ -125,7 +125,7 @@ void op_match_table_alias(enum op* self, table* check_table)
 		op_table_name = string_c_str(&(*fake_asterisk)->table_name);
 		break;
 	}
-	case OP_UPDATE: {
+	case FQL_UPDATE: {
 		fqlupdate* update = (fqlupdate*)self;
 		has_matched_alias = &update->has_matched_alias;
 		if (*has_matched_alias) {
@@ -136,10 +136,10 @@ void op_match_table_alias(enum op* self, table* check_table)
 		op_table_name = string_c_str(&(*fake_asterisk)->table_name);
 		break;
 	}
-	case OP_SELECT:
-	case OP_DECLARE:
-	case OP_IF:
-	case OP_NONE:
+	case FQL_SELECT:
+	case FQL_SET:
+	case FQL_IF:
+	case FQL_NONE:
 		return;
 	}
 
@@ -162,42 +162,55 @@ void op_match_table_alias(enum op* self, table* check_table)
 	}
 }
 
-void op_set_table_name(enum op* self, const char* table_name)
+void op_set_table_name(enum fql_operation* self, const char* table_name)
 {
 	schema* op_schema = op_get_schema(self);
 	expression** fake_asterisk = vec_begin(op_schema->expressions);
 	string_strcpy(&(*fake_asterisk)->table_name, table_name);
 }
 
-void op_set_top_count(enum op* self, size_t top_count)
+void op_set_top_count(enum fql_operation* self, size_t top_count)
 {
 	switch (*self) {
-	case OP_SELECT: {
+	case FQL_SELECT: {
 		fqlselect* select = (fqlselect*)self;
 		select->top_count = top_count;
 		break;
 	}
-	case OP_DELETE: {
+	case FQL_DELETE: {
 		fqldelete* delete = (fqldelete*)self;
 		delete->top_count = top_count;
 		break;
 	}
-	case OP_UPDATE: {
+	case FQL_UPDATE: {
 		fqlupdate* update = (fqlupdate*)self;
 		update->top_count = top_count;
 		break;
 	}
-	case OP_DECLARE:
-	case OP_IF:
-	case OP_NONE:;
+	case FQL_SET:
+	case FQL_IF:
+	case FQL_NONE:;
 	}
 }
 
 int op_preop(struct fqlhandle* fql)
 {
 	query** query = vec_at(fql->query_vec, fql->query_idx);
-	enum op* type = (*query)->op;
+	enum fql_operation* type = (*query)->op;
 
+	/* if there are any variables in the query,
+	 * resolve them now
+	 */
+
+	unsigned i = 0;
+	for (; i < (*query)->variable_indicies->size; ++i) {
+		int* var_idx = vec_at((*query)->variable_indicies, i);
+		expression** var_expr = vec_at((*query)->variable_expressions, i);
+		variable* var = vec_at(fql->variables, *var_idx);
+		expression_set_variable(*var_expr, var);
+	}
+
+	/* Re-open files that require it */
 	table* it = vec_begin((*query)->sources);
 	for (; it != vec_end((*query)->sources); ++it) {
 		if (it->must_reopen) {
@@ -210,84 +223,84 @@ int op_preop(struct fqlhandle* fql)
 	}
 
 	switch (*type) {
-	case OP_DECLARE:
-		fqldeclare_preop((*query)->op, *query);
+	case FQL_SET:
+		fqlset_preop((*query)->op, *query);
 		break;
-	case OP_IF:
+	case FQL_IF:
 		fqlbranch_preop((*query)->op, *query);
 		break;
-	case OP_SELECT:
+	case FQL_SELECT:
 		fqlselect_preop((*query)->op, *query, fql);
 		break;
-	case OP_DELETE:
+	case FQL_DELETE:
 		fqldelete_preop((*query)->op, *query);
 		break;
-	case OP_UPDATE:
+	case FQL_UPDATE:
 		fqlupdate_preop((*query)->op, *query);
 		break;
-	case OP_NONE:;
+	case FQL_NONE:;
 	}
 
 	return FQL_GOOD;
 }
 
-writer* op_get_writer(enum op* self)
+writer* op_get_writer(enum fql_operation* self)
 {
 	switch (*self) {
-	case OP_SELECT: {
+	case FQL_SELECT: {
 		fqlselect* select = (fqlselect*)self;
 		return select->writer;
 	}
-	case OP_DELETE: {
+	case FQL_DELETE: {
 		fqldelete* delete = (fqldelete*)self;
 		return delete->writer;
 	}
-	case OP_UPDATE: {
+	case FQL_UPDATE: {
 		fqlupdate* update = (fqlupdate*)self;
 		return update->writer;
 	}
-	case OP_DECLARE:
-	case OP_IF:
-	case OP_NONE:
+	case FQL_SET:
+	case FQL_IF:
+	case FQL_NONE:
 		return NULL;
 	}
 }
 
-void op_set_rec_terminator(enum op* self, const char* term)
+void op_set_rec_terminator(enum fql_operation* self, const char* term)
 {
 	strncpy_(op_get_schema(self)->rec_terminator, term, DELIM_LEN_MAX);
 }
 
-void op_set_delim(enum op* self, const char* delim)
+void op_set_delim(enum fql_operation* self, const char* delim)
 {
 	schema_set_delim(op_get_schema(self), delim);
 }
 
-void op_set_writer(enum op* self, writer* src_writer)
+void op_set_writer(enum fql_operation* self, writer* src_writer)
 {
 	switch (*self) {
-	case OP_SELECT: {
+	case FQL_SELECT: {
 		fqlselect* select = (fqlselect*)self;
 		select->writer = src_writer;
 		break;
 	}
-	case OP_DELETE: {
+	case FQL_DELETE: {
 		fqldelete* delete = (fqldelete*)self;
 		delete->writer = src_writer;
 		break;
 	}
-	case OP_UPDATE: {
+	case FQL_UPDATE: {
 		fqlupdate* update = (fqlupdate*)self;
 		update->writer = src_writer;
 		break;
 	}
-	case OP_DECLARE:
-	case OP_IF:
-	case OP_NONE:;
+	case FQL_SET:
+	case FQL_IF:
+	case FQL_NONE:;
 	}
 }
 
-void op_set_schema(enum op* self, const schema* src_schema)
+void op_set_schema(enum fql_operation* self, const schema* src_schema)
 {
 	schema* op_schema = op_get_schema(self);
 
@@ -308,23 +321,23 @@ void op_set_schema(enum op* self, const schema* src_schema)
 	op_schema->is_default = src_schema->is_default;
 }
 
-void op_assign_rownum_ref(enum op* self, expression* expr)
+void op_assign_rownum_ref(enum fql_operation* self, expression* expr)
 {
 	switch (*self) {
-	case OP_SELECT: {
+	case FQL_SELECT: {
 		fqlselect* select = (fqlselect*)self;
 		expr->rownum_ref = &select->rownum;
 		break;
 	}
-	case OP_UPDATE: {
+	case FQL_UPDATE: {
 		fqlupdate* update = (fqlupdate*)self;
 		expr->rownum_ref = &update->rownum;
 		break;
 	}
-	case OP_DELETE:
-	case OP_DECLARE:
-	case OP_IF:
-	case OP_NONE:
+	case FQL_DELETE:
+	case FQL_SET:
+	case FQL_IF:
+	case FQL_NONE:
 		break;
 	}
 }
@@ -332,7 +345,7 @@ void op_assign_rownum_ref(enum op* self, expression* expr)
 /* NOTE: do not allow any writer initialization if a union query */
 int op_writer_init(query* query, struct fqlhandle* fql)
 {
-	enum op* self = query->op;
+	enum fql_operation* self = query->op;
 	schema* op_schema = op_get_schema(query->op);
 	writer* op_writer = NULL;
 	if (op_schema != NULL && !query->union_id) {
@@ -344,20 +357,20 @@ int op_writer_init(query* query, struct fqlhandle* fql)
 	/* Retrieve op_table */
 	table* op_table = NULL;
 	switch (*self) {
-	case OP_DELETE: {
+	case FQL_DELETE: {
 		fqldelete* delete = query->op;
 		op_table = vec_at(query->sources, delete->table_idx);
 		break;
 	}
-	case OP_UPDATE: {
+	case FQL_UPDATE: {
 		fqlupdate* update = query->op;
 		op_table = vec_at(query->sources, update->table_idx);
 		break;
 	}
-	case OP_SELECT:
-	case OP_DECLARE:
-	case OP_IF:
-	case OP_NONE:;
+	case FQL_SELECT:
+	case FQL_SET:
+	case FQL_IF:
+	case FQL_NONE:;
 	}
 
 	if (op_table != NULL) {
@@ -376,7 +389,7 @@ int op_writer_init(query* query, struct fqlhandle* fql)
 	 * NOTE: --overwrite nullifies this test.
 	 */
 	if (!query->union_id && query->into_table_name) {
-		if (*self == OP_SELECT && !fql->props.overwrite
+		if (*self == FQL_SELECT && !fql->props.overwrite
 		    && access(query->into_table_name, F_OK) == 0) {
 			fprintf(stderr,
 			        "Cannot SELECT INTO: file `%s' already exists\n",
@@ -395,7 +408,7 @@ int op_writer_init(query* query, struct fqlhandle* fql)
 		free_(out_name);
 	}
 
-	if (*self == OP_SELECT) {
+	if (*self == FQL_SELECT) {
 		op_expand_asterisks(query, (!query->groupby || !query->distinct));
 		if (query->distinct != NULL) {
 			expression** it = vec_begin(op_schema->expressions);
@@ -407,7 +420,7 @@ int op_writer_init(query* query, struct fqlhandle* fql)
 		return FQL_GOOD;
 	}
 
-	if (*self == OP_UPDATE) {
+	if (*self == FQL_UPDATE) {
 		fqlupdate* update = (fqlupdate*)self;
 		table* update_table = vec_at(query->sources, update->table_idx);
 
@@ -425,36 +438,36 @@ int op_writer_init(query* query, struct fqlhandle* fql)
 
 int op_apply_process(query* query, plan* plan, bool is_subquery)
 {
-	enum op* self = query->op;
+	enum fql_operation* self = query->op;
 
 	switch (*self) {
-	case OP_DECLARE:
-		return fqldeclare_apply_process(query, plan);
-	case OP_IF:
+	case FQL_SET:
+		return fqlset_apply_process(query, plan);
+	case FQL_IF:
 		return fqlbranch_apply_process(query, plan);
-	case OP_SELECT:
+	case FQL_SELECT:
 		fqlselect_apply_process(query, plan, is_subquery);
 		return FQL_GOOD;
-	case OP_DELETE:
+	case FQL_DELETE:
 		return fqldelete_apply_process(query, plan);
-	case OP_UPDATE:
+	case FQL_UPDATE:
 		return fqlupdate_apply_process(query, plan);
-	case OP_NONE:
+	case FQL_NONE:
 		return FQL_GOOD;
 	}
 }
 
-int op_resolve_final_types(enum op* self)
+int op_resolve_final_types(enum fql_operation* self)
 {
 	switch (*self) {
-	case OP_SELECT:
+	case FQL_SELECT:
 		return fqlselect_resolve_final_types((fqlselect*)self);
-	case OP_UPDATE:
+	case FQL_UPDATE:
 		return fqlupdate_resolve_final_types((fqlupdate*)self);
-	case OP_DELETE:
-	case OP_DECLARE:
-	case OP_IF:
-	case OP_NONE:
+	case FQL_DELETE:
+	case FQL_SET:
+	case FQL_IF:
+	case FQL_NONE:
 		return FQL_GOOD;
 	}
 }

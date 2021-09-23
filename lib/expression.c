@@ -8,6 +8,7 @@
 #include "record.h"
 #include "process.h"
 #include "function.h"
+#include "variable.h"
 #include "aggregate.h"
 #include "switchcase.h"
 #include "util/util.h"
@@ -21,23 +22,23 @@ expression* expression_construct(expression* self,
                                  const char* table_name)
 {
 	*self = (expression) {
-	        expr,            /* expr */
-	        NULL,            /* data_source */
-	        NULL,            /* subquery */
-	        NULL,            /* rownum_ref */
-	        {0},             /* name */
-	        {0},             /* alias */
-	        {0},             /* table_name */
-	        {0},             /* buf */
-	        FIELD_UNDEFINED, /* field_type */
-	        {0},             /* field */
-	        0,               /* index */
-	        0,               /* location */
-	        0,               /* width */
-	        0,               /* src_idx */
-	        -1,              /* subquery_src_idx */
-	        false,           /* descending */
-	        false,           /* is_passthrough */
+	        .expr = expr,
+	        .data_source = NULL,
+	        .subquery = NULL,
+	        .rownum_ref = NULL,
+	        .name = {0},
+	        .alias = {0},
+	        .table_name = {0},
+	        .buf = {0},
+	        .field_type = FIELD_UNDEFINED,
+	        .field = {0},
+	        .index = 0,
+	        .location = 0,
+	        .width = 0,
+	        .src_idx = 0,
+	        .subquery_src_idx = -1,
+	        .descending = false,
+	        .is_passthrough = false,
 	};
 
 	string_construct(&self->buf);
@@ -336,6 +337,30 @@ int expression_cast(expression* self, enum field_type new_type)
 		return FQL_FAIL;
 	}
 	default:
+		return FQL_FAIL;
+	}
+
+	return FQL_GOOD;
+}
+
+int expression_set_variable(expression* self, variable* var)
+{
+	self->expr = EXPR_CONST;
+	switch (var->type) {
+	case SQL_INT:
+	case SQL_BIT:
+		self->field.i = var->value.i;
+		break;
+	case SQL_FLOAT:
+		self->field.f = var->value.f;
+		break;
+	case SQL_TEXT:
+	case SQL_VARCHAR:
+	case SQL_CHAR:
+		string_copy(&self->buf, var->value.s);
+		self->field.s = &self->buf;
+		break;
+	case SQL_UNDEFINED:
 		return FQL_FAIL;
 	}
 
