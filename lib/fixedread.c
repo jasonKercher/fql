@@ -9,10 +9,7 @@
 fixedread* fixedread_construct(fixedread* self, vec* expressions)
 {
 	*self = (fixedread) {
-	        .mmap = NULL,
 	        .expressions = expressions,
-	        .offset = 0,
-	        .file_size = 0,
 	        .fd = -1,
 	};
 	return self;

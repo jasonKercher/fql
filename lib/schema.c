@@ -28,17 +28,10 @@ schema* schema_construct(schema* self)
 {
 	*self = (schema) {
 	        .expressions = new_t_(vec, expression*),
-	        .expr_map = NULL,
 	        .schema_path = new_(string),
-	        .name = NULL,
-	        .delimiter = "",
-	        .rec_terminator = "",
-	        .strictness = 0,
 	        .io_type = IO_UNDEFINED,
 	        .write_io_type = IO_UNDEFINED,
 	        .is_default = true,
-	        .delim_is_set = false,
-	        .is_preresolved = false,
 	};
 
 	return self;

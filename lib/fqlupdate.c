@@ -17,19 +17,11 @@ fqlupdate* fqlupdate_construct(fqlupdate* self)
 	*self = (fqlupdate) {
 	        .oper_type = FQL_UPDATE,
 	        .schema = new_(schema),
-	        .writer = NULL,
 	        .update__ = &_update_writer,
 	        .noupdate__ = &_noupdate_writer,
-	        .update_idx = 0,
-	        .rows_affected = 0,
 	        .top_count = -1,
-	        .update_expressions = {0},
-	        .set_columns = {0},
-	        .value_expressions = {0},
 	        .table_idx = -1,
-	        .rownum = 0,
 	        .state = FILTER_OPEN,
-	        .has_matched_alias = false,
 	};
 
 	expression* lol_expr = new_(expression, EXPR_ASTERISK, NULL, "");

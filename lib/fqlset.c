@@ -8,8 +8,6 @@ fqlset* fqlset_construct(fqlset* self)
 {
 	*self = (fqlset) {
 	        .oper_type = FQL_SET,
-	        .init_expr = NULL,
-	        .variable_idx = 0,
 	};
 
 	vec_construct_(&self->_expr_vec, expression*);

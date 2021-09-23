@@ -10,10 +10,7 @@ writer* writer_construct(writer* self, enum io io, struct fqlhandle* fql)
 {
 	*self = (writer) {
 	        .type = io,
-	        .writer_data = NULL,
-	        .write_record__ = NULL,
 	        .raw_rec = new_t_(vec, string),
-	        .file_name = {0},
 	        .strict = fql->props.strictness,
 	};
 

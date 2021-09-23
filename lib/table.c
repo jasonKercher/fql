@@ -15,19 +15,11 @@ table* table_construct(table* self,
                        enum join_type join_type)
 {
 	*self = (table) {
-	        .name = {0},
-	        .alias = {0},
-	        .subquery = NULL,
 	        .reader = new_(reader),
 	        .schema = new_(schema),
-	        .condition = NULL,
-	        .read_proc = NULL,
-	        .join_data = NULL,
 	        .idx = idx,
 	        .source_type = SOURCE_TABLE,
 	        .join_type = join_type,
-	        .must_reopen = false,
-	        .is_stdin = false,
 	};
 
 	string_construct_take(&self->name, name);
@@ -48,19 +40,11 @@ table* table_construct_subquery(table* self,
                                 enum join_type join_type)
 {
 	*self = (table) {
-	        .name = {0},
-	        .alias = {0},
 	        .subquery = subquery,
 	        .reader = new_(reader),
-	        .schema = NULL,
-	        .condition = NULL,
-	        .read_proc = NULL,
-	        .join_data = NULL,
 	        .idx = idx,
 	        .source_type = SOURCE_SUBQUERY,
 	        .join_type = join_type,
-	        .must_reopen = false,
-	        .is_stdin = false,
 	};
 
 	string_construct(&self->name);
@@ -124,13 +108,8 @@ int table_resolve_schema(table* self, struct fqlhandle* fql)
 hashjoin* hashjoin_construct(hashjoin* join)
 {
 	*join = (struct hashjoin) {
-	        .hash_data = NULL,
-	        .left_expr = NULL,
-	        .right_expr = NULL,
-	        .recs = NULL,
 	        .state = SIDE_RIGHT,
 	        .comp_type = FIELD_UNDEFINED,
-	        .rec_idx = 0,
 	};
 
 	return join;

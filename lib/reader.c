@@ -16,22 +16,7 @@ reader* reader_construct(reader* self)
 {
 	*self = (reader) {
 	        .type = IO_UNDEFINED,
-	        .reader_data = NULL,
-	        .random_access_file = NULL,
-	        .random_access_filename = NULL,
-	        .random_access_tempnode = NULL,
-	        .subquery_writer = NULL,
-	        .first_rec = NULL,
-	        .get_record__ = NULL,
-	        .get_record_at__ = NULL,
-	        .free__ = NULL,
-	        .reset__ = NULL,
-	        .file_name = {0},
-	        .max_idx = 0,
-	        .reclen = 0,
-	        .rec_id = 0,
 	        .skip_rows = 1,
-	        .eof = false,
 	};
 
 	string_construct(&self->file_name);

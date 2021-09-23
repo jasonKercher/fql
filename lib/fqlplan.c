@@ -34,21 +34,8 @@ plan* plan_construct(plan* self, query* query, fqlhandle* fql)
 	*self = (plan) {
 	        .processes = new_(dgraph),
 	        .fql_ref = fql,
-	        .op_true = NULL,
-	        .op_false = NULL,
-	        .current = NULL,
-	        .execution_vector = NULL,
-	        ._root_data = NULL,
-	        .global_root = NULL,
-	        .root_fifo_vec = NULL,
 	        .query = query,
-	        .rows_affected = 0,
-	        .iterations = 0,
-	        .source_count = 0,
-	        .plan_id = 0,
 	        .pipe_factor = fql->props.pipe_factor,
-	        .is_const = false,
-	        .has_stepped = false,
 	        .loose_groups = fql->props.loose_groups,
 	};
 

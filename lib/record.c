@@ -6,19 +6,8 @@
 record* record_construct(record* self, unsigned idx)
 {
 	*self = (record) {
-	        .fields = {0},
-	        .subquery_strings = NULL,
-	        .group_strings = NULL,
-	        .libcsv_rec = NULL,
-	        ._cpy = NULL,
-	        .rec_ref = {0},
-	        .offset = 0,
 	        .src_idx = -1,
 	        .rec_idx = idx,
-	        .select_len = 0,
-	        .max_subquery_count = 0,
-	        .max_group_count = 0,
-	        .root_fifo_idx = 0,
 	};
 
 	vec_construct_(&self->fields, stringview);

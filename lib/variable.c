@@ -7,11 +7,7 @@ variable* variable_construct(variable* self)
 {
 	*self = (variable) {
 	        .type = SQL_UNDEFINED,
-	        .value = {0},
-	        ._data = NULL,
-	        ._import_value = NULL,
 	        .limit = INT_MAX,
-	        .can_be_redeclared = false,
 	};
 	return self;
 }

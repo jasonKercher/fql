@@ -6,9 +6,6 @@
 inlist* inlist_construct(inlist* self)
 {
 	*self = (inlist) {
-	        .expressions = NULL,
-	        .subquery = NULL,
-	        .list_data = NULL,
 	        .return_mode = MODE_UNDEFINED,
 	};
 	return self;

@@ -38,39 +38,17 @@ query* query_new(int id)
 query* query_construct(query* self, int id)
 {
 	*self = (query) {
-	        .plan = NULL,
 	        .sources = new_t_(vec, table),
-	        .where = NULL,
-	        .groupby = NULL,
-	        .distinct = NULL,
-	        .having = NULL,
-	        .orderby = NULL,
-	        .op = NULL,
 	        .subquery_const_vec = new_t_(vec, query*),
 	        .variable_indicies = new_t_(vec, int),
 	        .variable_expressions = new_t_(vec, expression*),
-	        .top_expr = NULL,
 	        .unions = new_t_(vec, query*),
-	        .into_table_name = NULL,
 	        .top_count = -1,
-	        .next_idx_ref = NULL,
-	        .idx = 0,
-	        .next_idx = 0,
-	        .union_id = 0,
 	        .query_id = id,
-	        .query_total = 0,
-	        .expect_where = 0,
-
-	        .joinable = NULL,
-	        .logic_stack = NULL,
-	        .function_stack = NULL,
-	        .switchcase_stack = NULL,
-
 	        .mode = MODE_UNDEFINED,
 	        .mode_store = MODE_UNDEFINED,
 	        .logic_mode = LOGIC_UNDEFINED,
 	        .join = JOIN_FROM,
-	        .in_bracket_expression = false,
 	};
 
 	return self;

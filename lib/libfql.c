@@ -35,41 +35,19 @@ fqlhandle* fql_new()
 fqlhandle* fql_construct(fqlhandle* fql)
 {
 	*fql = (fqlhandle) {
-	        ._scope = NULL,
 	        .global_scope = new_(scope),
-	        .schema_map = NULL,
 	        .query_vec = new_t_(vec, query*),
 	        .api_vec = new_t_(vec, struct fql_field),
 	        .variables = new_t_(vec, variable),
-	        .schema_paths = NULL,
-	        .query_str = NULL,
-	        .query_idx = 0,
 	        .branch_state = BRANCH_EXPECT_EXPR,
 	        ._out_delim_set = false,
 	        {
 	                .schema_path = new_(string),
 	                .schema = new_(string),
-	                .in_delim = "",
-	                .out_delim = "",
-	                .rec_terminator = "",
 	                .pipe_factor = PIPE_FACTOR_DEFAULT,
 	                .in_std = QUOTE_RFC4180,
 	                .out_std = QUOTE_RFC4180,
-	                .strictness = 0,
-	                .dry_run = false,
-	                .force_cartesian = false,
-	                .overwrite = false,
-	                .override_warnings = false,
 	                .print_header = true,
-	                .add_header = false,
-	                .print_plan = false,
-	                .threading = false,
-	                .verbose = false,
-	                .parse_only = false,
-	                .char_as_byte = false,
-	                .loose_groups = false,
-	                .stable = false,
-	                .allow_stdin = false,
 	        }, /* props */
 	};
 

@@ -23,10 +23,7 @@ aggregate* aggregate_construct(aggregate* self,
                                enum aggregate_function agg_type)
 {
 	*self = (aggregate) {
-	        .call__ = NULL,
 	        .args = new_t_(vec, expression*),
-	        .results = {0},
-	        .linked_expression = NULL,
 	        .agg_type = agg_type,
 	        .data_type = FIELD_UNDEFINED,
 	        .return_mode = MODE_UNDEFINED,

@@ -16,11 +16,6 @@ fixedwriter* fixedwriter_construct(fixedwriter* self)
 {
 	*self = (fixedwriter) {
 	        .file = stdout,
-	        .tempnode = NULL,
-	        .tempname = {0},
-	        .filename = {0},
-	        .buffer = {0},
-	        .is_detached = false,
 	};
 
 	string_construct(&self->tempname);

@@ -7,8 +7,6 @@
 vec* vec_construct(vec* restrict self, size_t elem_size)
 {
 	*self = (vec) {
-	        .data = NULL,
-	        .size = 0,
 	        ._alloc = 2,
 	        ._elem_size = elem_size,
 	};

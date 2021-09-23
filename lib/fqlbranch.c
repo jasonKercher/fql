@@ -12,14 +12,10 @@ fqlbranch* fqlbranch_construct(fqlbranch* self, fqlhandle* fql, query* query)
 {
 	*self = (fqlbranch) {
 	        .oper_type = FQL_IF,
-	        .condition = NULL,
 	        .next_query_idx_ref = &query->next_idx,
-	        .last_true_block_query = NULL,
 	        .scope = new_(scope),
-	        .else_scope = NULL,
 	        .true_idx = query->idx + 1,
 	        .false_idx = -1,
-	        .expect_else = false,
 	};
 
 	self->scope->parent_scope = fql->_scope;

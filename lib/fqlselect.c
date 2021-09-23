@@ -28,19 +28,9 @@ fqlselect* fqlselect_construct(fqlselect* self)
 {
 	*self = (fqlselect) {
 	        .oper_type = FQL_SELECT,
-	        .api = NULL,
 	        .schema = new_(schema),
-	        .writer = NULL,
-	        .list_data = NULL,
-	        .const_dest = NULL,
-	        .union_selects = NULL,
-	        ._selection_exprs = NULL,
 	        .select__ = &_select_record,
-	        .offset = 0,
-	        .rows_affected = 0,
 	        .top_count = -1,
-	        .rownum = 0,
-	        .is_const = false,
 	        .must_run_once = true,
 	};
 

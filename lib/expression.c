@@ -23,22 +23,8 @@ expression* expression_construct(expression* self,
 {
 	*self = (expression) {
 	        .expr = expr,
-	        .data_source = NULL,
-	        .subquery = NULL,
-	        .rownum_ref = NULL,
-	        .name = {0},
-	        .alias = {0},
-	        .table_name = {0},
-	        .buf = {0},
 	        .field_type = FIELD_UNDEFINED,
-	        .field = {0},
-	        .index = 0,
-	        .location = 0,
-	        .width = 0,
-	        .src_idx = 0,
 	        .subquery_src_idx = -1,
-	        .descending = false,
-	        .is_passthrough = false,
 	};
 
 	string_construct(&self->buf);

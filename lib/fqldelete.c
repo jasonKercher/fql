@@ -15,15 +15,10 @@ fqldelete* fqldelete_construct(fqldelete* self)
 	*self = (fqldelete) {
 	        .oper_type = FQL_DELETE,
 	        .schema = new_(schema),
-	        .writer = NULL,
 	        .undelete__ = &_delete_writer,
-	        .delete_idx = 0,
-	        .delete_node = NULL,
-	        .rows_affected = 0,
 	        .top_count = -1,
 	        .table_idx = -1,
 	        .state = FILTER_OPEN,
-	        .has_matched_alias = false,
 	};
 
 	expression* lol_expr = new_(expression, EXPR_ASTERISK, NULL, "");

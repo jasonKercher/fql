@@ -6,9 +6,6 @@ dnode* dnode_construct(dnode* restrict node, void* restrict data)
 {
 	*node = (dnode) {
 	        .data = data,
-	        .out = {NULL, NULL},
-	        .visit_count = 0,
-	        .is_root = false,
 	};
 
 	return node;
@@ -23,11 +20,8 @@ dgraph* dgraph_construct(dgraph* restrict self)
 {
 	*self = (dgraph) {
 	        .nodes = new_t_(vec, dnode*),
-	        .newest = NULL,
 	        ._trav = new_t_(fifo, dnode*, 5),
 	        ._roots = new_t_(vec, dnode*),
-	        ._root_idx = 0,
-	        ._roots_good = false,
 	};
 
 	return self;

@@ -34,16 +34,8 @@ set* set_construct(set* restrict self, size_t limit, const unsigned props)
 	limit = _next_power_of_2(limit);
 
 	*self = (hashmap) {
-	        .values = NULL,
-	        ._entries = NULL,
-	        ._keys = NULL,
-	        ._key_temp = NULL,
-	        .get_hash__ = NULL,
 	        ._limit = limit,
-	        ._keybuf = NULL,
-	        ._keybuf_head = 0,
 	        ._keybuf_len = limit,
-	        .elem_size = 0,
 	        .props = props,
 	};
 

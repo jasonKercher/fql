@@ -7,7 +7,6 @@ scope* scope_construct(scope* self)
 {
 	*self = (scope) {
 	        .parent_scope = NULL,
-	        .variable_map = {0},
 	        .is_in_block = false,
 	};
 	hashmap_construct_(&self->variable_map, int, 16, HASHMAP_PROP_NOCASE);

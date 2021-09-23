@@ -46,8 +46,6 @@ function* function_construct(function* self,
 	        .call__ = &_not_implemented,
 	        .args = new_t_(vec, expression*),
 	        .type = scalar_type,
-	        .arg_min = 0,
-	        .arg_max = 0,
 	        .char_as_byte = char_as_byte,
 	};
 

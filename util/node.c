@@ -39,7 +39,6 @@ node* node_push(node** head, void* restrict data)
 	node* newnode = malloc_(sizeof(*newnode));
 	*newnode = (node) {
 	        .data = data,
-	        .prev = NULL,
 	        .next = *head,
 	};
 
@@ -105,8 +104,6 @@ node* node_enqueue(node** head, void* restrict data)
 	node* newnode = malloc_(sizeof(*newnode));
 	*newnode = (node) {
 	        .data = data,
-	        .prev = NULL,
-	        .next = NULL,
 	};
 
 	node_enqueue_import(head, newnode);

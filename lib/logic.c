@@ -36,10 +36,6 @@ static const char* _compare_strs[] = {
 logic* logic_construct(logic* self)
 {
 	*self = (logic) {
-	        .expr = {NULL, NULL},
-	        .like_data = NULL,
-	        .in_data = NULL,
-	        .logic__ = NULL,
 	        .data_type = FIELD_UNDEFINED,
 	        .comp_type = COMP_NOT_SET,
 	};
