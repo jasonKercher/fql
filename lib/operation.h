@@ -17,7 +17,7 @@ enum filter_state {
 
 enum fql_operation;
 
-int op_preop(struct fqlhandle*);
+int op_preop(struct query*, struct fqlhandle*);
 struct vec* op_get_expressions(enum fql_operation*);
 struct vec* op_get_additional_exprs(enum fql_operation*);
 struct schema* op_get_schema(enum fql_operation*);
@@ -34,6 +34,7 @@ void op_assign_rownum_ref(enum fql_operation*, struct expression*);
 int op_apply_process(struct query*, struct fqlplan*, bool is_subquery);
 int op_resolve_final_types(enum fql_operation*);
 int op_writer_init(struct query*, struct fqlhandle*);
+int op_reset(enum fql_operation*);
 void op_expand_asterisks(struct query*, bool force_expansion);
 
 void op_destroy(enum fql_operation*);

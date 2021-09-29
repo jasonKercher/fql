@@ -31,6 +31,7 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        .plan_msg = string_from_char_ptr(action),
 	        .union_end_nodes = new_t_(vec, dnode*),
 	        .max_recs_iter = -1,
+	        .plan_id = plan->plan_id,
 	        .in_src_count = plan->source_count,
 	        .out_src_count = plan->source_count,
 	        .root_fifo = PROCESS_NO_PIPE_INDEX,
@@ -126,9 +127,9 @@ void process_activate(process* self, plan* plan, unsigned base_size, unsigned* p
 		self->fifo_in[self->killed_pipe]->is_open = false;
 	}
 
-	if (self->fql_ref->props.verbose) {
-		fprintf(stderr, "Activate process: %s\n", string_c_str(self->plan_msg));
-	}
+	//if (self->fql_ref->props.verbosity > FQL_BASIC) {
+	//	fprintf(stderr, "Activate process: %s\n", string_c_str(self->plan_msg));
+	//}
 }
 
 void process_add_to_wait_list(process* self, process* wait_proc)
@@ -140,6 +141,34 @@ void process_add_to_wait_list(process* self, process* wait_proc)
 	pthread_cond_init(&self->wait_cond, NULL);
 	wait_proc->waitee_proc = self;
 	vec_push_back(self->wait_list, &wait_proc);
+}
+
+void _reset_fifo(process* self, fifo* fifo)
+{
+	if (fifo == NULL) {
+		return;
+	}
+
+	fifo->is_open = true;
+	fifo->head = 0;
+	fifo->tail = 0;
+	fifo->_iter_head = 0;
+}
+
+void process_enable(process* self)
+{
+	self->rows_affected = 0;
+	_reset_fifo(self, self->fifo_in[0]);
+	_reset_fifo(self, self->fifo_in[1]);
+	_reset_fifo(self, self->fifo_out[0]);
+	_reset_fifo(self, self->fifo_out[1]);
+
+	if (self->killed_pipe != PROCESS_NO_PIPE_INDEX) {
+		self->fifo_in[self->killed_pipe]->is_open = false;
+	}
+
+	self->wait_for_in0 = true;
+	self->is_enabled = true;
 }
 
 void process_disable(process* self)
@@ -192,13 +221,13 @@ void process_disable(process* self)
 		pthread_mutex_unlock(&self->waitee_proc->wait_mutex);
 	}
 
-	if (self->fql_ref->props.verbose) {
-		unsigned len = (self->plan_msg->size > 25) ? 25 : self->plan_msg->size;
-		fprintf(stderr,
-		        "Process `%.*s' stopped\n",
-		        len,
-		        string_c_str(self->plan_msg));
-	}
+	//if (self->fql_ref->props.verbosity > FQL_BASIC) {
+	//	unsigned len = (self->plan_msg->size > 25) ? 25 : self->plan_msg->size;
+	//	fprintf(stderr,
+	//	        "Process `%.*s' stopped\n",
+	//	        len,
+	//	        string_c_str(self->plan_msg));
+	//}
 }
 
 bool _check_wait_list(struct vec* wait_list)
@@ -265,6 +294,10 @@ int process_step(plan* plan)
 		ret = _exec_one_pass(plan, proc_graph);
 	} while (ret && ret != FQL_FAIL && plan->rows_affected == org_rows_affected);
 
+	if (ret == 0) {
+		plan->is_complete = true;
+	}
+
 	return (ret > 0) ? 1 : ret;
 }
 
@@ -276,6 +309,8 @@ int process_exec_plan(plan* plan)
 	do {
 		ret = _exec_one_pass(plan, proc_graph);
 	} while (ret && ret != FQL_FAIL);
+
+	plan->is_complete = true;
 
 	return ret;
 }
@@ -393,6 +428,8 @@ int process_exec_plan_thread(plan* plan)
 	vec_destroy(&tdata_vec);
 
 	pthread_exit(NULL);
+
+	plan->is_complete = true;
 
 	return FQL_GOOD;
 }

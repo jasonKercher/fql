@@ -1,5 +1,5 @@
 
-// Generated from TSqlParser.g4 by ANTLR 4.9.2
+// Generated from TSqlParser.g4 by ANTLR 4.9.1
 
 #pragma once
 
@@ -49,59 +49,60 @@ public:
     CHECKSUM_AGG = 189, COMMITTED = 190, CONCAT = 191, CONCAT_NULL_YIELDS_NULL = 192, 
     COUNT = 193, COUNT_BIG = 194, CUME_DIST = 195, CURSOR_CLOSE_ON_COMMIT = 196, 
     CURSOR_DEFAULT = 197, DATA = 198, DATEADD = 199, DATEDIFF = 200, DATENAME = 201, 
-    DATEPART = 202, DAYS = 203, DEFAULT_DOUBLE_QUOTE = 204, DELAYED_DURABILITY = 205, 
-    DELETED = 206, DENSE_RANK = 207, DES = 208, DESCRIPTION = 209, DESX = 210, 
-    DISABLE = 211, DYNAMIC = 212, ELEMENTS = 213, EMPTY = 214, ENCRYPTION = 215, 
-    EXCLUSIVE = 216, FAST = 217, FAST_FORWARD = 218, FIRST = 219, FIRST_VALUE = 220, 
-    FOLLOWING = 221, FORCE = 222, FORCED = 223, FORWARD_ONLY = 224, GETDATE = 225, 
-    GETUTCDATE = 226, GLOBAL = 227, GO_BATCH = 228, GO = 229, GROUPING = 230, 
-    GROUPING_ID = 231, HASH = 232, HIGH = 233, HOURS = 234, IDENTITY_VALUE = 235, 
-    INCLUDE_NULL_VALUES = 236, INPUT = 237, INSENSITIVE = 238, INSERTED = 239, 
-    INT = 240, ISOLATION = 241, KEEP = 242, KEEPFIXED = 243, KEYSET = 244, 
-    LAG = 245, LAST = 246, LAST_VALUE = 247, LEAD = 248, LEVEL = 249, LOCAL = 250, 
-    LOCATION = 251, LOCK = 252, LOCK_ESCALATION = 253, LOOP = 254, LOW = 255, 
-    MANUAL = 256, MARK = 257, MAX = 258, MAXDOP = 259, MAXRECURSION = 260, 
-    MIN = 261, MIN_ACTIVE_ROWVERSION = 262, MINUTES = 263, MODE = 264, NEXT = 265, 
-    NO = 266, NOCOUNT = 267, NODES = 268, NOEXPAND = 269, NOWAIT = 270, 
-    NTILE = 271, NUMANODE = 272, NUMERIC_ROUNDABORT = 273, OBJECT = 274, 
-    OFFSET = 275, ONLINE = 276, ONLY = 277, OPTIMISTIC = 278, OPTIMIZE = 279, 
-    OUT = 280, OUTPUT = 281, OWNER = 282, PARAMETERIZATION = 283, PARTITION = 284, 
-    PARTITIONS = 285, PERCENT_RANK = 286, PERCENTILE_CONT = 287, PERCENTILE_DISC = 288, 
-    PRECEDING = 289, PRIOR = 290, QUERY = 291, QUOTED_IDENTIFIER = 292, 
-    RANGE = 293, RANK = 294, RC2 = 295, RC4 = 296, RC4_128 = 297, READ_ONLY = 298, 
-    READONLY = 299, REBUILD = 300, RECOMPILE = 301, RELATIVE = 302, REMOTE = 303, 
-    REPEATABLE = 304, ROBUST = 305, ROW = 306, ROW_NUMBER = 307, ROWGUID = 308, 
-    ROWS = 309, SCHEMABINDING = 310, SCROLL = 311, SCROLL_LOCKS = 312, SECONDS = 313, 
-    SELF = 314, SEMI_SENSITIVE = 315, SEQUENCE = 316, SERIALIZABLE = 317, 
-    SETERROR = 318, SHARE = 319, SIMPLE = 320, SIZE = 321, SMALLINT = 322, 
-    SNAPSHOT = 323, SPATIAL_WINDOW_MAX_CELLS = 324, STATIC = 325, STATUSONLY = 326, 
-    STDEV = 327, STDEVP = 328, STRING_AGG = 329, STUFF = 330, SUBSCRIPTION = 331, 
-    SUM = 332, TEXTIMAGE_ON = 333, THROW = 334, TIES = 335, TIME = 336, 
-    TINYINT = 337, TRIPLE_DES = 338, TRIPLE_DES_3KEY = 339, TRY = 340, TWO_DIGIT_YEAR_CUTOFF = 341, 
-    TYPE = 342, TYPE_WARNING = 343, UNBOUNDED = 344, UNCOMMITTED = 345, 
-    UNKNOWN = 346, UOW = 347, USING = 348, VAR = 349, VARBINARY_KEYWORD = 350, 
-    VARP = 351, WAIT = 352, WORK = 353, ZONE = 354, DOLLAR_ACTION = 355, 
-    BLOCKING_HIERARCHY = 356, CACHE = 357, CALLED = 358, CHANGETABLE = 359, 
-    CHANGES = 360, CONNECTION = 361, CONTRACT = 362, CYCLE = 363, DATA_COMPRESSION = 364, 
-    DDL = 365, ERROR = 366, EVENT = 367, FORCESEEK = 368, IIF = 369, INCREMENT = 370, 
-    ISNULL = 371, LOG = 372, MATCHED = 373, MAXVALUE = 374, MINVALUE = 375, 
-    NOTIFICATION = 376, PERSISTED = 377, PREDICATE = 378, RESTART = 379, 
-    RETURNS = 380, SHRINKLOG = 381, SOURCE = 382, SQL = 383, STATE = 384, 
-    START = 385, TARGET = 386, WITHOUT = 387, VARCHAR = 388, NVARCHAR = 389, 
-    SPACE = 390, COMMENT = 391, LINE_COMMENT = 392, DOUBLE_QUOTE_ID = 393, 
-    SINGLE_QUOTE = 394, SQUARE_BRACKET_ID = 395, LOCAL_ID = 396, DECIMAL = 397, 
-    ID = 398, STRING = 399, BINARY = 400, FLOAT = 401, REAL = 402, EQUAL = 403, 
-    GREATER = 404, LESS = 405, EXCLAMATION = 406, PLUS_ASSIGN = 407, MINUS_ASSIGN = 408, 
-    MULT_ASSIGN = 409, DIV_ASSIGN = 410, MOD_ASSIGN = 411, AND_ASSIGN = 412, 
-    XOR_ASSIGN = 413, OR_ASSIGN = 414, DOUBLE_BAR = 415, DOT = 416, UNDERLINE = 417, 
-    AT = 418, SHARP = 419, DOLLAR = 420, LR_BRACKET = 421, RR_BRACKET = 422, 
-    COMMA = 423, SEMI = 424, COLON = 425, DOUBLE_COLON = 426, STAR = 427, 
-    DIVIDE = 428, MODULE = 429, PLUS = 430, MINUS = 431, BIT_NOT = 432, 
-    BIT_OR = 433, BIT_AND = 434, BIT_XOR = 435, ANSI_DEFAULTS = 436, ANSI_NULL_DFLT_OFF = 437, 
-    ANSI_NULL_DFLT_ON = 438, ARITHIGNORE = 439, FMTONLY = 440, FORCEPLAN = 441, 
-    IMPLICIT_TRANSACTIONS = 442, NOEXEC = 443, PARSEONLY = 444, REMOTE_PROC_TRANSACTIONS = 445, 
-    SHOWPLAN_ALL = 446, SHOWPLAN_TEXT = 447, SHOWPLAN_XML = 448, XACT_ABORT = 449, 
-    VERSION = 450
+    DATEPART = 202, DAYS = 203, DEFAULT_DOUBLE_QUOTE = 204, DELAY = 205, 
+    DELAYED_DURABILITY = 206, DELETED = 207, DENSE_RANK = 208, DES = 209, 
+    DESCRIPTION = 210, DESX = 211, DISABLE = 212, DYNAMIC = 213, ELEMENTS = 214, 
+    EMPTY = 215, ENCRYPTION = 216, EXCLUSIVE = 217, FAST = 218, FAST_FORWARD = 219, 
+    FIRST = 220, FIRST_VALUE = 221, FOLLOWING = 222, FORCE = 223, FORCED = 224, 
+    FORWARD_ONLY = 225, GETDATE = 226, GETUTCDATE = 227, GLOBAL = 228, GO_BATCH = 229, 
+    GO = 230, GROUPING = 231, GROUPING_ID = 232, HASH = 233, HIGH = 234, 
+    HOURS = 235, IDENTITY_VALUE = 236, INCLUDE_NULL_VALUES = 237, INPUT = 238, 
+    INSENSITIVE = 239, INSERTED = 240, INT = 241, ISOLATION = 242, KEEP = 243, 
+    KEEPFIXED = 244, KEYSET = 245, LAG = 246, LAST = 247, LAST_VALUE = 248, 
+    LEAD = 249, LEVEL = 250, LOCAL = 251, LOCATION = 252, LOCK = 253, LOCK_ESCALATION = 254, 
+    LOOP = 255, LOW = 256, MANUAL = 257, MARK = 258, MAX = 259, MAXDOP = 260, 
+    MAXRECURSION = 261, MIN = 262, MIN_ACTIVE_ROWVERSION = 263, MINUTES = 264, 
+    MODE = 265, NEXT = 266, NO = 267, NOCOUNT = 268, NODES = 269, NOEXPAND = 270, 
+    NOWAIT = 271, NTILE = 272, NUMANODE = 273, NUMERIC_ROUNDABORT = 274, 
+    OBJECT = 275, OFFSET = 276, ONLINE = 277, ONLY = 278, OPTIMISTIC = 279, 
+    OPTIMIZE = 280, OUT = 281, OUTPUT = 282, OWNER = 283, PARAMETERIZATION = 284, 
+    PARTITION = 285, PARTITIONS = 286, PERCENT_RANK = 287, PERCENTILE_CONT = 288, 
+    PERCENTILE_DISC = 289, PRECEDING = 290, PRIOR = 291, QUERY = 292, QUOTED_IDENTIFIER = 293, 
+    RANGE = 294, RANK = 295, RC2 = 296, RC4 = 297, RC4_128 = 298, READ_ONLY = 299, 
+    READONLY = 300, REBUILD = 301, RECOMPILE = 302, RELATIVE = 303, REMOTE = 304, 
+    REPEATABLE = 305, ROBUST = 306, ROW = 307, ROW_NUMBER = 308, ROWGUID = 309, 
+    ROWS = 310, SCHEMABINDING = 311, SCROLL = 312, SCROLL_LOCKS = 313, SECONDS = 314, 
+    SELF = 315, SEMI_SENSITIVE = 316, SEQUENCE = 317, SERIALIZABLE = 318, 
+    SETERROR = 319, SHARE = 320, SIMPLE = 321, SIZE = 322, SMALLINT = 323, 
+    SNAPSHOT = 324, SPATIAL_WINDOW_MAX_CELLS = 325, STATIC = 326, STATUSONLY = 327, 
+    STDEV = 328, STDEVP = 329, STRING_AGG = 330, STUFF = 331, SUBSCRIPTION = 332, 
+    SUM = 333, TEXTIMAGE_ON = 334, THROW = 335, TIES = 336, TIME = 337, 
+    TIMEOUT = 338, TINYINT = 339, TRIPLE_DES = 340, TRIPLE_DES_3KEY = 341, 
+    TRY = 342, TWO_DIGIT_YEAR_CUTOFF = 343, TYPE = 344, TYPE_WARNING = 345, 
+    UNBOUNDED = 346, UNCOMMITTED = 347, UNKNOWN = 348, UOW = 349, USING = 350, 
+    VAR = 351, VARBINARY_KEYWORD = 352, VARP = 353, WAIT = 354, WAITFOR = 355, 
+    WORK = 356, ZONE = 357, DOLLAR_ACTION = 358, BLOCKING_HIERARCHY = 359, 
+    CACHE = 360, CALLED = 361, CHANGETABLE = 362, CHANGES = 363, CONNECTION = 364, 
+    CONTRACT = 365, CYCLE = 366, DATA_COMPRESSION = 367, DDL = 368, ERROR = 369, 
+    EVENT = 370, FORCESEEK = 371, IIF = 372, INCREMENT = 373, ISNULL = 374, 
+    LOG = 375, MATCHED = 376, MAXVALUE = 377, MINVALUE = 378, NOTIFICATION = 379, 
+    PERSISTED = 380, PREDICATE = 381, RESTART = 382, RETURNS = 383, SHRINKLOG = 384, 
+    SOURCE = 385, SQL = 386, STATE = 387, START = 388, TARGET = 389, WITHOUT = 390, 
+    VARCHAR = 391, NVARCHAR = 392, SPACE = 393, COMMENT = 394, LINE_COMMENT = 395, 
+    DOUBLE_QUOTE_ID = 396, SINGLE_QUOTE = 397, SQUARE_BRACKET_ID = 398, 
+    LOCAL_ID = 399, DECIMAL = 400, ID = 401, STRING = 402, BINARY = 403, 
+    FLOAT = 404, REAL = 405, EQUAL = 406, GREATER = 407, LESS = 408, EXCLAMATION = 409, 
+    PLUS_ASSIGN = 410, MINUS_ASSIGN = 411, MULT_ASSIGN = 412, DIV_ASSIGN = 413, 
+    MOD_ASSIGN = 414, AND_ASSIGN = 415, XOR_ASSIGN = 416, OR_ASSIGN = 417, 
+    DOUBLE_BAR = 418, DOT = 419, UNDERLINE = 420, AT = 421, SHARP = 422, 
+    DOLLAR = 423, LR_BRACKET = 424, RR_BRACKET = 425, COMMA = 426, SEMI = 427, 
+    COLON = 428, DOUBLE_COLON = 429, STAR = 430, DIVIDE = 431, MODULE = 432, 
+    PLUS = 433, MINUS = 434, BIT_NOT = 435, BIT_OR = 436, BIT_AND = 437, 
+    BIT_XOR = 438, RECEIVE = 439, ANSI_DEFAULTS = 440, ANSI_NULL_DFLT_OFF = 441, 
+    ANSI_NULL_DFLT_ON = 442, ARITHIGNORE = 443, FMTONLY = 444, FORCEPLAN = 445, 
+    IMPLICIT_TRANSACTIONS = 446, NOEXEC = 447, PARSEONLY = 448, REMOTE_PROC_TRANSACTIONS = 449, 
+    SHOWPLAN_ALL = 450, SHOWPLAN_TEXT = 451, SHOWPLAN_XML = 452, XACT_ABORT = 453, 
+    VERSION = 454
   };
 
   enum {
@@ -110,74 +111,75 @@ public:
     RuleBreak_statement = 8, RuleContinue_statement = 9, RuleGoto_statement = 10, 
     RuleReturn_statement = 11, RuleIf_statement = 12, RuleThrow_statement = 13, 
     RuleThrow_error_number = 14, RuleThrow_message = 15, RuleThrow_state = 16, 
-    RuleTry_catch_statement = 17, RuleWhile_statement = 18, RulePrint_statement = 19, 
-    RuleRaiseerror_statement = 20, RuleEmpty_statement = 21, RuleAnother_statement = 22, 
-    RuleEntity_to = 23, RuleColon_colon = 24, RuleClass_type = 25, RuleClass_type_for_sql_database = 26, 
-    RuleClass_type_for_azure_dw = 27, RuleClass_type_for_parallel_dw = 28, 
-    RuleLock_table = 29, RuleTruncate_table = 30, RuleAlter_sequence = 31, 
-    RuleCreate_sequence = 32, RuleMerge_statement = 33, RuleWhen_matches = 34, 
-    RuleMerge_matched = 35, RuleMerge_not_matched = 36, RuleDelete_statement = 37, 
-    RuleDelete_statement_from = 38, RuleInsert_statement = 39, RuleInsert_statement_value = 40, 
-    RuleSelect_statement_standalone = 41, RuleSelect_statement = 42, RuleTime = 43, 
-    RuleUpdate_statement = 44, RuleOutput_clause = 45, RuleOutput_dml_list_elem = 46, 
-    RuleCreate_or_alter_procedure = 47, RuleCreate_or_alter_function = 48, 
-    RuleFunc_body_returns_select = 49, RuleFunc_body_returns_table = 50, 
-    RuleFunc_body_returns_scalar = 51, RuleProcedure_param = 52, RuleProcedure_option = 53, 
-    RuleFunction_option = 54, RuleCreate_table = 55, RuleTable_options = 56, 
-    RuleAlter_table = 57, RuleDatabase_optionspec = 58, RuleCursor_option = 59, 
-    RuleDrop_procedure = 60, RuleDrop_function = 61, RuleDrop_table = 62, 
-    RuleDeclare_statement = 63, RuleCursor_statement = 64, RuleKill_statement = 65, 
-    RuleKill_process = 66, RuleKill_query_notification = 67, RuleExecute_statement = 68, 
-    RuleExecute_body_batch = 69, RuleExecute_body = 70, RuleExecute_statement_arg = 71, 
-    RuleExecute_statement_arg_named = 72, RuleExecute_statement_arg_unnamed = 73, 
-    RuleExecute_parameter = 74, RuleExecute_var_string = 75, RuleAlgorithm = 76, 
-    RuleSet_statement = 77, RuleTransaction_statement = 78, RuleGo_batch_statement = 79, 
-    RuleGo_statement = 80, RuleUse_statement = 81, RuleShutdown_statement = 82, 
-    RuleDbcc_special = 83, RuleDbcc_clause = 84, RuleDbcc_command = 85, 
-    RuleDbcc_options = 86, RuleExecute_clause = 87, RuleDeclare_local = 88, 
-    RuleTable_type_definition = 89, RuleColumn_def_table_constraints = 90, 
-    RuleColumn_def_table_constraint = 91, RuleColumn_definition = 92, RuleColumn_constraint = 93, 
-    RuleTable_constraint = 94, RuleIndex_options = 95, RuleIndex_option = 96, 
-    RuleDeclare_cursor = 97, RuleDeclare_set_cursor_common = 98, RuleDeclare_set_cursor_common_partial = 99, 
-    RuleFetch_cursor = 100, RuleSet_special = 101, RuleConstant_LOCAL_ID = 102, 
-    RuleExpression = 103, RuleTime_zone = 104, RulePrimitive_expression = 105, 
-    RuleCase_expression = 106, RuleUnary_operator_expression = 107, RuleBracket_expression = 108, 
-    RuleConstant_expression = 109, RuleSubquery = 110, RuleWith_expression = 111, 
-    RuleCommon_table_expression = 112, RuleUpdate_elem = 113, RuleUpdate_elem_merge = 114, 
-    RuleSearch_condition = 115, RulePredicate = 116, RuleQuery_expression = 117, 
-    RuleSql_union = 118, RuleQuery_specification = 119, RuleTop_clause = 120, 
-    RuleTop_percent = 121, RuleTop_count = 122, RuleOrder_by_clause = 123, 
-    RuleOrder_by_expression = 124, RuleGroup_by_item = 125, RuleOption_clause = 126, 
-    RuleOption = 127, RuleOptimize_for_arg = 128, RuleSelect_list = 129, 
-    RuleUdt_method_arguments = 130, RuleAsterisk = 131, RuleColumn_elem = 132, 
-    RuleUdt_elem = 133, RuleExpression_elem = 134, RuleSelect_list_elem = 135, 
-    RuleTable_sources = 136, RuleTable_source = 137, RuleTable_source_item_joined = 138, 
-    RuleTable_source_item = 139, RuleSchema_declaration = 140, RuleColumn_declaration = 141, 
-    RuleChange_table = 142, RuleChange_table_changes = 143, RuleChange_table_version = 144, 
-    RuleJoin_part = 145, RuleJoin_on = 146, RuleCross_join = 147, RuleApply_ = 148, 
-    RulePivot = 149, RuleUnpivot = 150, RulePivot_clause = 151, RuleUnpivot_clause = 152, 
-    RuleFull_column_name_list = 153, RuleTable_name_with_hint = 154, RuleBulk_option = 155, 
-    RuleDerived_table = 156, RuleFunction_call = 157, RulePartition_function = 158, 
-    RuleBuilt_in_functions = 159, RuleNodes_method = 160, RuleSwitch_section = 161, 
-    RuleSwitch_search_condition_section = 162, RuleAs_column_alias = 163, 
-    RuleAs_table_alias = 164, RuleTable_alias = 165, RuleWith_table_hints = 166, 
-    RuleInsert_with_table_hints = 167, RuleTable_hint = 168, RuleIndex_value = 169, 
-    RuleColumn_alias_list = 170, RuleColumn_alias = 171, RuleTable_value_constructor = 172, 
-    RuleExpression_list = 173, RuleRanking_windowed_function = 174, RuleAggregate_windowed_function = 175, 
-    RuleAnalytic_windowed_function = 176, RuleAll_distinct_expression = 177, 
-    RuleOver_clause = 178, RuleRow_or_range_clause = 179, RuleWindow_frame_extent = 180, 
-    RuleWindow_frame_bound = 181, RuleWindow_frame_preceding = 182, RuleWindow_frame_following = 183, 
-    RuleEntity_name = 184, RuleEntity_name_for_azure_dw = 185, RuleEntity_name_for_parallel_dw = 186, 
-    RuleFull_table_name = 187, RuleTable_name = 188, RuleSimple_name = 189, 
-    RuleFunc_proc_name_schema = 190, RuleFunc_proc_name_database_schema = 191, 
-    RuleFunc_proc_name_server_database_schema = 192, RuleDdl_object = 193, 
-    RuleFull_column_name = 194, RuleColumn_name_list_with_order = 195, RuleInsert_column_name_list = 196, 
-    RuleInsert_column_id = 197, RuleColumn_name_list = 198, RuleCursor_name = 199, 
-    RuleOn_off = 200, RuleNull_notnull = 201, RuleNull_or_default = 202, 
-    RuleScalar_function_name = 203, RuleData_type = 204, RuleDefault_value = 205, 
-    RuleConstant = 206, RuleSign = 207, RuleKeyword = 208, RuleId_ = 209, 
-    RuleSimple_id = 210, RuleId_or_string = 211, RuleComparison_operator = 212, 
-    RuleAssignment_operator = 213
+    RuleTry_catch_statement = 17, RuleWaitfor_statement = 18, RuleWhile_statement = 19, 
+    RulePrint_statement = 20, RuleRaiseerror_statement = 21, RuleEmpty_statement = 22, 
+    RuleAnother_statement = 23, RuleEntity_to = 24, RuleColon_colon = 25, 
+    RuleClass_type = 26, RuleClass_type_for_sql_database = 27, RuleClass_type_for_azure_dw = 28, 
+    RuleClass_type_for_parallel_dw = 29, RuleLock_table = 30, RuleTruncate_table = 31, 
+    RuleAlter_sequence = 32, RuleCreate_sequence = 33, RuleMerge_statement = 34, 
+    RuleWhen_matches = 35, RuleMerge_matched = 36, RuleMerge_not_matched = 37, 
+    RuleDelete_statement = 38, RuleDelete_statement_from = 39, RuleInsert_statement = 40, 
+    RuleInsert_statement_value = 41, RuleReceive_statement = 42, RuleSelect_statement_standalone = 43, 
+    RuleSelect_statement = 44, RuleTime = 45, RuleUpdate_statement = 46, 
+    RuleOutput_clause = 47, RuleOutput_dml_list_elem = 48, RuleCreate_or_alter_procedure = 49, 
+    RuleCreate_or_alter_function = 50, RuleFunc_body_returns_select = 51, 
+    RuleFunc_body_returns_table = 52, RuleFunc_body_returns_scalar = 53, 
+    RuleProcedure_param = 54, RuleProcedure_option = 55, RuleFunction_option = 56, 
+    RuleCreate_table = 57, RuleTable_options = 58, RuleAlter_table = 59, 
+    RuleDatabase_optionspec = 60, RuleCursor_option = 61, RuleDrop_procedure = 62, 
+    RuleDrop_function = 63, RuleDrop_table = 64, RuleDeclare_statement = 65, 
+    RuleCursor_statement = 66, RuleKill_statement = 67, RuleKill_process = 68, 
+    RuleKill_query_notification = 69, RuleExecute_statement = 70, RuleExecute_body_batch = 71, 
+    RuleExecute_body = 72, RuleExecute_statement_arg = 73, RuleExecute_statement_arg_named = 74, 
+    RuleExecute_statement_arg_unnamed = 75, RuleExecute_parameter = 76, 
+    RuleExecute_var_string = 77, RuleAlgorithm = 78, RuleSet_statement = 79, 
+    RuleTransaction_statement = 80, RuleGo_batch_statement = 81, RuleGo_statement = 82, 
+    RuleUse_statement = 83, RuleShutdown_statement = 84, RuleDbcc_special = 85, 
+    RuleDbcc_clause = 86, RuleDbcc_command = 87, RuleDbcc_options = 88, 
+    RuleExecute_clause = 89, RuleDeclare_local = 90, RuleTable_type_definition = 91, 
+    RuleColumn_def_table_constraints = 92, RuleColumn_def_table_constraint = 93, 
+    RuleColumn_definition = 94, RuleColumn_constraint = 95, RuleTable_constraint = 96, 
+    RuleIndex_options = 97, RuleIndex_option = 98, RuleDeclare_cursor = 99, 
+    RuleDeclare_set_cursor_common = 100, RuleDeclare_set_cursor_common_partial = 101, 
+    RuleFetch_cursor = 102, RuleSet_special = 103, RuleConstant_LOCAL_ID = 104, 
+    RuleExpression = 105, RuleTime_zone = 106, RulePrimitive_expression = 107, 
+    RuleCase_expression = 108, RuleUnary_operator_expression = 109, RuleBracket_expression = 110, 
+    RuleConstant_expression = 111, RuleSubquery = 112, RuleWith_expression = 113, 
+    RuleCommon_table_expression = 114, RuleUpdate_elem = 115, RuleUpdate_elem_merge = 116, 
+    RuleSearch_condition = 117, RulePredicate = 118, RuleQuery_expression = 119, 
+    RuleSql_union = 120, RuleQuery_specification = 121, RuleTop_clause = 122, 
+    RuleTop_percent = 123, RuleTop_count = 124, RuleOrder_by_clause = 125, 
+    RuleOrder_by_expression = 126, RuleGroup_by_item = 127, RuleOption_clause = 128, 
+    RuleOption = 129, RuleOptimize_for_arg = 130, RuleSelect_list = 131, 
+    RuleUdt_method_arguments = 132, RuleAsterisk = 133, RuleColumn_elem = 134, 
+    RuleUdt_elem = 135, RuleExpression_elem = 136, RuleSelect_list_elem = 137, 
+    RuleTable_sources = 138, RuleTable_source = 139, RuleTable_source_item_joined = 140, 
+    RuleTable_source_item = 141, RuleSchema_declaration = 142, RuleColumn_declaration = 143, 
+    RuleChange_table = 144, RuleChange_table_changes = 145, RuleChange_table_version = 146, 
+    RuleJoin_part = 147, RuleJoin_on = 148, RuleCross_join = 149, RuleApply_ = 150, 
+    RulePivot = 151, RuleUnpivot = 152, RulePivot_clause = 153, RuleUnpivot_clause = 154, 
+    RuleFull_column_name_list = 155, RuleTable_name_with_hint = 156, RuleBulk_option = 157, 
+    RuleDerived_table = 158, RuleFunction_call = 159, RulePartition_function = 160, 
+    RuleBuilt_in_functions = 161, RuleNodes_method = 162, RuleSwitch_section = 163, 
+    RuleSwitch_search_condition_section = 164, RuleAs_column_alias = 165, 
+    RuleAs_table_alias = 166, RuleTable_alias = 167, RuleWith_table_hints = 168, 
+    RuleInsert_with_table_hints = 169, RuleTable_hint = 170, RuleIndex_value = 171, 
+    RuleColumn_alias_list = 172, RuleColumn_alias = 173, RuleTable_value_constructor = 174, 
+    RuleExpression_list = 175, RuleRanking_windowed_function = 176, RuleAggregate_windowed_function = 177, 
+    RuleAnalytic_windowed_function = 178, RuleAll_distinct_expression = 179, 
+    RuleOver_clause = 180, RuleRow_or_range_clause = 181, RuleWindow_frame_extent = 182, 
+    RuleWindow_frame_bound = 183, RuleWindow_frame_preceding = 184, RuleWindow_frame_following = 185, 
+    RuleEntity_name = 186, RuleEntity_name_for_azure_dw = 187, RuleEntity_name_for_parallel_dw = 188, 
+    RuleFull_table_name = 189, RuleTable_name = 190, RuleSimple_name = 191, 
+    RuleFunc_proc_name_schema = 192, RuleFunc_proc_name_database_schema = 193, 
+    RuleFunc_proc_name_server_database_schema = 194, RuleDdl_object = 195, 
+    RuleFull_column_name = 196, RuleColumn_name_list_with_order = 197, RuleInsert_column_name_list = 198, 
+    RuleInsert_column_id = 199, RuleColumn_name_list = 200, RuleCursor_name = 201, 
+    RuleOn_off = 202, RuleNull_notnull = 203, RuleNull_or_default = 204, 
+    RuleScalar_function_name = 205, RuleData_type = 206, RuleDefault_value = 207, 
+    RuleConstant = 208, RuleSign = 209, RuleKeyword = 210, RuleId_ = 211, 
+    RuleSimple_id = 212, RuleId_or_string = 213, RuleComparison_operator = 214, 
+    RuleAssignment_operator = 215
   };
 
   explicit TSqlParser(antlr4::TokenStream *input);
@@ -208,6 +210,7 @@ public:
   class Throw_messageContext;
   class Throw_stateContext;
   class Try_catch_statementContext;
+  class Waitfor_statementContext;
   class While_statementContext;
   class Print_statementContext;
   class Raiseerror_statementContext;
@@ -231,6 +234,7 @@ public:
   class Delete_statement_fromContext;
   class Insert_statementContext;
   class Insert_statement_valueContext;
+  class Receive_statementContext;
   class Select_statement_standaloneContext;
   class Select_statementContext;
   class TimeContext;
@@ -525,6 +529,7 @@ public:
     Return_statementContext *return_statement();
     Throw_statementContext *throw_statement();
     Try_catch_statementContext *try_catch_statement();
+    Waitfor_statementContext *waitfor_statement();
     While_statementContext *while_statement();
     Print_statementContext *print_statement();
     Raiseerror_statementContext *raiseerror_statement();
@@ -717,6 +722,27 @@ public:
   };
 
   Try_catch_statementContext* try_catch_statement();
+
+  class  Waitfor_statementContext : public antlr4::ParserRuleContext {
+  public:
+    Waitfor_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *WAITFOR();
+    Receive_statementContext *receive_statement();
+    antlr4::tree::TerminalNode *COMMA();
+    TimeContext *time();
+    ExpressionContext *expression();
+    antlr4::tree::TerminalNode *SEMI();
+    antlr4::tree::TerminalNode *DELAY();
+    antlr4::tree::TerminalNode *TIME();
+    antlr4::tree::TerminalNode *TIMEOUT();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  Waitfor_statementContext* waitfor_statement();
 
   class  While_statementContext : public antlr4::ParserRuleContext {
   public:
@@ -1224,6 +1250,41 @@ public:
   };
 
   Insert_statement_valueContext* insert_statement_value();
+
+  class  Receive_statementContext : public antlr4::ParserRuleContext {
+  public:
+    TSqlParser::Id_Context *table_variable = nullptr;
+    TSqlParser::Search_conditionContext *where = nullptr;
+    Receive_statementContext(antlr4::ParserRuleContext *parent, size_t invokingState);
+    virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *RECEIVE();
+    antlr4::tree::TerminalNode *FROM();
+    Full_table_nameContext *full_table_name();
+    antlr4::tree::TerminalNode *ALL();
+    antlr4::tree::TerminalNode *DISTINCT();
+    Top_clauseContext *top_clause();
+    antlr4::tree::TerminalNode *STAR();
+    antlr4::tree::TerminalNode *LR_BRACKET();
+    std::vector<antlr4::tree::TerminalNode *> LOCAL_ID();
+    antlr4::tree::TerminalNode* LOCAL_ID(size_t i);
+    std::vector<antlr4::tree::TerminalNode *> EQUAL();
+    antlr4::tree::TerminalNode* EQUAL(size_t i);
+    std::vector<ExpressionContext *> expression();
+    ExpressionContext* expression(size_t i);
+    antlr4::tree::TerminalNode *INTO();
+    antlr4::tree::TerminalNode *RR_BRACKET();
+    Id_Context *id_();
+    antlr4::tree::TerminalNode *WHERE();
+    std::vector<antlr4::tree::TerminalNode *> COMMA();
+    antlr4::tree::TerminalNode* COMMA(size_t i);
+    Search_conditionContext *search_condition();
+
+    virtual void enterRule(antlr4::tree::ParseTreeListener *listener) override;
+    virtual void exitRule(antlr4::tree::ParseTreeListener *listener) override;
+   
+  };
+
+  Receive_statementContext* receive_statement();
 
   class  Select_statement_standaloneContext : public antlr4::ParserRuleContext {
   public:
@@ -5150,6 +5211,7 @@ public:
     antlr4::tree::TerminalNode *DATEPART();
     antlr4::tree::TerminalNode *DAYS();
     antlr4::tree::TerminalNode *DEFAULT_DOUBLE_QUOTE();
+    antlr4::tree::TerminalNode *DELAY();
     antlr4::tree::TerminalNode *DELAYED_DURABILITY();
     antlr4::tree::TerminalNode *DELETED();
     antlr4::tree::TerminalNode *DENSE_RANK();
@@ -5278,6 +5340,7 @@ public:
     antlr4::tree::TerminalNode *THROW();
     antlr4::tree::TerminalNode *TIES();
     antlr4::tree::TerminalNode *TIME();
+    antlr4::tree::TerminalNode *TIMEOUT();
     antlr4::tree::TerminalNode *TINYINT();
     antlr4::tree::TerminalNode *TRIPLE_DES();
     antlr4::tree::TerminalNode *TRIPLE_DES_3KEY();

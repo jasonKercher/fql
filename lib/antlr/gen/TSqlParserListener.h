@@ -1,5 +1,5 @@
 
-// Generated from TSqlParser.g4 by ANTLR 4.9.2
+// Generated from TSqlParser.g4 by ANTLR 4.9.1
 
 #pragma once
 
@@ -67,6 +67,9 @@ public:
 
   virtual void enterTry_catch_statement(TSqlParser::Try_catch_statementContext *ctx) = 0;
   virtual void exitTry_catch_statement(TSqlParser::Try_catch_statementContext *ctx) = 0;
+
+  virtual void enterWaitfor_statement(TSqlParser::Waitfor_statementContext *ctx) = 0;
+  virtual void exitWaitfor_statement(TSqlParser::Waitfor_statementContext *ctx) = 0;
 
   virtual void enterWhile_statement(TSqlParser::While_statementContext *ctx) = 0;
   virtual void exitWhile_statement(TSqlParser::While_statementContext *ctx) = 0;
@@ -136,6 +139,9 @@ public:
 
   virtual void enterInsert_statement_value(TSqlParser::Insert_statement_valueContext *ctx) = 0;
   virtual void exitInsert_statement_value(TSqlParser::Insert_statement_valueContext *ctx) = 0;
+
+  virtual void enterReceive_statement(TSqlParser::Receive_statementContext *ctx) = 0;
+  virtual void exitReceive_statement(TSqlParser::Receive_statementContext *ctx) = 0;
 
   virtual void enterSelect_statement_standalone(TSqlParser::Select_statement_standaloneContext *ctx) = 0;
   virtual void exitSelect_statement_standalone(TSqlParser::Select_statement_standaloneContext *ctx) = 0;

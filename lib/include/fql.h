@@ -11,6 +11,12 @@ extern "C" {
 #define FQL_NULL -1
 #define FQL_GOOD 0
 
+enum fql_verbose {
+	FQL_QUIET,
+	FQL_BASIC,
+	FQL_NOISY,
+};
+
 enum fql_type {
 	FQL_UNDEFINED = -1,
 	FQL_INT,
@@ -19,9 +25,10 @@ enum fql_type {
 };
 
 enum fql_operation {
-	FQL_NONE,
+	FQL_NONE = -1,
 	FQL_IF,
 	FQL_SET,
+	FQL_WHILE,
 	FQL_SELECT,
 	FQL_DELETE,
 	FQL_UPDATE,
@@ -63,7 +70,7 @@ int fql_reset(struct fqlhandle*);
 /**
  * set verbose to receive extra output via stderr
  */
-void fql_set_verbose(struct fqlhandle*, int);
+void fql_set_verbose(struct fqlhandle*, enum fql_verbose);
 
 /**
  * Do nothing other than run the parser.
@@ -251,6 +258,28 @@ void fql_set_allow_stdin(struct fqlhandle* fql, int);
  */
 int fql_import_variable(struct fqlhandle* fql, const char*);
 
+/** status **/
+
+/**
+ * If a plan has been built, you can use this to retrieve
+ * the number of fields coming your way.
+ * If no plan has been built, this will return 0.
+ */
+int fql_field_count(struct fqlhandle*);
+
+
+/**
+ * Return a string to the text that shows a preview of
+ * the currently active query.
+ */
+const char* fql_get_operation_text(struct fqlhandle*);
+
+/**
+ * Return a enum operation that corresponds to the
+ * currently active query.
+ */
+enum fql_operation fql_get_operation_type(struct fqlhandle*);
+
 /** executing **/
 
 /**
@@ -290,11 +319,23 @@ int fql_exec_all_plans(struct fqlhandle* fql);
 int fql_exec_plans(struct fqlhandle* fql, int plan_count);
 
 /**
- * If a plan has been built, you can use this to retrieve
- * the number of fields coming your way.
- * If no plan has been built, this will return 0.
+ * Execute queries until a select is reached. The purpose here
+ * is to be able to easily plug in the API to a query like the
+ * following query where @var is based on user input:
+ *
+ *     DECLARE @var int
+ *     IF @var > 30
+ *         SET @var = 30
+ *
+ *     SELECT @var
+ *
+ * It would be challenging to read this with the API because you
+ * would need to check each individual statement with
+ * fql_get_operation_type until you hit a SELECT.
+ *
+ * NOTE: This function will not stop for a SELECT with an INTO.
  */
-int fql_field_count(struct fqlhandle*);
+int fql_exec_until_select(struct fqlhandle*);
 
 #ifdef __cplusplus
 }  /* extern "C" */

@@ -238,10 +238,10 @@ void string_find_replace_limited(string* restrict s,
                                  unsigned newlen)
 {
 	unsigned i = 0;
-	for (; i < s->size; ++i) {
+	while (i < s->size) {
 		const char* next =
 		        string_find_replace_one_limited(s, oldstr, newstr, i, newlen);
-		i += next - (const char*)vec_begin(s);
+		i = next - (const char*)vec_begin(s);
 	}
 }
 
@@ -306,13 +306,13 @@ void string_find_replace_nocase_limited(string* restrict s,
                                         unsigned newlen)
 {
 	unsigned i = 0;
-	for (; i < s->size; ++i) {
+	while (i < s->size) {
 		const char* next = string_find_replace_one_nocase_limited(s,
 		                                                          oldstr,
 		                                                          newstr,
 		                                                          i,
 		                                                          newlen);
-		i += next - (const char*)vec_begin(s);
+		i = next - (const char*)vec_begin(s);
 	}
 }
 

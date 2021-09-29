@@ -28,12 +28,15 @@ struct fqlplan {
 	bool is_const;
 	bool has_stepped;
 	bool loose_groups;
+	bool is_complete;
 };
 typedef struct fqlplan plan;
 
 struct fqlplan* plan_construct(struct fqlplan*, struct query*, struct fqlhandle*);
 void plan_destroy(void*);
 
+void plan_pipeline_root_preempt(struct fqlplan*);
+void plan_reset(struct fqlplan*);
 int plan_logic_to_process(struct fqlplan*, struct process*, struct logicgroup*);
 int plan_logicgroup_to_process(struct fqlplan*,
                                struct logicgroup*,
@@ -42,5 +45,6 @@ int plan_logicgroup_to_process(struct fqlplan*,
 
 int plan_build(struct fqlhandle*);
 void plan_print(struct fqlhandle*);
+
 
 #endif /* FQLPLAN_H */

@@ -22,6 +22,7 @@ void op_destroy(enum fql_operation* self)
 	case FQL_SET:
 		fqlset_destroy((fqlset*)self);
 		break;
+	case FQL_WHILE:
 	case FQL_IF:
 		fqlbranch_destroy((fqlbranch*)self);
 		break;
@@ -65,6 +66,7 @@ vec* op_get_additional_exprs(enum fql_operation* self)
 	case FQL_SELECT:
 	case FQL_DELETE:
 	case FQL_SET:
+	case FQL_WHILE:
 	case FQL_IF:
 	case FQL_NONE:
 		return NULL;
@@ -87,6 +89,7 @@ schema* op_get_schema(enum fql_operation* self)
 		return update->schema;
 	}
 	case FQL_SET:
+	case FQL_WHILE:
 	case FQL_IF:
 	case FQL_NONE:
 		return NULL;
@@ -108,6 +111,7 @@ const char* op_get_table_name(enum fql_operation* self)
 	}
 	case FQL_SELECT:
 	case FQL_SET:
+	case FQL_WHILE:
 	case FQL_IF:
 	case FQL_NONE:
 		return NULL;
@@ -145,6 +149,7 @@ void op_match_table_alias(enum fql_operation* self, table* check_table)
 	}
 	case FQL_SELECT:
 	case FQL_SET:
+	case FQL_WHILE:
 	case FQL_IF:
 	case FQL_NONE:
 		return;
@@ -195,59 +200,56 @@ void op_set_top_count(enum fql_operation* self, size_t top_count)
 		break;
 	}
 	case FQL_SET:
+	case FQL_WHILE:
 	case FQL_IF:
 	case FQL_NONE:;
 	}
 }
 
-int op_preop(struct fqlhandle* fql)
+int op_preop(query* query, fqlhandle* fql)
 {
-	query** query = vec_at(fql->query_vec, fql->query_idx);
-	enum fql_operation* type = (*query)->op;
-
-	/* if there are any variables in the query,
-	 * resolve them now
-	 */
-
-	unsigned i = 0;
-	for (; i < (*query)->variable_indicies->size; ++i) {
-		int* var_idx = vec_at((*query)->variable_indicies, i);
-		expression** var_expr = vec_at((*query)->variable_expressions, i);
-		variable* var = vec_at(fql->variables, *var_idx);
-		expression_set_variable(*var_expr, var);
-	}
-
-	/* Re-open files that require it */
-	table* it = vec_begin((*query)->sources);
-	for (; it != vec_end((*query)->sources); ++it) {
-		if (it->must_reopen) {
-			try_(reader_reopen(it->reader));
-		}
-	}
-
-	if ((*query)->plan->has_stepped) {
+	if (query->plan->has_stepped) {
 		return FQL_GOOD;
 	}
 
+	enum fql_operation* type = query->op;
 	switch (*type) {
 	case FQL_SET:
-		fqlset_preop((*query)->op, *query);
+		fqlset_preop(query->op, query);
 		break;
+	case FQL_WHILE:
 	case FQL_IF:
-		fqlbranch_preop((*query)->op, *query);
+		fqlbranch_preop(query->op, query);
 		break;
 	case FQL_SELECT:
-		fqlselect_preop((*query)->op, *query, fql);
+		fqlselect_preop(query->op, query, fql);
 		break;
 	case FQL_DELETE:
-		fqldelete_preop((*query)->op, *query);
+		fqldelete_preop(query->op, query);
 		break;
 	case FQL_UPDATE:
-		fqlupdate_preop((*query)->op, *query);
+		fqlupdate_preop(query->op, query);
 		break;
 	case FQL_NONE:;
 	}
 
+	return FQL_GOOD;
+}
+
+int op_reset(enum fql_operation* self)
+{
+	switch (*self) {
+	case FQL_SELECT:
+		return fqlselect_reset((fqlselect*)self);
+	case FQL_SET:
+	case FQL_WHILE:
+	case FQL_IF:
+	case FQL_DELETE:
+	case FQL_UPDATE:
+		return FQL_GOOD;
+	case FQL_NONE:
+		return FQL_FAIL;
+	}
 	return FQL_GOOD;
 }
 
@@ -267,6 +269,7 @@ writer* op_get_writer(enum fql_operation* self)
 		return update->writer;
 	}
 	case FQL_SET:
+	case FQL_WHILE:
 	case FQL_IF:
 	case FQL_NONE:
 		return NULL;
@@ -302,6 +305,7 @@ void op_set_writer(enum fql_operation* self, writer* src_writer)
 		break;
 	}
 	case FQL_SET:
+	case FQL_WHILE:
 	case FQL_IF:
 	case FQL_NONE:;
 	}
@@ -343,6 +347,7 @@ void op_assign_rownum_ref(enum fql_operation* self, expression* expr)
 	}
 	case FQL_DELETE:
 	case FQL_SET:
+	case FQL_WHILE:
 	case FQL_IF:
 	case FQL_NONE:
 		break;
@@ -354,12 +359,13 @@ int op_writer_init(query* query, struct fqlhandle* fql)
 {
 	enum fql_operation* self = query->op;
 	schema* op_schema = op_get_schema(query->op);
-	writer* op_writer = NULL;
-	if (op_schema != NULL && !query->union_id) {
+	writer* op_writer = op_get_writer(query->op);
+
+	bool first_pass = (op_writer == NULL);
+	if (first_pass && op_schema != NULL && !query->union_id) {
 		op_writer = new_(writer, op_schema->write_io_type, fql);
 		op_set_writer(self, op_writer);
 	}
-	op_get_writer(query->op);
 
 	/* Retrieve op_table */
 	table* op_table = NULL;
@@ -376,11 +382,12 @@ int op_writer_init(query* query, struct fqlhandle* fql)
 	}
 	case FQL_SELECT:
 	case FQL_SET:
+	case FQL_WHILE:
 	case FQL_IF:
 	case FQL_NONE:;
 	}
 
-	if (op_table != NULL) {
+	if (op_table != NULL && query->into_table_name == NULL) {
 		/* query owns this so we dup it */
 		query->into_table_name =
 		        strdup(string_c_str(&op_table->reader->file_name));
@@ -413,6 +420,10 @@ int op_writer_init(query* query, struct fqlhandle* fql)
 		try_(order_init_io(query->orderby, in_name, out_name));
 		/* take_filename takes ownership, must free */
 		free_(out_name);
+	}
+
+	if (!first_pass) {
+		return FQL_GOOD;
 	}
 
 	if (*self == FQL_SELECT) {
@@ -450,6 +461,7 @@ int op_apply_process(query* query, plan* plan, bool is_subquery)
 	switch (*self) {
 	case FQL_SET:
 		return fqlset_apply_process(query, plan);
+	case FQL_WHILE:
 	case FQL_IF:
 		return fqlbranch_apply_process(query, plan);
 	case FQL_SELECT:
@@ -473,6 +485,7 @@ int op_resolve_final_types(enum fql_operation* self)
 		return fqlupdate_resolve_final_types((fqlupdate*)self);
 	case FQL_DELETE:
 	case FQL_SET:
+	case FQL_WHILE:
 	case FQL_IF:
 	case FQL_NONE:
 		return FQL_GOOD;

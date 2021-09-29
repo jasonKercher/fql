@@ -85,6 +85,7 @@ cfl_statement
     | return_statement
     | throw_statement
     | try_catch_statement
+    | waitfor_statement
     | while_statement
     | print_statement
     | raiseerror_statement
@@ -141,6 +142,11 @@ throw_state
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/try-catch-transact-sql
 try_catch_statement
     : BEGIN TRY ';'? try_clauses=sql_clauses+ END TRY ';'? BEGIN CATCH ';'? catch_clauses=sql_clauses* END CATCH ';'?
+    ;
+
+// https://docs.microsoft.com/en-us/sql/t-sql/language-elements/waitfor-transact-sql
+waitfor_statement
+    : WAITFOR receive_statement? ','? ((DELAY | TIME | TIMEOUT) time)?  expression? ';'?
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/language-elements/while-transact-sql
@@ -309,6 +315,11 @@ insert_statement_value
     | DEFAULT VALUES
     ;
 
+receive_statement
+    : '('? RECEIVE (ALL | DISTINCT | top_clause | '*')
+      (LOCAL_ID '=' expression ','?)* FROM full_table_name
+      (INTO table_variable=id_ (WHERE where=search_condition))? ')'?
+    ;
 
 // https://msdn.microsoft.com/en-us/library/ms189499.aspx
 select_statement_standalone
@@ -1424,6 +1435,7 @@ keyword
     | DATEPART
     | DAYS
     | DEFAULT_DOUBLE_QUOTE
+    | DELAY
     | DELAYED_DURABILITY
     | DELETED
     | DENSE_RANK
@@ -1552,6 +1564,7 @@ keyword
     | THROW
     | TIES
     | TIME
+    | TIMEOUT
     | TINYINT
     | TRIPLE_DES
     | TRIPLE_DES_3KEY

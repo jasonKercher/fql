@@ -17,12 +17,12 @@
 #include "util/util.h"
 #include "util/node.h"
 
-int _select_record(fqlselect*, struct node*);
-int _select_record_api(fqlselect*, struct node*);
-int _select_record_order_api(fqlselect*, struct node*);
-int _select_record_to_list(fqlselect*, struct node*);
-int _select_record_to_const(fqlselect*, struct node*);
-int _select_subquery(fqlselect*, struct node*);
+int _select_record(fqlselect*, node*);
+int _select_record_api(fqlselect*, node*);
+int _select_record_order_api(fqlselect*, node*);
+int _select_record_to_list(fqlselect*, node*);
+int _select_record_to_const(fqlselect*, node*);
+int _select_subquery(fqlselect*, node*);
 
 fqlselect* fqlselect_construct(fqlselect* self)
 {
@@ -44,9 +44,18 @@ void fqlselect_destroy(fqlselect* self)
 	if (self == NULL) {
 		return;
 	}
-	//node_free(&self->union_selects);
+
 	delete_if_exists_(writer, self->writer);
 	delete_(schema, self->schema);
+	if (self->header_as_exprs == NULL) {
+		return;
+	}
+
+	expression** it = vec_begin(self->header_as_exprs);
+	for (; it != vec_end(self->header_as_exprs); ++it) {
+		delete_(expression, *it);
+	}
+	delete_(vec, self->header_as_exprs);
 }
 
 unsigned fqlselect_get_field_count(fqlselect* self, const vec* sources)
@@ -193,7 +202,11 @@ void fqlselect_apply_process(query* query, plan* plan, bool is_subquery_source)
 	proc->proc_data = self;
 
 	if (self->const_dest != NULL) {
-		self->select__ = &_select_record_to_const;
+		if (query->orderby == NULL) {
+			self->select__ = &_select_record_to_const;
+		} else {
+			self->select__ = &_select_record_order_api;
+		}
 	} else if (is_subquery_source) {
 		self->select__ = &_select_subquery;
 	}
@@ -292,17 +305,15 @@ void fqlselect_verify_must_run(fqlselect* self)
 	}
 }
 
-
-void fqlselect_preop(fqlselect* self, query* query, struct fqlhandle* fql)
+int fqlselect_reset(fqlselect* self)
 {
-	if (self->schema->write_io_type != IO_LIBCSV
-	    || (!self->schema->is_default && !fql->props.add_header)
-	    || (self->schema->is_default && !fql->props.print_header)) {
-		return;
-	}
+	self->offset = 0;
+	return FQL_GOOD;
+}
 
-	vec header;
-	vec_construct_(&header, expression*);
+void _preop_build_header(fqlselect* self, query* query)
+{
+	self->header_as_exprs = new_t_(vec, expression*);
 
 	/* print header */
 	expression** it = vec_begin(self->schema->expressions);
@@ -317,7 +328,7 @@ void fqlselect_preop(fqlselect* self, query* query, struct fqlhandle* fql)
 				string_copy(&field_expr->buf, &(*it2)->alias);
 				field_expr->field.s = &field_expr->buf;
 				field_expr->field_type = FIELD_STRING;
-				vec_push_back(&header, &field_expr);
+				vec_push_back(self->header_as_exprs, &field_expr);
 			}
 			continue;
 		}
@@ -325,21 +336,36 @@ void fqlselect_preop(fqlselect* self, query* query, struct fqlhandle* fql)
 		string_copy(&field_expr->buf, &(*it)->alias);
 		field_expr->field.s = &field_expr->buf;
 		field_expr->field_type = FIELD_STRING;
-		vec_push_back(&header, &field_expr);
+		vec_push_back(self->header_as_exprs, &field_expr);
+	}
+
+}
+
+
+void fqlselect_preop(fqlselect* self, query* query, fqlhandle* fql)
+{
+	/* reset */
+	self->rows_affected = 0;
+
+	if (self->schema->write_io_type != IO_LIBCSV
+	    || (!self->schema->is_default && !fql->props.add_header)
+	    || (self->schema->is_default && !fql->props.print_header)) {
+		return;
+	}
+
+	if (self->header_as_exprs == NULL) {
+		_preop_build_header(self, query);
 	}
 
 	writer* writer = self->writer;
 	if (query->orderby != NULL) {
-		writer->write_record__(writer, &header, NULL, query->orderby->out_file);
+		writer->write_record__(writer,
+		                       self->header_as_exprs,
+		                       NULL,
+		                       query->orderby->out_file);
 	} else {
-		writer->write_record__(writer, &header, NULL, NULL);
+		writer->write_record__(writer, self->header_as_exprs, NULL, NULL);
 	}
-
-	it = vec_begin(&header);
-	for (; it != vec_end(&header); ++it) {
-		delete_(expression, *it);
-	}
-	vec_destroy(&header);
 }
 
 int _select_record(fqlselect* self, node* rg)
@@ -366,7 +392,7 @@ int _select_record(fqlselect* self, node* rg)
 	return ret;
 }
 
-int _select_record_api(fqlselect* self, struct node* rg)
+int _select_record_api(fqlselect* self, node* rg)
 {
 	++self->rownum;
 	vec* expr_vec = self->_selection_exprs;
@@ -411,7 +437,7 @@ int _select_record_api(fqlselect* self, struct node* rg)
 	return 1;
 }
 
-int _select_record_order_api(fqlselect* self, struct node* rg)
+int _select_record_order_api(fqlselect* self, node* rg)
 {
 	++self->rownum;
 	FILE* order_input = writer_get_file(self->writer);

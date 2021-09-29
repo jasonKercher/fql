@@ -42,8 +42,8 @@ plan* plan_construct(plan* self, query* query, fqlhandle* fql)
 	self->plan_id = query->query_id;
 	self->source_count = query->sources->size;
 
-	self->op_true = new_(dnode, new_(process, "FQL_TRUE", self));
-	self->op_false = new_(dnode, new_(process, "FQL_FALSE", self));
+	self->op_true = new_(dnode, new_(process, "OP_TRUE", self));
+	self->op_false = new_(dnode, new_(process, "OP_FALSE", self));
 
 	self->source_count = 0;
 
@@ -90,11 +90,41 @@ void plan_destroy(void* generic_plan)
 	delete_(vec, self->_root_data);
 }
 
+void _check_all_for_special_expression(plan* self, process* proc, vec* expressions);
 int _build(query*, fqlhandle*, dnode* entry, bool is_union);
 void _print_plan(plan*);
 void _activate_procs(plan*);
 void _calculate_execution_order(plan*);
-void _check_all_for_special_expression(plan* self, process* proc, vec* expressions);
+
+void plan_pipeline_root_preempt(plan* self)
+{
+	fifo** root_fifos = vec_begin(self->root_fifo_vec);
+
+	/* Clear these so we can insert root records 1 by 1... */
+	unsigned i = 0;
+	for (; i < self->root_fifo_vec->size; ++i) {
+		vec_clear(root_fifos[i]->buf);
+	}
+
+	/* Evenly divide the records amongst the root fifos */
+	node* it = vec_begin(self->_root_data);
+	for (i = 0; it != vec_end(self->_root_data); ++it, ++i) {
+		record* new_rec = new_(record, i);
+		it->data = new_rec;
+		new_rec->root_fifo_idx = i % self->root_fifo_vec->size;
+		vec_push_back(root_fifos[new_rec->root_fifo_idx]->buf, &it);
+	}
+
+	/* preempt */
+	fifo** fifo_iter = vec_begin(self->root_fifo_vec);
+	for (; fifo_iter != vec_end(self->root_fifo_vec); ++fifo_iter) {
+		if (self->is_const) {
+			fifo_advance(*fifo_iter);
+		} else {
+			fifo_set_full(*fifo_iter);
+		}
+	}
+}
 
 void _check_for_special_expression(plan* self, process* proc, expression* expr)
 {
@@ -143,6 +173,23 @@ int _subquery_inlist(plan* self, process* logic_proc, logicgroup* lg)
 	lg->condition->comp_type = COMP_SUBIN;
 	process_add_to_wait_list(logic_proc, subquery->plan->op_true->data);
 	return FQL_GOOD;
+}
+
+void plan_reset(plan* self)
+{
+	if (!self->is_complete) {
+		return;
+	}
+	self->is_complete = false;
+	self->rows_affected = 0;
+
+	dnode** it = vec_begin(self->processes->nodes);
+	for (; it != vec_end(self->processes->nodes); ++it) {
+		process* proc = (*it)->data;
+		process_enable(proc);
+	}
+
+	plan_pipeline_root_preempt(self);
 }
 
 /* build process nodes from logic graph
@@ -677,11 +724,14 @@ void _make_pipes(plan* self)
 	}
 }
 
-void _mark_roots_const(vec* roots)
+void _mark_roots_const(vec* roots, int plan_id)
 {
 	dnode** it = vec_begin(roots);
 	for (; it != vec_end(roots); ++it) {
 		process* proc = (*it)->data;
+		if (proc->plan_id != plan_id) {
+			continue;
+		}
 		if (proc->action__ != fql_read) {
 			if (proc->root_fifo == PROCESS_NO_PIPE_INDEX) {
 				proc->root_fifo = 0;
@@ -757,7 +807,7 @@ int _build(query* aquery, fqlhandle* fql, dnode* entry, bool is_union)
 	dgraph_get_roots(self->processes);
 
 	if (vec_empty(aquery->sources)) {
-		_mark_roots_const(self->processes->_roots);
+		_mark_roots_const(self->processes->_roots, self->plan_id);
 	}
 
 	self->is_const = _all_roots_are_const(self->processes->_roots);
@@ -938,32 +988,8 @@ unrolled_break : {
 	self->_root_data = new_t_(vec, node);
 	vec_resize_and_zero(self->_root_data, root_size);
 
-	fifo** root_fifos = vec_begin(self->root_fifo_vec);
-
-	/* Clear these so we can insert root records 1 by 1... */
-	unsigned i = 0;
-	for (; i < self->root_fifo_vec->size; ++i) {
-		vec_clear(root_fifos[i]->buf);
-	}
-
-	/* Evenly divide the records amongst the root fifos */
-	node* it = vec_begin(self->_root_data);
-	for (i = 0; it != vec_end(self->_root_data); ++it, ++i) {
-		record* new_rec = new_(record, i);
-		it->data = new_rec;
-		new_rec->root_fifo_idx = i % self->root_fifo_vec->size;
-		vec_push_back(root_fifos[new_rec->root_fifo_idx]->buf, &it);
-	}
-
-	/* Preempt the pipes */
-	for (i = 0; i < self->root_fifo_vec->size; ++i) {
-		if (self->is_const) {
-			fifo_advance(root_fifos[i]);
-		} else {
-			fifo_set_full(root_fifos[i]);
-		}
-	}
-}
+	plan_pipeline_root_preempt(self);
+} /* unrolled_break */
 }
 
 /* The execution order is defined by a graph traversal. The order should

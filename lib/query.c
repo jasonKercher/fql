@@ -9,13 +9,14 @@
 #include "group.h"
 #include "order.h"
 #include "field.h"
+#include "reader.h"
+#include "fqlset.h"
 #include "fqlbranch.h"
 #include "function.h"
 #include "fqlselect.h"
 #include "fqldelete.h"
 #include "fqlupdate.h"
 #include "aggregate.h"
-#include "fqlset.h"
 #include "expression.h"
 #include "switchcase.h"
 #include "util/util.h"
@@ -44,6 +45,7 @@ query* query_construct(query* self, int id)
 	        .variable_indicies = new_t_(vec, int),
 	        .variable_expressions = new_t_(vec, expression*),
 	        .unions = new_t_(vec, query*),
+	        .text = new_(string),
 	        .top_count = -1,
 	        .query_id = id,
 	        .mode = MODE_UNDEFINED,
@@ -62,6 +64,7 @@ void query_destroy(query* self)
 	delete_(vec, self->sources);
 	delete_(vec, self->variable_indicies);
 	delete_(vec, self->variable_expressions);
+	delete_(string, self->text);
 
 	delete_if_exists_(op, self->op);
 	delete_if_exists_(logicgroup, self->where);
@@ -95,6 +98,53 @@ void query_release_sources(query* self)
 	vec_resize(self->sources, 0);
 }
 
+/** pre-flight **/
+int _query_preflight(query* self, fqlhandle* fql, bool has_executed)
+{
+	query** query_iter = vec_begin(self->subquery_const_vec);
+	for (; query_iter != vec_end(self->subquery_const_vec); ++query_iter) {
+		_query_preflight(*query_iter, fql, has_executed);
+	}
+
+	unsigned i = 0;
+	for (; i < self->variable_indicies->size; ++i) {
+		int* var_idx = vec_at(self->variable_indicies, i);
+		expression** var_expr = vec_at(self->variable_expressions, i);
+		variable* var = vec_at(fql->variables, *var_idx);
+		expression_set_variable(*var_expr, var);
+	}
+
+	if (has_executed) {
+		try_(op_writer_init(self, fql));
+	}
+
+	/* need to reset all readers */
+	table* it = vec_begin(self->sources);
+	for (; it != vec_end(self->sources); ++it) {
+		if (it->must_reopen) {
+			try_(reader_reopen(it->reader));
+		} else if (has_executed) {
+			it->reader->reset__(it->reader);
+		}
+	}
+
+	try_(op_reset(self->op));
+
+	return FQL_GOOD;
+}
+
+/* This function should contain everything required
+ * to initialize, use and re-use a query/statement.
+ */
+int query_prepare(query* self, fqlhandle* fql)
+{
+	try_(_query_preflight(self, fql, self->plan->is_complete));
+	try_(op_preop(self, fql));
+	plan_reset(self->plan);
+	return FQL_GOOD;
+}
+
+
 /** control flow **/
 void query_enter_block(fqlhandle* fql)
 {
@@ -113,11 +163,13 @@ void query_exit_block(query* self, fqlhandle* fql)
 		fql->branch_state = BRANCH_EXPECT_ELSE;
 	} else {
 		fql->branch_state = BRANCH_EXPECT_EXIT;
+		branch->false_idx = fql->query_vec->size;
 	}
 }
 
 int query_enter_if(query* self,
                    fqlhandle* fql,
+                   node* query_stack,
                    enum fql_operation operation,
                    bool expect_else)
 {
@@ -128,11 +180,10 @@ int query_enter_if(query* self,
 	default:;
 	}
 
-	try_(query_init_op(self, fql, operation, NULL));
+	try_(query_init_op(self, fql, query_stack, operation));
 
 	fqlbranch* branch = self->op;
 	branch->expect_else = expect_else;
-	fql->branch_state = BRANCH_EXPECT_EXPR;
 
 	return FQL_GOOD;
 }
@@ -147,13 +198,42 @@ void query_exit_if(query* self, fqlhandle* fql)
 	}
 }
 
+int query_enter_set(query* self,
+                    fqlhandle* fql,
+                    node* query_stack,
+                    enum fql_operation operation,
+                    const char* varname)
+{
+	int idx = try_(scope_get_var_index(fql->_scope, varname));
+
+	try_(query_init_op(self, fql, query_stack, operation));
+
+	fqlset* setstmt = self->op;
+	setstmt->variable_idx = idx;
+
+	return FQL_GOOD;
+}
+
 /** queries **/
-query* query_enter_query(fqlhandle* fql)
+query* query_enter_query(fqlhandle* fql, unsigned start, unsigned end)
 {
 	query* newquery = new_(query, 0);
+
+	const char* text_ptr = fql->query_str + start;
+
+	unsigned len = end - start + 1;
+	if (len > 30) {
+		string_sprintf(newquery->text, "%.*s...", 30, text_ptr);
+	} else {
+		string_strncpy(newquery->text, text_ptr, len);
+	}
+
+	string_find_replace(newquery->text, "\n", " ");
+
 	newquery->idx = fql->query_vec->size;
 	newquery->next_idx = fql->query_vec->size + 1;
 	vec_push_back(fql->query_vec, &newquery);
+
 	return newquery;
 }
 
@@ -161,9 +241,15 @@ int query_exit_query(query* self, query* prev_query, fqlhandle* fql)
 {
 	/* If the previously active query was a branch operation */
 	enum fql_operation* prev_op = prev_query->op;
+
 	if (*prev_op == FQL_IF) {
 		fqlbranch* prev_branch = prev_query->op;
 		prev_branch->last_true_block_query->next_idx = fql->query_vec->size;
+	}
+
+	if (*prev_op == FQL_WHILE) {
+		fqlbranch* prev_branch = prev_query->op;
+		prev_branch->last_true_block_query->next_idx = prev_query->idx;
 	}
 
 	/* If there is no parent query to return to */
@@ -187,20 +273,12 @@ int query_exit_query(query* self, query* prev_query, fqlhandle* fql)
 			fql->branch_state = BRANCH_EXPECT_ELSE;
 		} else {
 			fql->branch_state = BRANCH_EXPECT_EXIT;
+			branch->false_idx = fql->query_vec->size;
 		}
 		break;
-	//case BRANCH_EXPECT_CONDITION:
-	//	branch->false_idx = prev_query->idx + 1;
-	//	break;
 	case BRANCH_EXPECT_ELSE:
-		if (*prev_op != FQL_IF) {
-			branch->false_idx = prev_query->idx;
-		}
-		break;
 	case BRANCH_EXPECT_EXIT:
 	case BRANCH_NO_BRANCH:;
-		//fputs("Unexpected branch state\n", stderr);
-		//return FQL_FAIL;
 	}
 
 	return FQL_GOOD;
@@ -307,6 +385,9 @@ void query_add_subquery_const(query* self, query* subquery)
 	expression* subquery_expression = new_(expression, EXPR_SUBQUERY, subquery, "");
 	fqlselect* subselect = subquery->op;
 	subselect->const_dest = subquery_expression;
+	if (subquery->orderby != NULL) {
+		order_set_const_dest(subquery->orderby, subquery_expression);
+	}
 	vec_push_back(self->subquery_const_vec, &subquery);
 	_distribute_expression(self, subquery_expression);
 }
@@ -572,16 +653,18 @@ int query_exit_union(query* self, query* union_query)
 /** operations **/
 int query_init_op(query* self,
                   fqlhandle* fql,
-                  enum fql_operation operation,
-                  node* query_stack)
+                  node* query_stack,
+                  enum fql_operation operation)
 {
 	switch (operation) {
 	case FQL_SET:
 		self->op = new_(fqlset);
 		break;
+	case FQL_WHILE:
 	case FQL_IF:
-		self->op = new_(fqlbranch, fql, self);
-		return FQL_GOOD; /* Avoid checking for bare ELSE */
+		self->op = new_(fqlbranch, fql, self, operation);
+		fql->branch_state = BRANCH_EXPECT_EXPR;
+		break;
 	case FQL_SELECT:
 		self->op = new_(fqlselect);
 		break;
@@ -610,6 +693,13 @@ int query_init_op(query* self,
 			fputs("Unexpected query when looking for branch\n", stderr);
 			return FQL_FAIL;
 		}
+
+		branch->false_idx = self->idx;
+
+		if (operation == FQL_IF) {
+			return FQL_GOOD;
+		}
+
 		branch->else_scope = new_(scope);
 		branch->else_scope->parent_scope = branch->scope->parent_scope;
 
@@ -966,6 +1056,7 @@ int _distribute_expression(query* self, expression* expr)
 	case MODE_DECLARE:
 		fqlset_set_init_expression(self->op, expr);
 		break;
+	case MODE_WHILE:
 	case MODE_IF:
 	case MODE_INTO:
 	case MODE_SOURCES:

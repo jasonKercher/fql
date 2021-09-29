@@ -18,7 +18,6 @@ struct group;
 struct logicgroup;
 struct expression;
 struct fqlhandle;
-typedef struct vec string;
 
 enum mode {
 	MODE_UNDEFINED,
@@ -29,13 +28,14 @@ enum mode {
 	MODE_TOP,
 	MODE_CASE,
 	MODE_INTO,
-	MODE_UPDATELIST,
-	MODE_SELECTLIST,
+	MODE_WHILE,
 	MODE_SEARCH,
 	MODE_SOURCES,
 	MODE_GROUPBY,
 	MODE_ORDERBY,
 	MODE_AGGREGATE,
+	MODE_UPDATELIST,
+	MODE_SELECTLIST,
 };
 
 enum logic_mode {
@@ -151,6 +151,7 @@ struct query {
 	struct expression* top_expr;
 	struct vec* unions;
 	const char* into_table_name;
+	struct vec* text; /* string */
 	size_t top_count;
 	int* next_idx_ref;
 	int idx;
@@ -183,17 +184,26 @@ struct query* query_construct(struct query*, int id);
 void query_destroy(struct query*);
 void query_release_sources(struct query*);
 
+/* preflight */
+int query_prepare(struct query*, struct fqlhandle*);
+
 /* control flow */
 int query_enter_if(struct query*,
                    struct fqlhandle*,
+                   struct node* query_stack,
                    enum fql_operation,
                    bool expect_else);
 void query_exit_if(struct query*, struct fqlhandle*);
+int query_enter_set(struct query*,
+                    struct fqlhandle*,
+                    struct node*,
+                    enum fql_operation,
+                    const char* varname);
 void query_enter_block(struct fqlhandle*);
 void query_exit_block(struct query*, struct fqlhandle*);
 
 /* queries */
-struct query* query_enter_query(struct fqlhandle*);
+struct query* query_enter_query(struct fqlhandle*, unsigned start, unsigned end);
 int query_exit_query(struct query*, struct query*, struct fqlhandle*);
 
 /* variables */
@@ -239,7 +249,7 @@ int query_enter_union(struct query*, struct query*);
 int query_exit_union(struct query*, struct query*);
 
 /* operations */
-int query_init_op(struct query*, struct fqlhandle*, enum fql_operation, struct node*);
+int query_init_op(struct query*, struct fqlhandle*, struct node*, enum fql_operation);
 int query_set_top_count(struct query*, const char*);
 void query_set_op_table(struct query*, const char*);
 void query_exit_non_select_op(struct query*, struct fqlhandle*);

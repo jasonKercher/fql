@@ -62,6 +62,7 @@ enum proc_return fql_set(process* proc)
 		return PROC_RETURN_COMPLETE;
 	}
 
+	var->is_null = false;
 	int expr_ret = 0;
 
 	switch (var->type) {
@@ -86,7 +87,9 @@ enum proc_return fql_set(process* proc)
 		stringview sv;
 		expr_ret =
 		        try_(expression_get_stringview(&sv, declstmt->init_expr, NULL));
-		variable_set_stringview(var, &sv);
+		if (expr_ret != FQL_NULL) {
+			variable_set_stringview(var, &sv);
+		}
 		break;
 	}
 	case SQL_UNDEFINED:

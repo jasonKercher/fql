@@ -19,8 +19,12 @@ struct _entry {
 	unsigned len;
 };
 
-int _order_select_api(order* self, process*);
 int _order_select(order* self, process*);
+int _order_select_api(order* self, process*);
+int _order_select_to_const(order* self, process*);
+
+void _order_unmap(order* self);
+void _order_reset_output(order* self);
 
 order* order_construct(order* self)
 {
@@ -46,10 +50,21 @@ void order_destroy(order* self)
 	vec_destroy(&self->expressions);
 	vec_destroy(&self->entries);
 	flex_destroy(&self->order_data);
+	_order_unmap(self);
+	_order_reset_output(self);
+}
+
+void _order_unmap(order* self)
+{
 	if (self->mmap != NULL) {
 		munmap(self->mmap, self->file_size);
 		close(self->fd);
+		self->mmap = NULL;
 	}
+}
+
+void _order_reset_output(order* self)
+{
 	if (self->out_file != NULL && self->out_file != stdout
 	    && self->out_file != stderr) {
 		fclose(self->out_file);
@@ -58,8 +73,13 @@ void order_destroy(order* self)
 
 int order_init_io(order* self, const char* in_name, const char* out_name)
 {
+	self->sorted = false;
+	vec_clear(&self->entries);
+	flex_clear(&self->order_data);
+
 	self->in_filename = in_name;
 	if (out_name != NULL) {
+		_order_reset_output(self);
 		self->out_file = fopen(out_name, "w");
 		if (self->out_file == NULL) {
 			perror(out_name);
@@ -67,6 +87,12 @@ int order_init_io(order* self, const char* in_name, const char* out_name)
 		}
 	}
 	return FQL_GOOD;
+}
+
+void order_set_const_dest(order* self, expression* const_dest)
+{
+	self->const_dest = const_dest;
+	self->select__ = &_order_select_to_const;
 }
 
 int order_preresolve_expressions(order* self, fqlselect* select, const vec* sources)
@@ -255,6 +281,19 @@ int _compare(const void* a, const void* b, void* data)
 	return ret;
 }
 
+int _order_select(order* self, process* proc)
+{
+	struct _entry* it = vec_begin(&self->entries);
+	for (; it != vec_end(&self->entries) && proc->rows_affected < self->top_count;
+	     ++it) {
+		//fprintf(self->out_file, "%.*s", it->len, &self->mmap[it->offset]);
+		fwrite(&self->mmap[it->offset], 1, it->len, self->out_file);
+		++proc->rows_affected;
+	}
+
+	return 0;
+}
+
 int _order_select_api(order* self, process* proc)
 {
 	if (self->entry_iter == vec_end(&self->entries)) {
@@ -292,23 +331,55 @@ int _order_select_api(order* self, process* proc)
 	return 1;
 }
 
-int _order_select(order* self, process* proc)
+int _order_select_to_const(order* self, process* proc)
 {
-	struct _entry* it = vec_begin(&self->entries);
-	for (; it != vec_end(&self->entries) && proc->rows_affected < self->top_count;
-	     ++it) {
-		//fprintf(self->out_file, "%.*s", it->len, &self->mmap[it->offset]);
-		fwrite(&self->mmap[it->offset], 1, it->len, self->out_file);
-		++proc->rows_affected;
+	if (self->entries.size == 0 || self->top_count == 0) {
+		self->const_dest->expr = EXPR_NULL;
+		return FQL_GOOD;
 	}
 
-	return 0;
+	if (self->entries.size > 1 && self->top_count > 1) {
+		fputs("subquery returned more than 1 value as expression\n", stderr);
+		return FQL_FAIL;
+	}
+
+	struct _entry* first_ent = vec_begin(&self->entries);
+	expression* first_expr = *(expression**)vec_begin(&self->expressions);
+
+	self->const_dest->expr = EXPR_CONST;
+	self->const_dest->field_type = first_expr->field_type;
+
+	size_t offset = first_ent->offset;
+	switch (first_expr->field_type) {
+	case FIELD_INT:
+		self->const_dest->field.i = *(long*)(&self->mmap[offset]);
+		break;
+	case FIELD_FLOAT:
+		self->const_dest->field.f = *(double*)(&self->mmap[offset]);
+		break;
+	case FIELD_STRING: {
+		unsigned len = *(unsigned*)(&self->mmap[offset]);
+		offset += sizeof(unsigned);
+		stringview sv = {&self->mmap[offset], len};
+		string_copy_from_stringview(&self->const_dest->buf, &sv);
+		self->const_dest->field.s = &self->const_dest->buf;
+		break;
+	}
+	default:
+		fputs("Unexpected type in order_select_to_const\n", stderr);
+		return FQL_FAIL;
+	}
+
+
+	return FQL_GOOD;
 }
 
 int order_sort(order* self)
 {
 	vec_sort_r(&self->entries, &_compare, self);
 	self->sorted = true;
+
+	_order_unmap(self);
 
 	self->fd = open(self->in_filename, O_RDONLY);
 	if (self->fd == -1) {

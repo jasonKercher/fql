@@ -18,6 +18,8 @@
  * your day all up.
  */
 
+
+/* This is only for qsort_r used by vec_sort_r */
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif

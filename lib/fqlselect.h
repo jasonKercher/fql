@@ -21,6 +21,7 @@ struct fqlselect {
 	struct expression* const_dest;
 	struct node* union_selects;
 	struct vec* _selection_exprs;
+	struct vec* header_as_exprs;
 	select_fn select__;
 	size_t offset;
 	size_t rows_affected;
@@ -44,6 +45,7 @@ int fqlselect_resolve_type_from_subquery(struct expression*);
 int fqlselect_resolve_final_types(struct fqlselect*);
 void fqlselect_verify_must_run(struct fqlselect*);
 int fqlselect_next_union(struct fqlselect*);
+int fqlselect_reset(struct fqlselect*);
 void fqlselect_preop(struct fqlselect*, struct query*, struct fqlhandle*);
 
 #endif /* SELECT_H */

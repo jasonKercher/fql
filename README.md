@@ -75,22 +75,24 @@ a05c7214        b1      143027
 
 program|time
 ---|---
-fql|3.568s
-shell tools|6.133s
-sqlite3|20.275s
-q|53.986s
+fql|2.218s
+shell tools|6.435s
+sqlite3|20.560s
+q|53.742s
 csvsql|2m50.405s
 textql|N/A #
+csvq|N/A #
 
-2. `COUNT(*)` GROUP BY bar
+2. COUNT(*) GROUP BY bar
 
 program|time
 ---|---
-shell tools|0.635s
-fql|1.113s
-sqlite3|1.138s
-textql|15.582s
-q|17.319s
+shell tools|0.630s
+fql|0.820s
+sqlite3|1.160s
+csvq|4.213s
+q|15.405s
+textql|17.690s
 csvsql|1m57.014s
 
 
@@ -98,9 +100,10 @@ csvsql|1m57.014s
 
 program|time
 ---|---
-sqlite3|0.206s *
-shell tools|0.417s
-fql|0.762s
+sqlite3|0.211s *
+shell tools|0.470s
+fql|0.630s
+csvq|4.089s
 q|13.737s *
 textql|14.154s
 csvsql|1m56.471s *
@@ -112,9 +115,10 @@ program|time
 ---|---
 sqlite3|2.105s
 shell tools|3.125s *
-fql|6.753s
+fql|5.545s
+csvq|11.926s
 textql|22.980s
-q|49.119s
+q|42.524s
 csvsql|2m6.498s
 
 \* See benchmark.sh for additional notes
@@ -122,7 +126,7 @@ csvsql|2m6.498s
 ### Installation
 
 **Arch Linux**
-If you are using an Arch Linux based distribution, fql can be retrieved from the [aur](https://aur.archlinux.org/packages/fql/).
+If you are using an Arch Linux based distribution, fql can be retrieved from the [AUR](https://aur.archlinux.org/packages/fql/).
 
 **Compiling from source**
 
@@ -153,8 +157,9 @@ Installed library: libfql.so
 
 ### Library
 
-The `fql` program was designed to work within a shell environment, however, it can also be utilized as a library. In fact, the `fql` program is really just a thin
-wrapper for `fql_exec` library function. Here is a quick example of how to use the library API:
+The `fql` program was designed to work within a shell environment, however, it can also be utilized 
+as a library. In fact, the `fql` program is really just a thin wrapper for `fql_exec` library 
+function. Here is a quick example of how to use the library API:
 
 ```c
 #include <stdlib.h>

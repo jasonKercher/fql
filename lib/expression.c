@@ -340,14 +340,17 @@ int expression_set_variable(expression* self, variable* var)
 	switch (var->type) {
 	case SQL_INT:
 	case SQL_BIT:
+		self->field_type = FIELD_INT;
 		self->field.i = var->value.i;
 		break;
 	case SQL_FLOAT:
+		self->field_type = FIELD_FLOAT;
 		self->field.f = var->value.f;
 		break;
 	case SQL_TEXT:
 	case SQL_VARCHAR:
 	case SQL_CHAR:
+		self->field_type = FIELD_STRING;
 		string_copy(&self->buf, var->value.s);
 		self->field.s = &self->buf;
 		break;

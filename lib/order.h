@@ -21,6 +21,7 @@ struct order {
 	struct flex order_data;
 	order_select_fn select__;
 	struct vec* api;
+	struct expression* const_dest;
 	const char* in_filename;
 	FILE* out_file;
 	struct _entry* entry_iter;
@@ -35,6 +36,7 @@ typedef struct order order;
 struct order* order_construct(struct order*);
 void order_destroy(struct order*);
 
+void order_set_const_dest(struct order*, struct expression*);
 int order_add_expression(struct order*, struct expression*);
 int order_init_io(struct order*, const char* in, const char* out);
 void order_cat_description(struct order*, struct process*);

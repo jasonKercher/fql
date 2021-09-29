@@ -20,8 +20,10 @@ struct fqlbranch {
 };
 typedef struct fqlbranch fqlbranch;
 
-struct fqlbranch*
-fqlbranch_construct(struct fqlbranch*, struct fqlhandle*, struct query*);
+struct fqlbranch* fqlbranch_construct(struct fqlbranch*,
+                                      struct fqlhandle*,
+                                      struct query*,
+                                      enum fql_operation);
 void fqlbranch_destroy(struct fqlbranch*);
 
 void fqlbranch_add_logicgroup(struct fqlbranch*, struct logicgroup*);

@@ -71,6 +71,21 @@ run_csvsql ()
   fi
 }
 
+csvq_count=0
+run_csvq ()
+{
+  local args=("$@")
+  shift
+
+  ((++csvq_count))
+  printf "test %s: csvq '%s' %s..." $csvq_count "${args[0]}" "$*"
+  if time csvq -f TSV -i TSV "${args[@]}" > csvq${csvq_count}.temp; then
+    echo success
+  else
+    echo fail
+  fi
+}
+csvq -f TSV -i TSV 
 sqlite3_count=0
 run_sqlite3 ()
 {
@@ -115,6 +130,14 @@ run_csvsql "select bar,count(*) from t1 group by bar" t1.temp             # 2
 run_csvsql "select foo from t1 where foo like '%aa_aa%'" t1.temp          # 3
 run_csvsql "select * from t1 order by foo, baz desc" t1.temp              # 4
 
+run_csvq 'select * from `t1.temp` t1 join `t2.temp` t2 on t1.foo = t2.Foo' # 1
+run_csvq 'select bar, count(*) from `t1.temp` group by bar'                # 2
+# csvq does not support [0-9] type ranges
+run_csvq 'select foo from `t1.temp` where foo like "%aa_aa%"'              # 3
+run_csvq 'select * from `t1.temp` order by foo, baz desc'                  # 4
+
+
+
 # import for sqlite tests
 sqlite3 MYDB "
 create table t1 (foo text, bar text, baz text);
@@ -129,7 +152,7 @@ create table t2 (foo text, bar text, baz text);
 # sqlite
 run_sqlite3 MYDB "select * from t1 join t2 on t1.foo = t2.foo"    # 1
 run_sqlite3 MYDB "select bar,count(*) from t1 group by bar"       # 2
-# Couldn't figure out how to do [0-9]...
+# sqlite3 does not support character ranges like [0-9]
 run_sqlite3 MYDB "select foo from t1 where foo like '%aa_aa%'"    # 3
 run_sqlite3 MYDB "select * from t1 order by foo, baz desc"        # 4
 

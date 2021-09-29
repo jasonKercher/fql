@@ -22,6 +22,7 @@ dgraph* dgraph_construct(dgraph* restrict self)
 	        .nodes = new_t_(vec, dnode*),
 	        ._trav = new_t_(fifo, dnode*, 5),
 	        ._roots = new_t_(vec, dnode*),
+	        ._root_idx = 0,
 	};
 
 	return self;

@@ -7,6 +7,7 @@ extern "C" {
 #include <stdbool.h>
 #endif
 
+#include "fql.h"
 #include "fqlimits.h"
 
 struct scope;
@@ -40,6 +41,7 @@ struct fqlhandle {
 		int in_std;
 		int out_std;
 		int strictness;
+		enum fql_verbose verbosity;
 		bool dry_run;
 		bool force_cartesian;
 		bool overwrite;
@@ -48,7 +50,6 @@ struct fqlhandle {
 		bool add_header;
 		bool print_plan;
 		bool threading;
-		bool verbose;
 		bool parse_only;
 		bool char_as_byte;
 		bool loose_groups;

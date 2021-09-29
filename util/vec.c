@@ -3,15 +3,16 @@
 #include <stdint.h>
 #include "util.h"
 
-/* 15-34 */
+#define VEC_ALLOC_DEFAULT 2
+
 vec* vec_construct(vec* restrict self, size_t elem_size)
 {
 	*self = (vec) {
-	        ._alloc = 2,
+	        ._alloc = VEC_ALLOC_DEFAULT,
 	        ._elem_size = elem_size,
 	};
 
-	self->data = malloc_(2 * self->_elem_size);
+	self->data = malloc_(VEC_ALLOC_DEFAULT * self->_elem_size);
 
 	return self;
 }

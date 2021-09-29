@@ -8,10 +8,13 @@
 #include <stdio.h>
 #include <string.h>
 
-fqlbranch* fqlbranch_construct(fqlbranch* self, fqlhandle* fql, query* query)
+fqlbranch* fqlbranch_construct(fqlbranch* self,
+                               fqlhandle* fql,
+                               query* query,
+                               enum fql_operation operation)
 {
 	*self = (fqlbranch) {
-	        .oper_type = FQL_IF,
+	        .oper_type = operation,
 	        .next_query_idx_ref = &query->next_idx,
 	        .scope = new_(scope),
 	        .true_idx = query->idx + 1,

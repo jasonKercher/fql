@@ -53,6 +53,7 @@ const char* _help =
         " -O, --override         allow processing of unsupported language features\n"
         " -p, --print            print the processing plan\n"
         " -P, --pipe-factor arg  set multiplier for process pipe size\n"
+        " -q, --quiet            silence any extraneous output\n"
         " -R, --rec-term arg     set a record terminator for delimited output\n"
         " -s, --in-delim arg     for delimited, specify an input seperator\n"
         " -S, --out-delim arg    for delimited, speficy seperator for SELECT\n"
@@ -110,6 +111,7 @@ int main(int argc, char** argv)
 	        {"override", no_argument, 0, 'O'},
 	        {"print", no_argument, 0, 'p'},
 	        {"pipe-factor", required_argument, 0, 'P'},
+	        {"quiet", no_argument, 0, 'q'},
 	        {"in-delim", required_argument, 0, 's'},
 	        {"out-delim", required_argument, 0, 'S'},
 	        {"thread", no_argument, 0, 't'},
@@ -128,7 +130,7 @@ int main(int argc, char** argv)
 	/* getopt_long stores the option index here. */
 	int option_index = 0;
 
-	char opt_string[64] = "Abc:CdD:hHLoOpP:s:S:tvW";
+	char opt_string[64] = "Abc:CdD:hHLoOpP:qs:S:tvW";
 	char* opt_iter = opt_string + strlen(opt_string) - 1;
 	*++opt_iter = HELP_ARG;
 	*++opt_iter = IN_STD_ARG;
@@ -305,11 +307,14 @@ void _parse_args(struct fqlhandle* handle, int c)
 	case 'S':
 		fql_set_out_delim(handle, optarg);
 		break;
+	case 'q':
+		fql_set_verbose(handle, FQL_QUIET);
+		break;
 	case 't':
 		fql_set_threading(handle, 1);
 		break;
 	case 'v':
-		fql_set_verbose(handle, 1);
+		fql_set_verbose(handle, FQL_NOISY);
 		break;
 	case 'W':
 		fql_set_crlf_output(handle, 1);

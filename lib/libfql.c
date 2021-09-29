@@ -44,6 +44,7 @@ fqlhandle* fql_construct(fqlhandle* fql)
 	        {
 	                .schema_path = new_(string),
 	                .schema = new_(string),
+	                .verbosity = FQL_BASIC,
 	                .pipe_factor = PIPE_FACTOR_DEFAULT,
 	                .in_std = QUOTE_RFC4180,
 	                .out_std = QUOTE_RFC4180,
@@ -201,20 +202,12 @@ int _api_connect(fqlhandle* fql)
 	return FQL_GOOD;
 }
 
-int fql_field_count(fqlhandle* fql)
-{
-	if (!vec_empty(fql->query_vec) && vec_empty(fql->api_vec)) {
-		try_(_api_connect(fql));
-	}
-	return fql->api_vec->size;
-}
-
 /**
  * Property mutators
  */
-void fql_set_verbose(fqlhandle* fql, int verbose)
+void fql_set_verbose(fqlhandle* fql, enum fql_verbose verbosity)
 {
-	fql->props.verbose = verbose;
+	fql->props.verbosity = verbosity;
 }
 
 void fql_set_parse_only(fqlhandle* fql, int parse_only)
@@ -438,7 +431,63 @@ int fql_import_variable(fqlhandle* fql, const char* assign_expression)
 }
 
 /**
- * Methods
+ * Status
+ */
+int fql_field_count(fqlhandle* fql)
+{
+	if (!vec_empty(fql->query_vec) && vec_empty(fql->api_vec)) {
+		try_(_api_connect(fql));
+	}
+	return fql->api_vec->size;
+}
+
+query* _get_active_query(fqlhandle* fql)
+{
+	if (vec_empty(fql->query_vec) || fql->query_idx >= fql->query_vec->size) {
+		return NULL;
+	}
+
+	query** active_query = vec_at(fql->query_vec, fql->query_idx);
+	return *active_query;
+}
+
+const char* fql_get_operation_text(struct fqlhandle* fql)
+{
+	query* active_query = _get_active_query(fql);
+	if (active_query == NULL) {
+		return "";
+	}
+	return string_c_str(active_query->text);
+}
+
+
+enum fql_operation fql_get_operation_type(fqlhandle* fql)
+{
+	query* active_query = _get_active_query(fql);
+	if (active_query == NULL) {
+		return FQL_NONE;
+	}
+	enum fql_operation* op = active_query->op;
+	return *op;
+}
+
+void _exec_plans_print_footer(plan* plan, query* query)
+{
+	enum fql_operation* op = query->op;
+	switch (*op) {
+	case FQL_SELECT:
+	case FQL_UPDATE:
+	case FQL_DELETE:
+		if (plan->rows_affected == 1) {
+			fprintf(stderr, "\n1 row affected\n\n");
+		} else {
+			fprintf(stderr, "\n%lu rows affected\n\n", plan->rows_affected);
+		}
+	default:;
+	}
+}
+/**
+ * Execution
  */
 int fql_exec_plans(fqlhandle* fql, int plan_count)
 {
@@ -454,7 +503,14 @@ int fql_exec_plans(fqlhandle* fql, int plan_count)
 			return FQL_FAIL;
 		}
 
-		op_preop(fql);
+		if (fql->props.verbosity > FQL_BASIC) {
+			fprintf(stderr, "EXEC: %s\n", string_c_str((*query)->text));
+		}
+
+		ret = query_prepare(*query, fql);
+		if (ret == FQL_FAIL) {
+			break;
+		}
 
 		if (fql->props.threading) {
 			ret = process_exec_plan_thread(plan);
@@ -462,21 +518,15 @@ int fql_exec_plans(fqlhandle* fql, int plan_count)
 			ret = process_exec_plan(plan);
 		}
 
-		if (fql->props.verbose) {
-			if (plan->rows_affected == 1) {
-				fprintf(stderr, "1 row affected\n\n");
-			} else {
-				fprintf(stderr,
-				        "%lu rows affected\n\n",
-				        plan->rows_affected);
-			}
-		}
+		fql->query_idx = (*query)->next_idx;
 
 		if (ret == FQL_FAIL) {
 			break;
 		}
 
-		fql->query_idx = (*query)->next_idx;
+		if (fql->props.verbosity > FQL_QUIET) {
+			_exec_plans_print_footer(plan, *query);
+		}
 	}
 
 	if (ret == FQL_FAIL || fql->query_idx >= fql->query_vec->size) {
@@ -507,7 +557,7 @@ int fql_exec(fqlhandle* fql, const char* query_str)
 
 int fql_make_plans(fqlhandle* fql, const char* query_str)
 {
-	if (fql->props.verbose) {
+	if (fql->props.verbosity > FQL_BASIC) {
 		fprintf(stderr, "\n[fql] Making Plan for:\n%s\n", query_str);
 	}
 
@@ -552,13 +602,17 @@ int fql_step(fqlhandle* fql, struct fql_field** fields)
 {
 	query** query = vec_at(fql->query_vec, fql->query_idx);
 	struct fqlplan* plan = (*query)->plan;
+	int ret = 0;
 	if (!plan->has_stepped) {
 		if (vec_empty(fql->api_vec)) {
 			_api_connect(fql);
 		}
 		plan->has_stepped = true;
 
-		op_preop(fql);
+		ret = query_prepare(*query, fql);
+		if (ret == FQL_FAIL) {
+			goto _step_fail_break;
+		}
 
 		/* Since we are now stepping, we only want
 		 * to iterate over one record at a time.
@@ -570,11 +624,13 @@ int fql_step(fqlhandle* fql, struct fql_field** fields)
 		}
 	}
 
-	int ret = process_step(plan);
+	ret = process_step(plan);
 	if (ret != 0 && ret != FQL_FAIL) {
 		*fields = vec_begin(fql->api_vec);
 		return ret;
 	}
+
+_step_fail_break:
 	_free_api_strings(fql->api_vec);
 	vec_clear(fql->api_vec);
 
@@ -585,4 +641,17 @@ int fql_step(fqlhandle* fql, struct fql_field** fields)
 	}
 
 	return ret;
+}
+
+int fql_exec_until_select(fqlhandle* fql)
+{
+	query* current_query = _get_active_query(fql);
+	while (current_query) {
+		enum fql_operation* current_op = current_query->op;
+		if (*current_op == FQL_SELECT && current_query->into_table_name == NULL) {
+			break;
+		}
+		try_(fql_exec_plans(fql, 1));
+	}
+	return FQL_GOOD;
 }
