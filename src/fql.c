@@ -11,13 +11,14 @@
 #include "fql.h"
 
 #define HELP_ARG        0x80
-#define PARSE_ONLY_ARG  0x81
-#define SCHEMA_PATH_ARG 0x82
-#define SCHEMA_ARG      0x83
-#define STABLE_ARG      0x84
-#define STRICT_ARG      0x85
-#define IN_STD_ARG      0x86
-#define OUT_STD_ARG     0x87
+#define DEBUG_ARG       0x81
+#define PARSE_ONLY_ARG  0x82
+#define SCHEMA_PATH_ARG 0x83
+#define SCHEMA_ARG      0x84
+#define STABLE_ARG      0x85
+#define STRICT_ARG      0x86
+#define IN_STD_ARG      0x87
+#define OUT_STD_ARG     0x88
 
 const char* _help =
         "\nUsage fql -[bCdhHOpv] [-sS delim] [--strict] [file.sql]\n\n"
@@ -59,6 +60,7 @@ const char* _help =
         " -S, --out-delim arg    for delimited, speficy seperator for SELECT\n"
         " -t, --thread           Utilize pthreads to run processes in parallel\n"
         " -v, --verbose          print additional information to stderr\n"
+        "     --debug            even more verbose than verbose\n"
         " --in-std arg           for delimited, set input standard. see below...\n"
         " --out-std arg          for delimited, set output standard. see below...\n"
         " --parse-only           just run the parser and output the steps\n"
@@ -118,6 +120,7 @@ int main(int argc, char** argv)
 	        {"verbose", no_argument, 0, 'v'},
 	        {"crlf", no_argument, 0, 'W'},
 	        {"help", no_argument, 0, HELP_ARG},
+	        {"debug", no_argument, 0, DEBUG_ARG},
 	        {"in-std", required_argument, 0, IN_STD_ARG},
 	        {"out-std", required_argument, 0, OUT_STD_ARG},
 	        {"parse-only", no_argument, 0, PARSE_ONLY_ARG},
@@ -133,6 +136,7 @@ int main(int argc, char** argv)
 	char opt_string[64] = "Abc:CdD:hHLoOpP:qs:S:tvW";
 	char* opt_iter = opt_string + strlen(opt_string) - 1;
 	*++opt_iter = HELP_ARG;
+	*++opt_iter = DEBUG_ARG;
 	*++opt_iter = IN_STD_ARG;
 	*++opt_iter = ':';
 	*++opt_iter = OUT_STD_ARG;
@@ -322,6 +326,9 @@ void _parse_args(struct fqlhandle* handle, int c)
 	case HELP_ARG: /* --help */
 		puts(_help);
 		exit(EXIT_SUCCESS);
+	case DEBUG_ARG: /* --debug */
+		fql_set_verbose(handle, FQL_DEBUG);
+		break;
 	case IN_STD_ARG: /* --in-std */
 		if (fql_set_in_std(handle, optarg) == FQL_FAIL) {
 			exit(EXIT_FAILURE);

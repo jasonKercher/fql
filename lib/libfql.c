@@ -18,7 +18,10 @@
 #include "util/util.h"
 #include "util/node.h"
 
-#define PIPE_FACTOR_DEFAULT 16
+#define PIPE_FACTOR_MIN            2
+#define PIPE_FACTOR_MAX            1024
+#define PIPE_FACTOR_DEFAULT        16
+#define PIPE_FACTOR_THREAD_DEFAULT 64
 
 /**
  * No need to expose this function. A user will
@@ -304,12 +307,15 @@ void fql_set_record_terminator(fqlhandle* fql, const char* term)
 void fql_set_threading(fqlhandle* fql, int threading)
 {
 	if (threading && sysconf(_SC_NPROCESSORS_ONLN) < 2) {
-		fprintf(stderr,
-		        "Request to enable threading ignored due "
-		        "hardware configuration\n");
+		//fprintf(stderr,
+		//        "Request to enable threading ignored due "
+		//        "hardware configuration\n");
 		return;
 	}
 	fql->props.threading = threading;
+	if (fql->props.pipe_factor == PIPE_FACTOR_DEFAULT) {
+		fql->props.pipe_factor = PIPE_FACTOR_THREAD_DEFAULT;
+	}
 }
 
 void fql_set_char_as_byte(fqlhandle* fql, int char_as_byte)
@@ -324,14 +330,19 @@ void fql_set_force_cartesian(fqlhandle* fql, int force_cartesian)
 
 void fql_set_pipe_factor(fqlhandle* fql, int pipe_factor)
 {
-	if (pipe_factor < 2) {
+	int applied_pipe_factor = pipe_factor;
+	if (applied_pipe_factor < PIPE_FACTOR_MIN) {
+		applied_pipe_factor = PIPE_FACTOR_MIN;
+	} else if (applied_pipe_factor > PIPE_FACTOR_MAX) {
+		applied_pipe_factor = PIPE_FACTOR_MAX;
+	}
+
+	fql->props.pipe_factor = pipe_factor;
+	if (applied_pipe_factor != pipe_factor) {
 		fprintf(stderr,
-		        "pipe factor (%d) invalid, pipe factor set to %d\n",
+		        "Invalid pipe factor `%d'. Applied `%d'\n",
 		        pipe_factor,
-		        PIPE_FACTOR_DEFAULT);
-		fql->props.pipe_factor = PIPE_FACTOR_DEFAULT;
-	} else {
-		fql->props.pipe_factor = pipe_factor;
+		        applied_pipe_factor);
 	}
 }
 
@@ -513,7 +524,7 @@ int fql_exec_plans(fqlhandle* fql, int plan_count)
 		}
 
 		if (fql->props.threading) {
-			ret = process_exec_plan_thread(plan);
+			ret = process_exec_plan_thread(plan, fql);
 		} else {
 			ret = process_exec_plan(plan);
 		}

@@ -15,6 +15,7 @@ enum fql_verbose {
 	FQL_QUIET,
 	FQL_BASIC,
 	FQL_NOISY,
+	FQL_DEBUG,
 };
 
 enum fql_type {

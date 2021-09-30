@@ -16,12 +16,12 @@ fifo* fifo_construct(fifo* restrict self, size_t elem_size, unsigned buf_size)
 
 	vec_resize_and_zero(self->buf, buf_size);
 
-	pthread_mutexattr_t attr;
-	pthread_mutexattr_init(&attr);
-	pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ADAPTIVE_NP);
+	//pthread_mutexattr_t attr;
+	//pthread_mutexattr_init(&attr);
+	//pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ADAPTIVE_NP);
 
-	pthread_mutex_init(&self->head_mutex, &attr);
-	pthread_mutex_init(&self->tail_mutex, &attr);
+	pthread_mutex_init(&self->head_mutex, NULL);
+	pthread_mutex_init(&self->tail_mutex, NULL);
 	pthread_cond_init(&self->cond_add, NULL);
 	pthread_cond_init(&self->cond_get, NULL);
 
@@ -76,7 +76,7 @@ void fifo_set_open(fifo* restrict self, int is_open)
 unsigned fifo_available(const fifo* restrict self)
 {
 	size_t available = self->head - self->tail;
-	if (self->head < self->tail) {
+	if (available > self->buf->size) {
 		available += self->buf->size;
 	}
 	return available;
@@ -129,8 +129,9 @@ int fifo_nget(fifo* restrict self,
 	transfer_count -= transfer_count % block_size;
 	unsigned new_tail = (self->tail + transfer_count) % self->buf->size;
 
-	if (new_tail > self->tail) {
-		vec_append(buffer, vec_at(self->buf, self->tail), new_tail - self->tail);
+	if (new_tail == 0 || new_tail > self->tail) {
+		//vec_append(buffer, vec_at(self->buf, self->tail), new_tail - self->tail);
+		vec_append(buffer, vec_at(self->buf, self->tail), transfer_count);
 	} else {
 		vec_append(buffer,
 		           vec_at(self->buf, self->tail),
@@ -171,16 +172,25 @@ void fifo_consume(fifo* restrict self)
 	pthread_mutex_unlock(&self->tail_mutex);
 }
 
-void fifo_add_eager(fifo* restrict self, void* restrict data)
-{
-	vec_set(self->buf, self->head, data);
-	_idx_adv_(self->head);
-}
-
 void fifo_add(fifo* restrict self, void* restrict data)
 {
 	pthread_mutex_lock(&self->head_mutex);
-	vec_set(self->buf, self->head, data);
+	vec_set_at(self->buf, self->head, data, 1);
+	_idx_adv_(self->head);
+	pthread_cond_signal(&self->cond_add);
+	if (self->shared_mutex_fifo != NULL) {
+		pthread_cond_signal(&self->shared_mutex_fifo->cond_add);
+		self->shared_mutex_fifo = NULL;
+	}
+	pthread_mutex_unlock(&self->head_mutex);
+}
+int fifo_add_try(fifo* restrict self, void* restrict data)
+{
+	int ret = pthread_mutex_trylock(&self->head_mutex);
+	if (ret != 0) {
+		return ret;
+	}
+	vec_set_at(self->buf, self->head, data, 1);
 	pthread_cond_signal(&self->cond_add);
 	if (self->shared_mutex_fifo != NULL) {
 		pthread_cond_signal(&self->shared_mutex_fifo->cond_add);
@@ -188,24 +198,83 @@ void fifo_add(fifo* restrict self, void* restrict data)
 	}
 	_idx_adv_(self->head);
 	pthread_mutex_unlock(&self->head_mutex);
+	return 0;
 }
 
-void fifo_nadd(fifo* restrict self, vec* restrict src, unsigned start_idx)
+void fifo_nadd(fifo* restrict self, vec* restrict src)
 {
 	pthread_mutex_lock(&self->head_mutex);
 
-	void* it = vec_at(src, start_idx);
-	for (; it != vec_end(src); ++it, ++start_idx) {
-		vec_set(self->buf, self->head, it);
-		_idx_adv_(self->head);
+	unsigned receivable = fifo_receivable(self);
+	if (receivable == 0) {
+		pthread_mutex_unlock(&self->head_mutex);
+		return;
 	}
+
+	unsigned transfer_count = (receivable < src->size) ? receivable : src->size;
+	unsigned new_head = (self->head + transfer_count) % self->buf->size;
+
+	if (new_head == 0 || new_head > self->head) {
+		vec_set_at(self->buf, self->head, vec_begin(src), transfer_count);
+	} else {
+		unsigned transfer1 = self->buf->size - self->head;
+		vec_set_at(self->buf, self->head, vec_begin(src), transfer1);
+		vec_set_at(self->buf,
+		           0,
+		           vec_at(src, transfer1),
+		           transfer_count - transfer1);
+	}
+
+	self->head = new_head;
 
 	pthread_cond_signal(&self->cond_add);
 	pthread_mutex_unlock(&self->head_mutex);
 
-	if (start_idx == src->size) {
+	if (transfer_count == src->size) {
 		vec_clear(src);
+	} else {
+		vec_erase(src, vec_begin(src), transfer_count);
 	}
+}
+
+int fifo_nadd_try(fifo* restrict self, vec* restrict src)
+{
+	int ret = pthread_mutex_trylock(&self->head_mutex);
+	if (ret != 0) {
+		return ret;
+	}
+	unsigned receivable = fifo_receivable(self);
+	if (receivable == 0) {
+		pthread_mutex_unlock(&self->head_mutex);
+		return 0;
+	}
+
+	unsigned transfer_count = (receivable < src->size) ? receivable : src->size;
+	unsigned new_head = (self->head + transfer_count) % self->buf->size;
+
+	if (new_head == 0 || new_head > self->head) {
+		vec_set_at(self->buf, self->head, vec_begin(src), transfer_count);
+	} else {
+		unsigned transfer1 = self->buf->size - self->head;
+		vec_set_at(self->buf, self->head, vec_begin(src), transfer1);
+		vec_set_at(self->buf,
+		           0,
+		           vec_at(src, transfer1),
+		           transfer_count - transfer1);
+	}
+
+	self->head = new_head;
+
+	pthread_cond_signal(&self->cond_add);
+	pthread_mutex_unlock(&self->head_mutex);
+
+	if (transfer_count == src->size) {
+		vec_clear(src);
+	} else {
+		vec_erase(src, vec_begin(src), transfer_count);
+	}
+
+	return 0;
 }
 
 void fifo_advance(fifo* restrict self)
@@ -240,6 +309,16 @@ void fifo_update(fifo* restrict self)
 	pthread_mutex_lock(&self->tail_mutex);
 	pthread_cond_signal(&self->cond_get);
 	pthread_mutex_unlock(&self->tail_mutex);
+}
+int fifo_update_try(fifo* restrict self)
+{
+	int ret = pthread_mutex_trylock(&self->tail_mutex);
+	if (ret != 0) {
+		return ret;
+	}
+	pthread_cond_signal(&self->cond_get);
+	pthread_mutex_unlock(&self->tail_mutex);
+	return 0;
 }
 
 
@@ -280,3 +359,55 @@ void fifo_wait_for_get(fifo* restrict self)
 	}
 	pthread_mutex_unlock(&self->tail_mutex);
 }
+
+
+/* dumbed down nadds */
+
+//void fifo_nadd(fifo* restrict self, vec* restrict src)
+//{
+//	pthread_mutex_lock(&self->head_mutex);
+//
+//	unsigned receivable = fifo_receivable(self);
+//	unsigned transfer_count = (receivable < src->size) ? receivable : src->size;
+//	unsigned i = 0;
+//	for (; i < transfer_count; ++i) {
+//		vec_set_at(self->buf, self->head, vec_at(self->buf, i), 1);
+//		_idx_adv_(self->head);
+//	}
+//
+//	pthread_cond_signal(&self->cond_add);
+//	pthread_mutex_unlock(&self->head_mutex);
+//
+//	if (i == src->size) {
+//		vec_clear(src);
+//	} else {
+//		vec_erase(src, vec_begin(src), i);
+//	}
+//}
+//
+//int fifo_nadd_try(fifo* restrict self, vec* restrict src)
+//{
+//	int ret = pthread_mutex_trylock(&self->head_mutex);
+//	if (ret != 0) {
+//		return ret;
+//	}
+//	unsigned receivable = fifo_receivable(self);
+//	unsigned transfer_count = (receivable < src->size) ? receivable : src->size;
+//	unsigned i = 0;
+//	for (; i < transfer_count; ++i) {
+//		vec_set_at(self->buf, self->head, vec_at(self->buf, i), 1);
+//		_idx_adv_(self->head);
+//	}
+//
+//	pthread_cond_signal(&self->cond_add);
+//	pthread_mutex_unlock(&self->head_mutex);
+//
+//	if (i == src->size) {
+//		vec_clear(src);
+//	} else {
+//		vec_erase(src, vec_begin(src), i);
+//	}
+//
+//	return 0;
+//}
+

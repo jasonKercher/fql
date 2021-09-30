@@ -79,7 +79,6 @@ void vec_resize(vec* restrict self, size_t size)
 	self->size = size;
 }
 
-
 void vec_resize_and_zero(vec* restrict self, size_t size)
 {
 	size_t org_size = self->size;
@@ -132,18 +131,25 @@ void* vec_add_one_front(vec* restrict self)
 	return vec_begin(self);
 }
 
-void vec_set(vec* restrict self, size_t n, const void* restrict src)
+void vec_set_iter(vec* restrict _unused, void* pos, const void* begin, const void* back)
 {
-	void* restrict dest = vec_at(self, n);
-	memcpy(dest, src, self->_elem_size);
+	memcpy(pos, begin, (char*)back - (char*)begin + 1);
 }
 
-void vec_append(vec* restrict self, const void* restrict src, size_t n)
+void vec_set_one(vec* restrict self, void* pos, const void* restrict src)
 {
-	size_t old_size = self->size;
-	vec_resize(self, self->size + n);
-	void* end = vec_at(self, old_size);
-	memcpy(end, src, n * self->_elem_size);
+	memcpy(pos, src, self->_elem_size);
+}
+
+void vec_set_at(vec* restrict self, size_t n, const void* restrict src, size_t len)
+{
+	void* restrict dest = vec_at(self, n);
+	memcpy(dest, src, self->_elem_size * len);
+}
+
+void vec_set(vec* restrict self, void* pos, const void* restrict src, size_t len)
+{
+	memcpy(pos, src, self->_elem_size * len);
 }
 
 void vec_push_back(vec* restrict self, const void* restrict item)
@@ -151,13 +157,19 @@ void vec_push_back(vec* restrict self, const void* restrict item)
 	memcpy(vec_add_one(self), item, self->_elem_size);
 }
 
-void vec_extend(vec* restrict dest, const vec* restrict src)
+void vec_insert_iter(vec* restrict self, void* pos, const void* begin, const void* back)
 {
-	int index = dest->size;
-	vec_resize(dest, dest->size + src->size);
-	void* end = vec_at(dest, index);
-	size_t bytes = src->_elem_size * (src->size + 1);
-	memmove(end, vec_begin(src), bytes);
+	size_t idx = vec_get_idx_(self, pos);
+	size_t iter_size = vec_iter_size_(self, begin, back);
+	size_t iter_bytes = self->_elem_size * iter_size;
+
+	vec_resize(self, self->size + iter_size);
+	size_t move_bytes = self->_elem_size * (self->_alloc - idx - iter_size);
+
+	pos = vec_at(self, idx);
+
+	memmove((char*)pos + iter_bytes, pos, move_bytes);
+	memcpy(pos, begin, iter_bytes);
 }
 
 void vec_insert_one(vec* restrict self, void* pos, const void* restrict data)
@@ -186,19 +198,11 @@ void vec_insert(vec* restrict self, void* pos, const void* begin, size_t len)
 	vec_insert_iter(self, pos, begin, back);
 }
 
-void vec_insert_iter(vec* restrict self, void* pos, const void* begin, const void* back)
+void vec_erase_iter(vec* restrict self, void* begin, const void* back)
 {
-	size_t idx = vec_get_idx_(self, pos);
-	size_t iter_size = vec_iter_size_(self, begin, back);
-	size_t iter_bytes = self->_elem_size * iter_size;
-
-	vec_resize(self, self->size + iter_size);
-	size_t move_bytes = self->_elem_size * (self->_alloc - idx - iter_size);
-
-	pos = vec_at(self, idx);
-
-	memmove((char*)pos + iter_bytes, pos, move_bytes);
-	memcpy(pos, begin, iter_bytes);
+	size_t bytes = (const char*)vec_at(self, self->_alloc - 1) - (const char*)back;
+	self->size -= vec_iter_size_(self, begin, back);
+	memmove(begin, (char*)back + self->_elem_size, bytes);
 }
 
 void vec_erase_one(vec* restrict self, void* elem)
@@ -222,11 +226,21 @@ void vec_erase(vec* restrict self, void* begin, size_t len)
 	vec_erase_iter(self, begin, back);
 }
 
-void vec_erase_iter(vec* restrict self, void* begin, const void* back)
+void vec_append(vec* restrict self, const void* restrict src, size_t n)
 {
-	size_t bytes = (const char*)vec_at(self, self->_alloc - 1) - (const char*)back;
-	self->size -= vec_iter_size_(self, begin, back);
-	memmove(begin, (char*)back + self->_elem_size, bytes);
+	size_t old_size = self->size;
+	vec_resize(self, self->size + n);
+	void* end = vec_at(self, old_size);
+	memcpy(end, src, n * self->_elem_size);
+}
+
+void vec_extend(vec* restrict dest, const vec* restrict src)
+{
+	int index = dest->size;
+	vec_resize(dest, dest->size + src->size);
+	void* end = vec_at(dest, index);
+	size_t bytes = src->_elem_size * (src->size + 1);
+	memmove(end, vec_begin(src), bytes);
 }
 
 void vec_sort_r(vec* restrict self, qsort_r_cmp_fn cmp__, void* context)

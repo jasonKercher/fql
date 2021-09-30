@@ -211,7 +211,7 @@ const char* string_find_replace_one_limited(string* restrict s,
 {
 	unsigned oldlen = strlen(oldstr);
 	char* begin = vec_at(s, begin_idx);
-	char* pos = memmem(begin, s->size, oldstr, oldlen);
+	char* pos = memmem(begin, s->size - begin_idx, oldstr, oldlen);
 
 	if (pos == NULL) {
 		return vec_end(s);

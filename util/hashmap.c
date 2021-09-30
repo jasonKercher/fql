@@ -132,7 +132,7 @@ void hashmap_nset(hashmap* restrict m, const char* restrict key, void* restrict 
 			_increase_size(m);
 		}
 	} else {
-		vec_set(m->values, entry->val_idx, data);
+		vec_set_at(m->values, entry->val_idx, data, 1);
 	}
 }
 
@@ -250,7 +250,7 @@ void compositemap_set(compositemap* restrict m, const struct vec* restrict key, 
 			_increase_size(m);
 		}
 	} else {
-		vec_set(m->values, entry->val_idx, data);
+		vec_set_at(m->values, entry->val_idx, data, 1);
 	}
 }
 

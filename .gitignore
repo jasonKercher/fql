@@ -29,6 +29,7 @@ thread_results/
 *.vgreport
 
 run.sql
+_debug.txt
 
 *~
 

@@ -3,8 +3,6 @@
 #include <stdbool.h>
 #include <dirent.h>
 
-#include "util.h"
-
 int str2longbase(long* restrict ret, const char* restrict s, int base)
 {
 	char* endptr = NULL;

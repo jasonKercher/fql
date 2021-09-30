@@ -18,9 +18,11 @@
 #include "util/fifo.h"
 #include "util/stringview.h"
 
+#define THREAD_MONITOR_INTERVAL_U 2000
+
 struct thread_data {
 	struct dnode* proc_node;
-	struct dgraph* proc_graph;
+	struct fqlplan* plan;
 };
 
 process* process_construct(process* self, const char* action, plan* plan)
@@ -35,6 +37,7 @@ process* process_construct(process* self, const char* action, plan* plan)
 	        .in_src_count = plan->source_count,
 	        .out_src_count = plan->source_count,
 	        .root_fifo = PROCESS_NO_PIPE_INDEX,
+	        .root_fifo_idx = -1,
 	        .killed_pipe = PROCESS_NO_PIPE_INDEX,
 	        .is_enabled = true,
 	        .wait_for_in0 = true,
@@ -58,6 +61,8 @@ void process_destroy(process* self, bool is_root)
 	}
 	delete_if_exists_(vec, self->wait_list);
 	delete_if_exists_(vec, self->inbuf);
+	delete_if_exists_(vec, self->rebuf);
+	delete_if_exists_(vec, self->outbuf);
 	delete_(vec, self->union_end_nodes);
 	delete_(string, self->plan_msg);
 	node_free_func(&self->queued_results, &fifo_free);
@@ -79,10 +84,21 @@ void process_activate(process* self, plan* plan, unsigned base_size, unsigned* p
 	vec_reserve(self->inbuf, base_size);
 	self->inbuf_iter = vec_begin(self->inbuf);
 
+	++(*pipe_count);
+	self->outbuf = new_t_(vec, node*);
+	vec_reserve(self->outbuf, base_size);
+	self->outbuf_iter = vec_begin(self->outbuf);
+
+	++(*pipe_count);
+	self->rebuf = new_t_(vec, node*);
+	vec_reserve(self->rebuf, base_size);
+	self->rebuf_iter = vec_begin(self->rebuf);
+
 	if (self->root_fifo != PROCESS_NO_PIPE_INDEX) {
 		//self->fifo_in[self->root_fifo] = self->root_ref;
 		/* Ignore the 2, this will be resized later */
 		fifo* new_root = new_t_(fifo, node*, 2);
+		self->root_fifo_idx = plan->root_fifo_vec->size;
 		self->fifo_in[self->root_fifo] = new_root;
 		vec_push_back(plan->root_fifo_vec, &new_root);
 	}
@@ -127,9 +143,9 @@ void process_activate(process* self, plan* plan, unsigned base_size, unsigned* p
 		self->fifo_in[self->killed_pipe]->is_open = false;
 	}
 
-	//if (self->fql_ref->props.verbosity > FQL_BASIC) {
-	//	fprintf(stderr, "Activate process: %s\n", string_c_str(self->plan_msg));
-	//}
+	if (self->fql_ref->props.verbosity == FQL_DEBUG) {
+		fprintf(stderr, "Activate process: %s\n", string_c_str(self->plan_msg));
+	}
 }
 
 void process_add_to_wait_list(process* self, process* wait_proc)
@@ -221,13 +237,13 @@ void process_disable(process* self)
 		pthread_mutex_unlock(&self->waitee_proc->wait_mutex);
 	}
 
-	//if (self->fql_ref->props.verbosity > FQL_BASIC) {
-	//	unsigned len = (self->plan_msg->size > 25) ? 25 : self->plan_msg->size;
-	//	fprintf(stderr,
-	//	        "Process `%.*s' stopped\n",
-	//	        len,
-	//	        string_c_str(self->plan_msg));
-	//}
+	if (self->fql_ref->props.verbosity == FQL_DEBUG) {
+		unsigned len = (self->plan_msg->size > 25) ? 25 : self->plan_msg->size;
+		fprintf(stderr,
+		        "Process `%.*s' stopped\n",
+		        len,
+		        string_c_str(self->plan_msg));
+	}
 }
 
 bool _check_wait_list(struct vec* wait_list)
@@ -389,14 +405,115 @@ void* _thread_exec(void* data)
 		}
 	}
 
+	if (node == tdata->plan->op_true) {
+		tdata->plan->rows_affected = self->rows_affected;
+	}
+
 	pthread_exit(NULL);
 	return NULL;
 }
 
-int process_exec_plan_thread(plan* plan)
+int _join_threads(vec* tdata_vec)
+{
+	int ret = 0;
+	unsigned i = 0;
+	void* status = NULL;
+	for (; i < tdata_vec->size; ++i) {
+		struct thread_data* tdata = vec_at(tdata_vec, i);
+		process* proc = tdata->proc_node->data;
+		ret += pthread_join(proc->thread, &status);
+	}
+	return ret;
+}
+
+void _print_fifo_info(process* self, fifo** root_fifo, fifo* pipe, FILE* debug_file)
+{
+	int root_idx = -1;
+	if (root_fifo != NULL && *root_fifo == pipe) {
+		root_idx = self->root_fifo_idx;
+	}
+	fprintf(debug_file,
+	        "%d\t%u\t%u\n",
+	        root_idx,
+	        fifo_available(pipe),
+	        fifo_receivable(pipe));
+}
+
+void _print_proc_info(process* self, FILE* debug_file, unsigned idx)
+{
+	fifo** root_fifo = NULL;
+	if (self->root_fifo != PROCESS_NO_PIPE_INDEX) {
+		root_fifo = vec_at(self->rootvec_ref, self->root_fifo_idx);
+	}
+	if (self->fifo_in[0] != NULL) {
+		fprintf(debug_file, "%u\tin0\t", idx);
+		_print_fifo_info(self, root_fifo, self->fifo_in[0], debug_file);
+	}
+	if (self->fifo_in[1] != NULL) {
+		fprintf(debug_file, "%u\tin1\t", idx);
+		_print_fifo_info(self, root_fifo, self->fifo_in[1], debug_file);
+	}
+	if (self->fifo_out[0] != NULL) {
+		fprintf(debug_file, "%u\tout0\t", idx);
+		_print_fifo_info(self, root_fifo, self->fifo_out[0], debug_file);
+	}
+	if (self->fifo_out[1] != NULL) {
+		fprintf(debug_file, "%u\tout1\t", idx);
+		_print_fifo_info(self, root_fifo, self->fifo_out[1], debug_file);
+	}
+}
+
+/* this is only really for debugging purposes */
+int _monitor_threads(vec* tdata_vec)
+{
+	void* status = NULL;
+	int threading_procs = 0;
+
+	FILE* debug_file = fopen("_debug.txt", "w");
+	if (debug_file == NULL) {
+		perror("debug.txt");
+		return _join_threads(tdata_vec);
+	}
+
+	/* print info to stderr */
+	unsigned i = 0;
+	struct thread_data* it = vec_begin(tdata_vec);
+	for (; it != vec_end(tdata_vec); ++it) {
+		dnode* proc_node = it->proc_node;
+		process* proc = proc_node->data;
+		fprintf(stderr, "%u: %s\n", i++, string_c_str(proc->plan_msg));
+	}
+
+	/* print header to debug_file */
+	fputs("idx\tfifo\trootidx\tfifo_avail\tfifo_recv\n", debug_file);
+
+	/* begin monitoring */
+	do {
+		usleep(THREAD_MONITOR_INTERVAL_U);
+
+		i = 0;
+		threading_procs = 0;
+		for (it = vec_begin(tdata_vec); it != vec_end(tdata_vec); ++it) {
+			dnode* proc_node = it->proc_node;
+			process* proc = proc_node->data;
+			if (proc->is_threading
+			    && pthread_tryjoin_np(proc->thread, &status) == 0) {
+				proc->is_threading = false;
+			}
+			threading_procs += proc->is_threading;
+
+			_print_proc_info(proc, debug_file, i++);
+		}
+	} while (threading_procs > 0);
+
+	fclose(debug_file);
+
+	return FQL_GOOD;
+}
+
+int process_exec_plan_thread(plan* plan, fqlhandle* fql)
 {
 	dgraph* proc_graph = plan->processes;
-
 	pthread_attr_t attr;
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
@@ -411,25 +528,29 @@ int process_exec_plan_thread(plan* plan)
 		struct thread_data* tdata = vec_at(&tdata_vec, i);
 		dnode** proc_node = vec_at(proc_graph->nodes, i);
 		tdata->proc_node = *proc_node;
-		tdata->proc_graph = proc_graph;
-		process* self = (*proc_node)->data;
-		fail_if_(pthread_create(&self->thread, &attr, _thread_exec, tdata));
+		tdata->plan = plan;
+		process* proc = (*proc_node)->data;
+		proc->is_threading = true;
+		if (pthread_create(&proc->thread, &attr, _thread_exec, tdata)) {
+			/* TODO */
+			fputs("pthread_create fail\n", stderr);
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	pthread_attr_destroy(&attr);
 
-	void* status = NULL;
-	for (i = 0; i < tdata_vec.size; ++i) {
-		struct thread_data* tdata = vec_at(&tdata_vec, i);
-		process* self = tdata->proc_node->data;
-		fail_if_(pthread_join(self->thread, &status));
+
+	int ret = 0;
+
+	if (fql->props.verbosity == FQL_DEBUG) {
+		ret = _monitor_threads(&tdata_vec);
+	} else {
+		ret = _join_threads(&tdata_vec);
 	}
 
 	vec_destroy(&tdata_vec);
-
-	pthread_exit(NULL);
-
 	plan->is_complete = true;
 
-	return FQL_GOOD;
+	return ret;
 }

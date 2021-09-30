@@ -91,7 +91,7 @@ int fixedread_get_record_stdin(reader* reader, node* rg)
 	for (; i < self->expressions->size; ++i) {
 		expression** col = vec_at(self->expressions, i);
 		stringview sv = {(char*)rec->_cpy + (*col)->location, (*col)->width};
-		vec_set(&rec->fields, i, &sv);
+		vec_set_at(&rec->fields, i, &sv, 1);
 	}
 
 	rec->rec_ref.data = rec->_cpy;
@@ -136,7 +136,7 @@ int fixedread_get_record_at(reader* reader, node* rg, size_t offset)
 	for (; i < self->expressions->size; ++i) {
 		expression** col = vec_at(self->expressions, i);
 		stringview sv = {begin + (*col)->location, (*col)->width};
-		vec_set(&rec->fields, i, &sv);
+		vec_set_at(&rec->fields, i, &sv, 1);
 	}
 
 	rec->rec_ref.data = begin;

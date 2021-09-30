@@ -17,8 +17,10 @@ struct process {
 	pthread_t thread;             /* pthread handle */
 	struct fqlhandle* fql_ref;    /* reference to environment */
 	struct vec* inbuf;            /* just a buffer to hold spare records */
+	struct vec* rebuf;            /* temporary place for recycle records */
 	struct vec* outbuf;           /* buffer for outbound records */
 	struct node** inbuf_iter;     /* iterator for inbuf */
+	struct node** rebuf_iter;     /* iterator for rebuf */
 	struct node** outbuf_iter;    /* iterator for outbuf */
 	process_fn* action__;         /* function pointer for process */
 	struct fifo* global_root_ref; /* Reference to plan-wide root-records */
@@ -38,6 +40,7 @@ struct process {
 	size_t max_recs_iter;         /* Max recs allowed per iteration */
 	unsigned fifo_base_size;      /* non-root fifo size */
 	int plan_id;                  /* plan_id from parent fqlplan */
+	int root_fifo_idx;            /* idx to root_fifo_vec */
 	short in_src_count;           /* number of input sources at this step */
 	short out_src_count;          /* number of output sources at this step */
 	short root_fifo;              /* index of root for fifo_in[x] */
@@ -48,6 +51,7 @@ struct process {
 	bool is_enabled;              /* enabled means it still has work to do*/
 	bool is_const;                /* should only run 1 time */
 	bool is_op_true;              /* is proc_graph->op_true->data */
+	bool is_threading;            /* should be nearly identical to is_enabled */
 	bool has_second_input;        /* will activate fifo_in[1] */
 	bool wait_for_in0;            /* allow start before in0 populated */
 	bool wait_for_in0_end;        /* allow more processing after in0 done */
@@ -64,7 +68,7 @@ void process_activate(struct process*,
                       unsigned* pipe_count);
 int process_step(struct fqlplan*);
 int process_exec_plan(struct fqlplan*);
-int process_exec_plan_thread(struct fqlplan*);
+int process_exec_plan_thread(struct fqlplan*, struct fqlhandle*);
 void process_add_to_wait_list(struct process*, struct process*);
 void process_enable(struct process*);
 void process_disable(struct process*);

@@ -79,21 +79,20 @@ void plan_destroy(void* generic_plan)
 		//node_free(&it);
 	}
 
+	/* self->global_root will be freed in this loop */
 	fifo** fifo_iter = vec_begin(self->root_fifo_vec);
 	for (; fifo_iter != vec_end(self->root_fifo_vec); ++fifo_iter) {
 		delete_(fifo, *fifo_iter);
 	}
 	delete_(vec, self->root_fifo_vec);
 
-	/* this will be freed in above loop */
-	//delete_(fifo, self->global_root);
 	delete_(vec, self->_root_data);
 }
 
 void _check_all_for_special_expression(plan* self, process* proc, vec* expressions);
 int _build(query*, fqlhandle*, dnode* entry, bool is_union);
 void _print_plan(plan*);
-void _activate_procs(plan*);
+void _activate_procs(plan*, fqlhandle*);
 void _calculate_execution_order(plan*);
 
 void plan_pipeline_root_preempt(plan* self)
@@ -109,10 +108,16 @@ void plan_pipeline_root_preempt(plan* self)
 	/* Evenly divide the records amongst the root fifos */
 	node* it = vec_begin(self->_root_data);
 	for (i = 0; it != vec_end(self->_root_data); ++it, ++i) {
-		record* new_rec = new_(record, i);
-		it->data = new_rec;
-		new_rec->root_fifo_idx = i % self->root_fifo_vec->size;
-		vec_push_back(root_fifos[new_rec->root_fifo_idx]->buf, &it);
+		record* rec = it->data;
+		if (rec == NULL) {
+			rec = new_(record, i);
+			it->data = rec;
+		} else {
+			it->next = NULL;
+			it->prev = NULL;
+		}
+		rec->root_fifo_idx = i % self->root_fifo_vec->size;
+		vec_push_back(root_fifos[rec->root_fifo_idx]->buf, &it);
 	}
 
 	/* preempt */
@@ -815,7 +820,7 @@ int _build(query* aquery, fqlhandle* fql, dnode* entry, bool is_union)
 	if (aquery->query_id != 0) { /* is subquery */
 		return FQL_GOOD;
 	}
-	_activate_procs(self);
+	_activate_procs(self, fql);
 	_make_pipes(self);
 	_update_pipes(self->processes);
 	_calculate_execution_order(self);
@@ -924,7 +929,7 @@ unsigned _get_union_pipe_count(vec* nodes)
 	return total;
 }
 
-void _activate_procs(plan* self)
+void _activate_procs(plan* self, fqlhandle* fql)
 {
 	unsigned graph_size = self->processes->nodes->size;
 	unsigned union_pipes = _get_union_pipe_count(self->processes->nodes);
@@ -984,11 +989,21 @@ unrolled_break : {
 	 */
 	unsigned root_size = fifo_base_size * pipe_count;
 
-	//fifo_resize(self->root, root_size);
 	self->_root_data = new_t_(vec, node);
 	vec_resize_and_zero(self->_root_data, root_size);
 
 	plan_pipeline_root_preempt(self);
+
+	if (fql->props.verbosity == FQL_DEBUG) {
+		fprintf(stderr,
+		        "processes: %u\n"
+		        "pipes:     %u\n"
+		        "root size: %u\n",
+		        proc_count,
+		        pipe_count,
+		        root_size);
+	}
+
 } /* unrolled_break */
 }
 

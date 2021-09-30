@@ -39,13 +39,47 @@ int _fill_inbuf(process* proc, fifo* input)
 	return ret;
 }
 
+int _fqlprocess_add_or_buffer(fifo* out, node* rg, vec* buf, unsigned limit)
+{
+	if (vec_empty(buf)) {                 /* not yet buffering */
+		if (fifo_add_try(out, &rg)) { /* no lock achieved  */
+			vec_push_back(buf, &rg);
+			return -1;
+		}
+		return 0;
+	}
+	vec_push_back(buf, &rg);
+	if (buf->size >= limit) {
+		fifo_nadd(out, buf);
+		return 0;
+	}
+	return fifo_nadd_try(out, buf);
+}
+
 void fqlprocess_recycle(process* proc, node** rg)
 {
 	while (*rg) {
 		node* rg_node = node_pop_export(rg);
 		record* rec = rg_node->data;
 		fifo** root_fifo = vec_at(proc->rootvec_ref, rec->root_fifo_idx);
+
+		// 3 Optional implementations for this...
+
+		/////////
+		//_fqlprocess_add_or_buffer(*root_fifo,
+		//                          rg_node,
+		//                          proc->rebuf,
+		//                          proc->fifo_base_size);
+		/////////
+
+		/////////
+		//vec_push_back(proc->rebuf, &rg_node);
+		//fifo_nadd(*root_fifo, proc->rebuf);
+		/////////
+
+		/////////
 		fifo_add(*root_fifo, &rg_node);
+		/////////
 	}
 }
 

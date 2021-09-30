@@ -835,9 +835,6 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 
-# un-related note...AUR build options:
-# -march=x86-64 -mtune=generic -g -O2 -pipe -fno-plt -fexceptions -Wp,-D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security -fstack-clash-protection -fcf-protection
-
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

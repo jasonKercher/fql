@@ -15,6 +15,7 @@ TESTS =                        \
 	check_union            \
 	check_difficult        \
 	check_operations       \
+	check_controlflow      \
 	check_output           \
 	check_thread_output    \
 	check_stdin            \
@@ -36,6 +37,7 @@ check_PROGRAMS =               \
 	check_union            \
 	check_difficult        \
 	check_operations       \
+	check_controlflow      \
 	check_output           \
 	check_thread_output    \
 	check_stdin            \
@@ -110,6 +112,10 @@ check_stdin_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 check_operations_SOURCES = $(common_src) check_operations.c
 check_operations_CFLAGS = @CHECK_CFLAGS@
 check_operations_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
+
+check_controlflow_SOURCES = $(common_src) check_controlflow.c
+check_controlflow_CFLAGS = @CHECK_CFLAGS@
+check_controlflow_LDADD = $(top_builddir)/lib/libfql.la @CHECK_LIBS@
 
 check_output_SOURCES = $(common_src) check_output.c output.h output.c
 check_output_CFLAGS = @CHECK_CFLAGS@

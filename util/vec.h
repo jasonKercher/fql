@@ -56,8 +56,12 @@ void* vec_pop_back(struct vec* restrict);
 
 void* vec_add_one(struct vec* restrict);
 void* vec_add_one_front(struct vec* restrict);
-void vec_set(struct vec* restrict, size_t, const void* restrict);
 void vec_push_back(struct vec* restrict, const void* restrict);
+
+void vec_set_iter(struct vec* restrict, void* pos, const void* begin, const void* back);
+void vec_set_one(struct vec* restrict, void* pos, const void* restrict);
+void vec_set_at(struct vec* restrict, size_t idx, const void* restrict, size_t len);
+void vec_set(struct vec* restrict, void* pos, const void* restrict, size_t len);
 
 void vec_insert_iter(struct vec* restrict,
                      void* pos,

@@ -100,10 +100,10 @@ void output_read(struct fqlhandle* fql, const char* resultdir)
 	        "select 5 into [%s/read5] from t1                        "
 	        "select foo + bar, baz / 10, baz into [%s/read6] from t1 "
 	        "select -(baz+0) into [%s/read7] from t1                 "
-	        "                                                             "
-	        "select foo, left(right(foo, 5), 2)                           "
+	        "                                                        "
+	        "select foo, left(right(foo, 5), 2)                      "
 	        "into [%s/read8]                                         "
-	        "from t1                                                      ",
+	        "from t1                                                 ",
 	        resultdir,
 	        resultdir,
 	        resultdir,

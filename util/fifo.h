@@ -30,7 +30,7 @@ struct fifo {
 	ATOMIC_ unsigned tail;
 	ATOMIC_ unsigned _iter_head;
 	unsigned input_count;
-	bool is_open;
+	ATOMIC_ bool is_open;
 };
 typedef struct fifo fifo;
 
@@ -56,9 +56,10 @@ void* fifo_peek(const struct fifo* restrict);
 void* fifo_look_ahead(const struct fifo* restrict);
 void fifo_consume(struct fifo* restrict);
 
-void fifo_add_eager(struct fifo* restrict, void* restrict);
 void fifo_add(struct fifo* restrict, void* restrict);
-void fifo_nadd(struct fifo* restrict, struct vec* restrict, unsigned start_idx);
+int fifo_add_try(struct fifo* restrict, void* restrict);
+void fifo_nadd(struct fifo* restrict, struct vec* restrict);
+int fifo_nadd_try(struct fifo* restrict, struct vec* restrict);
 void fifo_advance(struct fifo* restrict);
 
 
@@ -70,6 +71,7 @@ void* fifo_begin(struct fifo* restrict);
 void* fifo_iter(struct fifo* restrict);
 void* fifo_end(const struct fifo* restrict);
 void fifo_update(struct fifo* restrict);
+int fifo_update_try(struct fifo* restrict);
 //#define fifo_iter(f_) fifo_get(f_)
 
 /* thread conditions */

@@ -9,6 +9,12 @@ void thread_output_setup(void)
 	fql_setup();
 	fql_set_threading(fql, true);
 	fql_set_overwrite(fql, true);
+
+	/* default for threading is 64. By setting
+	 * to a lower number, we increase the chance
+	 * of a race condition. 2 is min...
+	 */
+	fql_set_pipe_factor(fql, 2);
 }
 
 START_TEST(test_output_const)
