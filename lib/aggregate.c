@@ -116,6 +116,19 @@ int aggregate_resolve(aggregate* self, expression* col)
 		}
 		self->data_type = argument->field_type;
 		break;
+	case AGG_AVG:
+		switch (argument->field_type) {
+		case FIELD_INT:
+			self->call__ = &fql_avg_i;
+			break;
+		case FIELD_FLOAT:
+			self->call__ = &fql_avg_f;
+			break;
+		default:
+			goto unexpected_type;
+		}
+		self->data_type = argument->field_type;
+		break;
 	default:
 		fprintf(stderr,
 		        "Aggregate function `%s' not yet implemented\n",

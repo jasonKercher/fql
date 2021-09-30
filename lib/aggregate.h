@@ -7,12 +7,15 @@
 #include "util/vec.h"
 #include "util/stringy.h"
 
+union _aggdata {
+	long i;
+	double f;
+	string s;
+};
+
 struct aggresult {
-	union {
-		long i;
-		double f;
-		string s;
-	} data;
+	union _aggdata data;
+	union _aggdata auxdata;
 	unsigned qty;
 };
 
@@ -54,5 +57,8 @@ int fql_max_s(struct aggregate*, struct group*, struct aggresult*, struct node*)
 
 int fql_sum_i(struct aggregate*, struct group*, struct aggresult*, struct node*);
 int fql_sum_f(struct aggregate*, struct group*, struct aggresult*, struct node*);
+
+int fql_avg_i(struct aggregate*, struct group*, struct aggresult*, struct node*);
+int fql_avg_f(struct aggregate*, struct group*, struct aggresult*, struct node*);
 
 #endif /* AGGREGATE_H */

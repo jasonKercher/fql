@@ -100,3 +100,29 @@ int fql_sum_f(aggregate* agg, group* group, struct aggresult* result, node* rg)
 	result->data.f += num;
 	return FQL_GOOD;
 }
+
+int fql_avg_i(aggregate* agg, group* group, struct aggresult* result, node* rg)
+{
+	/* auxdata is used here to keep track of a running total */
+	expression* col = *(expression**)vec_begin(agg->args);
+	long num = 0;
+	try_(expression_get_int(&num, col, rg));
+
+	result->auxdata.i = overflow_safe_add_i(result->auxdata.i, num);
+	result->data.i = result->auxdata.i / (result->qty + 1);
+
+	return FQL_GOOD;
+}
+
+int fql_avg_f(aggregate* agg, group* group, struct aggresult* result, node* rg)
+{
+	/* auxdata is used here to keep track of a running total */
+	expression* col = *(expression**)vec_begin(agg->args);
+	double num = 0;
+	try_(expression_get_float(&num, col, rg));
+
+	result->auxdata.f += num;
+	result->data.f = result->auxdata.f / (result->qty + 1);
+
+	return FQL_GOOD;
+}
