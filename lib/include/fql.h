@@ -334,9 +334,15 @@ int fql_exec_plans(struct fqlhandle* fql, int plan_count);
  * would need to check each individual statement with
  * fql_get_operation_type until you hit a SELECT.
  *
- * NOTE: This function will not stop for a SELECT with an INTO.
+ * Returns:
+ * Number of executed statements : all successful
+ * FQL_FAIL                      : error
+ *
+ * Caveats: This function will not stop for a SELECT with an
+ *          INTO statement.  It will also not execute anything
+ *          at all if the current statement is SELECT.
  */
-int fql_exec_until_select(struct fqlhandle*);
+long fql_exec_until_select(struct fqlhandle*);
 
 #ifdef __cplusplus
 }  /* extern "C" */

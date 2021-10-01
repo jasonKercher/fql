@@ -17,6 +17,7 @@ struct fqlbranch {
 	int true_idx;
 	int false_idx;
 	bool expect_else;
+	bool is_elseif;
 };
 typedef struct fqlbranch fqlbranch;
 

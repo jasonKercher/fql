@@ -654,15 +654,18 @@ _step_fail_break:
 	return ret;
 }
 
-int fql_exec_until_select(fqlhandle* fql)
+long fql_exec_until_select(fqlhandle* fql)
 {
+	long exec_count = 0;
 	query* current_query = _get_active_query(fql);
 	while (current_query) {
 		enum fql_operation* current_op = current_query->op;
 		if (*current_op == FQL_SELECT && current_query->into_table_name == NULL) {
 			break;
 		}
+		++exec_count;
 		try_(fql_exec_plans(fql, 1));
+		current_query = _get_active_query(fql);
 	}
-	return FQL_GOOD;
+	return exec_count;
 }

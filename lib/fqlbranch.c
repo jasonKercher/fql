@@ -21,7 +21,12 @@ fqlbranch* fqlbranch_construct(fqlbranch* self,
 	        .false_idx = -1,
 	};
 
-	self->scope->parent_scope = fql->_scope;
+	if (fql->branch_state == BRANCH_EXPECT_ELSE) {
+		self->scope->parent_scope = fql->_scope->parent_scope;
+	} else {
+		fql->branch_state = BRANCH_EXPECT_EXPR;
+		self->scope->parent_scope = fql->_scope;
+	}
 	fql->_scope = self->scope;
 
 	return self;

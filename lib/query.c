@@ -1,6 +1,7 @@
 #include "query.h"
 
 #include <stdbool.h>
+#include <assert.h>
 #include <unistd.h>
 
 #include "fql.h"
@@ -173,13 +174,6 @@ int query_enter_if(query* self,
                    enum fql_operation operation,
                    bool expect_else)
 {
-	/* if we expect a condition, we must exit the current scope */
-	switch (fql->branch_state) {
-	case BRANCH_EXPECT_ELSE:
-		fql->_scope = fql->_scope->parent_scope;
-	default:;
-	}
-
 	try_(query_init_op(self, fql, query_stack, operation));
 
 	fqlbranch* branch = self->op;
@@ -191,10 +185,28 @@ int query_enter_if(query* self,
 void query_exit_if(query* self, fqlhandle* fql)
 {
 	fql->branch_state = BRANCH_EXPECT_EXPR;
-	fqlbranch* ifbranch = self->op;
-	fql->_scope = ifbranch->scope->parent_scope;
+	fqlbranch* ifstmt = self->op;
+	fql->_scope = ifstmt->scope->parent_scope;
 	if (fql->_scope == fql->global_scope) {
 		fql->branch_state = BRANCH_NO_BRANCH;
+	}
+
+	/* Now, we need to loop back through all queries
+	 * inside this if block. If they are if statements
+	 * and have the same parent_scope, then we can set
+	 * the next_idx of each last_true_block_query.
+	 * Above, we set fql->_scope to this ifbranch's 
+	 * parent_scope. So we compare on that.
+	 */
+	query** it = vec_at(fql->query_vec, self->idx);
+	for (; it != vec_end(fql->query_vec); ++it) {
+		ifstmt = (*it)->op;
+		if (ifstmt->oper_type != FQL_IF
+		    || ifstmt->scope->parent_scope != fql->_scope) {
+			continue;
+		}
+
+		ifstmt->last_true_block_query->next_idx = fql->query_vec->size;
 	}
 }
 
@@ -241,9 +253,10 @@ int query_exit_query(query* self, query* prev_query, fqlhandle* fql)
 {
 	/* If the previously active query was a branch operation */
 	enum fql_operation* prev_op = prev_query->op;
+	fqlbranch* prev_branch = NULL;
 
 	if (*prev_op == FQL_IF) {
-		fqlbranch* prev_branch = prev_query->op;
+		prev_branch = prev_query->op;
 		prev_branch->last_true_block_query->next_idx = fql->query_vec->size;
 	}
 
@@ -265,7 +278,9 @@ int query_exit_query(query* self, query* prev_query, fqlhandle* fql)
 
 	switch (fql->branch_state) {
 	case BRANCH_EXPECT_EXPR:
-		branch->last_true_block_query = prev_query;
+		if (prev_branch == NULL || !prev_branch->is_elseif) {
+			branch->last_true_block_query = prev_query;
+		}
 		if (fql->_scope->is_in_block) {
 			return FQL_GOOD;
 		}
@@ -663,7 +678,6 @@ int query_init_op(query* self,
 	case FQL_WHILE:
 	case FQL_IF:
 		self->op = new_(fqlbranch, fql, self, operation);
-		fql->branch_state = BRANCH_EXPECT_EXPR;
 		break;
 	case FQL_SELECT:
 		self->op = new_(fqlselect);
@@ -689,21 +703,23 @@ int query_init_op(query* self,
 
 		/* May as well check it or this will be a bitch to fix */
 		fqlbranch* branch = branch_query->op;
-		if (branch->oper_type != FQL_IF) {
-			fputs("Unexpected query when looking for branch\n", stderr);
-			return FQL_FAIL;
-		}
+		assert(branch->oper_type == FQL_IF);
 
 		branch->false_idx = self->idx;
+		if (operation != FQL_IF) { /* if bare else */
+			branch->else_scope = new_(scope);
+			branch->else_scope->parent_scope = branch->scope->parent_scope;
 
-		if (operation == FQL_IF) {
+			fql->_scope = branch->else_scope;
 			return FQL_GOOD;
 		}
 
-		branch->else_scope = new_(scope);
-		branch->else_scope->parent_scope = branch->scope->parent_scope;
-
-		fql->_scope = branch->else_scope;
+		/* if we've made it this far, we have entered an "else if" */
+		fql->branch_state = BRANCH_EXPECT_EXPR;
+		query** elseifstmt = vec_back(fql->query_vec);
+		fqlbranch* elseif = (*elseifstmt)->op;
+		elseif->is_elseif = true;
+		//branch->last_true_block_query = *(elseifstmt - 1);
 	}
 
 	return FQL_GOOD;
