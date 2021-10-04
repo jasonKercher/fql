@@ -12,31 +12,37 @@ void output_setup(void)
 
 START_TEST(test_output_const)
 {
-	output_const(fql, "results");
+	output_const(fql);
 }
 END_TEST
 
 START_TEST(test_output_read)
 {
-	output_read(fql, "results");
+	output_read(fql);
 }
 END_TEST
 
 START_TEST(test_output_logic)
 {
-	output_logic(fql, "results");
+	output_logic(fql);
 }
 END_TEST
 
 START_TEST(test_output_scalar)
 {
-	output_scalar(fql, "results");
+	output_scalar(fql);
 }
 END_TEST
 
 START_TEST(test_output_switch)
 {
-	output_switch(fql, "results");
+	output_switch(fql);
+}
+END_TEST
+
+START_TEST(test_output_null)
+{
+	output_null(fql);
 }
 END_TEST
 
@@ -53,6 +59,7 @@ Suite* fql_output_suite(void)
 	tcase_add_test(tc_output, test_output_logic);
 	tcase_add_test(tc_output, test_output_scalar);
 	tcase_add_test(tc_output, test_output_switch);
+	tcase_add_test(tc_output, test_output_null);
 
 	suite_add_tcase(s, tc_output);
 

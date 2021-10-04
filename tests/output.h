@@ -3,10 +3,11 @@
 
 #include "check_common.h"
 
-void output_const(struct fqlhandle*, const char* resultdir);
-void output_read(struct fqlhandle*, const char* resultdir);
-void output_logic(struct fqlhandle*, const char* resultdir);
-void output_scalar(struct fqlhandle*, const char* resultdir);
-void output_switch(struct fqlhandle*, const char* resultdir);
+void output_const(struct fqlhandle*);
+void output_read(struct fqlhandle*);
+void output_logic(struct fqlhandle*);
+void output_scalar(struct fqlhandle*);
+void output_switch(struct fqlhandle*);
+void output_null(struct fqlhandle*);
 
 #endif  /* OUTPUT_H */
