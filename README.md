@@ -21,7 +21,6 @@ the same as `select * from t1 where foo = 'bar'`.
 
 ### What can it *not* do?
 
-- Control flow (if, while, variables)
 - windowed-functions (like RANK)
 - temp tables not so temp
 - RIGHT and FULL JOIN. INNER and LEFT JOIN work.
@@ -35,7 +34,7 @@ the same as `select * from t1 where foo = 'bar'`.
 - Implicit UPDATE/DELETE into subqueries
 
 Most recent and possibly unstable feature(s):
-- JOIN with either a subquery or stdin on the right side.
+- Control flow (if, while, variables)
 
 
 ### Is it fast?
