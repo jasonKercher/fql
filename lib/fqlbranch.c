@@ -34,6 +34,8 @@ fqlbranch* fqlbranch_construct(fqlbranch* self,
 
 void fqlbranch_destroy(fqlbranch* self)
 {
+	delete_(scope, self->scope);
+	delete_if_exists_(scope, self->else_scope);
 	delete_if_exists_(logicgroup, self->condition);
 }
 

@@ -75,9 +75,10 @@ void fql_free(fqlhandle* fql)
 		}
 		delete_(vec, fql->schema_paths);
 	}
+
+	delete_(vec, fql->variables);
 	delete_(scope, fql->global_scope);
 	delete_(hashmap, fql->schema_map);
-	delete_(vec, fql->variables);
 	delete_(string, fql->props.schema_path);
 	delete_(string, fql->props.schema);
 	delete_(vec, fql->query_vec);
@@ -166,9 +167,15 @@ int fql_reset(fqlhandle* fql)
 
 	fqlsig_tmp_removeall();
 
-	/* lol I never implemented clear... */
-	hashmap_destroy(fql->schema_map);
-	hashmap_construct_(fql->schema_map, schema*, 16, HASHMAP_PROP_DEFAULT);
+	hashmap_clear(fql->schema_map);
+	scope_reset(fql->global_scope);
+	fql->_scope = fql->global_scope;
+
+	variable* var_iter = vec_begin(fql->variables);
+	for (; var_iter != vec_end(fql->variables); ++var_iter) {
+		variable_destroy(var_iter);
+	}
+	vec_clear(fql->variables);
 
 	return FQL_GOOD;
 }
@@ -642,6 +649,9 @@ int fql_step(fqlhandle* fql, struct fql_field** fields)
 	}
 
 _step_fail_break:
+
+	plan->has_stepped = false;
+
 	_free_api_strings(fql->api_vec);
 	vec_clear(fql->api_vec);
 

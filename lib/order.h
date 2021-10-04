@@ -18,13 +18,14 @@ typedef int (*order_select_fn)(struct order*, struct process*);
 struct order {
 	struct vec expressions;
 	struct vec entries;
+	string in_filename;
 	struct flex order_data;
 	order_select_fn select__;
 	struct vec* api;
 	struct expression* const_dest;
-	const char* in_filename;
 	FILE* out_file;
 	struct _entry* entry_iter;
+	struct node* temp_node;
 	char* mmap;
 	size_t file_size;
 	size_t top_count;

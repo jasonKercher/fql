@@ -30,7 +30,7 @@ int fixedwriter_open(struct fixedwriter*, const char* filename);
 int fixedwriter_close(struct fixedwriter*);
 FILE* fixedwriter_get_file(struct fixedwriter*);
 char* fixedwriter_take_filename(struct fixedwriter*);
-const char* fixedwriter_get_tempname(struct fixedwriter*);
+const char* fixedwriter_export_temp(struct fixedwriter*);
 int fixedwriter_write_record(struct writer*, struct vec*, struct node*, FILE*);
 
 typedef int (*write_fn)(struct writer*, struct vec*, struct node*, FILE*);
@@ -52,7 +52,7 @@ int writer_open(struct writer* self, const char* file_name);
 int writer_close(struct writer* self);
 FILE* writer_get_file(struct writer*);
 char* writer_take_filename(struct writer*);
-const char* writer_get_tempname(struct writer*);
+const char* writer_export_temp(struct writer*);
 
 void writer_set_delimiter(struct writer*, const char*);
 void writer_set_rec_terminator(struct writer*, const char*);

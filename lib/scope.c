@@ -18,6 +18,11 @@ void scope_destroy(scope* self)
 	hashmap_destroy(&self->variable_map);
 }
 
+void scope_reset(scope* self)
+{
+	hashmap_clear(&self->variable_map);
+}
+
 int scope_get_var_index(scope* self, const char* varname)
 {
 	int* idx = NULL;

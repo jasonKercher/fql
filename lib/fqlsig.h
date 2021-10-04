@@ -19,7 +19,7 @@ void fqlsig_cleanexit();
 /**
  * Add temp file
  */
-struct node* fqlsig_tmp_push(void* tmp_file);
+struct node* fqlsig_tmp_push(const char* tmp_file);
 
 /**
  * Remove temp node only
@@ -30,6 +30,11 @@ void fqlsig_tmp_remove_node(struct node* node);
  * Remove temp file
  */
 void fqlsig_tmp_remove_file(const char* tmp_file);
+
+/**
+ * Remove temp node and file
+ */
+void fqlsig_tmp_remove_node_and_file(struct node* node);
 
 /**
  * Remove all temp files

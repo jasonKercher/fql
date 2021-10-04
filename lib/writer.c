@@ -1,8 +1,8 @@
 #include "writer.h"
-#include "fqlhandle.h"
 #include <csv.h>
 #include "fql.h"
 #include "misc.h"
+#include "fqlhandle.h"
 
 void _assign(writer*, struct fqlhandle*);
 
@@ -123,13 +123,13 @@ char* writer_take_filename(writer* self)
 	}
 }
 
-const char* writer_get_tempname(writer* self)
+const char* writer_export_temp(writer* self)
 {
 	switch (self->type) {
 	case IO_LIBCSV:
 		break;
 	case IO_FIXED:
-		return fixedwriter_get_tempname(self->writer_data);
+		return fixedwriter_export_temp(self->writer_data);
 	default:
 		return NULL;
 	}
@@ -141,7 +141,7 @@ const char* writer_get_tempname(writer* self)
 		}
 	}
 
-	return csv_writer_get_filename(csv);
+	return csv_writer_export_tmp(csv);
 }
 
 void writer_set_delimiter(writer* self, const char* delim)

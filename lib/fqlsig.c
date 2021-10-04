@@ -52,26 +52,36 @@ void fqlsig_cleanexit()
 	exit(EXIT_FAILURE);
 }
 
-node* fqlsig_tmp_push(void* tmp_file)
+node* fqlsig_tmp_push(const char* tmp_file)
 {
-	return node_enqueue(&_tmp_file_head, tmp_file);
+	return node_enqueue(&_tmp_file_head, strdup(tmp_file));
 }
 
 void fqlsig_tmp_remove_node(node* node)
 {
-	node_remove(&_tmp_file_head, node);
+	char* filename = node_remove(&_tmp_file_head, node);
+	free_(filename);
 }
 
 void fqlsig_tmp_remove_file(const char* tmp_file)
 {
-	if (remove(tmp_file))
+	if (remove(tmp_file)) {
 		perror(tmp_file);
+	}
+}
+
+void fqlsig_tmp_remove_node_and_file(node* node)
+{
+	char* tmp = node_remove(&_tmp_file_head, node);
+	fqlsig_tmp_remove_file(tmp);
+	free_(tmp);
 }
 
 void fqlsig_tmp_removeall()
 {
 	while (_tmp_file_head) {
-		string* tmp = node_dequeue(&_tmp_file_head);
-		fqlsig_tmp_remove_file(string_c_str(tmp));
+		char* tmp = node_dequeue(&_tmp_file_head);
+		fqlsig_tmp_remove_file(tmp);
+		free_(tmp);
 	}
 }

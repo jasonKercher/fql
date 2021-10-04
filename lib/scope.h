@@ -14,6 +14,7 @@ typedef struct scope scope;
 struct scope* scope_construct(struct scope*);
 void scope_destroy(struct scope*);
 
+void scope_reset(struct scope*);
 int scope_get_var_index(struct scope*, const char*);
 
 #endif /* SCOPE_H */

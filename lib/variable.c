@@ -16,6 +16,7 @@ variable* variable_construct(variable* self)
 void variable_destroy(variable* self)
 {
 	delete_if_exists_(string, self->_data);
+	delete_if_exists_(string, self->_import_value);
 }
 
 void _append_space(variable* self)
@@ -104,8 +105,9 @@ int variable_set_type(variable* self, enum sql_type new_type)
 		case SQL_VARCHAR:
 			if (self->_data == NULL) {
 				self->_data = new_(string);
+			} else {
+				string_clear(self->_data);
 			}
-			string_clear(self->_data);
 			self->value.s = self->_data;
 			break;
 		case SQL_UNDEFINED:
@@ -177,6 +179,7 @@ void variable_set_string(variable* self, const string* s)
 
 void variable_set_stringview(variable* self, stringview* sv)
 {
+	self->is_null = false;
 	if (sv->len > self->limit) {
 		sv->len = self->limit;
 	}
@@ -196,7 +199,11 @@ void variable_set_stringview(variable* self, stringview* sv)
 
 void variable_set_import_value(variable* self, const char* value)
 {
-	self->_import_value = string_from_char_ptr(value);
+	if (self->_import_value == NULL) {
+		self->_import_value = string_from_char_ptr(value);
+	} else {
+		string_strcpy(self->_import_value, value);
+	}
 	variable_set_string(self, self->_import_value);
 	self->type = SQL_VARCHAR;
 }

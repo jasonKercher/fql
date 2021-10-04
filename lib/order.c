@@ -1,13 +1,15 @@
 #include "order.h"
 
+#include <assert.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 
 #include "misc.h"
 #include "field.h"
 #include "record.h"
+#include "fqlsig.h"
 #include "expression.h"
 #include "fqlselect.h"
 #include "process.h"
@@ -36,6 +38,7 @@ order* order_construct(order* self)
 
 	vec_construct_(&self->expressions, expression*);
 	vec_construct_(&self->entries, struct _entry);
+	string_construct(&self->in_filename);
 	flex_construct(&self->order_data);
 
 	return self;
@@ -51,6 +54,7 @@ void order_destroy(order* self)
 	vec_destroy(&self->entries);
 	flex_destroy(&self->order_data);
 	_order_unmap(self);
+	string_destroy(&self->in_filename);
 	_order_reset_output(self);
 }
 
@@ -77,7 +81,15 @@ int order_init_io(order* self, const char* in_name, const char* out_name)
 	vec_clear(&self->entries);
 	flex_clear(&self->order_data);
 
-	self->in_filename = in_name;
+	if (self->temp_node != NULL) {
+		_order_unmap(self);
+		fqlsig_tmp_remove_node_and_file(self->temp_node);
+		self->temp_node = NULL;
+	}
+
+	string_strcpy(&self->in_filename, in_name);
+	self->temp_node = fqlsig_tmp_push(string_c_str(&self->in_filename));
+
 	if (out_name != NULL) {
 		_order_reset_output(self);
 		self->out_file = fopen(out_name, "w");
@@ -379,17 +391,15 @@ int order_sort(order* self)
 	vec_sort_r(&self->entries, &_compare, self);
 	self->sorted = true;
 
-	_order_unmap(self);
-
-	self->fd = open(self->in_filename, O_RDONLY);
+	self->fd = open(string_c_str(&self->in_filename), O_RDONLY);
 	if (self->fd == -1) {
-		perror(self->in_filename);
+		perror(string_c_str(&self->in_filename));
 		return FQL_FAIL;
 	}
 
 	struct stat sb;
 	if (fstat(self->fd, &sb) == -1) {
-		perror(self->in_filename);
+		perror(string_c_str(&self->in_filename));
 		return FQL_FAIL;
 	}
 
@@ -402,7 +412,7 @@ int order_sort(order* self)
 	self->mmap = mmap(NULL, sb.st_size, PROT_READ, MAP_PRIVATE, self->fd, 0);
 
 	if (self->mmap == MAP_FAILED) {
-		perror(self->in_filename);
+		perror(string_c_str(&self->in_filename));
 		return FQL_FAIL;
 	}
 	madvise(self->mmap, sb.st_size, MADV_RANDOM);

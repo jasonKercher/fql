@@ -415,10 +415,9 @@ int op_writer_init(query* query, struct fqlhandle* fql)
 
 	if (!query->union_id && query->orderby != NULL) {
 		char* out_name = writer_take_filename(op_writer);
-		const char* in_name = writer_get_tempname(op_writer);
-
+		char* in_name = writer_export_temp(op_writer);
 		try_(order_init_io(query->orderby, in_name, out_name));
-		/* take_filename takes ownership, must free */
+		free_(in_name);
 		free_(out_name);
 	}
 

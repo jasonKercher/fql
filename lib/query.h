@@ -173,6 +173,7 @@ struct query {
 	enum mode mode_store;
 	enum logic_mode logic_mode;
 	enum join_type join;
+	bool in_assignment_function;
 	bool in_bracket_expression; /* boolean for whether we are in a
 	                             * bracket expression or not
 	                             */

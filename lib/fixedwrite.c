@@ -58,7 +58,7 @@ int _mktmp(fixedwriter* self)
 		return FQL_FAIL;
 	}
 
-	self->tempnode = fqlsig_tmp_push(&self->tempname);
+	self->tempnode = fqlsig_tmp_push(string_c_str(&self->tempname));
 	return FQL_GOOD;
 }
 bool _isopen(fixedwriter* self)
@@ -127,7 +127,6 @@ const char* _get_filename(fixedwriter* self)
 	string* filename = NULL;
 	if (self->is_detached) {
 		filename = &self->tempname;
-		fqlsig_tmp_remove_node(self->tempnode);
 		self->tempnode = NULL;
 	} else {
 		filename = &self->filename;
@@ -139,7 +138,7 @@ const char* _get_filename(fixedwriter* self)
 	return string_c_str(filename);
 }
 
-const char* fixedwriter_get_tempname(fixedwriter* self)
+const char* fixedwriter_export_temp(fixedwriter* self)
 {
 	if (!_isopen(self)) {
 		if (_mktmp(self) == FQL_FAIL) {

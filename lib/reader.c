@@ -135,7 +135,8 @@ int reader_mktmp(reader* self)
 		return FQL_FAIL;
 	}
 
-	self->random_access_tempnode = fqlsig_tmp_push(self->random_access_filename);
+	self->random_access_tempnode =
+	        fqlsig_tmp_push(string_c_str(self->random_access_filename));
 	return FQL_GOOD;
 }
 

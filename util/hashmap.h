@@ -44,35 +44,44 @@ typedef struct hashmap hashmap;
 
 typedef struct hashmap set;
 
-set* set_construct(set*, size_t limit, const unsigned props);
-void set_destroy(set*);
-void set_nadd(set*, const char* key, unsigned len);
+set* set_construct(set* restrict, size_t limit, const unsigned props);
+void set_destroy(set* restrict);
+void set_clear(set* restrict);
+void set_nadd(set* restrict, const char* restrict key, unsigned len);
 #define set_add(s_, key_) set_nadd(s_, key_, strlen(key_))
-bool set_nhas(set*, const char* key, unsigned len);
+bool set_nhas(set* restrict, const char* restrict key, unsigned len);
 #define set_has(s_, key_) set_nhas(s_, key_, strlen(key_))
 
-struct hashmap* hashmap_construct(struct hashmap*,
+struct hashmap* hashmap_construct(struct hashmap* restrict,
                                   const unsigned elem_size,
                                   size_t limit,
                                   const unsigned props);
 #define hashmap_construct_(h_, T_, limit_, props_)                             \
 	hashmap_construct(h_, sizeof(T_), limit_, props_)
-void hashmap_destroy(struct hashmap*);
-void hashmap_nset(struct hashmap*, const char* key, void*, unsigned);
+void hashmap_destroy(struct hashmap* restrict);
+void hashmap_clear(struct hashmap* restrict);
+void hashmap_nset(struct hashmap* restrict,
+                  const char* restrict key,
+                  void* restrict,
+                  unsigned);
 #define hashmap_set(m_, key_, data_) hashmap_nset(m_, key_, data_, strlen(key_))
-void* hashmap_nget(struct hashmap*, const char* key, unsigned);
+void* hashmap_nget(struct hashmap* restrict, const char* restrict key, unsigned);
 #define hashmap_get(m_, key_) hashmap_nget(m_, key_, strlen(key_))
 
 typedef struct hashmap multimap;
 
-multimap* multimap_construct(multimap*,
+multimap* multimap_construct(multimap* restrict,
                              const unsigned elem_size,
                              size_t limit,
                              const unsigned props);
 #define multimap_construct_(h_, T_, limit_, props_)                            \
 	multimap_construct(h_, sizeof(T_), limit_, props_)
-void multimap_destroy(multimap*);
-void multimap_nset(multimap*, const char* key, void*, unsigned);
+void multimap_destroy(multimap* restrict);
+void multimap_clear(multimap* restrict);
+void multimap_nset(multimap* restrict,
+                   const char* restrict key,
+                   void* restrict,
+                   unsigned);
 #define multimap_set(m_, key_, data_)                                          \
 	multimap_nset(m_, key_, data_, strlen(key_))
 #define multimap_nget(m_, key_, n_) hashmap_nget(m_, key_, n_)
@@ -80,14 +89,17 @@ void multimap_nset(multimap*, const char* key, void*, unsigned);
 
 typedef struct hashmap compositemap;
 
-compositemap* compositemap_construct(compositemap*,
+compositemap* compositemap_construct(compositemap* restrict,
                                      const unsigned elem_size,
                                      size_t limit,
                                      const unsigned props);
 #define compositemap_construct_(h_, T_, limit_, props_)                        \
 	compositemap_construct(h_, sizeof(T_), limit_, props_)
-void compositemap_destroy(compositemap*);
-void compositemap_set(compositemap*, const struct vec* key, void*);
-void* compositemap_get(compositemap*, const struct vec* key);
+void compositemap_destroy(compositemap* restrict);
+void compositemap_clear(compositemap* restrict);
+void compositemap_set(compositemap* restrict,
+                      const struct vec* restrict key,
+                      void* restrict);
+void* compositemap_get(compositemap*, const struct vec* restrict key);
 
 #endif /* HASHMAP_H */

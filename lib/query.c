@@ -976,7 +976,10 @@ int _add_variable_expression_by_index(query* self, fqlhandle* fql, int idx)
 	case SQL_TEXT:
 	case SQL_VARCHAR:
 	case SQL_CHAR:
-		var->_data = new_(string);
+		if (var->_data == NULL) {
+			var->_data = new_(string);
+		}
+		var->value.s = var->_data;
 		expr->field_type = FIELD_STRING;
 		break;
 	case SQL_UNDEFINED:
