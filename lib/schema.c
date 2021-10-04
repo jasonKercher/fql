@@ -1274,7 +1274,7 @@ int _resolve_query(struct fqlhandle* fql, query* aquery, enum io union_io)
 	/* If this query will be writing changes to the file system,
 	 * we need to be aware of this when parsing future queries.
 	 * These are mapped as absolute paths. First check that the
-	 * file exists first. If it doesn't, create it now so that
+	 * file exists. If it doesn't, create it now so that
 	 * realpath works. Creating the file also has the affect of
 	 * making fuzzy file discovery possible on a file that did
 	 * not previously exist.

@@ -381,8 +381,8 @@ enum proc_return fql_hash_join(process* proc)
 		return PROC_RETURN_WAIT_ON_OUT0;
 	}
 
-	if (fifo_is_empty(in_left)) {    // && fifo_is_empty(in_right)) {
-		if (!in_left->is_open) { // && !in_right->is_open) {
+	if (fifo_is_empty(in_left)) {
+		if (!in_left->is_open) {
 			return PROC_RETURN_COMPLETE;
 		}
 		return PROC_RETURN_WAIT_ON_IN0;

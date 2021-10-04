@@ -1,10 +1,11 @@
 #include "table.h"
 #include "fql.h"
+#include "misc.h"
 #include "query.h"
-#include "expression.h"
-#include "reader.h"
 #include "logic.h"
+#include "reader.h"
 #include "operation.h"
+#include "expression.h"
 #include "antlr/antlr.h"
 #include "util/util.h"
 
@@ -69,6 +70,22 @@ void table_destroy(table* self)
 		delete_(schema, self->schema);
 	}
 	delete_if_exists_(query, self->subquery);
+}
+
+int table_reset(table* self, bool has_executed)
+{
+	if (self->must_reopen) {
+		try_(reader_reopen(self->reader));
+		if (self->join_data != NULL) {
+			struct hashjoin* hj = self->join_data;
+			multimap_clear(hj->hash_data);
+			hj->state = SIDE_RIGHT;
+		}
+	} else if (has_executed) {
+		self->reader->reset__(self->reader);
+	}
+
+	return FQL_GOOD;
 }
 
 int table_resolve_schema(table* self, struct fqlhandle* fql)

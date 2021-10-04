@@ -9,5 +9,6 @@ void output_logic(struct fqlhandle*);
 void output_scalar(struct fqlhandle*);
 void output_switch(struct fqlhandle*);
 void output_null(struct fqlhandle*);
+void output_join(struct fqlhandle*);
 
 #endif  /* OUTPUT_H */

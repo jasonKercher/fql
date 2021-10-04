@@ -1,4 +1,5 @@
 #include "output.h"
+#include "fql.h"
 #include <stdio.h>
 
 int _testdiff(const char* s)
@@ -326,17 +327,21 @@ void output_switch(struct fqlhandle* fql)
 void output_null(struct fqlhandle* fql)
 {
 	const char* query = "\
-		select NULL into [results/null1]                           \
-		select 1 + NULL into [results/null2]                       \
-		select NULL + 1 into [results/null3]                       \
-		select left('00000000' + cast(5 * (1+NULL) as varchar), 8) \
-		into [results/null4]                                       \
-		select isnull(1 + NULL, NULL) into [results/null5]         \
-		select 1 into [results/null6] where NULL - 4 is NULL       \
-		select 1 into [results/null7] where NULL - 4 is not NULL   \
-		select 1 into [results/null8] where 6 - 4 is not NULL      \
-		select 1 into [results/null9] where 6 - 4 is NULL          \
-	";
+		declare @i int = 0                                                 \
+		while @i < 2                                                       \
+		BEGIN                                                              \
+			select NULL into [results/null1]                           \
+			select 1 + NULL into [results/null2]                       \
+			select NULL + 1 into [results/null3]                       \
+			select left('00000000' + cast(5 * (1+NULL) as varchar), 8) \
+			into [results/null4]                                       \
+			select isnull(1 + NULL, NULL) into [results/null5]         \
+			select 1 into [results/null6] where NULL - 4 is NULL       \
+			select 1 into [results/null7] where NULL - 4 is not NULL   \
+			select 1 into [results/null8] where 6 - 4 is not NULL      \
+			select 1 into [results/null9] where 6 - 4 is NULL          \
+			set @i += 1                                                \
+		END";
 
 	ck_assert_int_eq(fql_exec(fql, query), FQL_GOOD);
 
@@ -344,6 +349,70 @@ void output_null(struct fqlhandle* fql)
 	for (; i <= 9; ++i) {
 		char filename[64];
 		sprintf(filename, "null%u", i);
+		ck_assert_int_eq(_testdiff(filename), 0);
+	}
+}
+
+void output_join(struct fqlhandle* fql)
+{
+	const char* query = "\
+		declare @i int = 0                \
+		while @i < 2                      \
+		BEGIN                             \
+		    select *                      \
+		    into [results/join1]          \
+		    from t1                       \
+		    join t2                       \
+		        on t1.foo = t2.foo        \
+		                                  \
+		    select *                      \
+		    into [results/join2]          \
+		    from t2                       \
+		    join t1                       \
+		        on t1.foo = t2.foo        \
+                                                  \
+		    select t1.bar, t2.bar         \
+		    into [results/join3]          \
+		    from t1                       \
+		    join t2                       \
+		        on right(t1.foo, 2)       \
+			 = right(t2.foo, 2)       \
+                                                  \
+                    select t1.bar, t2.bar, x.bar  \
+		    into [results/join4]          \
+                    from t1                       \
+                    join t2                       \
+                        on t1.baz = t2.baz        \
+                    join t2 X                     \
+                        on left(t1.foo, 2)        \
+			 = right(x.foo, 2)        \
+                                                  \
+		    set @i += 1               \
+		END";
+
+	ck_assert_int_eq(fql_exec(fql, query), FQL_GOOD);
+
+	fql_set_force_cartesian(fql, true);
+
+	const char* cartesian_query = "\
+		declare @i int = 0         \
+		while @i < 2               \
+		BEGIN                      \
+	      	    select t1.Foo          \
+		    into [results/join5]   \
+		    from t1                \
+		    join t2                \
+		        on t1.foo = t2.foo \
+                                           \
+		    set @i += 1            \
+		END";
+
+	ck_assert_int_eq(fql_exec(fql, cartesian_query), FQL_GOOD);
+
+	unsigned i = 1;
+	for (; i <= 5; ++i) {
+		char filename[64];
+		sprintf(filename, "join%u", i);
 		ck_assert_int_eq(_testdiff(filename), 0);
 	}
 }

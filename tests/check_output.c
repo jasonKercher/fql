@@ -46,6 +46,12 @@ START_TEST(test_output_null)
 }
 END_TEST
 
+START_TEST(test_output_join)
+{
+	output_join(fql);
+}
+END_TEST
+
 Suite* fql_output_suite(void)
 {
 	Suite* s;
@@ -60,6 +66,7 @@ Suite* fql_output_suite(void)
 	tcase_add_test(tc_output, test_output_scalar);
 	tcase_add_test(tc_output, test_output_switch);
 	tcase_add_test(tc_output, test_output_null);
+	tcase_add_test(tc_output, test_output_join);
 
 	suite_add_tcase(s, tc_output);
 

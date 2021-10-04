@@ -122,11 +122,7 @@ int _query_preflight(query* self, fqlhandle* fql, bool has_executed)
 	/* need to reset all readers */
 	table* it = vec_begin(self->sources);
 	for (; it != vec_end(self->sources); ++it) {
-		if (it->must_reopen) {
-			try_(reader_reopen(it->reader));
-		} else if (has_executed) {
-			it->reader->reset__(it->reader);
-		}
+		table_reset(it, has_executed);
 	}
 
 	try_(op_reset(self->op));
