@@ -19,6 +19,7 @@ check_order
 check_top
 check_difficult
 check_operations
+check_controlflow
 check_output
 check_thread_output
 check_stdin
