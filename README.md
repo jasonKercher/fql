@@ -26,7 +26,7 @@ the same as `select * from t1 where foo = 'bar'`.
 - RIGHT and FULL JOIN. INNER and LEFT JOIN work.
 - TOP PERCENT
 - WITH / common table expressions
-- COUNT([column]) -- All counts are treated as COUNT(*)
+- COUNT([column]) -- All counts are treated as COUNT(*\*)
 - MERGE
 - APPLY
 - UNION without ALL
@@ -34,7 +34,7 @@ the same as `select * from t1 where foo = 'bar'`.
 - Implicit UPDATE/DELETE into subqueries
 
 Most recent and possibly unstable feature(s):
-- Control flow (if, while, variables)
+- Control flow (if, while, variables) and query re-entrance
 
 
 ### Is it fast?
@@ -130,14 +130,17 @@ If you are using an Arch Linux based distribution, fql can be retrieved from the
 **Compiling from source**
 
 *Requirements*
-- [libcsv](https://github.com/jasonKercher/libcsv): for reading and writing correct csv files based on [RFC 4180](https://www.ietf.org/rfc/rfc4180.txt)
-- [antlr4 C++ runtime library](https://github.com/antlr/antlr4/tree/master/runtime/Cpp): This is available though pacman (`pacman -S antlr4-runtime`) if you have an Arch Linux based distribution.  I struggled getting this installed on Ubuntu and just wound up compiling it.
+- [libcsv](https://github.com/jasonKercher/libcsv): for reading and writing correct csv files based
+on [RFC 4180](https://www.ietf.org/rfc/rfc4180.txt)
+- [antlr4 C++ runtime library](https://github.com/antlr/antlr4/tree/master/runtime/Cpp): This is available though
+pacman (`pacman -S antlr4-runtime`) if you have an Arch Linux based distribution.  I struggled getting this
+installed on Ubuntu and just wound up compiling it.
 - [libpcre2](https://www.pcre.org/): for LIKE statement implementation
 - [libcheck](https://github.com/libcheck/check): This is only for `make check`.
 
 Once antlr4 runtime is installed, we need to tell the configure script where to find the antlr header files.
-These headers are installed at `${PREFIX}/include/antlr4-runtime` where `$PREFIX` is the install prefix for 
-the antlr4-runtime. So we need to set ANTLR4_CPATH (`ANTLR4_CPATH=${PREFIX}/include`) Rather than searching 
+These headers are installed at `${PREFIX}/include/antlr4-runtime` where `$PREFIX` is the install prefix for
+the antlr4-runtime. So we need to set ANTLR4_CPATH (`ANTLR4_CPATH=${PREFIX}/include`) Rather than searching
 for it manually, you can use the find_antlr_cpath.sh script to find it for you:
 ```sh
 ANTLR4_CPATH=$(./find_antlr_cpath.sh) ./configure
@@ -156,8 +159,8 @@ Installed library: libfql.so
 
 ### Library
 
-The `fql` program was designed to work within a shell environment, however, it can also be utilized 
-as a library. In fact, the `fql` program is really just a thin wrapper for `fql_exec` library 
+The `fql` program was designed to work within a shell environment, however, it can also be utilized
+as a library. In fact, the `fql` program is really just a thin wrapper for `fql_exec` library
 function. Here is a quick example of how to use the library API:
 
 ```c
@@ -168,9 +171,9 @@ int main(int argc, char** argv)
 {
 	struct fql_handle* handle = fql_new();
 	int ret = fql_make_plans(handle,
-	                         "select t1.*           "
+	                         "select t2.*           "
 	                         "from t1               "
-	                         "join t2               "
+	                         "left join t2          "
 	                         "    on t1.foo = t2.foo");
 
 	if (ret == FQL_FAIL) {
@@ -189,6 +192,14 @@ int main(int argc, char** argv)
 	//     0:        complete
 	//     1:        still running
 	while ((ret = fql_step(handle, &fields)) == 1) {
+
+		// Based on the query (it's a LEFT JOIN), there
+		// is a chance this field could return NULL. We
+		// can check for this with the is_null flag...
+		if (fields[0].is_null) {
+			// do something about it...
+			continue;
+		}
 
 		// Since we are using the default schema,
 		// we can assume this is of type FQL_STRING.
