@@ -76,13 +76,16 @@ int table_reset(table* self, bool has_executed)
 {
 	if (self->must_reopen) {
 		try_(reader_reopen(self->reader));
-		if (self->join_data != NULL) {
-			struct hashjoin* hj = self->join_data;
-			multimap_clear(hj->hash_data);
-			hj->state = SIDE_RIGHT;
-		}
+		hashjoin_reset(self->join_data);
 	} else if (has_executed) {
-		self->reader->reset__(self->reader);
+		try_(self->reader->reset__(self->reader));
+		/* If we are resetting a table on the right
+		 * side of a join, we don't actually need to
+		 * reset the join data...
+		 */
+		if (self->source_type != SOURCE_TABLE) {
+			hashjoin_reset(self->join_data);
+		}
 	}
 
 	return FQL_GOOD;
@@ -137,8 +140,16 @@ void hashjoin_destroy(struct hashjoin* join)
 	delete_if_exists_(multimap, join->hash_data);
 }
 
+void hashjoin_reset(struct hashjoin* join)
+{
+	if (join != NULL) {
+		multimap_clear(join->hash_data);
+		join->state = SIDE_RIGHT;
+	}
+}
+
 /* The sole purpose of this function is to derive a good
- * starting size for the hashmap that will avoid a resize.
+ * starting size for the hashmap that will avoid resizing.
  */
 size_t _guess_row_count(table* self)
 {

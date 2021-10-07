@@ -49,7 +49,19 @@ END_TEST
 
 START_TEST(test_output_null)
 {
-	output_switch(fql);
+	output_null(fql);
+}
+END_TEST
+
+START_TEST(test_output_join)
+{
+	output_join(fql);
+}
+END_TEST
+
+START_TEST(test_output_subquery)
+{
+	output_subquery(fql);
 }
 END_TEST
 
@@ -67,6 +79,8 @@ Suite* fql_thread_output_suite(void)
 	tcase_add_test(tc_thread_output, test_output_scalar);
 	tcase_add_test(tc_thread_output, test_output_switch);
 	tcase_add_test(tc_thread_output, test_output_null);
+	tcase_add_test(tc_thread_output, test_output_join);
+	//tcase_add_test(tc_thread_output, test_output_subquery);
 
 	suite_add_tcase(s, tc_thread_output);
 

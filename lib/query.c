@@ -25,7 +25,7 @@
 
 
 int _add_function(query* self, function* func, enum field_type type);
-int _add_variable_expression_by_index(query* self, fqlhandle* fql, int idx);
+int _add_variable_expression_by_index(query* self, int idx);
 int _add_logic_expression(query* self, expression* expr);
 int _add_switchcase_expression(query* self, expression* expr);
 int _distribute_expression(query* self, expression* expr);
@@ -33,14 +33,15 @@ logicgroup* _add_logic_item(query* self, enum logicgroup_type type);
 void _check_for_logic_exit(query* self, logicgroup* last);
 
 
-query* query_new(int id)
+query* query_new(fqlhandle* fql, int id)
 {
-	return new_(query, id);
+	return new_(query, fql, id);
 }
 
-query* query_construct(query* self, int id)
+query* query_construct(query* self, fqlhandle* fql, int id)
 {
 	*self = (query) {
+	        .fqlref = fql,
 	        .sources = new_t_(vec, table),
 	        .subquery_const_vec = new_t_(vec, query*),
 	        .variable_indicies = new_t_(vec, int),
@@ -100,23 +101,23 @@ void query_release_sources(query* self)
 }
 
 /** pre-flight **/
-int _query_preflight(query* self, fqlhandle* fql, bool has_executed)
+int query_preflight(query* self, bool has_executed)
 {
 	query** query_iter = vec_begin(self->subquery_const_vec);
 	for (; query_iter != vec_end(self->subquery_const_vec); ++query_iter) {
-		_query_preflight(*query_iter, fql, has_executed);
+		query_preflight(*query_iter, has_executed);
 	}
 
 	unsigned i = 0;
 	for (; i < self->variable_indicies->size; ++i) {
 		int* var_idx = vec_at(self->variable_indicies, i);
 		expression** var_expr = vec_at(self->variable_expressions, i);
-		variable* var = vec_at(fql->variables, *var_idx);
+		variable* var = vec_at(self->fqlref->variables, *var_idx);
 		expression_set_variable(*var_expr, var);
 	}
 
 	if (has_executed) {
-		try_(op_writer_init(self, fql));
+		try_(op_writer_init(self));
 	}
 
 	/* need to reset all readers */
@@ -133,44 +134,44 @@ int _query_preflight(query* self, fqlhandle* fql, bool has_executed)
 /* This function should contain everything required
  * to initialize, use and re-use a query/statement.
  */
-int query_prepare(query* self, fqlhandle* fql)
+int query_prepare(query* self)
 {
-	try_(_query_preflight(self, fql, self->plan->is_complete));
-	try_(op_preop(self, fql));
+	bool has_executed = (self->plan == NULL || self->plan->is_complete);
+	try_(query_preflight(self, has_executed));
+	try_(op_preop(self));
 	plan_reset(self->plan);
 	return FQL_GOOD;
 }
 
 
 /** control flow **/
-void query_enter_block(fqlhandle* fql)
+void query_enter_block(query* self)
 {
-	fql->_scope->is_in_block = true;
+	self->fqlref->_scope->is_in_block = true;
 }
 
-void query_exit_block(query* self, fqlhandle* fql)
+void query_exit_block(query* self)
 {
-	fql->_scope->is_in_block = false;
+	self->fqlref->_scope->is_in_block = false;
 
 	/* the current active query can be assumed to be the branch */
 	fqlbranch* branch = self->op;
-	branch->false_idx = fql->query_vec->size;
+	branch->false_idx = self->fqlref->query_vec->size;
 
 	if (branch->expect_else) {
-		fql->branch_state = BRANCH_EXPECT_ELSE;
+		self->fqlref->branch_state = BRANCH_EXPECT_ELSE;
 	} else {
-		fql->branch_state = BRANCH_EXPECT_EXIT;
-		branch->false_idx = fql->query_vec->size;
+		self->fqlref->branch_state = BRANCH_EXPECT_EXIT;
+		branch->false_idx = self->fqlref->query_vec->size;
 	}
 }
 
 int query_enter_if(query* self,
-                   fqlhandle* fql,
                    node* query_stack,
                    enum fql_operation operation,
                    bool expect_else)
 {
-	try_(query_init_op(self, fql, query_stack, operation));
+	try_(query_init_op(self, query_stack, operation));
 
 	fqlbranch* branch = self->op;
 	branch->expect_else = expect_else;
@@ -178,43 +179,46 @@ int query_enter_if(query* self,
 	return FQL_GOOD;
 }
 
-void query_exit_if(query* self, fqlhandle* fql)
+void query_exit_branch(query* self)
 {
-	fql->branch_state = BRANCH_EXPECT_EXPR;
 	fqlbranch* ifstmt = self->op;
-	fql->_scope = ifstmt->scope->parent_scope;
-	if (fql->_scope == fql->global_scope) {
-		fql->branch_state = BRANCH_NO_BRANCH;
+	self->fqlref->branch_state = BRANCH_EXPECT_EXPR;
+	//self->fqlref->_scope = self->fqlref->_scope->parent_scope;
+	self->fqlref->_scope = ifstmt->scope->parent_scope;
+	if (self->fqlref->_scope == self->fqlref->global_scope) {
+		self->fqlref->branch_state = BRANCH_NO_BRANCH;
 	}
 
+	if (ifstmt->oper_type != FQL_IF) {
+		return;
+	}
 	/* Now, we need to loop back through all queries
 	 * inside this if block. If they are if statements
 	 * and have the same parent_scope, then we can set
 	 * the next_idx of each last_true_block_query.
-	 * Above, we set fql->_scope to this ifbranch's 
+	 * Above, we set fql->_scope to this ifbranch's
 	 * parent_scope. So we compare on that.
 	 */
-	query** it = vec_at(fql->query_vec, self->idx);
-	for (; it != vec_end(fql->query_vec); ++it) {
+	query** it = vec_at(self->fqlref->query_vec, self->idx);
+	for (; it != vec_end(self->fqlref->query_vec); ++it) {
 		ifstmt = (*it)->op;
 		if (ifstmt->oper_type != FQL_IF
-		    || ifstmt->scope->parent_scope != fql->_scope) {
+		    || ifstmt->scope->parent_scope != self->fqlref->_scope) {
 			continue;
 		}
 
-		ifstmt->last_true_block_query->next_idx = fql->query_vec->size;
+		ifstmt->last_true_block_query->next_idx = self->fqlref->query_vec->size;
 	}
 }
 
 int query_enter_set(query* self,
-                    fqlhandle* fql,
                     node* query_stack,
                     enum fql_operation operation,
                     const char* varname)
 {
-	int idx = try_(scope_get_var_index(fql->_scope, varname));
+	int idx = try_(scope_get_var_index(self->fqlref->_scope, varname));
 
-	try_(query_init_op(self, fql, query_stack, operation));
+	try_(query_init_op(self, query_stack, operation));
 
 	fqlset* setstmt = self->op;
 	setstmt->variable_idx = idx;
@@ -225,7 +229,7 @@ int query_enter_set(query* self,
 /** queries **/
 query* query_enter_query(fqlhandle* fql, unsigned start, unsigned end)
 {
-	query* newquery = new_(query, 0);
+	query* newquery = new_(query, fql, 0);
 
 	const char* text_ptr = fql->query_str + start;
 
@@ -245,8 +249,10 @@ query* query_enter_query(fqlhandle* fql, unsigned start, unsigned end)
 	return newquery;
 }
 
-int query_exit_query(query* self, query* prev_query, fqlhandle* fql)
+int query_exit_query(query* self, query* prev_query)
 {
+	fqlhandle* fql = prev_query->fqlref;
+
 	/* If the previously active query was a branch operation */
 	enum fql_operation* prev_op = prev_query->op;
 	fqlbranch* prev_branch = NULL;
@@ -302,14 +308,14 @@ void query_set_variable_idx(query* self, int idx)
 	declare->variable_idx = idx;
 }
 
-int query_add_variable_expression(query* self, fqlhandle* fql, const char* varname)
+int query_add_variable_expression(query* self, const char* varname)
 {
-	int idx = scope_get_var_index(fql->_scope, varname);
+	int idx = scope_get_var_index(self->fqlref->_scope, varname);
 	if (idx == FQL_FAIL) {
 		return FQL_FAIL;
 	}
 
-	return _add_variable_expression_by_index(self, fql, idx);
+	return _add_variable_expression_by_index(self, idx);
 }
 
 /** expressions **/
@@ -465,7 +471,7 @@ int query_enter_operator(query* self, enum scalar_function op)
 	return FQL_GOOD;
 }
 
-int query_enter_assignment_operator(query* self, fqlhandle* fql, enum scalar_function op)
+int query_enter_assignment_operator(query* self, enum scalar_function op)
 {
 	try_(query_enter_operator(self, op));
 	enum fql_operation* operation = self->op;
@@ -474,7 +480,6 @@ int query_enter_assignment_operator(query* self, fqlhandle* fql, enum scalar_fun
 	case FQL_SET: {
 		fqlset* setstmt = self->op;
 		return _add_variable_expression_by_index(self,
-		                                         fql,
 		                                         setstmt->variable_idx);
 	}
 	case FQL_UPDATE: {
@@ -500,7 +505,7 @@ int query_enter_assignment_operator(query* self, fqlhandle* fql, enum scalar_fun
  * object->schema->database->server
  * we ignore database and server for now.
  */
-int query_add_source(query* self, fqlhandle* fql, node** source_stack, const char* alias)
+int query_add_source(query* self, node** source_stack, const char* alias)
 {
 	char* table_name = node_pop(source_stack);
 	char* schema_name = node_pop(source_stack);
@@ -526,9 +531,9 @@ int query_add_source(query* self, fqlhandle* fql, node** source_stack, const cha
 	}
 
 	if (istring_eq(table_name, "__stdin")) {
-		if (fql->props.allow_stdin) {
+		if (self->fqlref->props.allow_stdin) {
 			new_table->is_stdin = true;
-			fql->props.allow_stdin = false; /* Only one allowed... */
+			self->fqlref->props.allow_stdin = false; /* Only one allowed... */
 			return FQL_GOOD;                /* avoid op_match_table_alias */
 		}
 		fputs("Unable to resolve table __STDIN\n", stderr);
@@ -663,7 +668,6 @@ int query_exit_union(query* self, query* union_query)
 
 /** operations **/
 int query_init_op(query* self,
-                  fqlhandle* fql,
                   node* query_stack,
                   enum fql_operation operation)
 {
@@ -673,7 +677,7 @@ int query_init_op(query* self,
 		break;
 	case FQL_WHILE:
 	case FQL_IF:
-		self->op = new_(fqlbranch, fql, self, operation);
+		self->op = new_(fqlbranch, self->fqlref, self, operation);
 		break;
 	case FQL_SELECT:
 		self->op = new_(fqlselect);
@@ -690,7 +694,7 @@ int query_init_op(query* self,
 	}
 
 	/** Entering ELSE block **/
-	if (fql->branch_state == BRANCH_EXPECT_ELSE) {
+	if (self->fqlref->branch_state == BRANCH_EXPECT_ELSE) {
 		/* Top of stack will be the active query. If this is an
 		 * else block, then the "next" query will be the parent
 		 * branch structure. We must set false_idx there.
@@ -706,13 +710,13 @@ int query_init_op(query* self,
 			branch->else_scope = new_(scope);
 			branch->else_scope->parent_scope = branch->scope->parent_scope;
 
-			fql->_scope = branch->else_scope;
+			self->fqlref->_scope = branch->else_scope;
 			return FQL_GOOD;
 		}
 
 		/* if we've made it this far, we have entered an "else if" */
-		fql->branch_state = BRANCH_EXPECT_EXPR;
-		query** elseifstmt = vec_back(fql->query_vec);
+		self->fqlref->branch_state = BRANCH_EXPECT_EXPR;
+		query** elseifstmt = vec_back(self->fqlref->query_vec);
 		fqlbranch* elseif = (*elseifstmt)->op;
 		elseif->is_elseif = true;
 		//branch->last_true_block_query = *(elseifstmt - 1);
@@ -741,7 +745,7 @@ void query_set_op_table(query* self, const char* op_table_name)
 	op_set_table_name(self->op, op_table_name);
 }
 
-void query_exit_non_select_op(query* self, fqlhandle* fql)
+void query_exit_non_select_op(query* self)
 {
 	if (!vec_empty(self->sources)) {
 		return;
@@ -752,7 +756,7 @@ void query_exit_non_select_op(query* self, fqlhandle* fql)
 
 	node* fake_source_stack = NULL;
 	node_push(&fake_source_stack, table_name_dup);
-	query_add_source(self, fql, &fake_source_stack, table_name_dup);
+	query_add_source(self, &fake_source_stack, table_name_dup);
 
 	/* query_add_source will free the stack and its data */
 }
@@ -956,9 +960,9 @@ int _add_function(query* self, function* func, enum field_type type)
 	return FQL_GOOD;
 }
 
-int _add_variable_expression_by_index(query* self, fqlhandle* fql, int idx)
+int _add_variable_expression_by_index(query* self, int idx)
 {
-	variable* var = vec_at(fql->variables, idx);
+	variable* var = vec_at(self->fqlref->variables, idx);
 
 	expression* expr = new_(expression, EXPR_VARIABLE, NULL, "");
 	switch (var->type) {

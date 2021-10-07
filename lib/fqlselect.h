@@ -46,6 +46,6 @@ int fqlselect_resolve_final_types(struct fqlselect*);
 void fqlselect_verify_must_run(struct fqlselect*);
 int fqlselect_next_union(struct fqlselect*);
 int fqlselect_reset(struct fqlselect*);
-void fqlselect_preop(struct fqlselect*, struct query*, struct fqlhandle*);
+void fqlselect_preop(struct fqlselect*, struct query*);
 
 #endif /* SELECT_H */

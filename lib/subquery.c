@@ -4,9 +4,13 @@
 #include "fqlselect.h"
 #include "misc.h"
 
-subquery* subquery_construct(subquery* self, fqlselect* select)
+subquery* subquery_construct(subquery* self, query* query)
 {
-	self->select = select;
+	*self = (subquery) {
+	        .query = query,
+	        .select = query->op,
+	};
+
 	/* basically just swap space */
 	record_construct(&self->copy_data, 0);
 
@@ -103,10 +107,10 @@ int subquery_get_record_at(reader* unused_self, node* unused_rg, size_t unused_o
 	return FQL_FAIL;
 }
 
-int subquery_reset(reader* unused)
+int subquery_reset(reader* reader)
 {
-	fputs("cannot reset subquery\n", stderr);
-	return FQL_FAIL;
+	subquery* self = reader->reader_data;
+	return query_prepare(self->query);
 }
 
 /* If we have been reset from a join, we will no longer

@@ -206,9 +206,9 @@ void op_set_top_count(enum fql_operation* self, size_t top_count)
 	}
 }
 
-int op_preop(query* query, fqlhandle* fql)
+int op_preop(query* query)
 {
-	if (query->plan->has_stepped) {
+	if (query->plan && query->plan->has_stepped) {
 		return FQL_GOOD;
 	}
 
@@ -222,7 +222,7 @@ int op_preop(query* query, fqlhandle* fql)
 		fqlbranch_preop(query->op, query);
 		break;
 	case FQL_SELECT:
-		fqlselect_preop(query->op, query, fql);
+		fqlselect_preop(query->op, query);
 		break;
 	case FQL_DELETE:
 		fqldelete_preop(query->op, query);
@@ -355,7 +355,7 @@ void op_assign_rownum_ref(enum fql_operation* self, expression* expr)
 }
 
 /* NOTE: do not allow any writer initialization if a union query */
-int op_writer_init(query* query, struct fqlhandle* fql)
+int op_writer_init(query* query)
 {
 	enum fql_operation* self = query->op;
 	schema* op_schema = op_get_schema(query->op);
@@ -363,7 +363,7 @@ int op_writer_init(query* query, struct fqlhandle* fql)
 
 	bool first_pass = (op_writer == NULL);
 	if (first_pass && op_schema != NULL && !query->union_id) {
-		op_writer = new_(writer, op_schema->write_io_type, fql);
+		op_writer = new_(writer, op_schema->write_io_type, query->fqlref);
 		op_set_writer(self, op_writer);
 	}
 
@@ -403,7 +403,7 @@ int op_writer_init(query* query, struct fqlhandle* fql)
 	 * NOTE: --overwrite nullifies this test.
 	 */
 	if (!query->union_id && query->into_table_name) {
-		if (*self == FQL_SELECT && !fql->props.overwrite
+		if (*self == FQL_SELECT && !query->fqlref->props.overwrite
 		    && access(query->into_table_name, F_OK) == 0) {
 			fprintf(stderr,
 			        "Cannot SELECT INTO: file `%s' already exists\n",
@@ -415,7 +415,7 @@ int op_writer_init(query* query, struct fqlhandle* fql)
 
 	if (!query->union_id && query->orderby != NULL) {
 		char* out_name = writer_take_filename(op_writer);
-		char* in_name = writer_export_temp(op_writer);
+		const char* in_name = writer_export_temp(op_writer);
 		try_(order_init_io(query->orderby, in_name, out_name));
 		free_(in_name);
 		free_(out_name);

@@ -525,7 +525,7 @@ int fql_exec_plans(fqlhandle* fql, int plan_count)
 			fprintf(stderr, "EXEC: %s\n", string_c_str((*query)->text));
 		}
 
-		ret = query_prepare(*query, fql);
+		ret = query_prepare(*query);
 		if (ret == FQL_FAIL) {
 			break;
 		}
@@ -627,7 +627,7 @@ int fql_step(fqlhandle* fql, struct fql_field** fields)
 		}
 		plan->has_stepped = true;
 
-		ret = query_prepare(*query, fql);
+		ret = query_prepare(*query);
 		if (ret == FQL_FAIL) {
 			goto _step_fail_break;
 		}

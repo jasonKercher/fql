@@ -41,8 +41,8 @@ struct process {
 	unsigned fifo_base_size;      /* non-root fifo size */
 	int plan_id;                  /* plan_id from parent fqlplan */
 	int root_fifo_idx;            /* idx to root_fifo_vec */
-	short in_src_count;           /* number of input sources at this step */
-	short out_src_count;          /* number of output sources at this step */
+	unsigned short in_src_count;  /* number of input sources at this step */
+	unsigned short out_src_count; /* number of output sources at this step */
 	short root_fifo;              /* index of root for fifo_in[x] */
 	short killed_pipe;            /* start a process with a closed pipe */
 	bool is_secondary;            /* fifo_out0 should link to a fifo_in1 */
@@ -85,7 +85,8 @@ enum proc_return {
 	PROC_RETURN_WAIT_ON_OUT1,
 };
 
-void fqlprocess_recycle(process*, node**);
+void fqlprocess_recycle(struct process*, struct node**);
+void fqlprocess_recycle_buffer(struct process*, struct vec*, node*** iter);
 
 /* control flow processes */
 enum proc_return fql_set(struct process*);

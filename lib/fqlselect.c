@@ -308,6 +308,10 @@ void fqlselect_verify_must_run(fqlselect* self)
 int fqlselect_reset(fqlselect* self)
 {
 	self->offset = 0;
+	self->rownum = 0;
+	if (self->const_dest != NULL) {
+		self->const_dest->expr = EXPR_SUBQUERY;
+	}
 	return FQL_GOOD;
 }
 
@@ -342,14 +346,14 @@ void _preop_build_header(fqlselect* self, query* query)
 }
 
 
-void fqlselect_preop(fqlselect* self, query* query, fqlhandle* fql)
+void fqlselect_preop(fqlselect* self, query* query)
 {
 	/* reset */
 	self->rows_affected = 0;
 
 	if (self->schema->write_io_type != IO_LIBCSV
-	    || (!self->schema->is_default && !fql->props.add_header)
-	    || (self->schema->is_default && !fql->props.print_header)) {
+	    || (!self->schema->is_default && !query->fqlref->props.add_header)
+	    || (self->schema->is_default && !query->fqlref->props.print_header)) {
 		return;
 	}
 

@@ -182,6 +182,9 @@ int _subquery_inlist(plan* self, process* logic_proc, logicgroup* lg)
 
 void plan_reset(plan* self)
 {
+	if (self == NULL) {
+		return;
+	}
 	if (!self->is_complete) {
 		return;
 	}
@@ -344,9 +347,9 @@ int _from(plan* self, query* query, fqlhandle* fql)
 		from_proc = new_(process, "subquery stream select", self);
 		from_node = dgraph_add_data(self->processes, from_proc);
 		try_(_build(table_iter->subquery, fql, from_node, false));
-		plan* subquery_plan = table_iter->subquery->plan;
-		dgraph_consume(self->processes, subquery_plan->processes);
-		subquery_plan->processes = NULL;
+		dgraph_consume(self->processes, table_iter->subquery->plan->processes);
+		table_iter->subquery->plan->processes = NULL;
+		delete_(plan, table_iter->subquery->plan);
 	}
 	from_proc->proc_data = table_iter;
 	from_proc->action__ = &fql_read;

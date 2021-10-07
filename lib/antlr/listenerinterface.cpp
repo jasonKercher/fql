@@ -62,19 +62,19 @@ void ListenerInterface::exitBatch(TSqlParser::BatchContext * ctx) { }
 void ListenerInterface::enterCfl_statement(TSqlParser::Cfl_statementContext * ctx) { }
 void ListenerInterface::exitCfl_statement(TSqlParser::Cfl_statementContext * ctx) { }
 
-void ListenerInterface::enterIf_statement(TSqlParser::If_statementContext * ctx) 
+void ListenerInterface::enterIf_statement(TSqlParser::If_statementContext * ctx)
 {
 	_query->mode = MODE_IF;
 	_operation = FQL_IF;
 
 	/* enter_if will call query_init_op */
-	if (query_enter_if(_query, _fql, _query_stack, _operation, (ctx->ELSE() != NULL))) {
+	if (query_enter_if(_query, _query_stack, _operation, (ctx->ELSE() != NULL))) {
 		_set_failure();
 	}
 }
-void ListenerInterface::exitIf_statement(TSqlParser::If_statementContext * ctx) 
+void ListenerInterface::exitIf_statement(TSqlParser::If_statementContext * ctx)
 {
-	query_exit_if(_query, _fql);
+	query_exit_branch(_query);
 }
 
 void ListenerInterface::enterWhile_statement(TSqlParser::While_statementContext * ctx)
@@ -82,21 +82,24 @@ void ListenerInterface::enterWhile_statement(TSqlParser::While_statementContext 
 	_query->mode = MODE_WHILE;
 	_operation = FQL_WHILE;
 	/* enter_if will call query_init_op */
-	if (query_init_op(_query, _fql, _query_stack, _operation)) {
+	if (query_init_op(_query, _query_stack, _operation)) {
 		_set_failure();
 	}
 }
-void ListenerInterface::exitWhile_statement(TSqlParser::While_statementContext * ctx) { }
+void ListenerInterface::exitWhile_statement(TSqlParser::While_statementContext * ctx)
+{
+	query_exit_branch(_query);
+}
 
-void ListenerInterface::enterBlock_statement(TSqlParser::Block_statementContext * ctx) 
+void ListenerInterface::enterBlock_statement(TSqlParser::Block_statementContext * ctx)
 {
 	_entering_block_stmt = true;
-	query_enter_block(_fql);
+	query_enter_block(_query);
 }
 void ListenerInterface::exitBlock_statement(TSqlParser::Block_statementContext * ctx)
 {
 	_exiting_block_stmt = true;
-	query_exit_block(_query, _fql);
+	query_exit_block(_query);
 }
 
 void ListenerInterface::enterAnother_statement(TSqlParser::Another_statementContext * ctx) { }
@@ -106,7 +109,7 @@ void ListenerInterface::enterDeclare_statement(TSqlParser::Declare_statementCont
 {
 	_query->mode = MODE_DECLARE;
 	_operation = FQL_SET;
-	if (query_init_op(_query, _fql, _query_stack, _operation)) {
+	if (query_init_op(_query, _query_stack, _operation)) {
 		_set_failure();
 	}
 }
@@ -115,7 +118,7 @@ void ListenerInterface::exitDeclare_statement(TSqlParser::Declare_statementConte
 	_query->mode = MODE_UNDEFINED;
 }
 
-void ListenerInterface::enterDeclare_local(TSqlParser::Declare_localContext * ctx) 
+void ListenerInterface::enterDeclare_local(TSqlParser::Declare_localContext * ctx)
 {
 	int idx = libfql_declare_variable(_fql, ctx->LOCAL_ID()->getText().c_str());
 	if (idx == FQL_FAIL) {
@@ -133,7 +136,6 @@ void ListenerInterface::enterSet_statement(TSqlParser::Set_statementContext * ct
 	_query->mode = MODE_SET;
 	_operation = FQL_SET;
 	if (query_enter_set(_query,
-	                    _fql,
 	                    _query_stack,
 	                    _operation,
 	                    ctx->LOCAL_ID()->getText().c_str())) {
@@ -166,7 +168,7 @@ void ListenerInterface::enterAssignment_operator(TSqlParser::Assignment_operator
 
 	_query->in_assignment_function = true;
 
-	if (query_enter_assignment_operator(_query, _fql, op)) {
+	if (query_enter_assignment_operator(_query, op)) {
 		_set_failure();
 	}
 }
@@ -200,7 +202,7 @@ void ListenerInterface::exitSql_clauses(TSqlParser::Sql_clausesContext* ctx)
 	int last_idx = prev->idx;
 	_query = (_query_stack == NULL) ? NULL : (query*) _query_stack->data;
 
-	if (query_exit_query(_query, prev, _fql)) {
+	if (query_exit_query(_query, prev)) {
 		_set_failure();
 	}
 
@@ -286,7 +288,7 @@ void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemCont
 void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx)
 {
 	if (_subquery == NULL) {
-		if (query_add_source(_query, _fql, &_source_stack, _table_alias) == FQL_FAIL) {
+		if (query_add_source(_query, &_source_stack, _table_alias) == FQL_FAIL) {
 			_set_failure();
 		}
 	} else {
@@ -626,17 +628,17 @@ void ListenerInterface::enterSelect_statement(TSqlParser::Select_statementContex
 {
 	_query->mode = MODE_SELECTLIST;
 	_operation = FQL_SELECT;
-	if (query_init_op(_query, _fql, _query_stack, _operation)) {
+	if (query_init_op(_query, _query_stack, _operation)) {
 		_set_failure();
 	}
 }
 
 void ListenerInterface::exitSelect_statement(TSqlParser::Select_statementContext * ctx) { }
 
-void ListenerInterface::enterDelete_statement(TSqlParser::Delete_statementContext * ctx) 
-{ 
+void ListenerInterface::enterDelete_statement(TSqlParser::Delete_statementContext * ctx)
+{
 	_operation = FQL_DELETE;
-	if (query_init_op(_query, _fql, _query_stack, _operation)) {
+	if (query_init_op(_query, _query_stack, _operation)) {
 		_set_failure();
 	}
 	if (ctx->WHERE()) {
@@ -644,25 +646,25 @@ void ListenerInterface::enterDelete_statement(TSqlParser::Delete_statementContex
 	}
 }
 
-void ListenerInterface::exitDelete_statement(TSqlParser::Delete_statementContext * ctx) 
+void ListenerInterface::exitDelete_statement(TSqlParser::Delete_statementContext * ctx)
 {
-	query_exit_non_select_op(_query, _fql);
+	query_exit_non_select_op(_query);
 }
 
-void ListenerInterface::enterDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) 
-{ 
+void ListenerInterface::enterDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx)
+{
 	_tok_type = TOK_OP_TABLE;
 }
-void ListenerInterface::exitDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx) 
+void ListenerInterface::exitDelete_statement_from(TSqlParser::Delete_statement_fromContext * ctx)
 {
 	_tok_type = TOK_UNDEFINED;
 }
 
-void ListenerInterface::enterUpdate_statement(TSqlParser::Update_statementContext * ctx) 
+void ListenerInterface::enterUpdate_statement(TSqlParser::Update_statementContext * ctx)
 {
 	_query->mode = MODE_UPDATELIST;
 	_operation = FQL_UPDATE;
-	if (query_init_op(_query, _fql, _query_stack, _operation)) {
+	if (query_init_op(_query, _query_stack, _operation)) {
 		_set_failure();
 	}
 	if (ctx->WHERE()) {
@@ -670,14 +672,14 @@ void ListenerInterface::enterUpdate_statement(TSqlParser::Update_statementContex
 	}
 	_tok_type = TOK_OP_TABLE;
 }
-void ListenerInterface::exitUpdate_statement(TSqlParser::Update_statementContext * ctx) 
+void ListenerInterface::exitUpdate_statement(TSqlParser::Update_statementContext * ctx)
 {
 	_tok_type = TOK_UNDEFINED;
-	query_exit_non_select_op(_query, _fql);
+	query_exit_non_select_op(_query);
 }
 
 void ListenerInterface::enterUpdate_elem(TSqlParser::Update_elemContext * ctx) { }
-void ListenerInterface::exitUpdate_elem(TSqlParser::Update_elemContext * ctx) 
+void ListenerInterface::exitUpdate_elem(TSqlParser::Update_elemContext * ctx)
 {
 	if (_query->in_assignment_function) {
 		query_exit_function(_query);
@@ -725,7 +727,7 @@ void ListenerInterface::exitExpression(TSqlParser::ExpressionContext * ctx)
 void ListenerInterface::enterPrimitive_expression(TSqlParser::Primitive_expressionContext * ctx)
 {
 	if (ctx->LOCAL_ID()) {
-		if (query_add_variable_expression(_query, _fql, ctx->LOCAL_ID()->getText().c_str())) {
+		if (query_add_variable_expression(_query, ctx->LOCAL_ID()->getText().c_str())) {
 			_set_failure();
 		}
 		return;
@@ -797,7 +799,7 @@ void ListenerInterface::enterSubquery(TSqlParser::SubqueryContext * ctx)
 	 * If it is, this is a sub-query
 	 */
 
-	query* subquery = query_new(++_query_id);
+	query* subquery = query_new(_fql, ++_query_id);
 	node_push(&_query_stack, subquery);
 
 	_operation = FQL_SELECT;
@@ -1009,7 +1011,7 @@ void ListenerInterface::enterSql_union(TSqlParser::Sql_unionContext * ctx)
 		_set_failure();
 	}
 
-	query* union_query = query_new(++_query_id);
+	query* union_query = query_new(_fql, ++_query_id);
 	if (query_enter_union(_query, union_query)) {
 		_set_failure();
 	}
@@ -1032,8 +1034,8 @@ void ListenerInterface::enterCAST(TSqlParser::CASTContext * ctx)
 		_set_failure();
 	}
 }
-void ListenerInterface::exitCAST(TSqlParser::CASTContext * ctx) 
-{ 
+void ListenerInterface::exitCAST(TSqlParser::CASTContext * ctx)
+{
 	query_exit_function(_query);
 }
 
@@ -1044,7 +1046,7 @@ void ListenerInterface::enterISNULL(TSqlParser::ISNULLContext * ctx)
 	}
 }
 
-void ListenerInterface::exitISNULL(TSqlParser::ISNULLContext * ctx) 
+void ListenerInterface::exitISNULL(TSqlParser::ISNULLContext * ctx)
 {
 	query_exit_function(_query);
 }

@@ -33,9 +33,9 @@ struct reader {
 	string file_name;
 	size_t max_idx;
 	size_t reclen;
-	size_t rec_id;
+	_Atomic size_t rec_id;
 	unsigned skip_rows;
-	bool eof;
+	_Atomic bool eof;
 };
 typedef struct reader reader;
 
@@ -56,11 +56,12 @@ int reader_stop_file_backed_input(struct reader*);
 /** subquery **/
 struct subquery {
 	struct fqlselect* select;
+	struct query* query;
 	struct record copy_data;
 };
 typedef struct subquery subquery;
 
-struct subquery* subquery_construct(struct subquery*, struct fqlselect*);
+struct subquery* subquery_construct(struct subquery*, struct query*);
 void subquery_free(void*);
 int subquery_get_record(struct reader*, struct node*);
 int subquery_get_record_at(struct reader*, struct node*, size_t offset);

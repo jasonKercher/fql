@@ -1251,7 +1251,7 @@ int _resolve_query(struct fqlhandle* fql, query* aquery, enum io union_io)
 		try_(_resolve_unions(fql, aquery));
 	}
 
-	try_(op_writer_init(aquery, fql));
+	try_(op_writer_init(aquery));
 
 	if (aquery->groupby == NULL && aquery->orderby != NULL) {
 		/* This is normally handled in _op_find_group,

@@ -1,4 +1,6 @@
 core*
+shnt*
+mlrv*
 
 # script executables
 check_hashmap

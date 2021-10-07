@@ -210,7 +210,7 @@ int expression_try_assign_source(expression* self, table* table)
 	expression_link(self, *first_match, table);
 
 	/* hackity hack */
-	if (table->subquery != NULL) {
+	if (table->source_type == SOURCE_SUBQUERY) {
 		self->subquery_src_idx = table->idx;
 	}
 

@@ -16,10 +16,6 @@ fifo* fifo_construct(fifo* restrict self, size_t elem_size, unsigned buf_size)
 
 	vec_resize_and_zero(self->buf, buf_size);
 
-	//pthread_mutexattr_t attr;
-	//pthread_mutexattr_init(&attr);
-	//pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_ADAPTIVE_NP);
-
 	pthread_mutex_init(&self->head_mutex, NULL);
 	pthread_mutex_init(&self->tail_mutex, NULL);
 	pthread_cond_init(&self->cond_add, NULL);

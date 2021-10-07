@@ -1,6 +1,9 @@
 #include "util.h"
 #include "node.h"
 
+
+void* _node_remove(node* node);
+
 /* STACK FUNCTIONS */
 node* node_top(node* restrict self)
 {
@@ -24,14 +27,26 @@ node* node_bottom(node* restrict self)
 	return self;
 }
 
+node* _node_pop(node** head)
+{
+	if (*head == NULL) {
+		return NULL;
+	}
+	node* oldhead = *head;
+	*head = oldhead->next;
+	return oldhead;
+}
+
 node* node_pop_export(node** head)
 {
-	return node_export(head, *head);
+	node* oldhead = _node_pop(head);
+	return node_export(oldhead);
 }
 
 void* node_pop(node** head)
 {
-	return node_remove(head, *head);
+	node* oldhead = _node_pop(head);
+	return _node_remove(oldhead);
 }
 
 node* node_push(node** head, void* restrict data)
@@ -110,17 +125,6 @@ node* node_enqueue(node** head, void* restrict data)
 	return newnode;
 }
 
-node* node_dequeue_export(node** head)
-{
-	return node_export(head, *head);
-}
-
-void* node_dequeue(node** head)
-{
-	return node_remove(head, *head);
-}
-
-
 /** generic linked list functions **/
 node* node_at(node* restrict head, unsigned idx)
 {
@@ -153,16 +157,7 @@ int node_count(node* restrict head)
 	return count;
 }
 
-void node_delete(node** head, node* restrict node)
-{
-	if (!node)
-		return;
-
-	void* data = node_remove(head, node);
-	free_(data);
-}
-
-node* node_export(node** head, node* restrict export)
+node* node_export(node* restrict export)
 {
 	if (!export)
 		return NULL;
@@ -171,8 +166,6 @@ node* node_export(node** head, node* restrict export)
 		export->next->prev = export->prev;
 	if (export->prev)
 		export->prev->next = export->next;
-	else
-		*head = export->next;
 
 	export->next = NULL;
 	export->prev = NULL;
@@ -180,15 +173,32 @@ node* node_export(node** head, node* restrict export)
 	return export;
 }
 
-void* node_remove(node** head, node* restrict node)
+void* _node_remove(node* node)
+{
+	if (node == NULL) {
+		return NULL;
+	}
+	void* data = node->data;
+	node_export(node);
+	free_(node);
+	return data;
+}
+
+void* node_remove(node** head, node* node)
 {
 	if (!node)
 		return NULL;
 
-	void* data = node->data;
-	node_export(head, node);
-	free_(node);
-	return data;
+	if (*head == node) {
+		return node_pop(head);
+	}
+	return _node_remove(node);
+}
+
+void node_delete(node** head, node* node)
+{
+	void* data = node_remove(head, node);
+	free_if_exists_(data);
 }
 
 void node_free_func(node** head, generic_data_fn free_func)
@@ -201,8 +211,10 @@ void node_free_func(node** head, generic_data_fn free_func)
 void node_free_data(node** head)
 {
 	*head = node_top(*head);
-	for (; *head; node_delete(head, *head))
-		;
+	while (*head) {
+		void* data = node_pop(head);
+		free_(data);
+	}
 }
 
 void node_free(node** head)

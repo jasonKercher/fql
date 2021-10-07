@@ -173,6 +173,10 @@ void _reset_fifo(process* self, fifo* fifo)
 
 void process_enable(process* self)
 {
+	fqlprocess_recycle_buffer(self, self->rebuf, &self->rebuf_iter);
+	fqlprocess_recycle_buffer(self, self->inbuf, &self->inbuf_iter);
+	fqlprocess_recycle_buffer(self, self->outbuf, &self->outbuf_iter);
+
 	self->rows_affected = 0;
 	_reset_fifo(self, self->fifo_in[0]);
 	_reset_fifo(self, self->fifo_in[1]);
@@ -433,32 +437,42 @@ void _print_fifo_info(process* self, fifo** root_fifo, fifo* pipe, FILE* debug_f
 		root_idx = self->root_fifo_idx;
 	}
 	fprintf(debug_file,
-	        "%d\t%u\t%u\n",
+	        "%d\t%u\t%u\t%u\t%u\n",
 	        root_idx,
+	        pipe->head,
+	        pipe->tail,
 	        fifo_available(pipe),
 	        fifo_receivable(pipe));
 }
 
-void _print_proc_info(process* self, FILE* debug_file, unsigned idx)
+void _print_proc_info(process* self, FILE* debug_file, size_t poll_id, unsigned idx)
 {
 	fifo** root_fifo = NULL;
 	if (self->root_fifo != PROCESS_NO_PIPE_INDEX) {
 		root_fifo = vec_at(self->rootvec_ref, self->root_fifo_idx);
 	}
 	if (self->fifo_in[0] != NULL) {
-		fprintf(debug_file, "%u\tin0\t", idx);
+		fprintf(debug_file, "%lu\t%u\t%d\tin0\t", poll_id, idx, self->is_enabled);
 		_print_fifo_info(self, root_fifo, self->fifo_in[0], debug_file);
 	}
 	if (self->fifo_in[1] != NULL) {
-		fprintf(debug_file, "%u\tin1\t", idx);
+		fprintf(debug_file, "%lu\t%u\t%d\tin1\t", poll_id, idx, self->is_enabled);
 		_print_fifo_info(self, root_fifo, self->fifo_in[1], debug_file);
 	}
 	if (self->fifo_out[0] != NULL) {
-		fprintf(debug_file, "%u\tout0\t", idx);
+		fprintf(debug_file,
+		        "%lu\t%u\t%d\tout0\t",
+		        poll_id,
+		        idx,
+		        self->is_enabled);
 		_print_fifo_info(self, root_fifo, self->fifo_out[0], debug_file);
 	}
 	if (self->fifo_out[1] != NULL) {
-		fprintf(debug_file, "%u\tout1\t", idx);
+		fprintf(debug_file,
+		        "%lu\t%u\t%d\tout1\t",
+		        poll_id,
+		        idx,
+		        self->is_enabled);
 		_print_fifo_info(self, root_fifo, self->fifo_out[1], debug_file);
 	}
 }
@@ -485,14 +499,18 @@ int _monitor_threads(vec* tdata_vec)
 	}
 
 	/* print header to debug_file */
-	fputs("idx\tfifo\trootidx\tfifo_avail\tfifo_recv\n", debug_file);
+	fputs("pollid\tidx\trunning\tfifo\trootidx\thead\ttail\tavail\treceiv\n",
+	      debug_file);
+	size_t poll_id = 0;
 
 	/* begin monitoring */
 	do {
+		++poll_id;
 		usleep(THREAD_MONITOR_INTERVAL_U);
 
 		i = 0;
 		threading_procs = 0;
+
 		for (it = vec_begin(tdata_vec); it != vec_end(tdata_vec); ++it) {
 			dnode* proc_node = it->proc_node;
 			process* proc = proc_node->data;
@@ -502,7 +520,7 @@ int _monitor_threads(vec* tdata_vec)
 			}
 			threading_procs += proc->is_threading;
 
-			_print_proc_info(proc, debug_file, i++);
+			_print_proc_info(proc, debug_file, poll_id, i++);
 		}
 	} while (threading_procs > 0);
 

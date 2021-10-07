@@ -137,6 +137,7 @@ enum scalar_function {
 
 /** query **/
 struct query {
+	struct fqlhandle* fqlref;
 	struct fqlplan* plan;
 	struct vec* sources;
 	struct logicgroup* where;
@@ -180,36 +181,35 @@ struct query {
 };
 typedef struct query query;
 
-struct query* query_new(int id);
-struct query* query_construct(struct query*, int id);
+struct query* query_new(struct fqlhandle*, int id);
+struct query* query_construct(struct query*, struct fqlhandle*, int id);
 void query_destroy(struct query*);
 void query_release_sources(struct query*);
 
 /* preflight */
-int query_prepare(struct query*, struct fqlhandle*);
+int query_preflight(struct query*, bool);
+int query_prepare(struct query*);
 
 /* control flow */
 int query_enter_if(struct query*,
-                   struct fqlhandle*,
                    struct node* query_stack,
                    enum fql_operation,
                    bool expect_else);
-void query_exit_if(struct query*, struct fqlhandle*);
+void query_exit_branch(struct query*);
 int query_enter_set(struct query*,
-                    struct fqlhandle*,
                     struct node*,
                     enum fql_operation,
                     const char* varname);
-void query_enter_block(struct fqlhandle*);
-void query_exit_block(struct query*, struct fqlhandle*);
+void query_enter_block(struct query*);
+void query_exit_block(struct query*);
 
 /* queries */
 struct query* query_enter_query(struct fqlhandle*, unsigned start, unsigned end);
-int query_exit_query(struct query*, struct query*, struct fqlhandle*);
+int query_exit_query(struct query*, struct query*);
 
 /* variables */
 void query_set_variable_idx(struct query*, int);
-int query_add_variable_expression(struct query*, struct fqlhandle*, const char*);
+int query_add_variable_expression(struct query*, const char*);
 
 /* expressions */
 int query_add_constant(struct query*, const char*, int);
@@ -224,11 +224,10 @@ int query_enter_function(struct query*, enum scalar_function, int char_as_byte);
 void query_exit_function(struct query*);
 int query_enter_operator(struct query*, enum scalar_function op);
 int query_enter_assignment_operator(struct query*,
-                                    struct fqlhandle*,
                                     enum scalar_function op);
 
 /* sources */
-int query_add_source(struct query*, struct fqlhandle*, struct node**, const char*);
+int query_add_source(struct query*, struct node**, const char*);
 void query_add_subquery_source(struct query*, struct query*, const char*);
 
 /* aliasing */
@@ -250,10 +249,10 @@ int query_enter_union(struct query*, struct query*);
 int query_exit_union(struct query*, struct query*);
 
 /* operations */
-int query_init_op(struct query*, struct fqlhandle*, struct node*, enum fql_operation);
+int query_init_op(struct query*, struct node*, enum fql_operation);
 int query_set_top_count(struct query*, const char*);
 void query_set_op_table(struct query*, const char*);
-void query_exit_non_select_op(struct query*, struct fqlhandle*);
+void query_exit_non_select_op(struct query*);
 int query_set_into_table(struct query*, const char*);
 
 /* in statement */

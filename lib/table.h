@@ -59,6 +59,7 @@ typedef struct hashjoin hashjoin;
 
 struct hashjoin* hashjoin_construct(struct hashjoin*);
 void hashjoin_destroy(struct hashjoin*);
+void hashjoin_reset(struct hashjoin*);
 void table_hash_join_init(struct table*);
 
 #endif /* TABLE_H */
