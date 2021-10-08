@@ -216,7 +216,6 @@ void process_disable(process* self)
 	if (self->fifo_in[0] != NULL && self->root_fifo != 0) {
 		fifo* in = self->fifo_in[0];
 		node** it = fifo_begin(in);
-		fqlprocess_recycle(self, it);
 		for (; it != fifo_end(in); it = fifo_iter(in)) {
 			fqlprocess_recycle(self, it);
 		}

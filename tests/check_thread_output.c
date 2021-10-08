@@ -9,6 +9,7 @@ void thread_output_setup(void)
 	fql_setup();
 	fql_set_threading(fql, true);
 	fql_set_overwrite(fql, true);
+	//fql_set_verbose(fql, FQL_DEBUG);
 
 	/* default for threading is 64. By setting
 	 * to a lower number, we increase the chance
@@ -80,7 +81,7 @@ Suite* fql_thread_output_suite(void)
 	tcase_add_test(tc_thread_output, test_output_switch);
 	tcase_add_test(tc_thread_output, test_output_null);
 	tcase_add_test(tc_thread_output, test_output_join);
-	//tcase_add_test(tc_thread_output, test_output_subquery);
+	tcase_add_test(tc_thread_output, test_output_subquery);
 
 	suite_add_tcase(s, tc_thread_output);
 

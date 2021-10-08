@@ -45,10 +45,10 @@ struct process {
 	unsigned short out_src_count; /* number of output sources at this step */
 	short root_fifo;              /* index of root for fifo_in[x] */
 	short killed_pipe;            /* start a process with a closed pipe */
+	_Atomic bool is_enabled;      /* enabled means it still has work to do*/
 	bool is_secondary;            /* fifo_out0 should link to a fifo_in1 */
 	bool is_dual_link;            /* both fifo_out link both fifo_in */
 	bool is_passive;              /* denotes process that does nothing */
-	bool is_enabled;              /* enabled means it still has work to do*/
 	bool is_const;                /* should only run 1 time */
 	bool is_op_true;              /* is proc_graph->op_true->data */
 	bool is_threading;            /* should be nearly identical to is_enabled */
