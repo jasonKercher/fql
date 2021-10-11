@@ -38,6 +38,7 @@ struct fifo* fifo_construct(struct fifo* restrict, size_t elem_size, unsigned bu
 #define fifo_construct_(this_, T_, n_) fifo_construct(this_, sizeof(T_), n_)
 void fifo_free(void* restrict);
 void fifo_destroy(struct fifo* restrict);
+void fifo_reset(struct fifo* restrict);
 
 void fifo_set_open(struct fifo* restrict, int);
 void fifo_resize(struct fifo* restrict, unsigned);

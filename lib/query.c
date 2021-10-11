@@ -103,9 +103,14 @@ void query_release_sources(query* self)
 /** pre-flight **/
 int query_preflight(query* self, bool has_executed)
 {
-	query** query_iter = vec_begin(self->subquery_const_vec);
-	for (; query_iter != vec_end(self->subquery_const_vec); ++query_iter) {
-		query_preflight(*query_iter, has_executed);
+	query** it = vec_begin(self->subquery_const_vec);
+	for (; it != vec_end(self->subquery_const_vec); ++it) {
+		try_(query_preflight(*it, has_executed));
+	}
+
+	it = vec_begin(self->unions);
+	for (; it != vec_end(self->unions); ++it) {
+		try_(query_preflight(*it, has_executed));
 	}
 
 	unsigned i = 0;
@@ -121,11 +126,13 @@ int query_preflight(query* self, bool has_executed)
 	}
 
 	/* need to reset all readers */
-	table* it = vec_begin(self->sources);
-	for (; it != vec_end(self->sources); ++it) {
-		table_reset(it, has_executed);
+	table* table_iter = vec_begin(self->sources);
+	for (; table_iter != vec_end(self->sources); ++table_iter) {
+		table_reset(table_iter, has_executed);
 	}
 
+	try_(group_reset(self->distinct));
+	try_(group_reset(self->groupby));
 	try_(op_reset(self->op));
 
 	return FQL_GOOD;

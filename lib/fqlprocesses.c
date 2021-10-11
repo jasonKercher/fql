@@ -789,6 +789,7 @@ enum proc_return fql_distinct(process* proc)
 enum proc_return fql_select(process* proc)
 {
 	fqlselect* select = proc->proc_data;
+	fqlselect* current_select = select->current_select;
 
 	/* Check if the process in front is closed */
 	fifo* out = proc->fifo_out[0];
@@ -796,7 +797,7 @@ enum proc_return fql_select(process* proc)
 		dnode** it = vec_begin(proc->union_end_nodes);
 		for (; it != vec_end(proc->union_end_nodes); ++it) {
 			process* union_end_proc = (*it)->data;
-			union_end_proc->fifo_out[0]->is_open = false;
+			fifo_set_open(union_end_proc->fifo_out[0], false);
 		}
 		return PROC_RETURN_COMPLETE;
 	}
@@ -832,6 +833,7 @@ enum proc_return fql_select(process* proc)
 
 		if (fqlselect_next_union(select)) {
 			proc->wait_for_in0 = true;
+			fifo_set_open(proc->fifo_in[0], false);
 			proc->fifo_in[0] = proc->queued_results->data;
 			if (proc->queued_results->next != NULL) {
 				proc->queued_results = proc->queued_results->next;
@@ -848,12 +850,11 @@ enum proc_return fql_select(process* proc)
 	node** rg_iter = fifo_begin(in);
 	while (rg_iter != fifo_end(in)) {
 		if (iters++ >= proc->max_recs_iter
-		    || select->rows_affected >= select->top_count) {
+		    || select->rows_affected >= current_select->top_count) {
 			ret = PROC_RETURN_RUNNING;
 			break;
 		}
 
-		//ret = try_(select->select__(select, *rg_iter));
 		try_(select->select__(select, *rg_iter));
 
 		++proc->rows_affected;
@@ -861,11 +862,11 @@ enum proc_return fql_select(process* proc)
 
 		if (out) {
 			fifo_add(out, rg_iter);
-		} else if (!select->is_const) {
+		} else if (!current_select->is_const) {
 			fqlprocess_recycle(proc, rg_iter);
 		}
 
-		if (select->is_const) {
+		if (current_select->is_const) {
 			proc->wait_for_in0 = false;
 			break;
 		}
@@ -880,7 +881,7 @@ enum proc_return fql_select(process* proc)
 	}
 	fifo_update(in);
 
-	if (select->rows_affected >= select->top_count) {
+	if (select->rows_affected >= current_select->top_count) {
 		proc->wait_for_in0 = false;
 	}
 	return ret;

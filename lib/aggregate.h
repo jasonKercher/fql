@@ -40,6 +40,7 @@ typedef struct aggregate aggregate;
 struct aggregate* aggregate_construct(struct aggregate*,
                                       enum aggregate_function);
 void aggregate_destroy(struct aggregate*);
+void aggregate_reset(struct aggregate*);
 
 const char* aggregate_get_name(struct aggregate*);
 void aggregate_add_expression(struct aggregate*, struct expression*);

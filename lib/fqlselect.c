@@ -34,7 +34,7 @@ fqlselect* fqlselect_construct(fqlselect* self)
 	        .must_run_once = true,
 	};
 
-	self->_selection_exprs = self->schema->expressions;
+	self->current_select = self;
 
 	return self;
 }
@@ -56,6 +56,8 @@ void fqlselect_destroy(fqlselect* self)
 		delete_(expression, *it);
 	}
 	delete_(vec, self->header_as_exprs);
+
+	node_free(&self->union_selects);
 }
 
 unsigned fqlselect_get_field_count(fqlselect* self, const vec* sources)
@@ -257,14 +259,13 @@ int fqlselect_set_as_inlist(fqlselect* self, inlist* inlist)
 
 int fqlselect_next_union(fqlselect* self)
 {
-	if (self->union_selects == NULL) {
+	if (self->_union_node == NULL) {
 		return 0;
 	}
 
-	fqlselect* union_select = node_dequeue(&self->union_selects);
-	self->_selection_exprs = union_select->schema->expressions;
-	self->top_count = union_select->top_count;
-	self->is_const = union_select->is_const;
+	self->current_select = self->_union_node->data;
+
+	self->_union_node = self->_union_node->next;
 	self->rows_affected = 0;
 
 	return 1;
@@ -309,9 +310,15 @@ int fqlselect_reset(fqlselect* self)
 {
 	self->offset = 0;
 	self->rownum = 0;
+	self->rows_affected = 0;
 	if (self->const_dest != NULL) {
 		self->const_dest->expr = EXPR_SUBQUERY;
 	}
+
+	if (self->union_selects != NULL) {
+		self->_union_node = self->union_selects;
+	}
+	self->current_select = self;
 	return FQL_GOOD;
 }
 
@@ -348,8 +355,7 @@ void _preop_build_header(fqlselect* self, query* query)
 
 void fqlselect_preop(fqlselect* self, query* query)
 {
-	/* reset */
-	self->rows_affected = 0;
+	self->_union_node = self->union_selects;
 
 	if (self->schema->write_io_type != IO_LIBCSV
 	    || (!self->schema->is_default && !query->fqlref->props.add_header)
@@ -376,7 +382,7 @@ int _select_record(fqlselect* self, node* rg)
 {
 	++self->rownum;
 	writer* writer = self->writer;
-	vec* expr_vec = self->_selection_exprs;
+	vec* expr_vec = self->current_select->schema->expressions;
 
 	int ret = writer->write_record__(writer, expr_vec, rg, NULL);
 
@@ -399,7 +405,7 @@ int _select_record(fqlselect* self, node* rg)
 int _select_record_api(fqlselect* self, node* rg)
 {
 	++self->rownum;
-	vec* expr_vec = self->_selection_exprs;
+	vec* expr_vec = self->current_select->schema->expressions;
 
 	expression** exprs = vec_begin(expr_vec);
 	unsigned i = 0;
@@ -446,7 +452,7 @@ int _select_record_order_api(fqlselect* self, node* rg)
 	++self->rownum;
 	FILE* order_input = writer_get_file(self->writer);
 
-	vec* expr_vec = self->_selection_exprs;
+	vec* expr_vec = self->current_select->schema->expressions;
 	expression** exprs = vec_begin(expr_vec);
 	unsigned i = 0;
 	unsigned len = 0;
@@ -489,7 +495,8 @@ int _select_record_to_list(fqlselect* self, node* rg)
 	++self->rownum;
 	set* list = self->list_data;
 
-	expression* expr = *(expression**)vec_begin(self->_selection_exprs);
+	expression* expr =
+	        *(expression**)vec_begin(self->current_select->schema->expressions);
 
 	switch (expr->field_type) {
 	case FIELD_INT: {
@@ -518,14 +525,14 @@ int _select_record_to_list(fqlselect* self, node* rg)
 
 int _select_record_to_const(fqlselect* self, node* rg)
 {
-	//bool fail_if_on_result = (self->const_dest->expr == EXPR_CONST) {
 	++self->rownum;
 	if (self->const_dest->expr == EXPR_CONST) {
 		fputs("subquery returned more than 1 value as expression\n", stderr);
 		return FQL_FAIL;
 	}
 
-	expression* expr = *(expression**)vec_begin(self->_selection_exprs);
+	expression* expr =
+	        *(expression**)vec_begin(self->current_select->schema->expressions);
 
 	self->const_dest->field_type = expr->field_type;
 	self->const_dest->expr = EXPR_CONST;

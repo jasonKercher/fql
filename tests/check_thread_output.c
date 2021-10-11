@@ -66,6 +66,36 @@ START_TEST(test_output_subquery)
 }
 END_TEST
 
+START_TEST(test_output_group)
+{
+	output_group(fql);
+}
+END_TEST
+
+START_TEST(test_output_having)
+{
+	output_having(fql);
+}
+END_TEST
+
+START_TEST(test_output_order)
+{
+	output_order(fql);
+}
+END_TEST
+
+START_TEST(test_output_top)
+{
+	output_top(fql);
+}
+END_TEST
+
+START_TEST(test_output_union)
+{
+	output_union(fql);
+}
+END_TEST
+
 Suite* fql_thread_output_suite(void)
 {
 	Suite* s;
@@ -82,6 +112,11 @@ Suite* fql_thread_output_suite(void)
 	tcase_add_test(tc_thread_output, test_output_null);
 	tcase_add_test(tc_thread_output, test_output_join);
 	tcase_add_test(tc_thread_output, test_output_subquery);
+	tcase_add_test(tc_thread_output, test_output_group);
+	tcase_add_test(tc_thread_output, test_output_having);
+	tcase_add_test(tc_thread_output, test_output_order);
+	tcase_add_test(tc_thread_output, test_output_top);
+	tcase_add_test(tc_thread_output, test_output_union);
 
 	suite_add_tcase(s, tc_thread_output);
 

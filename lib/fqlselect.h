@@ -20,7 +20,9 @@ struct fqlselect {
 	set* list_data;
 	struct expression* const_dest;
 	struct node* union_selects;
-	struct vec* _selection_exprs;
+	struct node* _union_node;
+	struct fqlselect* current_select;
+	//struct vec* _selection_exprs;
 	struct vec* header_as_exprs;
 	select_fn select__;
 	size_t offset;

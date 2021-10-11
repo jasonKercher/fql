@@ -50,6 +50,17 @@ void aggregate_destroy(aggregate* self)
 	vec_destroy(&self->results);
 }
 
+void aggregate_reset(aggregate* self)
+{
+	if (self->data_type == FIELD_STRING) {
+		struct aggresult* it = vec_begin(&self->results);
+		for (; it != vec_end(&self->results); ++it) {
+			string_destroy(&it->data.s);
+		}
+	}
+	vec_clear(&self->results);
+}
+
 const char* aggregate_get_name(aggregate* self)
 {
 	return agg_str[self->agg_type];

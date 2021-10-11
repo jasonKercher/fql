@@ -120,7 +120,6 @@ void process_activate(process* self, plan* plan, unsigned base_size, unsigned* p
 	if (self->fifo_in[0] == NULL) {
 		++(*pipe_count);
 		self->fifo_in[0] = new_t_(fifo, node*, base_size);
-		self->org_fifo_in0 = self->fifo_in[0];
 		/* NOTE: GROUP BY hack. a constant query expression
 		 *       containing a group by essentially has 2 roots.
 		 *       We just give in[0] a nudge (like a root).
@@ -138,6 +137,8 @@ void process_activate(process* self, plan* plan, unsigned base_size, unsigned* p
 		++(*pipe_count);
 		self->fifo_in[1] = new_t_(fifo, node*, base_size);
 	}
+
+	self->org_fifo_in0 = self->fifo_in[0];
 
 	if (self->killed_pipe != PROCESS_NO_PIPE_INDEX) {
 		self->fifo_in[self->killed_pipe]->is_open = false;
@@ -159,29 +160,28 @@ void process_add_to_wait_list(process* self, process* wait_proc)
 	vec_push_back(self->wait_list, &wait_proc);
 }
 
-void _reset_fifo(process* self, fifo* fifo)
-{
-	if (fifo == NULL) {
-		return;
-	}
-
-	fifo->is_open = true;
-	fifo->head = 0;
-	fifo->tail = 0;
-	fifo->_iter_head = 0;
-}
-
 void process_enable(process* self)
 {
 	fqlprocess_recycle_buffer(self, self->rebuf, &self->rebuf_iter);
 	fqlprocess_recycle_buffer(self, self->inbuf, &self->inbuf_iter);
 	fqlprocess_recycle_buffer(self, self->outbuf, &self->outbuf_iter);
 
+	if (self->queued_results != NULL) {
+		for (;;) {
+			fifo_reset(self->queued_results->data);
+			if (self->queued_results->prev == NULL) {
+				break;
+			}
+			self->queued_results = self->queued_results->prev;
+		}
+		self->fifo_in[0] = self->org_fifo_in0;
+	}
+
 	self->rows_affected = 0;
-	_reset_fifo(self, self->fifo_in[0]);
-	_reset_fifo(self, self->fifo_in[1]);
-	_reset_fifo(self, self->fifo_out[0]);
-	_reset_fifo(self, self->fifo_out[1]);
+	fifo_reset(self->fifo_in[0]);
+	fifo_reset(self->fifo_in[1]);
+	fifo_reset(self->fifo_out[0]);
+	fifo_reset(self->fifo_out[1]);
 
 	if (self->killed_pipe != PROCESS_NO_PIPE_INDEX) {
 		self->fifo_in[self->killed_pipe]->is_open = false;
@@ -189,6 +189,11 @@ void process_enable(process* self)
 
 	self->wait_for_in0 = true;
 	self->is_enabled = true;
+
+	/* Same GROUP BY hack from process_activate */
+	if (self->action__ == &fql_groupby && self->is_const) {
+		fifo_advance(self->fifo_in[0]);
+	}
 }
 
 void process_disable(process* self)
@@ -339,7 +344,7 @@ void* _thread_exec(void* data)
 	struct thread_data* tdata = data;
 	dnode* node = tdata->proc_node;
 	process* self = node->data;
-	fifo* in0 = self->fifo_in[0];
+	//fifo* in0 = self->fifo_in[0];
 	fifo* in1 = self->fifo_in[1];
 	fifo* out0 = self->fifo_out[0];
 	fifo* out1 = self->fifo_out[1];
@@ -374,8 +379,9 @@ void* _thread_exec(void* data)
 			/* TODO */
 			exit(EXIT_FAILURE);
 		case PROC_RETURN_WAIT_ON_IN0:
-			if (in0->is_open && fifo_is_empty(in0)) {
-				fifo_wait_for_add(in0);
+			if (self->fifo_in[0]->is_open
+			    && fifo_is_empty(self->fifo_in[0])) {
+				fifo_wait_for_add(self->fifo_in[0]);
 			}
 			break;
 		case PROC_RETURN_WAIT_ON_IN1:
@@ -394,15 +400,15 @@ void* _thread_exec(void* data)
 			}
 			break;
 		case PROC_RETURN_WAIT_ON_IN_EITHER:
-			if (in0->is_open && in1->is_open && fifo_is_empty(in0)
-			    && fifo_is_empty(in1)) {
-				fifo_wait_for_add_either(in0, in1);
+			if (self->fifo_in[0]->is_open && in1->is_open
+			    && fifo_is_empty(self->fifo_in[0]) && fifo_is_empty(in1)) {
+				fifo_wait_for_add_either(self->fifo_in[0], in1);
 			}
 			break;
 		case PROC_RETURN_WAIT_ON_IN_BOTH:
-			if (in0->is_open && in1->is_open
-			    && (fifo_is_empty(in0) || fifo_is_empty(in1))) {
-				fifo_wait_for_add_both(in0, in1);
+			if (self->fifo_in[0]->is_open && in1->is_open
+			    && (fifo_is_empty(self->fifo_in[0]) || fifo_is_empty(in1))) {
+				fifo_wait_for_add_both(self->fifo_in[0], in1);
 			}
 			break;
 		}

@@ -487,7 +487,7 @@ void _group(plan* self, query* query)
 		group_proc->root_fifo = 1;
 		group_cat_description(query->groupby, group_proc);
 		dnode* group_node = dgraph_add_data(self->processes, group_proc);
-		vec_push_back(&query->groupby->_roots, &group_node);
+		//vec_push_back(&query->groupby->_roots, &group_node);
 		group_node->is_root = true;
 		self->current->out[0] = group_node;
 		self->current = group_node;

@@ -17,7 +17,7 @@ struct group {
 	struct vec aggregates;
 	struct flex group_data;
 	struct vec _composite; /* temporary */
-	struct vec _roots;
+	//struct vec _roots;
 	size_t _dump_idx;
 };
 typedef struct group group;
@@ -25,6 +25,7 @@ typedef struct group group;
 struct group* group_construct(struct group*);
 void group_destroy(struct group*);
 void distinct_destroy(struct group*);
+int group_reset(struct group*);
 
 void group_add_expression(struct group*, struct expression*);
 void group_cat_description(struct group*, struct process*);

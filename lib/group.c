@@ -15,7 +15,7 @@ group* group_construct(group* self)
 	vec_construct_(&self->expressions, expression*);
 	vec_construct_(&self->aggregates, aggregate*);
 	vec_construct_(&self->_composite, stringview);
-	vec_construct_(&self->_roots, dnode*);
+	//vec_construct_(&self->_roots, dnode*);
 	flex_construct(&self->group_data);
 
 	return self;
@@ -38,13 +38,31 @@ void group_destroy(group* self)
 		delete_(expression, *it);
 	}
 	vec_destroy(&self->expressions);
-	vec_destroy(&self->_roots);
+	//vec_destroy(&self->_roots);
 }
 
 void distinct_destroy(group* self)
 {
 	vec_clear(&self->expressions);
 	group_destroy(self);
+}
+
+int group_reset(group* self)
+{
+	if (self == NULL) {
+		return FQL_GOOD;
+	}
+
+	aggregate** it = vec_begin(&self->aggregates);
+	for (; it != vec_end(&self->aggregates); ++it) {
+		aggregate_reset(*it);
+	}
+	compositemap_clear(&self->val_map);
+	flex_clear(&self->group_data);
+
+	self->_dump_idx = 0;
+
+	return FQL_GOOD;
 }
 
 void group_add_expression(group* self, expression* expr)

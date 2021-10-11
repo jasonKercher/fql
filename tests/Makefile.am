@@ -16,9 +16,9 @@ TESTS =                        \
 	check_difficult        \
 	check_operations       \
 	check_controlflow      \
+	check_stdin            \
 	check_output           \
 	check_thread_output    \
-	check_stdin            \
 	check_failure
 check_PROGRAMS =               \
 	check_hashmap          \
@@ -38,9 +38,9 @@ check_PROGRAMS =               \
 	check_difficult        \
 	check_operations       \
 	check_controlflow      \
+	check_stdin            \
 	check_output           \
 	check_thread_output    \
-	check_stdin            \
 	check_failure
 
 common_src = $(top_builddir)/lib/include/fql.h check_common.h check_common.c

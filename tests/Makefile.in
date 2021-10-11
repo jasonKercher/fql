@@ -94,8 +94,8 @@ TESTS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
 	check_having$(EXEEXT) check_order$(EXEEXT) check_top$(EXEEXT) \
 	check_union$(EXEEXT) check_difficult$(EXEEXT) \
 	check_operations$(EXEEXT) check_controlflow$(EXEEXT) \
-	check_output$(EXEEXT) check_thread_output$(EXEEXT) \
-	check_stdin$(EXEEXT) check_failure$(EXEEXT)
+	check_stdin$(EXEEXT) check_output$(EXEEXT) \
+	check_thread_output$(EXEEXT) check_failure$(EXEEXT)
 check_PROGRAMS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
 	check_read$(EXEEXT) check_logic$(EXEEXT) check_scalar$(EXEEXT) \
 	check_switch$(EXEEXT) check_null$(EXEEXT) check_join$(EXEEXT) \
@@ -103,8 +103,8 @@ check_PROGRAMS = check_hashmap$(EXEEXT) check_constants$(EXEEXT) \
 	check_having$(EXEEXT) check_order$(EXEEXT) check_top$(EXEEXT) \
 	check_union$(EXEEXT) check_difficult$(EXEEXT) \
 	check_operations$(EXEEXT) check_controlflow$(EXEEXT) \
-	check_output$(EXEEXT) check_thread_output$(EXEEXT) \
-	check_stdin$(EXEEXT) check_failure$(EXEEXT)
+	check_stdin$(EXEEXT) check_output$(EXEEXT) \
+	check_thread_output$(EXEEXT) check_failure$(EXEEXT)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -1943,6 +1943,13 @@ check_controlflow.log: check_controlflow$(EXEEXT)
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+check_stdin.log: check_stdin$(EXEEXT)
+	@p='check_stdin$(EXEEXT)'; \
+	b='check_stdin'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 check_output.log: check_output$(EXEEXT)
 	@p='check_output$(EXEEXT)'; \
 	b='check_output'; \
@@ -1953,13 +1960,6 @@ check_output.log: check_output$(EXEEXT)
 check_thread_output.log: check_thread_output$(EXEEXT)
 	@p='check_thread_output$(EXEEXT)'; \
 	b='check_thread_output'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
-check_stdin.log: check_stdin$(EXEEXT)
-	@p='check_stdin$(EXEEXT)'; \
-	b='check_stdin'; \
 	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \

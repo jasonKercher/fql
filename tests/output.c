@@ -479,3 +479,179 @@ void output_subquery(struct fqlhandle* fql)
 		ck_assert_int_eq(_testdiff(filename), 0);
 	}
 }
+
+void output_group(struct fqlhandle* fql)
+{
+	const char* query = "\n\
+		declare @i int = 0                                         \n\
+		while @i < 2                                               \n\
+		BEGIN                                                      \n\
+		    select 1 into [results/group1] group by 2              \n\
+		    select count(*) into [results/group2] group by 3       \n\
+		    select count(*) into [results/group3]                  \n\
+		    select distinct bar into [results/group4] from t3      \n\
+		    select bar into [results/group5] from t3 group by bar  \n\
+		                                                           \n\
+		    select len(bar) + '1' into [results/group6]            \n\
+		    from t3 group by bar                                   \n\
+		                                                           \n\
+		    select baz + 2 into [results/group7]                   \n\
+		    from t3 group by baz + (4*3)/6                         \n\
+		                                                           \n\
+		    select count(*) into [results/group8] from t3          \n\
+		                                                           \n\
+		    select bar, count(*) into [results/group9]             \n\
+		    from t3 group by bar                                   \n\
+		                                                           \n\
+		    set @i += 1                                            \n\
+		END";
+
+	ck_assert_int_eq(fql_exec(fql, query), FQL_GOOD);
+
+	unsigned i = 1;
+	for (; i <= 9; ++i) {
+		char filename[64];
+		sprintf(filename, "group%u", i);
+		ck_assert_int_eq(_testdiff(filename), 0);
+	}
+}
+
+void output_having(struct fqlhandle* fql)
+{
+	const char* query = "\n\
+		declare @i int = 0                                         \n\
+		while @i < 2                                               \n\
+		BEGIN                                                      \n\
+		    select 1 into [results/having1] group by 2 having 1=1  \n\
+		    select 1 into [results/having2] group by 3 having 1=0  \n\
+		    select count(*) into [results/having3]                 \n\
+		    group by 1 having 1=0                                  \n\
+		                                                           \n\
+		    select bar into [results/having4]                      \n\
+		    from t3 group by bar having count(*) > 1               \n\
+		                                                           \n\
+		    select bar into [results/having5]                      \n\
+		    from t3 group by bar having max(foo) > '9'             \n\
+		    set @i += 1                                            \n\
+		END";
+
+	ck_assert_int_eq(fql_exec(fql, query), FQL_GOOD);
+
+	unsigned i = 1;
+	for (; i <= 5; ++i) {
+		char filename[64];
+		sprintf(filename, "having%u", i);
+		ck_assert_int_eq(_testdiff(filename), 0);
+	}
+}
+
+void output_order(struct fqlhandle* fql)
+{
+	const char* query = "\n\
+		declare @i int = 0                              \n\
+		while @i < 2                                    \n\
+		BEGIN                                           \n\
+		    select 1 into [results/order1] order by foo \n\
+		    select 2 into [results/order2] order by 1   \n\
+		                                                \n\
+		    select distinct bar into [results/order3]   \n\
+		    from t3 order by bar                        \n\
+		                                                \n\
+		    select foo into [results/order4]            \n\
+		    from t3 order by bar, foo                   \n\
+		                                                \n\
+		    select foo into [results/order5]            \n\
+		    from t3 order by bar desc, foo              \n\
+		                                                \n\
+		    select baz + 2 into [results/order6]        \n\
+		    from t3 order by baz + 0                    \n\
+		                                                \n\
+		    select count(*) into [results/order7]       \n\
+		    from t3 group by bar order by count(*)      \n\
+		                                                \n\
+		    select count(*) into [results/order8]       \n\
+		    from t3 group by bar order by 1             \n\
+		                                                \n\
+		    set @i += 1                                 \n\
+		END";
+
+	ck_assert_int_eq(fql_exec(fql, query), FQL_GOOD);
+
+	unsigned i = 1;
+	for (; i <= 8; ++i) {
+		char filename[64];
+		sprintf(filename, "order%u", i);
+		ck_assert_int_eq(_testdiff(filename), 0);
+	}
+}
+
+void output_top(struct fqlhandle* fql)
+{
+	const char* query = "\n\
+		declare @i int = 0                       \n\
+		while @i < 2                             \n\
+		BEGIN                                    \n\
+		    select top 0 1 into [results/top1]   \n\
+		    select top 2 5 into [results/top2]   \n\
+		                                         \n\
+		    select top 4 foo                     \n\
+		    into [results/top3] from t1          \n\
+		                                         \n\
+		    select top 2 foo into [results/top4] \n\
+		    from t1 order by bar desc            \n\
+		                                         \n\
+		    select (select top 1 foo from t1)    \n\
+		    into [results/top5]                  \n\
+		                                         \n\
+		    select top ((5*2)/4) baz             \n\
+		    into [results/top6] from t1          \n\
+		                                         \n\
+		    set @i += 1                          \n\
+		END";
+
+	ck_assert_int_eq(fql_exec(fql, query), FQL_GOOD);
+
+	unsigned i = 1;
+	for (; i <= 6; ++i) {
+		char filename[64];
+		sprintf(filename, "top%u", i);
+		ck_assert_int_eq(_testdiff(filename), 0);
+	}
+}
+
+void output_union(struct fqlhandle* fql)
+{
+	const char* query = "\n\
+		declare @i int = 0                                 \n\
+		while @i < 2                                       \n\
+		BEGIN                                              \n\
+		    select 1 into [results/union1]                 \n\
+		    union all select 2                             \n\
+		                                                   \n\
+		    select foo into [results/union2]               \n\
+		    from t1 union all select '1'                   \n\
+		                                                   \n\
+		    select '1' into [results/union3]               \n\
+		    union all select foo from t1                   \n\
+		                                                   \n\
+		    select distinct bar into [results/union4]      \n\
+		    from t1 union all select bar from t3           \n\
+		                                                   \n\
+		    select bar into [results/union5] from t1       \n\
+		    union all select distinct bar from t3          \n\
+		                                                   \n\
+		    select top 2 foo into [results/union6] from t1 \n\
+		    union all select top 3 foo from t3             \n\
+		                                                   \n\
+		    set @i += 1                                    \n\
+		END";
+
+	ck_assert_int_eq(fql_exec(fql, query), FQL_GOOD);
+
+	unsigned i = 1;
+	for (; i <= 6; ++i) {
+		char filename[64];
+		sprintf(filename, "union%u", i);
+		ck_assert_int_eq(_testdiff(filename), 0);
+	}
+}

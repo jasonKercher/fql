@@ -11,5 +11,10 @@ void output_switch(struct fqlhandle*);
 void output_null(struct fqlhandle*);
 void output_join(struct fqlhandle*);
 void output_subquery(struct fqlhandle*);
+void output_group(struct fqlhandle*);
+void output_having(struct fqlhandle*);
+void output_order(struct fqlhandle*);
+void output_top(struct fqlhandle*);
+void output_union(struct fqlhandle*);
 
 #endif  /* OUTPUT_H */

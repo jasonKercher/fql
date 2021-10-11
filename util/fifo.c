@@ -39,6 +39,18 @@ void fifo_free(void* restrict self)
 	free_(self);
 }
 
+void fifo_reset(fifo* restrict self)
+{
+	if (self == NULL) {
+		return;
+	}
+
+	self->is_open = true;
+	self->head = 0;
+	self->tail = 0;
+	self->_iter_head = 0;
+}
+
 /* this struct was never meant to be resizable
  * but under the assumption that you are okay
  * losing all currently held data... yea...

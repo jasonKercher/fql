@@ -33,7 +33,7 @@ void subquery_free(void* generic)
 int subquery_get_record(reader* reader, node* rg)
 {
 	subquery* self = reader->reader_data;
-	vec* expressions = self->select->_selection_exprs;
+	vec* expressions = self->select->current_select->schema->expressions;
 
 	record* rec = rg->data;
 	record_clear_strings(&self->copy_data, self->copy_data.subquery_strings);
@@ -110,7 +110,8 @@ int subquery_get_record_at(reader* unused_self, node* unused_rg, size_t unused_o
 int subquery_reset(reader* reader)
 {
 	subquery* self = reader->reader_data;
-	return query_prepare(self->query);
+	return query_preflight(self->query, true);
+	//return query_prepare(self->query);
 }
 
 /* If we have been reset from a join, we will no longer

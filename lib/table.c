@@ -79,13 +79,7 @@ int table_reset(table* self, bool has_executed)
 		hashjoin_reset(self->join_data);
 	} else if (has_executed) {
 		try_(self->reader->reset__(self->reader));
-		/* If we are resetting a table on the right
-		 * side of a join, we don't actually need to
-		 * reset the join data...
-		 */
-		if (self->source_type != SOURCE_TABLE) {
-			hashjoin_reset(self->join_data);
-		}
+		hashjoin_reset(self->join_data);
 	}
 
 	return FQL_GOOD;
