@@ -187,7 +187,9 @@ void process_enable(process* self)
 		self->fifo_in[self->killed_pipe]->is_open = false;
 	}
 
-	self->wait_for_in0 = true;
+	if (!self->in0_always_dead) {
+		self->wait_for_in0 = true;
+	}
 	self->is_enabled = true;
 
 	/* Same GROUP BY hack from process_activate */

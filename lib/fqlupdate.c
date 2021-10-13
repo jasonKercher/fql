@@ -62,6 +62,16 @@ void fqlupdate_destroy(fqlupdate* self)
 	delete_(schema, self->schema);
 }
 
+int fqlupdate_reset(fqlupdate* self)
+{
+	self->rownum = 0;
+	self->rows_affected = 0;
+	self->state = FILTER_OPEN;
+	self->update_idx = 0;
+
+	return FQL_GOOD;
+}
+
 int fqlupdate_add_expression(fqlupdate* self, const expression* expr)
 {
 	if (self->set_columns.size == self->value_expressions.size) {
@@ -82,7 +92,6 @@ int fqlupdate_apply_process(query* query, plan* plan)
 	if (query->sources->size == 1) {
 		process* update_proc = plan->op_true->data;
 		update_proc->action__ = &fql_update;
-		update_proc->wait_for_in0_end = true;
 		update_proc->proc_data = self;
 		update_proc->has_second_input = true;
 		/* If there is no where clause, we need to mark
@@ -117,7 +126,6 @@ int fqlupdate_apply_process(query* query, plan* plan)
 	process* update_filter_proc = new_(process, "UPDATE FILTER", plan);
 	update_filter_proc->action__ = &fql_update_filter;
 	update_filter_proc->proc_data = self;
-	update_filter_proc->wait_for_in0_end = true;
 	update_filter_proc->is_dual_link = true;
 	update_filter_proc->has_second_input = true;
 	dnode* filter_node = dgraph_add_data(plan->processes, update_filter_proc);

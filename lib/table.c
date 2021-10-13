@@ -76,6 +76,7 @@ int table_reset(table* self, bool has_executed)
 {
 	if (self->must_reopen) {
 		try_(reader_reopen(self->reader));
+		try_(self->reader->reset__(self->reader));
 		hashjoin_reset(self->join_data);
 	} else if (has_executed) {
 		try_(self->reader->reset__(self->reader));
@@ -87,6 +88,9 @@ int table_reset(table* self, bool has_executed)
 
 int table_resolve_schema(table* self, struct fqlhandle* fql)
 {
+	if (self->schema->is_preresolved) {
+		return FQL_GOOD;
+	}
 	reader* reader = self->reader;
 	const char* delim = NULL;
 	switch (reader->type) {

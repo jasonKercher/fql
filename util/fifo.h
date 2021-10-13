@@ -26,10 +26,10 @@ struct fifo {
 	pthread_mutex_t tail_mutex;
 	pthread_cond_t cond_add;
 	pthread_cond_t cond_get;
+	unsigned input_count;
 	ATOMIC_ unsigned head;
 	ATOMIC_ unsigned tail;
 	ATOMIC_ unsigned _iter_head;
-	unsigned input_count;
 	ATOMIC_ bool is_open;
 };
 typedef struct fifo fifo;

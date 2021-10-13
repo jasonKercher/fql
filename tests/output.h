@@ -16,5 +16,7 @@ void output_having(struct fqlhandle*);
 void output_order(struct fqlhandle*);
 void output_top(struct fqlhandle*);
 void output_union(struct fqlhandle*);
+void output_difficult(struct fqlhandle*);
+void output_operations(struct fqlhandle*);
 
 #endif  /* OUTPUT_H */

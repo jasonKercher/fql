@@ -36,6 +36,7 @@ struct query;
 struct schema* schema_construct(struct schema*);
 void schema_destroy(void*);
 
+void schema_copy(struct schema*, const struct schema*);
 void schema_set_delim(struct schema*, const char*);
 
 bool schema_eq(const struct schema*, const struct schema*);

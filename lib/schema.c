@@ -52,6 +52,30 @@ void schema_destroy(void* generic_schema)
 	delete_if_exists_(multimap, self->expr_map);
 }
 
+void schema_copy(schema* self, const schema* src_schema)
+{
+	if (src_schema == NULL) {
+		if (!self->delim_is_set) {
+			schema_set_delim(self, ",");
+		}
+		self->io_type = IO_LIBCSV;
+		self->write_io_type = IO_LIBCSV;
+		self->is_default = true;
+		return;
+	}
+	if (!self->delim_is_set) {
+		schema_set_delim(self, src_schema->delimiter);
+	}
+	self->write_io_type = src_schema->write_io_type;
+	if (src_schema->io_type == IO_UNDEFINED) {
+		self->io_type = src_schema->write_io_type;
+	} else {
+		self->io_type = src_schema->io_type;
+	}
+	self->is_default = src_schema->is_default;
+}
+
+
 void schema_set_delim(schema* self, const char* delim)
 {
 	strncpy_(self->delimiter, delim, DELIM_LEN_MAX);
@@ -258,8 +282,11 @@ int _resolve_file(struct fqlhandle* fql, query* query, table* table)
 
 	table->must_reopen = true;
 	table->schema->is_preresolved = true;
+	//table->reader->type = (*match)->write_io_type;
+	//table->schema->is_default = (*match)->is_default;
+
+	schema_copy(table->schema, *match);
 	table->reader->type = (*match)->write_io_type;
-	table->schema->is_default = (*match)->is_default;
 	return FQL_GOOD;
 }
 
@@ -1120,6 +1147,8 @@ int _resolve_query(struct fqlhandle* fql, query* aquery, enum io union_io)
 			fputs("Input to TOP clause cannot be negative\n", stderr);
 			return FQL_FAIL;
 		}
+
+		/** TODO: What if top expression has a variable...? **/
 		aquery->top_count = aquery->top_expr->field.i;
 		delete_(expression, aquery->top_expr);
 	}
@@ -1274,9 +1303,9 @@ int _resolve_query(struct fqlhandle* fql, query* aquery, enum io union_io)
 	/* If this query will be writing changes to the file system,
 	 * we need to be aware of this when parsing future queries.
 	 * These are mapped as absolute paths. First check that the
-	 * file exists. If it doesn't, create it now so that
-	 * realpath works. Creating the file also has the affect of
-	 * making fuzzy file discovery possible on a file that did
+	 * file exists. If it doesn't, create it now so that realpath
+	 * works. Creating the file also has the (undesireable?) affect
+	 * of making fuzzy file discovery possible on a file that did
 	 * not previously exist.
 	 */
 	if (aquery->into_table_name != NULL) {

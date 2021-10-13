@@ -36,6 +36,15 @@ void fqldelete_destroy(fqldelete* self)
 	delete_(schema, self->schema);
 }
 
+int fqldelete_reset(fqldelete* self)
+{
+	self->rows_affected = 0;
+	self->state = FILTER_OPEN;
+	self->delete_idx = 0;
+
+	return FQL_GOOD;
+}
+
 /**
  * Deleting is achieved by writing a new file and
  * renaming that file over top of the original.
@@ -56,7 +65,6 @@ int fqldelete_apply_process(query* query, plan* plan)
 	if (query->sources->size == 1) {
 		process* proc = plan->op_false->data;
 		proc->action__ = &fql_delete;
-		proc->wait_for_in0_end = true;
 		proc->proc_data = self;
 
 		string_strcpy(proc->plan_msg, "DELETE");
@@ -78,7 +86,6 @@ int fqldelete_apply_process(query* query, plan* plan)
 	process* delete_filter_proc = new_(process, "DELETE FILTER", plan);
 	delete_filter_proc->action__ = &fql_delete_filter;
 	delete_filter_proc->proc_data = self;
-	delete_filter_proc->wait_for_in0_end = true;
 	delete_filter_proc->is_dual_link = true;
 	delete_filter_proc->has_second_input = true;
 	dnode* filter_node = dgraph_add_data(plan->processes, delete_filter_proc);

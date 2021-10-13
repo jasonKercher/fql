@@ -34,6 +34,7 @@ typedef struct fqlupdate fqlupdate;
 
 struct fqlupdate* fqlupdate_construct(struct fqlupdate*);
 void fqlupdate_destroy(struct fqlupdate*);
+int fqlupdate_reset(struct fqlupdate*);
 
 int fqlupdate_add_expression(struct fqlupdate*, const struct expression*);
 int fqlupdate_resolve_additional(struct fqlupdate*, struct query*);

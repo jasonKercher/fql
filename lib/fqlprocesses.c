@@ -1004,7 +1004,7 @@ _del_filtering(process* proc, fqldelete* delete, fifo* in_false, fifo* in_true)
 	for (; iter_false != fifo_end(in_false); iter_false = fifo_iter(in_false)) {
 		node** look_ahead = fifo_look_ahead(in_false);
 		if (look_ahead == NULL) {
-			return PROC_RETURN_RUNNING;
+			break;
 		}
 		record* look_ahead_rec = record_at(*look_ahead, delete->table_idx);
 		if (look_ahead_rec->rec_idx > delete->delete_idx) {
@@ -1014,6 +1014,7 @@ _del_filtering(process* proc, fqldelete* delete, fifo* in_false, fifo* in_true)
 		fqlprocess_recycle(proc, iter_false);
 		_fqlprocess_print_iter_states(proc);
 	}
+	fifo_update(in_false);
 	return PROC_RETURN_RUNNING;
 }
 
@@ -1221,7 +1222,7 @@ _update_filtering(process* proc, fqlupdate* update, fifo* in_false, fifo* in_tru
 	for (; iter_false != fifo_end(in_false); iter_false = fifo_iter(in_false)) {
 		node** look_ahead = fifo_look_ahead(in_false);
 		if (look_ahead == NULL) {
-			return PROC_RETURN_RUNNING;
+			break;
 		}
 		record* look_ahead_rec = record_at(*look_ahead, update->table_idx);
 		if (look_ahead_rec->rec_idx > update->update_idx) {
@@ -1231,6 +1232,7 @@ _update_filtering(process* proc, fqlupdate* update, fifo* in_false, fifo* in_tru
 		fqlprocess_recycle(proc, iter_false);
 		_fqlprocess_print_iter_states(proc);
 	}
+	fifo_update(in_false);
 	return PROC_RETURN_RUNNING;
 }
 

@@ -54,7 +54,7 @@ struct process {
 	bool is_threading;            /* should be nearly identical to is_enabled */
 	bool has_second_input;        /* will activate fifo_in[1] */
 	bool wait_for_in0;            /* allow start before in0 populated */
-	bool wait_for_in0_end;        /* allow more processing after in0 done */
+	bool in0_always_dead;         /* wait_for_in0 will stay false on reset */
 };
 typedef struct process process;
 

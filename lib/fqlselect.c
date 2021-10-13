@@ -200,7 +200,6 @@ void fqlselect_apply_process(query* query, plan* plan, bool is_subquery_source)
 	fqlselect* self = query->op;
 	process* proc = plan->op_true->data;
 	proc->action__ = &fql_select;
-	proc->wait_for_in0_end = true;
 	proc->proc_data = self;
 
 	if (self->const_dest != NULL) {

@@ -187,7 +187,9 @@ void fifo_add(fifo* restrict self, void* restrict data)
 	_idx_adv_(self->head);
 	pthread_cond_signal(&self->cond_add);
 	if (self->shared_mutex_fifo != NULL) {
+		pthread_mutex_lock(&self->shared_mutex_fifo->head_mutex);
 		pthread_cond_signal(&self->shared_mutex_fifo->cond_add);
+		pthread_mutex_unlock(&self->shared_mutex_fifo->head_mutex);
 		self->shared_mutex_fifo = NULL;
 	}
 	pthread_mutex_unlock(&self->head_mutex);
@@ -341,14 +343,14 @@ void fifo_wait_for_add(fifo* restrict self)
 
 void fifo_wait_for_add_either(fifo* restrict f0, fifo* restrict f1)
 {
-	pthread_mutex_lock(&f0->head_mutex);
+	//pthread_mutex_lock(&f0->head_mutex);
 	pthread_mutex_lock(&f1->head_mutex);
 	while (f1->is_open && f0->is_open && fifo_is_empty(f1) && fifo_is_empty(f0)) {
 		f0->shared_mutex_fifo = f1;
 		pthread_cond_wait(&f1->cond_add, &f1->head_mutex);
 	}
 	pthread_mutex_unlock(&f1->head_mutex);
-	pthread_mutex_unlock(&f0->head_mutex);
+	//pthread_mutex_unlock(&f0->head_mutex);
 }
 
 void fifo_wait_for_add_both(fifo* restrict f0, fifo* restrict f1)

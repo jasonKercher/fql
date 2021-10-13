@@ -1,6 +1,7 @@
 core*
 shnt*
 mlrv*
+fgkc*
 
 # script executables
 check_hashmap

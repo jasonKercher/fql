@@ -96,6 +96,18 @@ START_TEST(test_output_union)
 }
 END_TEST
 
+START_TEST(test_output_difficult)
+{
+	output_difficult(fql);
+}
+END_TEST
+
+START_TEST(test_output_operations)
+{
+	output_operations(fql);
+}
+END_TEST
+
 Suite* fql_thread_output_suite(void)
 {
 	Suite* s;
@@ -117,6 +129,8 @@ Suite* fql_thread_output_suite(void)
 	tcase_add_test(tc_thread_output, test_output_order);
 	tcase_add_test(tc_thread_output, test_output_top);
 	tcase_add_test(tc_thread_output, test_output_union);
+	tcase_add_test(tc_thread_output, test_output_difficult);
+	tcase_add_test(tc_thread_output, test_output_operations);
 
 	suite_add_tcase(s, tc_thread_output);
 

@@ -655,3 +655,120 @@ void output_union(struct fqlhandle* fql)
 		ck_assert_int_eq(_testdiff(filename), 0);
 	}
 }
+
+void output_difficult(struct fqlhandle* fql)
+{
+	const char* query = "\n\
+		declare @i int = 0                                            \n\
+		while @i < 2                                                  \n\
+		BEGIN                                                         \n\
+		    select bar, ('0x' + bar + 0) * 1                          \n\
+		    into [results/difficult1] from t2                         \n\
+		                                                              \n\
+		    select bar                                                \n\
+		       ,sum(case when baz % 2 = 0 then 1 else 0 end) even_baz \n\
+		       ,sum(case when baz % 2 = 1 then 1 else 0 end) odd_baz  \n\
+		       ,count(*) TOTAL                                        \n\
+		    into [results/difficult2]                                 \n\
+		    from t3                                                   \n\
+		    group by bar                                              \n\
+		    order by bar                                              \n\
+		                                                              \n\
+		    select top (1*3)                                          \n\
+		         (select top 1 foo from t1),                          \n\
+		         bar+'eex',                                           \n\
+		         max(baz+0),                                          \n\
+		         qty                                                  \n\
+		    into [results/difficult3]                                 \n\
+		    from (                                                    \n\
+		         select bar shnt, count(*) qty                        \n\
+		         from t3                                              \n\
+		         group by bar                                         \n\
+		    ) x1                                                      \n\
+		    join t3 x2                                                \n\
+		        on  x2.bar = x1.shnt                                  \n\
+		        and 1=1                                               \n\
+		    where len(bar) = right('shnt2',1)                         \n\
+		    group by bar,qty                                          \n\
+		    having min(baz+0) < 20000                                 \n\
+		    order by bar desc, 3                                      \n\
+		                                                              \n\
+		    set @i += 1                                               \n\
+		END";
+
+	ck_assert_int_eq(fql_exec(fql, query), FQL_GOOD);
+
+	unsigned i = 1;
+	for (; i <= 3; ++i) {
+		char filename[64];
+		sprintf(filename, "difficult%u", i);
+		ck_assert_int_eq(_testdiff(filename), 0);
+	}
+}
+
+void output_operations(struct fqlhandle* fql)
+{
+	fql_set_overwrite(fql, true);
+
+	const char* query = "\n\
+		declare @i int = 0                                        \n\
+		while @i < 2                                              \n\
+		BEGIN                                                     \n\
+		    select * into [results/operations1] from t1           \n\
+		    delete [results/operations1]                          \n\
+		                                                          \n\
+		    select * into [results/operations2] from t1           \n\
+		    delete [results/operations2]                          \n\
+		    from [results/operations2] where 1=1                  \n\
+		                                                          \n\
+		    select * into [results/operations3] from t1           \n\
+		    delete d                                              \n\
+		    from [results/operations3] d                          \n\
+		                                                          \n\
+		    select * into [results/operations4] from t1           \n\
+		    delete [results/operations4]                          \n\
+		    from [results/operations4] d                          \n\
+		                                                          \n\
+		    select * into [results/operations5] from t1           \n\
+		    delete [results/operations5]                          \n\
+		    where bar = 'b0'                                      \n\
+		                                                          \n\
+		    select * into [results/operations6] from t1           \n\
+		    delete d                                              \n\
+		    from [results/operations6] d                          \n\
+		    join t2 on d.foo = t2.foo                             \n\
+		                                                          \n\
+		    select * into [results/operations7] from t1           \n\
+		    update [results/operations7] set bar = 'xx'           \n\
+		                                                          \n\
+		    select * into [results/operations8] from t1           \n\
+		    update [results/operations8] set bar = 'xx'           \n\
+		    from [results/operations8] where 1=1                  \n\
+		                                                          \n\
+		    select * into [results/operations9] from t1           \n\
+		    update u set bar = 'xx' from [results/operations9] u  \n\
+		                                                          \n\
+		    select * into [results/operations10] from t1          \n\
+		    update [results/operations10] set bar = 'xx'          \n\
+		    from [results/operations10] u                         \n\
+		                                                          \n\
+		    select * into [results/operations11] from t1          \n\
+		    update u set bar = 'xx' from [results/operations11] u \n\
+		    where bar = 'b0'                                      \n\
+		                                                          \n\
+		    select * into [results/operations12] from t1          \n\
+		    update u set bar = 'xx' from [results/operations12] u \n\
+		    join t2 on u.foo = t2.foo                             \n\
+		                                                          \n\
+		    set @i += 1                                           \n\
+		END";
+
+	ck_assert_int_eq(fql_exec(fql, query), FQL_GOOD);
+
+	unsigned i = 1;
+	for (; i <= 12; ++i) {
+		char filename[64];
+		sprintf(filename, "operations%u", i);
+		ck_assert_int_eq(_testdiff(filename), 0);
+	}
+}

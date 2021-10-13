@@ -483,7 +483,6 @@ void _group(plan* self, query* query)
 
 		group_proc->action__ = &fql_groupby;
 		group_proc->proc_data = query->groupby;
-		group_proc->wait_for_in0_end = true;
 		group_proc->root_fifo = 1;
 		group_cat_description(query->groupby, group_proc);
 		dnode* group_node = dgraph_add_data(self->processes, group_proc);
@@ -588,7 +587,6 @@ void _order(plan* self, query* query)
 	_check_all_for_special_expression(self, order_proc, &query->orderby->expressions);
 	order_proc->action__ = &fql_orderby;
 	order_proc->proc_data = query->orderby;
-	order_proc->wait_for_in0_end = true;
 	order_cat_description(query->orderby, order_proc);
 	dnode* order_node = dgraph_add_data(self->processes, order_proc);
 	self->current->out[0] = order_node;
@@ -661,6 +659,7 @@ void _disable_stranded_roots(plan* self)
 			proc->is_passive = true;
 			process* false_proc = self->op_false->data;
 			false_proc->wait_for_in0 = false;
+			false_proc->in0_always_dead = true;
 		}
 	}
 

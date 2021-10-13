@@ -241,11 +241,13 @@ int op_reset(enum fql_operation* self)
 	switch (*self) {
 	case FQL_SELECT:
 		return fqlselect_reset((fqlselect*)self);
+	case FQL_DELETE:
+		return fqldelete_reset((fqldelete*)self);
+	case FQL_UPDATE:
+		return fqlupdate_reset((fqlupdate*)self);
 	case FQL_SET:
 	case FQL_WHILE:
 	case FQL_IF:
-	case FQL_DELETE:
-	case FQL_UPDATE:
 		return FQL_GOOD;
 	case FQL_NONE:
 		return FQL_FAIL;
@@ -314,22 +316,7 @@ void op_set_writer(enum fql_operation* self, writer* src_writer)
 void op_set_schema(enum fql_operation* self, const schema* src_schema)
 {
 	schema* op_schema = op_get_schema(self);
-
-	if (src_schema == NULL) {
-		if (!op_schema->delim_is_set) {
-			op_set_delim(self, ",");
-		}
-		op_schema->io_type = IO_LIBCSV;
-		op_schema->write_io_type = IO_LIBCSV;
-		op_schema->is_default = true;
-		return;
-	}
-	if (!op_schema->delim_is_set) {
-		op_set_delim(self, src_schema->delimiter);
-	}
-	op_schema->io_type = src_schema->io_type;
-	op_schema->write_io_type = src_schema->write_io_type;
-	op_schema->is_default = src_schema->is_default;
+	schema_copy(op_schema, src_schema);
 }
 
 void op_assign_rownum_ref(enum fql_operation* self, expression* expr)
