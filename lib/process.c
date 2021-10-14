@@ -68,9 +68,16 @@ void process_destroy(process* self, bool is_root)
 	node_free_func(&self->queued_results, &fifo_free);
 }
 
+fifo* _proc_new_fifo_root(vec* roots, unsigned* pipe_count)
+{
+	fifo* new_root = new_t_(fifo, node*, 2);
+	vec_push_back(roots, &new_root);
+	++(*pipe_count);
+	return new_root;
+}
+
 void process_activate(process* self, plan* plan, unsigned base_size, unsigned* pipe_count)
 {
-	self->global_root_ref = plan->global_root;
 	self->rootvec_ref = plan->root_fifo_vec;
 	self->fifo_base_size = base_size;
 
@@ -84,10 +91,10 @@ void process_activate(process* self, plan* plan, unsigned base_size, unsigned* p
 	vec_reserve(self->inbuf, base_size);
 	self->inbuf_iter = vec_begin(self->inbuf);
 
-	++(*pipe_count);
-	self->outbuf = new_t_(vec, node*);
-	vec_reserve(self->outbuf, base_size);
-	self->outbuf_iter = vec_begin(self->outbuf);
+	//++(*pipe_count);
+	//self->outbuf = new_t_(vec, node*);
+	//vec_reserve(self->outbuf, base_size);
+	//self->outbuf_iter = vec_begin(self->outbuf);
 
 	++(*pipe_count);
 	self->rebuf = new_t_(vec, node*);
@@ -95,12 +102,9 @@ void process_activate(process* self, plan* plan, unsigned base_size, unsigned* p
 	self->rebuf_iter = vec_begin(self->rebuf);
 
 	if (self->root_fifo != PROCESS_NO_PIPE_INDEX) {
-		//self->fifo_in[self->root_fifo] = self->root_ref;
-		/* Ignore the 2, this will be resized later */
-		fifo* new_root = new_t_(fifo, node*, 2);
 		self->root_fifo_idx = plan->root_fifo_vec->size;
-		self->fifo_in[self->root_fifo] = new_root;
-		vec_push_back(plan->root_fifo_vec, &new_root);
+		self->fifo_in[self->root_fifo] =
+		        _proc_new_fifo_root(plan->root_fifo_vec, pipe_count);
 	}
 
 	if (self->action__ == &fql_select) {
@@ -144,6 +148,11 @@ void process_activate(process* self, plan* plan, unsigned base_size, unsigned* p
 		self->fifo_in[self->killed_pipe]->is_open = false;
 	}
 
+	if (self->fifo_aux_root != NULL) {
+		self->fifo_aux_root =
+		        _proc_new_fifo_root(plan->root_fifo_vec, pipe_count);
+	}
+
 	if (self->fql_ref->props.verbosity == FQL_DEBUG) {
 		fprintf(stderr, "Activate process: %s\n", string_c_str(self->plan_msg));
 	}
@@ -162,9 +171,15 @@ void process_add_to_wait_list(process* self, process* wait_proc)
 
 void process_enable(process* self)
 {
-	fqlprocess_recycle_buffer(self, self->rebuf, &self->rebuf_iter);
-	fqlprocess_recycle_buffer(self, self->inbuf, &self->inbuf_iter);
-	fqlprocess_recycle_buffer(self, self->outbuf, &self->outbuf_iter);
+	if (self->rebuf != NULL) {
+		fqlprocess_recycle_buffer(self, self->rebuf, &self->rebuf_iter);
+	}
+	if (self->inbuf != NULL) {
+		fqlprocess_recycle_buffer(self, self->inbuf, &self->inbuf_iter);
+	}
+	if (self->outbuf != NULL) {
+		fqlprocess_recycle_buffer(self, self->outbuf, &self->outbuf_iter);
+	}
 
 	if (self->queued_results != NULL) {
 		for (;;) {

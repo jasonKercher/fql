@@ -54,6 +54,7 @@ int fifo_nget(struct fifo* restrict,
               unsigned block_size,
               unsigned max);
 void* fifo_peek(const struct fifo* restrict);
+void* fifo_safe_peek(struct fifo* restrict);
 void* fifo_look_ahead(const struct fifo* restrict);
 void fifo_consume(struct fifo* restrict);
 

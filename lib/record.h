@@ -19,6 +19,7 @@ struct record {
 	stringview rec_ref;
 	size_t offset;
 	int src_idx;
+	unsigned node_idx;
 	unsigned rec_idx;
 	unsigned select_len;
 	unsigned max_subquery_count;

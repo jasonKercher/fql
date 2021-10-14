@@ -164,6 +164,19 @@ int fifo_nget(fifo* restrict self,
 	return available - transfer_count;
 }
 
+void* fifo_safe_peek(fifo* restrict self)
+{
+	void* data = NULL;
+
+	pthread_mutex_lock(&self->tail_mutex);
+	if (self->head != self->tail) {
+		data = vec_at(self->buf, self->tail);
+	}
+	pthread_mutex_unlock(&self->tail_mutex);
+
+	return data;
+}
+
 void* fifo_peek(const fifo* restrict self)
 {
 	return vec_at(self->buf, self->tail);

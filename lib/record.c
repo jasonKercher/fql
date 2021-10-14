@@ -7,7 +7,7 @@ record* record_construct(record* self, unsigned idx)
 {
 	*self = (record) {
 	        .src_idx = -1,
-	        .rec_idx = idx,
+	        .node_idx = idx,
 	};
 
 	vec_construct_(&self->fields, stringview);

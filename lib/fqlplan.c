@@ -59,27 +59,28 @@ plan* plan_construct(plan* self, query* query, fqlhandle* fql)
 void plan_destroy(void* generic_plan)
 {
 	plan* self = generic_plan;
-	if (self->processes != NULL) {
-		dnode** it = vec_begin(self->processes->nodes);
-		for (; it != vec_end(self->processes->nodes); ++it) {
-			process_node_free(*it);
-		}
-		delete_(dgraph, self->processes);
-	}
-
-	delete_if_exists_(vec, self->execution_vector);
-
-	if (self->global_root == NULL) {
+	if (self->processes == NULL) {
 		return;
 	}
 
-	node* it = vec_begin(self->_root_data);
-	for (; it != vec_end(self->_root_data); ++it) {
-		delete_(record, it->data);
+	dnode** it = vec_begin(self->processes->nodes);
+	for (; it != vec_end(self->processes->nodes); ++it) {
+		process_node_free(*it);
+	}
+	delete_(dgraph, self->processes);
+
+	delete_if_exists_(vec, self->execution_vector);
+
+	if (self->_root_data == NULL) {
+		return;
+	}
+
+	node* node_iter = vec_begin(self->_root_data);
+	for (; node_iter != vec_end(self->_root_data); ++node_iter) {
+		delete_(record, node_iter->data);
 		//node_free(&it);
 	}
 
-	/* self->global_root will be freed in this loop */
 	fifo** fifo_iter = vec_begin(self->root_fifo_vec);
 	for (; fifo_iter != vec_end(self->root_fifo_vec); ++fifo_iter) {
 		delete_(fifo, *fifo_iter);
@@ -97,6 +98,9 @@ void _calculate_execution_order(plan*);
 
 void plan_pipeline_root_preempt(plan* self)
 {
+	if (vec_empty(self->root_fifo_vec)) {
+		return;
+	}
 	fifo** root_fifos = vec_begin(self->root_fifo_vec);
 
 	/* Clear these so we can insert root records 1 by 1... */
@@ -116,6 +120,7 @@ void plan_pipeline_root_preempt(plan* self)
 			it->next = NULL;
 			it->prev = NULL;
 		}
+
 		rec->root_fifo_idx = i % self->root_fifo_vec->size;
 		vec_push_back(root_fifos[rec->root_fifo_idx]->buf, &it);
 	}
@@ -367,6 +372,7 @@ int _from(plan* self, query* query, fqlhandle* fql)
 		bool is_hash_join = (table_iter->condition->join_logic != NULL);
 		if (is_hash_join) {
 			join_proc = _new_join_proc(table_iter->join_type, "hash", self);
+			join_proc->fifo_aux_root = (void*)1;
 			join_proc->action__ = &fql_hash_join;
 			join_proc->has_second_input = true;
 
@@ -944,9 +950,9 @@ void _activate_procs(plan* self, fqlhandle* fql)
 	 * processes have been activated and we can calculate an accurate
 	 * size how big the root *should* be.
 	 */
-	self->global_root = new_t_(fifo, node*, 2);
+	//self->global_root = new_t_(fifo, node*, 2);
 	self->root_fifo_vec = new_t_(vec, fifo*);
-	vec_push_back(self->root_fifo_vec, &self->global_root);
+	//vec_push_back(self->root_fifo_vec, &self->global_root);
 
 	/* (*node_it)->data is passing the process...
 	 * in the ugliest possible way. Sending a pipe_count
@@ -982,6 +988,11 @@ void _activate_procs(plan* self, fqlhandle* fql)
 	}
 
 unrolled_break : {
+
+	/* If there are no roots, no need to initialize root data */
+	if (vec_empty(self->root_fifo_vec)) {
+		return;
+	}
 
 	/* Now that the processes have been activated, we can get a real count
 	 * for the number of pipes. The goal is to make the root the exact size

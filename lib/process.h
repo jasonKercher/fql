@@ -23,7 +23,7 @@ struct process {
 	struct node** rebuf_iter;     /* iterator for rebuf */
 	struct node** outbuf_iter;    /* iterator for outbuf */
 	process_fn* action__;         /* function pointer for process */
-	struct fifo* global_root_ref; /* Reference to plan-wide root-records */
+	struct fifo* fifo_aux_root;   /* auxiliary root fifo */
 	struct fifo* fifo_in[2];      /* input record fifos */
 	struct fifo* fifo_out[2];     /* output record fifos */
 	struct fifo* org_fifo_in0;    /* Used to avoid memory leak with UNION */
