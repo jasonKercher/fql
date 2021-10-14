@@ -16,7 +16,7 @@
 #include "util/fifo.h"
 
 /* comment this line to print fifo states as it runs */
-#define _fqlprocess_print_iter_states(X_)
+//#define _fqlprocess_print_iter_states(X_)
 
 void _fqlprocess_print_fifo_info(const char* fname, fifo* f, string* msg, bool is_root)
 {
@@ -110,6 +110,8 @@ void fqlprocess_recycle(process* proc, node** rg)
 		node* rg_node = node_pop_export(rg);
 		record* rec = rg_node->data;
 		fifo** root_fifo = vec_at(proc->rootvec_ref, rec->root_fifo_idx);
+
+		fprintf(stderr, "RECYCLE: %u\n", rec->rec_idx);
 
 		// 3 Optional implementations for this...
 

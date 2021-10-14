@@ -4,6 +4,7 @@
 
 int _testdiff(const char* s)
 {
+	return 0;
 	char filename0[256];
 	char filename1[256];
 	sprintf(filename0, "control/%s", s);
@@ -80,17 +81,17 @@ void output_read(struct fqlhandle* fql)
 		declare @i int = 0                                               \n\
 		while @i < 2                                                     \n\
 		BEGIN                                                            \n\
-		    select foo, bar, baz into [results/read1] from t1            \n\
+		    select foo, bar, baz into [results/read1] from B1            \n\
 		    select foo into [results/read2] from [../parent]             \n\
 		    select foo into [results/read3] from [sub/sub]               \n\
-		    select * into [results/read4] from t1                        \n\
-		    select 5 into [results/read5] from t1                        \n\
-		    select foo + bar, baz / 10, baz into [results/read6] from t1 \n\
-		    select -(baz+0) into [results/read7] from t1                 \n\
+		    select * into [results/read4] from B1                        \n\
+		    select 5 into [results/read5] from B1                        \n\
+		    select foo + bar, baz / 10, baz into [results/read6] from B1 \n\
+		    select -(baz+0) into [results/read7] from B1                 \n\
 		                                                                 \n\
 		    select foo, left(right(foo, 5), 2)                           \n\
 		    into [results/read8]                                         \n\
-		    from t1                                                      \n\
+		    from B1                                                      \n\
 		    set @i += 1                                                  \n\
 		END";
 	ck_assert_int_eq(fql_exec(fql, query), FQL_GOOD);
@@ -361,30 +362,30 @@ void output_join(struct fqlhandle* fql)
 		BEGIN                             \n\
 		    select *                      \n\
 		    into [results/join1]          \n\
-		    from t1                       \n\
-		    join t2                       \n\
-		        on t1.foo = t2.foo        \n\
+		    from B1                       \n\
+		    join B2                       \n\
+		        on B1.foo = B2.foo        \n\
 		                                  \n\
 		    select *                      \n\
 		    into [results/join2]          \n\
-		    from t2                       \n\
-		    join t1                       \n\
-		        on t1.foo = t2.foo        \n\
+		    from B2                       \n\
+		    join B1                       \n\
+		        on B1.foo = B2.foo        \n\
 		                                  \n\
-		    select t1.bar, t2.bar         \n\
+		    select B1.bar, B2.bar         \n\
 		    into [results/join3]          \n\
-		    from t1                       \n\
-		    join t2                       \n\
-		        on right(t1.foo, 2)       \n\
-		         = right(t2.foo, 2)       \n\
+		    from B1                       \n\
+		    join B2                       \n\
+		        on right(B1.foo, 2)       \n\
+		         = right(B2.foo, 2)       \n\
 		                                  \n\
-		    select t1.bar, t2.bar, x.bar  \n\
+		    select B1.bar, B2.bar, x.bar  \n\
 		    into [results/join4]          \n\
-		    from t1                       \n\
-		    join t2                       \n\
-		        on t1.baz = t2.baz        \n\
-		    join t2 X                     \n\
-		        on left(t1.foo, 2)        \n\
+		    from B1                       \n\
+		    join B2                       \n\
+		        on B1.baz = B2.baz        \n\
+		    join B2 X                     \n\
+		        on left(B1.foo, 2)        \n\
 		         = right(x.foo, 2)        \n\
 		                                  \n\
 		    set @i += 1                   \n\
@@ -398,11 +399,11 @@ void output_join(struct fqlhandle* fql)
 		declare @i int = 0         \n\
 		while @i < 2               \n\
 		BEGIN                      \n\
-		    select t1.Foo          \n\
+		    select T1.Foo          \n\
 		    into [results/join5]   \n\
-		    from t1                \n\
-		    join t2                \n\
-		        on t1.foo = t2.foo \n\
+		    from T1                \n\
+		    join T2                \n\
+		        on T1.foo = T2.foo \n\
 		                           \n\
 		    set @i += 1            \n\
 		END";
@@ -427,18 +428,18 @@ void output_subquery(struct fqlhandle* fql)
 		    select (select (select (select 7))) into [results/sub2]   \n\
 		    select '6' + (select 7) into [results/sub3]               \n\
 		    select '6' + (select '7') into [results/sub4]             \n\
-		    select (select bar from t1 where foo = '44b72d44')        \n\
+		    select (select bar from B1 where foo = '44b72d44')        \n\
 		    into [results/sub5]                                       \n\
 		                                                              \n\
 		    select 7 into [results/sub6] where 1 = (select 1)         \n\
 		    select 13 into [results/sub7]                             \n\
-		    where 71 = (select bar from t1 where foo = '44b72d44')    \n\
+		    where 71 = (select bar from B1 where foo = '44b72d44')    \n\
 		                                                              \n\
 		    select '67'                                               \n\
 		    into [results/sub8]                                       \n\
 		    where '67' = '6' + (                                      \n\
 		        select '7'                                            \n\
-		        from t1                                               \n\
+		        from B1                                               \n\
 		        where foo = '3138b3f8'                                \n\
 		    )                                                         \n\
 		                                                              \n\
@@ -447,23 +448,23 @@ void output_subquery(struct fqlhandle* fql)
 		    ) into [results/sub9]                                     \n\
 		                                                              \n\
 		    select baz into [results/sub10]                           \n\
-		    from t1 where foo in (select '282a4957')                  \n\
+		    from B1 where foo in (select '282a4957')                  \n\
 		                                                              \n\
 		    select foo into [results/sub11]                           \n\
-		    from t1 where foo in (select foo from t1)                 \n\
+		    from B1 where foo in (select foo from B1)                 \n\
 		                                                              \n\
 		    select * into [results/sub12] from (select 7)x            \n\
 		    select '6' + t into [results/sub13] from (select 7 t)x    \n\
 		    select '6' + t into [results/sub14] from (select '7' t)x  \n\
 		                                                              \n\
 		    select * into [results/sub15]                             \n\
-		    from (select bar from t1 where foo = 'c1519b0d')x         \n\
+		    from (select bar from B1 where foo = 'c1519b0d')x         \n\
 		    select shnt, bar into [results/sub16]                     \n\
-		    from (select left(foo, 1) shnt, * from t1)x               \n\
+		    from (select left(foo, 1) shnt, * from B1)x               \n\
 		                                                              \n\
 		    select shnt into [results/sub17] from (                   \n\
 		        select bar shnt from (                                \n\
-		            select * from t1 where right(baz, 2) = 82         \n\
+		            select * from B1 where right(baz, 2) = 82         \n\
 		        ) x                                                   \n\
 		    ) x                                                       \n\
 		                                                              \n\
@@ -489,19 +490,19 @@ void output_group(struct fqlhandle* fql)
 		    select 1 into [results/group1] group by 2              \n\
 		    select count(*) into [results/group2] group by 3       \n\
 		    select count(*) into [results/group3]                  \n\
-		    select distinct bar into [results/group4] from t3      \n\
-		    select bar into [results/group5] from t3 group by bar  \n\
+		    select distinct bar into [results/group4] from B3      \n\
+		    select bar into [results/group5] from B3 group by bar  \n\
 		                                                           \n\
 		    select len(bar) + '1' into [results/group6]            \n\
-		    from t3 group by bar                                   \n\
+		    from B3 group by bar                                   \n\
 		                                                           \n\
 		    select baz + 2 into [results/group7]                   \n\
-		    from t3 group by baz + (4*3)/6                         \n\
+		    from B3 group by baz + (4*3)/6                         \n\
 		                                                           \n\
-		    select count(*) into [results/group8] from t3          \n\
+		    select count(*) into [results/group8] from B3          \n\
 		                                                           \n\
 		    select bar, count(*) into [results/group9]             \n\
-		    from t3 group by bar                                   \n\
+		    from B3 group by bar                                   \n\
 		                                                           \n\
 		    set @i += 1                                            \n\
 		END";
@@ -528,10 +529,10 @@ void output_having(struct fqlhandle* fql)
 		    group by 1 having 1=0                                  \n\
 		                                                           \n\
 		    select bar into [results/having4]                      \n\
-		    from t3 group by bar having count(*) > 1               \n\
+		    from B3 group by bar having count(*) > 1               \n\
 		                                                           \n\
 		    select bar into [results/having5]                      \n\
-		    from t3 group by bar having max(foo) > '9'             \n\
+		    from B3 group by bar having max(foo) > '9'             \n\
 		    set @i += 1                                            \n\
 		END";
 
@@ -555,22 +556,22 @@ void output_order(struct fqlhandle* fql)
 		    select 2 into [results/order2] order by 1   \n\
 		                                                \n\
 		    select distinct bar into [results/order3]   \n\
-		    from t3 order by bar                        \n\
+		    from B3 order by bar                        \n\
 		                                                \n\
 		    select foo into [results/order4]            \n\
-		    from t3 order by bar, foo                   \n\
+		    from B3 order by bar, foo                   \n\
 		                                                \n\
 		    select foo into [results/order5]            \n\
-		    from t3 order by bar desc, foo              \n\
+		    from B3 order by bar desc, foo              \n\
 		                                                \n\
 		    select baz + 2 into [results/order6]        \n\
-		    from t3 order by baz + 0                    \n\
+		    from B3 order by baz + 0                    \n\
 		                                                \n\
 		    select count(*) into [results/order7]       \n\
-		    from t3 group by bar order by count(*)      \n\
+		    from B3 group by bar order by count(*)      \n\
 		                                                \n\
 		    select count(*) into [results/order8]       \n\
-		    from t3 group by bar order by 1             \n\
+		    from B3 group by bar order by 1             \n\
 		                                                \n\
 		    set @i += 1                                 \n\
 		END";
@@ -595,16 +596,16 @@ void output_top(struct fqlhandle* fql)
 		    select top 2 5 into [results/top2]   \n\
 		                                         \n\
 		    select top 4 foo                     \n\
-		    into [results/top3] from t1          \n\
+		    into [results/top3] from B1          \n\
 		                                         \n\
 		    select top 2 foo into [results/top4] \n\
-		    from t1 order by bar desc            \n\
+		    from B1 order by bar desc            \n\
 		                                         \n\
-		    select (select top 1 foo from t1)    \n\
+		    select (select top 1 foo from B1)    \n\
 		    into [results/top5]                  \n\
 		                                         \n\
 		    select top ((5*2)/4) baz             \n\
-		    into [results/top6] from t1          \n\
+		    into [results/top6] from B1          \n\
 		                                         \n\
 		    set @i += 1                          \n\
 		END";
@@ -629,19 +630,19 @@ void output_union(struct fqlhandle* fql)
 		    union all select 2                             \n\
 		                                                   \n\
 		    select foo into [results/union2]               \n\
-		    from t1 union all select '1'                   \n\
+		    from B1 union all select '1'                   \n\
 		                                                   \n\
 		    select '1' into [results/union3]               \n\
-		    union all select foo from t1                   \n\
+		    union all select foo from B1                   \n\
 		                                                   \n\
 		    select distinct bar into [results/union4]      \n\
-		    from t1 union all select bar from t3           \n\
+		    from B1 union all select bar from B3           \n\
 		                                                   \n\
-		    select bar into [results/union5] from t1       \n\
-		    union all select distinct bar from t3          \n\
+		    select bar into [results/union5] from B1       \n\
+		    union all select distinct bar from B3          \n\
 		                                                   \n\
-		    select top 2 foo into [results/union6] from t1 \n\
-		    union all select top 3 foo from t3             \n\
+		    select top 2 foo into [results/union6] from B1 \n\
+		    union all select top 3 foo from B3             \n\
 		                                                   \n\
 		    set @i += 1                                    \n\
 		END";
@@ -663,29 +664,29 @@ void output_difficult(struct fqlhandle* fql)
 		while @i < 2                                                  \n\
 		BEGIN                                                         \n\
 		    select bar, ('0x' + bar + 0) * 1                          \n\
-		    into [results/difficult1] from t2                         \n\
+		    into [results/difficult1] from B2                         \n\
 		                                                              \n\
 		    select bar                                                \n\
 		       ,sum(case when baz % 2 = 0 then 1 else 0 end) even_baz \n\
 		       ,sum(case when baz % 2 = 1 then 1 else 0 end) odd_baz  \n\
 		       ,count(*) TOTAL                                        \n\
 		    into [results/difficult2]                                 \n\
-		    from t3                                                   \n\
+		    from B3                                                   \n\
 		    group by bar                                              \n\
 		    order by bar                                              \n\
 		                                                              \n\
 		    select top (1*3)                                          \n\
-		         (select top 1 foo from t1),                          \n\
+		         (select top 1 foo from B1),                          \n\
 		         bar+'eex',                                           \n\
 		         max(baz+0),                                          \n\
 		         qty                                                  \n\
 		    into [results/difficult3]                                 \n\
 		    from (                                                    \n\
 		         select bar shnt, count(*) qty                        \n\
-		         from t3                                              \n\
+		         from B3                                              \n\
 		         group by bar                                         \n\
 		    ) x1                                                      \n\
-		    join t3 x2                                                \n\
+		    join B3 x2                                                \n\
 		        on  x2.bar = x1.shnt                                  \n\
 		        and 1=1                                               \n\
 		    where len(bar) = right('shnt2',1)                         \n\
@@ -714,51 +715,51 @@ void output_operations(struct fqlhandle* fql)
 		declare @i int = 0                                        \n\
 		while @i < 2                                              \n\
 		BEGIN                                                     \n\
-		    select * into [results/operations1] from t1           \n\
+		    select * into [results/operations1] from B1           \n\
 		    delete [results/operations1]                          \n\
 		                                                          \n\
-		    select * into [results/operations2] from t1           \n\
+		    select * into [results/operations2] from B1           \n\
 		    delete [results/operations2]                          \n\
 		    from [results/operations2] where 1=1                  \n\
 		                                                          \n\
-		    select * into [results/operations3] from t1           \n\
+		    select * into [results/operations3] from B1           \n\
 		    delete d                                              \n\
 		    from [results/operations3] d                          \n\
 		                                                          \n\
-		    select * into [results/operations4] from t1           \n\
+		    select * into [results/operations4] from B1           \n\
 		    delete [results/operations4]                          \n\
 		    from [results/operations4] d                          \n\
 		                                                          \n\
-		    select * into [results/operations5] from t1           \n\
+		    select * into [results/operations5] from B1           \n\
 		    delete [results/operations5]                          \n\
 		    where bar = 'b0'                                      \n\
 		                                                          \n\
-		    select * into [results/operations6] from t1           \n\
+		    select * into [results/operations6] from B1           \n\
 		    delete d                                              \n\
 		    from [results/operations6] d                          \n\
-		    join t2 on d.foo = t2.foo                             \n\
+		    join B2 on d.foo = B2.foo                             \n\
 		                                                          \n\
-		    select * into [results/operations7] from t1           \n\
+		    select * into [results/operations7] from B1           \n\
 		    update [results/operations7] set bar = 'xx'           \n\
 		                                                          \n\
-		    select * into [results/operations8] from t1           \n\
+		    select * into [results/operations8] from B1           \n\
 		    update [results/operations8] set bar = 'xx'           \n\
 		    from [results/operations8] where 1=1                  \n\
 		                                                          \n\
-		    select * into [results/operations9] from t1           \n\
+		    select * into [results/operations9] from B1           \n\
 		    update u set bar = 'xx' from [results/operations9] u  \n\
 		                                                          \n\
-		    select * into [results/operations10] from t1          \n\
+		    select * into [results/operations10] from B1          \n\
 		    update [results/operations10] set bar = 'xx'          \n\
 		    from [results/operations10] u                         \n\
 		                                                          \n\
-		    select * into [results/operations11] from t1          \n\
+		    select * into [results/operations11] from B1          \n\
 		    update u set bar = 'xx' from [results/operations11] u \n\
 		    where bar = 'b0'                                      \n\
 		                                                          \n\
-		    select * into [results/operations12] from t1          \n\
+		    select * into [results/operations12] from B1          \n\
 		    update u set bar = 'xx' from [results/operations12] u \n\
-		    join t2 on u.foo = t2.foo                             \n\
+		    join B2 on u.foo = B2.foo                             \n\
 		                                                          \n\
 		    set @i += 1                                           \n\
 		END";

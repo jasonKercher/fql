@@ -9,7 +9,7 @@ void thread_output_setup(void)
 	fql_setup();
 	fql_set_threading(fql, true);
 	fql_set_overwrite(fql, true);
-	//fql_set_verbose(fql, FQL_DEBUG);
+	fql_set_verbose(fql, FQL_NOISY);
 
 	/* default for threading is 64. By setting
 	 * to a lower number, we increase the chance
