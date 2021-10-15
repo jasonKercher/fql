@@ -5,29 +5,15 @@ fql allows you to treat your delimited or fixed-length files as tables without h
 
 ### *Basic* command line usage
 
-The default layout that fql expects is a delimited file with headers on the first row.  fql can also be set to work
-with delimited files without a header as well as fixed-length files.  For the sake of simplicity, let's assume we are 
-working with the default style.  Imagine your standard csv file... Something like this:
-
-**math_grades.csv**
-```none
-id,name,grade
-1,Joe Shepard,55
-2,John Davidson,88
-3,"Dwayne ""The Rock"" Johnson",99
-```
-
 By default, queries are read from stdin or from a file argument if one is provided. It can also be sent as an argument
-to the `--command (-c)` option.
-
+to the `-c (--command)` option.
 ```sh
 fql <<< "select 'hello world!'"
 fql hello.sql
 ```
 
 Personally, I prefer a here-doc especially for bigger queries.  It just looks cleaner, while still giving you access
-to shell variables.
-
+to shell variables (if that is an option).
 ```sh
 fql <<FQL
 select id
@@ -36,6 +22,26 @@ group by ID
 having count(*) > 1
 FQL
 ```
+
+Alternatively, if this is not a safe option, variable table names can be declared on the command line with `-T (--table)`.
+```sh
+fql -T "mytable=${filename}" <<FQL
+select id
+from @mytable
+group by ID
+having count(*) > 1
+FQL
+```
+
+More standard style variables can be declared with `-D (--declare)`.
+```sh
+fql -D "user_name=${user_name}" <<FQL
+select id
+from userlist
+where user_name = @user_name
+FQL
+```
+
 
 If stdin is not being used to read a query, that frees it up to be used as another table.  fql has a handful of internal
 features that are named with 2 leading underscores.  One of them is `__stdin`.
@@ -88,10 +94,21 @@ were looking for.
 
 ### Schema
 
-The schema can be defined to tell fql what kind of file we are
-working with. Let's assume a table structure like our example from earlier.  Except these are the art
-class grades, and the art teacher prefers tab delimited files with no header. AND she put spaces
-in the file name...
+The schema can be defined to tell fql what kind of file we are working with.  This is better explained by example...
+
+The default layout that fql expects is a delimited file with headers on the first row.  fql can also be set to work
+Let's say the math teacher was nice enough to give us the grades in the default layout. Imagine your standard csv file:
+
+**math_grades.csv**
+```none
+id,name,grade
+1,Joe Shepard,55
+2,John Davidson,88
+3,"Dwayne ""The Rock"" Johnson",99
+```
+
+Now, for comparison, let's the art teacher gave us the class grades in tab delimited files with no header. AND, to 
+make matters worse, she put spaces in the file name...
 A pre-installed schema that should install with fql called "noheader" can handle this for us.
 
 **art grades.txt**
@@ -108,15 +125,15 @@ fql <<< "select * from noheader.[art grades] where __3 > 60"
 ```
 Note that we need brackets around the table name here because of the space.  Otherwise, the parser
 will see this as a `TABLE ALIAS` combination.
-If you want to keep you query a little cleaner, you can define noheader as the default schema...
 
+If you want to keep your query a little cleaner, you can define noheader as the default schema...
 ```sh
 fql --schema=noheader <<< "select * from [art grades.txt] where __3 > 60"
 ```
+
 And one more step further... two files need not have the same layout in order to interact.  A pipe delimited
 file with headers will interface with a comma delimited file without headers or even a fixed-length file seemlessly.
 If we use our example layouts above, we can join those 2 grade files with ease...
-
 ```sh
 fql <<FQL
 select A.__1 ID, m.name [Student Name]
@@ -131,7 +148,6 @@ FQL
 
 When using a join, the output will be in the same format as the left side of the join. So the
 output of the previous query would be comma delimited with a header:
-
 ```none
 ID,Student Name
 3,"Dwayne ""The Rock"" Johnson"
@@ -155,18 +171,13 @@ should yield:
 bob       ,xx
 ```
 
-
-
-
-
-
-
 Scalar string functions assume data to be UTF-8 by default. So the expression `right('♗♕♔♗♘', 3)` should give
 us `♔♗♘`.  This can be toggled with the `--char-as-byte (-b)` option.  Given this option, the previous query
 only gives us `♘` since these chess piece characters are all 3 bytes each in UTF-8.
 
-### Performance
+### Re-inventing the wheel
 
-fql is not a new idea.  There are multiple similar projects (csvsql, csvq, q, textql) that are loaded with more bells and whistles, however, they do not scale well with the size of the input.
-fql aims closer in speed to an actual relational-database system.  At the bare minimum, I would *always* expect a single query to out-perform a relational-database if we
-factor in the time required to import the data into that databases native format.  
+fql is not a new idea.  There are multiple similar projects (csvsql, csvq, q, textql) that are loaded with 
+more bells and whistles, however, they do not scale well with the size of the input. fql aims closer in speed 
+to an actual relational-database system.  At the bare minimum, I would *always* expect a single query to out-perform 
+a relational-database if we factor in the time required to import the data into that database's native format.  

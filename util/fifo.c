@@ -3,7 +3,7 @@
 
 #define _idx_adv_(idx_) idx_ = (idx_ + 1) % self->buf->size;
 
-void _fifo_signal_shared(fifo* restrict self);
+bool _fifo_signal_shared(fifo* restrict self);
 
 fifo* fifo_construct(fifo* restrict self, size_t elem_size, unsigned buf_size)
 {
@@ -118,6 +118,19 @@ void fifo_set_full(fifo* restrict self)
 {
 	self->tail = 0;
 	self->head = self->buf->size - 1;
+}
+
+void* fifo_get_or_wait(fifo* restrict self)
+{
+	pthread_mutex_lock(&self->tail_mutex);
+	while (!fifo_available(self)) {
+		fifo_wait_for_add(self);
+	}
+	void* data = fifo_peek(self);
+	_idx_adv_(self->tail);
+	pthread_cond_signal(&self->cond_get);
+	pthread_mutex_unlock(&self->tail_mutex);
+	return data;
 }
 
 void* fifo_get(fifo* restrict self)
@@ -252,6 +265,7 @@ void fifo_nadd(fifo* restrict self, vec* restrict src)
 	self->head = new_head;
 
 	pthread_cond_signal(&self->cond_add);
+	_fifo_signal_shared(self);
 	pthread_mutex_unlock(&self->head_mutex);
 
 	if (transfer_count == src->size) {
@@ -290,6 +304,7 @@ int fifo_nadd_try(fifo* restrict self, vec* restrict src)
 	self->head = new_head;
 
 	pthread_cond_signal(&self->cond_add);
+	_fifo_signal_shared(self);
 	pthread_mutex_unlock(&self->head_mutex);
 
 	if (transfer_count == src->size) {
@@ -385,14 +400,16 @@ void fifo_wait_for_get(fifo* restrict self)
 	pthread_mutex_unlock(&self->tail_mutex);
 }
 
-void _fifo_signal_shared(fifo* restrict self)
+bool _fifo_signal_shared(fifo* restrict self)
 {
-	if (self->shared_mutex_fifo != NULL) {
-		pthread_mutex_lock(&self->shared_mutex_fifo->head_mutex);
-		pthread_cond_signal(&self->shared_mutex_fifo->cond_add);
-		pthread_mutex_unlock(&self->shared_mutex_fifo->head_mutex);
-		self->shared_mutex_fifo = NULL;
+	if (self->shared_mutex_fifo == NULL) {
+		return false;
 	}
+	pthread_mutex_lock(&self->shared_mutex_fifo->head_mutex);
+	pthread_cond_signal(&self->shared_mutex_fifo->cond_add);
+	pthread_mutex_unlock(&self->shared_mutex_fifo->head_mutex);
+	self->shared_mutex_fifo = NULL;
+	return true;
 }
 
 
@@ -411,6 +428,7 @@ void _fifo_signal_shared(fifo* restrict self)
 //	}
 //
 //	pthread_cond_signal(&self->cond_add);
+//	_fifo_signal_shared(self);
 //	pthread_mutex_unlock(&self->head_mutex);
 //
 //	if (i == src->size) {
@@ -435,6 +453,7 @@ void _fifo_signal_shared(fifo* restrict self)
 //	}
 //
 //	pthread_cond_signal(&self->cond_add);
+//	_fifo_signal_shared(self);
 //	pthread_mutex_unlock(&self->head_mutex);
 //
 //	if (i == src->size) {
@@ -445,4 +464,3 @@ void _fifo_signal_shared(fifo* restrict self)
 //
 //	return 0;
 //}
-

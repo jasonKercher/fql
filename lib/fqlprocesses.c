@@ -125,26 +125,11 @@ void fqlprocess_recycle(process* proc, node** rg)
 		record* rec = rg_node->data;
 		fifo** root_fifo = vec_at(proc->rootvec_ref, rec->root_fifo_idx);
 
-		//fprintf(stderr,
-		//        "%p RECYCLE: %u, %u\n",
-		//        proc,
-		//        rec->node_idx,
-		//        rec->rec_idx);
-
-		// 3 Optional implementations for this...
-
 		/////////
 		//_fqlprocess_add_or_buffer(*root_fifo,
 		//                          rg_node,
 		//                          proc->rebuf,
 		//                          proc->fifo_base_size);
-		/////////
-
-		/////////
-		//vec_push_back(proc->rebuf, &rg_node);
-		//fifo_nadd(*root_fifo, proc->rebuf);
-		/////////
-
 		/////////
 		fifo_add(*root_fifo, &rg_node);
 		/////////
@@ -498,57 +483,50 @@ enum proc_return fql_hash_join(process* proc)
 			}
 			continue;
 		}
-		node** right_rg = fifo_get(proc->fifo_aux_root);
+		node** right_rg = fifo_get_or_wait(proc->fifo_aux_root);
 		record* right_rec = (*right_rg)->data;
 		right_rec->src_idx = proc->out_src_count - 1;
 		reader* reader = table->reader;
 		try_(reader->get_record_at__(reader, *right_rg, offset));
 
 		_fqlprocess_print_iter_states(proc, right_rec->node_idx);
-		////
-		//fprintf(stderr,
-		//        "%p GLOBAL_NODE: %u, %u\n",
-		//        proc,
-		//        right_rec->node_idx,
-		//        right_rec->rec_idx);
-		////
 
-		/* If this is the last record match to the left
-		 * side, send the left side. Otherwise, insert
-		 * references to the left side to the right and
-		 * send the right side.
-		 */
+		////
+		///* If this is the last record match to the left
+		// * side, send the left side. Otherwise, insert
+		// * references to the left side to the right and
+		// * send the right side.
+		// */
 		//if (hj->recs == NULL) {
 		//	node_enqueue_import(left_rg_iter, *right_rg);
 		//	fifo_add(out_true, left_rg_iter);
-		//	_fqlprocess_print_iter_states(proc);
+		//	_fqlprocess_print_iter_states(proc, -2);
 		//	left_rg_iter = fifo_iter(in_left);
 		//} else {
+		////
+
 		/* same process as cartesian record copy */
 		node* left_rec_node = node_back(*left_rg_iter);
 
 		for (; left_rec_node; left_rec_node = left_rec_node->prev) {
 			record* left_rec = left_rec_node->data;
-			node** fresh_node = fifo_get(proc->fifo_aux_root);
+			node** fresh_node = fifo_get_or_wait(proc->fifo_aux_root);
 			record* fresh_rec = (*fresh_node)->data;
 			record_copy(fresh_rec, left_rec);
+
 			_fqlprocess_print_iter_states(proc, fresh_rec->node_idx);
-			////
-			//fprintf(stderr,
-			//        "%p GLOBAL_NODE: %u, %u\n",
-			//        proc,
-			//        fresh_rec->node_idx,
-			//        fresh_rec->rec_idx);
-			////
 			node_push_import(right_rg, *fresh_node);
 		}
 		fifo_add(out_true, right_rg);
-		//}
 
+		////
+		//}
+		////
 		if (hj->recs == NULL) {
 			fqlprocess_recycle(proc, left_rg_iter);
 			left_rg_iter = fifo_iter(in_left);
 		}
+		////
 
 		if (!fifo_receivable(out_true)) {
 			ret = PROC_RETURN_WAIT_ON_OUT1;
@@ -757,7 +735,7 @@ enum proc_return fql_groupby(process* proc)
 		if (!proc->is_const) {
 			fqlprocess_recycle(proc, rg_iter);
 		} else {
-			node** rg = fifo_get(in_fresh);
+			node** rg = fifo_get_or_wait(in_fresh);
 			record* rec = (*rg)->data;
 			rec->src_idx = 0;
 			try_(group_dump_record(group, rec));
@@ -1376,7 +1354,7 @@ enum proc_return fql_orderby(process* proc)
 enum proc_return fql_no_op(process* proc)
 {
 	return PROC_RETURN_FAIL;
-	//node** rg = fifo_get(proc->fifo_in[0]);
+	//node** rg = fifo_get_or_wait(proc->fifo_in[0]);
 	//fifo_add(proc->fifo_out[0], rg);
 	//return PROC_RETURN_COMPLETE;
 }

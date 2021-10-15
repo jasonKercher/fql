@@ -34,7 +34,7 @@ the same as `select * from t1 where foo = 'bar'`.
 - Implicit UPDATE/DELETE into subqueries
 
 Most recent and possibly unstable feature(s):
-- Control flow (if, while, variables) and query re-entrance
+- fql --thread (-t)
 
 
 ### Is it fast?
@@ -74,6 +74,7 @@ a05c7214        b1      143027
 
 program|time
 ---|---
+fql -t|1.907s
 fql|2.218s
 shell tools|6.435s
 sqlite3|20.560s
@@ -87,7 +88,8 @@ csvq|N/A #
 program|time
 ---|---
 shell tools|0.630s
-fql|0.820s
+fql -t|0.785
+fql|0.944s
 sqlite3|1.160s
 csvq|4.213s
 q|15.405s
@@ -101,7 +103,8 @@ program|time
 ---|---
 sqlite3|0.211s *
 shell tools|0.470s
-fql|0.630s
+fql|0.721s
+fql -t|0.790s
 csvq|4.089s
 q|13.737s *
 textql|14.154s
@@ -114,6 +117,7 @@ program|time
 ---|---
 sqlite3|2.105s
 shell tools|3.125s *
+fql -t|5.447s
 fql|5.545s
 csvq|11.926s
 textql|22.980s

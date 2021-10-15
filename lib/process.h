@@ -17,11 +17,9 @@ struct process {
 	pthread_t thread;             /* pthread handle */
 	struct fqlhandle* fql_ref;    /* reference to environment */
 	struct vec* inbuf;            /* just a buffer to hold spare records */
-	struct vec* rebuf;            /* temporary place for recycle records */
-	struct vec* outbuf;           /* buffer for outbound records */
+	struct vec* rebuf;            /* just a buffer to hold records to be recycled */
 	struct node** inbuf_iter;     /* iterator for inbuf */
 	struct node** rebuf_iter;     /* iterator for rebuf */
-	struct node** outbuf_iter;    /* iterator for outbuf */
 	process_fn* action__;         /* function pointer for process */
 	struct fifo* fifo_aux_root;   /* auxiliary root fifo */
 	struct fifo* fifo_in[2];      /* input record fifos */

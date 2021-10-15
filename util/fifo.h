@@ -48,6 +48,7 @@ bool fifo_is_full(const struct fifo* restrict);
 unsigned fifo_receivable(struct fifo* restrict);
 void fifo_set_full(struct fifo* restrict);
 
+void* fifo_get_or_wait(struct fifo* restrict);
 void* fifo_get(struct fifo* restrict);
 int fifo_nget(struct fifo* restrict,
               struct vec* restrict,

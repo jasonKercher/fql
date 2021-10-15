@@ -128,12 +128,12 @@ void plan_pipeline_root_preempt(plan* self)
 	/* preempt */
 	fifo** fifo_iter = vec_begin(self->root_fifo_vec);
 	for (; fifo_iter != vec_end(self->root_fifo_vec); ++fifo_iter) {
-		if (self->is_const) {
-			fifo_reset(*fifo_iter);
-			fifo_advance(*fifo_iter);
-		} else {
-			fifo_set_full(*fifo_iter);
-		}
+		//if (self->is_const) {
+		//	fifo_reset(*fifo_iter);
+		//	fifo_advance(*fifo_iter);
+		//} else {
+		fifo_set_full(*fifo_iter);
+		//}
 	}
 }
 

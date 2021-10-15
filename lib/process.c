@@ -62,7 +62,6 @@ void process_destroy(process* self, bool is_root)
 	delete_if_exists_(vec, self->wait_list);
 	delete_if_exists_(vec, self->inbuf);
 	delete_if_exists_(vec, self->rebuf);
-	delete_if_exists_(vec, self->outbuf);
 	delete_(vec, self->union_end_nodes);
 	delete_(string, self->plan_msg);
 	node_free_func(&self->queued_results, &fifo_free);
@@ -90,11 +89,6 @@ void process_activate(process* self, plan* plan, unsigned base_size, unsigned* p
 	self->inbuf = new_t_(vec, node*);
 	vec_reserve(self->inbuf, base_size);
 	self->inbuf_iter = vec_begin(self->inbuf);
-
-	//++(*pipe_count);
-	//self->outbuf = new_t_(vec, node*);
-	//vec_reserve(self->outbuf, base_size);
-	//self->outbuf_iter = vec_begin(self->outbuf);
 
 	++(*pipe_count);
 	self->rebuf = new_t_(vec, node*);
@@ -171,14 +165,11 @@ void process_add_to_wait_list(process* self, process* wait_proc)
 
 void process_enable(process* self)
 {
-	if (self->rebuf != NULL) {
-		fqlprocess_recycle_buffer(self, self->rebuf, &self->rebuf_iter);
-	}
 	if (self->inbuf != NULL) {
 		fqlprocess_recycle_buffer(self, self->inbuf, &self->inbuf_iter);
 	}
-	if (self->outbuf != NULL) {
-		fqlprocess_recycle_buffer(self, self->outbuf, &self->outbuf_iter);
+	if (self->rebuf != NULL) {
+		fqlprocess_recycle_buffer(self, self->rebuf, &self->rebuf_iter);
 	}
 
 	if (self->queued_results != NULL) {
