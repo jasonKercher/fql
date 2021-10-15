@@ -155,7 +155,7 @@ int query_preflight(query* self, bool has_executed)
 		}
 	}
 
-	try_(op_writer_reset(self));
+	try_(op_reset(self));
 
 	/* need to reset all readers */
 	table* table_iter = vec_begin(self->sources);
@@ -165,7 +165,6 @@ int query_preflight(query* self, bool has_executed)
 
 	try_(group_reset(self->distinct));
 	try_(group_reset(self->groupby));
-	try_(op_reset(self->op));
 
 	return FQL_GOOD;
 }

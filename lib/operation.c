@@ -236,25 +236,6 @@ int op_preop(query* query)
 	return FQL_GOOD;
 }
 
-int op_reset(enum fql_operation* self)
-{
-	switch (*self) {
-	case FQL_SELECT:
-		return fqlselect_reset((fqlselect*)self);
-	case FQL_DELETE:
-		return fqldelete_reset((fqldelete*)self);
-	case FQL_UPDATE:
-		return fqlupdate_reset((fqlupdate*)self);
-	case FQL_SET:
-	case FQL_WHILE:
-	case FQL_IF:
-		return FQL_GOOD;
-	case FQL_NONE:
-		return FQL_FAIL;
-	}
-	return FQL_GOOD;
-}
-
 writer* op_get_writer(enum fql_operation* self)
 {
 	switch (*self) {
@@ -347,12 +328,10 @@ int _resolve_into_table_variable(query* query)
 }
 
 /* NOTE: do not allow any writer initialization if a union query */
-int op_writer_reset(query* query)
+int op_reset(query* query)
 {
 	enum fql_operation* self = query->op;
 	writer* op_writer = op_get_writer(query->op);
-
-	//bool first_pass = (op_writer == NULL);
 
 	/* Retrieve op_table */
 	table* op_table = NULL;
@@ -360,14 +339,18 @@ int op_writer_reset(query* query)
 	case FQL_DELETE: {
 		fqldelete* delete = query->op;
 		op_table = vec_at(query->sources, delete->table_idx);
+		try_(fqldelete_reset(delete));
 		break;
 	}
 	case FQL_UPDATE: {
 		fqlupdate* update = query->op;
 		op_table = vec_at(query->sources, update->table_idx);
+		try_(fqlupdate_reset(update));
 		break;
 	}
 	case FQL_SELECT:
+		fqlselect_reset((fqlselect*)self);
+		break;
 	case FQL_SET:
 	case FQL_WHILE:
 	case FQL_IF:
@@ -416,9 +399,7 @@ int op_writer_reset(query* query)
 		free_(out_name);
 	}
 
-	//if (!first_pass) {
 	return FQL_GOOD;
-	//}
 }
 
 int op_writer_init(struct query* query)
