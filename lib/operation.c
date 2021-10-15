@@ -341,18 +341,18 @@ void op_assign_rownum_ref(enum fql_operation* self, expression* expr)
 	}
 }
 
+int _resolve_into_table_variable(query* query)
+{
+	return FQL_GOOD;
+}
+
 /* NOTE: do not allow any writer initialization if a union query */
-int op_writer_init(query* query)
+int op_writer_reset(query* query)
 {
 	enum fql_operation* self = query->op;
-	schema* op_schema = op_get_schema(query->op);
 	writer* op_writer = op_get_writer(query->op);
 
-	bool first_pass = (op_writer == NULL);
-	if (first_pass && op_schema != NULL && !query->union_id) {
-		op_writer = new_(writer, op_schema->write_io_type, query->fqlref);
-		op_set_writer(self, op_writer);
-	}
+	//bool first_pass = (op_writer == NULL);
 
 	/* Retrieve op_table */
 	table* op_table = NULL;
@@ -378,6 +378,14 @@ int op_writer_init(query* query)
 		/* query owns this so we dup it */
 		query->into_table_name =
 		        strdup(string_c_str(&op_table->reader->file_name));
+	}
+
+	/* If our into_table_name is a variable, set it now. */
+	if (query->into_table_var_idx != -1) {
+		variable* table_var =
+		        vec_at(query->fqlref->variables, query->into_table_var_idx);
+		query->into_table_name = string_c_str(table_var->value.s);
+		_resolve_into_table_variable(query);
 	}
 
 	/* If we are dealing specifically with
@@ -408,8 +416,19 @@ int op_writer_init(query* query)
 		free_(out_name);
 	}
 
-	if (!first_pass) {
-		return FQL_GOOD;
+	//if (!first_pass) {
+	return FQL_GOOD;
+	//}
+}
+
+int op_writer_init(struct query* query)
+{
+	enum fql_operation* self = query->op;
+	schema* op_schema = op_get_schema(query->op);
+
+	if (op_schema != NULL && !query->union_id) {
+		writer* op_writer = new_(writer, op_schema->write_io_type, query->fqlref);
+		op_set_writer(query->op, op_writer);
 	}
 
 	if (*self == FQL_SELECT) {
@@ -435,7 +454,6 @@ int op_writer_init(query* query)
 		                 &expr_idx);
 		try_(fqlupdate_resolve_additional((fqlupdate*)self, query));
 	}
-
 
 	return FQL_GOOD;
 }

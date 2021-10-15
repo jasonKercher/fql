@@ -767,6 +767,29 @@ bool _all_roots_are_const(vec* roots)
 	return true;
 }
 
+bool _search_and_mark_const_selects(query* query)
+{
+	fqlselect* select = query->op;
+	bool is_const_query = true;
+
+	table* it = vec_begin(query->sources);
+	for (; it != vec_end(query->sources); ++it) {
+		if (it->source_type == SOURCE_SUBQUERY) {
+			bool is_const = _search_and_mark_const_selects(it->subquery);
+			if (!is_const) {
+				is_const_query = false;
+			}
+		} else {
+			is_const_query = false;
+		}
+	}
+
+	if (is_const_query && select->oper_type == FQL_SELECT) {
+		select->is_const = true;
+	}
+	return is_const_query;
+}
+
 int _build(query* aquery, fqlhandle* fql, dnode* entry, bool is_union)
 {
 	/* Loop through constant value subqueries and
@@ -825,6 +848,8 @@ int _build(query* aquery, fqlhandle* fql, dnode* entry, bool is_union)
 	}
 
 	self->is_const = _all_roots_are_const(self->processes->_roots);
+
+	_search_and_mark_const_selects(aquery);
 
 	if (aquery->query_id != 0) { /* is subquery */
 		return FQL_GOOD;

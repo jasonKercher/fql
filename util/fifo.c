@@ -374,8 +374,14 @@ void fifo_wait_for_add_either(fifo* restrict f0, fifo* restrict f1)
 {
 	//pthread_mutex_lock(&f0->head_mutex);
 	pthread_mutex_lock(&f1->head_mutex);
-	while (f1->is_open && f0->is_open && fifo_is_empty(f1) && fifo_is_empty(f0)) {
+	while (f1->is_open && fifo_is_empty(f1)) {
+		pthread_mutex_lock(&f0->head_mutex);
+		if (!f0->is_open || !fifo_is_empty(f0)) {
+			pthread_mutex_unlock(&f0->head_mutex);
+			break;
+		}
 		f0->shared_mutex_fifo = f1;
+		pthread_mutex_unlock(&f0->head_mutex);
 		pthread_cond_wait(&f1->cond_add, &f1->head_mutex);
 		f0->shared_mutex_fifo = NULL;
 	}
@@ -402,12 +408,13 @@ void fifo_wait_for_get(fifo* restrict self)
 
 bool _fifo_signal_shared(fifo* restrict self)
 {
-	if (self->shared_mutex_fifo == NULL) {
+	fifo* shared = self->shared_mutex_fifo;
+	if (shared == NULL) {
 		return false;
 	}
-	pthread_mutex_lock(&self->shared_mutex_fifo->head_mutex);
-	pthread_cond_signal(&self->shared_mutex_fifo->cond_add);
-	pthread_mutex_unlock(&self->shared_mutex_fifo->head_mutex);
+	pthread_mutex_lock(&shared->head_mutex);
+	pthread_cond_signal(&shared->cond_add);
+	pthread_mutex_unlock(&shared->head_mutex);
 	self->shared_mutex_fifo = NULL;
 	return true;
 }

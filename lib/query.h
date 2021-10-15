@@ -147,7 +147,9 @@ struct query {
 	struct order* orderby;
 	void* op; /* operation structure */
 	struct vec* subquery_const_vec;
-	struct vec* variable_indicies;
+	struct vec* variable_table_indicies;
+	struct vec* variable_tables;
+	struct vec* variable_expr_indicies;
 	struct vec* variable_expressions;
 	struct expression* top_expr;
 	struct vec* unions;
@@ -155,6 +157,7 @@ struct query {
 	struct vec* text; /* string */
 	size_t top_count;
 	int* next_idx_ref;
+	int into_table_var_idx;
 	int idx;
 	int next_idx;
 	int union_id;
@@ -251,7 +254,7 @@ int query_exit_union(struct query*, struct query*);
 /* operations */
 int query_init_op(struct query*, struct node*, enum fql_operation);
 int query_set_top_count(struct query*, const char*);
-void query_set_op_table(struct query*, const char*);
+int query_set_op_table(struct query*, const char*);
 void query_exit_non_select_op(struct query*);
 int query_set_into_table(struct query*, const char*);
 

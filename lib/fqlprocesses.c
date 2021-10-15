@@ -237,7 +237,8 @@ enum proc_return fql_read(process* proc)
 	}
 
 	fifo* in = proc->fifo_in[0];
-	if (fifo_is_empty(in) && (proc->root_fifo == 0 || vec_empty(proc->inbuf))) {
+	//if (fifo_is_empty(in) && (proc->root_fifo == 0 || vec_empty(proc->inbuf))) {
+	if (fifo_is_empty(in)) {
 		if (!in->is_open) {
 			return PROC_RETURN_COMPLETE;
 		}
@@ -806,9 +807,10 @@ enum proc_return fql_select(process* proc)
 {
 	fqlselect* select = proc->proc_data;
 	fqlselect* current_select = select->current_select;
+	fifo* in = proc->fifo_in[0];
+	fifo* out = proc->fifo_out[0];
 
 	/* Check if the process in front is closed */
-	fifo* out = proc->fifo_out[0];
 	if (out && !out->is_open) {
 		dnode** it = vec_begin(proc->union_end_nodes);
 		for (; it != vec_end(proc->union_end_nodes); ++it) {
@@ -817,20 +819,6 @@ enum proc_return fql_select(process* proc)
 		}
 		return PROC_RETURN_COMPLETE;
 	}
-
-	fifo* in = proc->fifo_in[0];
-	if (fifo_is_empty(in)) {
-		if (proc->wait_for_in0 && in->is_open) {
-			return PROC_RETURN_WAIT_ON_IN0;
-		}
-		proc->wait_for_in0 = false;
-	}
-
-	if (out && !fifo_receivable(out)) {
-		return PROC_RETURN_WAIT_ON_OUT0;
-	}
-
-	////
 
 	if (!proc->wait_for_in0) {
 		if (select->must_run_once && select->rows_affected == 0) {
@@ -860,6 +848,19 @@ enum proc_return fql_select(process* proc)
 		return PROC_RETURN_COMPLETE;
 	}
 
+	if (fifo_is_empty(in)) {
+		if (proc->wait_for_in0 && in->is_open) {
+			return PROC_RETURN_WAIT_ON_IN0;
+		}
+		proc->wait_for_in0 = false;
+	}
+
+	if (out && !fifo_receivable(out)) {
+		return PROC_RETURN_WAIT_ON_OUT0;
+	}
+
+	////
+
 	enum proc_return ret = PROC_RETURN_WAIT_ON_IN0;
 
 	unsigned iters = 0;
@@ -886,6 +887,7 @@ enum proc_return fql_select(process* proc)
 
 		if (current_select->is_const) {
 			proc->wait_for_in0 = false;
+			ret = PROC_RETURN_RUNNING;
 			break;
 		}
 
@@ -900,6 +902,7 @@ enum proc_return fql_select(process* proc)
 
 	if (select->rows_affected >= current_select->top_count) {
 		proc->wait_for_in0 = false;
+		ret = PROC_RETURN_RUNNING;
 	}
 	return ret;
 }

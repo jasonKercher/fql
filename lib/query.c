@@ -44,10 +44,13 @@ query* query_construct(query* self, fqlhandle* fql, int id)
 	        .fqlref = fql,
 	        .sources = new_t_(vec, table),
 	        .subquery_const_vec = new_t_(vec, query*),
-	        .variable_indicies = new_t_(vec, int),
+	        .variable_table_indicies = new_t_(vec, int),
+	        .variable_tables = new_t_(vec, table*),
+	        .variable_expr_indicies = new_t_(vec, int),
 	        .variable_expressions = new_t_(vec, expression*),
 	        .unions = new_t_(vec, query*),
 	        .text = new_(string),
+	        .into_table_var_idx = -1,
 	        .top_count = -1,
 	        .query_id = id,
 	        .mode = MODE_UNDEFINED,
@@ -64,7 +67,9 @@ void query_destroy(query* self)
 	query_release_sources(self);
 	delete_if_exists_(plan, self->plan);
 	delete_(vec, self->sources);
-	delete_(vec, self->variable_indicies);
+	delete_(vec, self->variable_table_indicies);
+	delete_(vec, self->variable_tables);
+	delete_(vec, self->variable_expr_indicies);
 	delete_(vec, self->variable_expressions);
 	delete_(string, self->text);
 
@@ -88,7 +93,10 @@ void query_destroy(query* self)
 	}
 	delete_(vec, self->unions);
 	delete_(vec, self->subquery_const_vec);
-	free_if_exists_(self->into_table_name);
+
+	if (self->into_table_var_idx == -1) {
+		free_if_exists_(self->into_table_name);
+	}
 }
 
 void query_release_sources(query* self)
@@ -113,17 +121,41 @@ int query_preflight(query* self, bool has_executed)
 		try_(query_preflight(*it, has_executed));
 	}
 
+	/* Refresh variable values */
 	unsigned i = 0;
-	for (; i < self->variable_indicies->size; ++i) {
-		int* var_idx = vec_at(self->variable_indicies, i);
+	for (; i < self->variable_expr_indicies->size; ++i) {
+		int* var_idx = vec_at(self->variable_expr_indicies, i);
 		expression** var_expr = vec_at(self->variable_expressions, i);
 		variable* var = vec_at(self->fqlref->variables, *var_idx);
 		expression_set_variable(*var_expr, var);
 	}
 
-	if (has_executed) {
-		try_(op_writer_init(self));
+	for (i = 0; i < self->variable_table_indicies->size; ++i) {
+		int* var_idx = vec_at(self->variable_table_indicies, i);
+		table** var_table = vec_at(self->variable_tables, i);
+		variable* var = vec_at(self->fqlref->variables, *var_idx);
+		//string_copy(&(*var_table)->reader->file_name, var->value.s);
+		enum fuzzy_return ret =
+		        schema_fuzzy_resolve_file(&(*var_table)->reader->file_name,
+		                                  var->value.s,
+		                                  self->fqlref->props.strictness);
+		switch (ret) {
+		case FUZZY_SUCCESS:
+			break;
+		case FUZZY_AMBIGUOUS:
+			fprintf(stderr,
+			        "Table variable file ambiguous: %s\n",
+			        string_c_str(var->value.s));
+			return FQL_FAIL;
+		case FUZZY_NOTFOUND:
+			fprintf(stderr,
+			        "Table variable file not found: %s\n",
+			        string_c_str(var->value.s));
+			return FQL_FAIL;
+		}
 	}
+
+	try_(op_writer_reset(self));
 
 	/* need to reset all readers */
 	table* table_iter = vec_begin(self->sources);
@@ -317,11 +349,7 @@ void query_set_variable_idx(query* self, int idx)
 
 int query_add_variable_expression(query* self, const char* varname)
 {
-	int idx = scope_get_var_index(self->fqlref->_scope, varname);
-	if (idx == FQL_FAIL) {
-		return FQL_FAIL;
-	}
-
+	int idx = try_(scope_get_var_index(self->fqlref->_scope, varname));
 	return _add_variable_expression_by_index(self, idx);
 }
 
@@ -503,6 +531,39 @@ int query_enter_assignment_operator(query* self, enum scalar_function op)
 	return FQL_GOOD;
 }
 
+int _query_resolve_table_variable(query* self, string* table_name)
+{
+	int idx =
+	        try_(scope_get_var_index(self->fqlref->_scope, string_c_str(table_name)));
+	variable* table_var = vec_at(self->fqlref->variables, idx);
+
+	switch (table_var->type) {
+	case SQL_TEXT:
+	case SQL_CHAR:
+	case SQL_VARCHAR:
+		break;
+	default:
+		fputs("Invalid type for table variable\n", stderr);
+		return FQL_FAIL;
+	}
+
+	if (string_empty(table_var->value.s)) {
+		fputs("Table variable does not appear to be initialized\n", stderr);
+		return FQL_FAIL;
+	}
+
+	/* In order to resolve a schema, we need to be able to set an actual
+	 * table name NOW, before we ever execute a query.  At this point, 
+	 * we've already verified that, so let's save this index so we can 
+	 * contiue to update this in query_preflight.
+	 */
+	vec_push_back(self->variable_table_indicies, &idx);
+
+	/* Now overwrite the variable name with its value */
+	string_copy(table_name, table_var->value.s);
+
+	return FQL_GOOD;
+}
 
 /** sources **/
 
@@ -514,17 +575,29 @@ int query_enter_assignment_operator(query* self, enum scalar_function op)
  */
 int query_add_source(query* self, node** source_stack, const char* alias)
 {
-	char* table_name = node_pop(source_stack);
+	string table_name;
+	string_construct_take(&table_name, node_pop(source_stack));
 	char* schema_name = node_pop(source_stack);
+
+	bool is_variable = false;
+
+	if (*string_c_str(&table_name) == '@') {
+		is_variable = true;
+		try_(_query_resolve_table_variable(self, &table_name));
+	}
 
 	node_free_data(source_stack);
 	table* new_table = vec_add_one(self->sources);
 	table_construct(new_table,
-	                table_name,
+	                string_export(&table_name),
 	                alias,
 	                self->sources->size - 1,
 	                self->join);
 
+	if (is_variable) {
+		vec_push_back(self->variable_tables, &new_table);
+		new_table->must_reopen = true;
+	}
 
 	if (schema_name != NULL) {
 		new_table->schema->name = string_take(schema_name);
@@ -537,7 +610,7 @@ int query_add_source(query* self, node** source_stack, const char* alias)
 		unused = node_pop(source_stack);
 	}
 
-	if (istring_eq(table_name, "__stdin")) {
+	if (istring_eq(string_c_str(&new_table->name), "__stdin")) {
 		if (self->fqlref->props.allow_stdin) {
 			new_table->is_stdin = true;
 			self->fqlref->props.allow_stdin = false; /* Only one allowed... */
@@ -743,13 +816,51 @@ int query_set_top_count(query* self, const char* count_str)
 
 int query_set_into_table(query* self, const char* table_name)
 {
-	self->into_table_name = table_name;
+	if (*table_name != '@') {
+		self->into_table_name = table_name;
+		return FQL_GOOD;
+	}
+	self->into_table_var_idx =
+	        try_(scope_get_var_index(self->fqlref->_scope, table_name));
+	variable* table_var = vec_at(self->fqlref->variables, self->into_table_var_idx);
+
+	switch (table_var->type) {
+	case SQL_TEXT:
+	case SQL_CHAR:
+	case SQL_VARCHAR:
+		break;
+	default:
+		fputs("Invalid type for table variable\n", stderr);
+		return FQL_FAIL;
+	}
+
+	free_(table_name);
+
 	return FQL_GOOD;
 }
 
-void query_set_op_table(query* self, const char* op_table_name)
+int query_set_op_table(query* self, const char* op_table_name)
 {
+	if (*op_table_name != '@') {
+		op_set_table_name(self->op, op_table_name);
+		return FQL_GOOD;
+	}
+	self->into_table_var_idx =
+	        try_(scope_get_var_index(self->fqlref->_scope, op_table_name));
+	variable* table_var = vec_at(self->fqlref->variables, self->into_table_var_idx);
+
+	switch (table_var->type) {
+	case SQL_TEXT:
+	case SQL_CHAR:
+	case SQL_VARCHAR:
+		break;
+	default:
+		fputs("Invalid type for table variable\n", stderr);
+		return FQL_FAIL;
+	}
+
 	op_set_table_name(self->op, op_table_name);
+	return FQL_GOOD;
 }
 
 void query_exit_non_select_op(query* self)
@@ -993,7 +1104,7 @@ int _add_variable_expression_by_index(query* self, int idx)
 		return FQL_FAIL;
 	}
 
-	vec_push_back(self->variable_indicies, &idx);
+	vec_push_back(self->variable_expr_indicies, &idx);
 	vec_push_back(self->variable_expressions, &expr);
 
 	try_(_distribute_expression(self, expr));

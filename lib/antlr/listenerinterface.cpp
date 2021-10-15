@@ -284,6 +284,10 @@ void ListenerInterface::exitTable_source_item_joined(TSqlParser::Table_source_it
 void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemContext * ctx)
 {
 	_subquery = NULL;
+	if (ctx->LOCAL_ID()) {
+		char* token_copy = strdup(ctx->LOCAL_ID()->getText().c_str());
+		node_push(&_source_stack, token_copy);
+	}
 }
 void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx)
 {
@@ -473,7 +477,9 @@ void ListenerInterface::enterId_(TSqlParser::Id_Context* ctx)
 
 	switch (_tok_type) {
 	case TOK_OP_TABLE:
-		query_set_op_table(_query, token);
+		if (query_set_op_table(_query, token)) {
+			_set_failure();
+		}
 		free_(token);
 		break;
 	case TOK_COLUMN_NAME:

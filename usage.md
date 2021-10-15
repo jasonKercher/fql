@@ -23,17 +23,18 @@ having count(*) > 1
 FQL
 ```
 
-Alternatively, if this is not a safe option, variable table names can be declared on the command line with `-T (--table)`.
+Alternatively, if this is not a safe option, variables can be declared on the command line with `-D (--declare)`.
 ```sh
-fql -T "mytable=${filename}" <<FQL
+fql -D "mytable=${filename}" <<FQL
 select id
 from @mytable
 group by ID
 having count(*) > 1
 FQL
 ```
+Note: If a variable is used as a table, it must be defined on the command line or via the API (`fql_import_variable`).
 
-More standard style variables can be declared with `-D (--declare)`.
+More standard style variables can be declared as well.
 ```sh
 fql -D "user_name=${user_name}" <<FQL
 select id
@@ -68,8 +69,8 @@ Now, we can do this:
 cat namelist.txt | fql nameupdate.sql
 ```
 
-In the spirit of the caseless nature of SQL, tables names are also caselessly matched to files. And... In the spirit of not 
-having to use brackets around each table name, the extension of the file can be ommited as well. So these 2 queries are 
+In the spirit of the caseless nature of SQL, tables names are also caselessly matched to files. And... In the spirit of not
+having to use brackets around each table name, the extension of the file can be ommited as well. So these 2 queries are
 equivalent (if we assume no ambiguity in file names):
 
 
@@ -107,7 +108,7 @@ id,name,grade
 3,"Dwayne ""The Rock"" Johnson",99
 ```
 
-Now, for comparison, let's the art teacher gave us the class grades in tab delimited files with no header. AND, to 
+Now, for comparison, let's the art teacher gave us the class grades in tab delimited files with no header. AND, to
 make matters worse, she put spaces in the file name...
 A pre-installed schema that should install with fql called "noheader" can handle this for us.
 
@@ -177,7 +178,7 @@ only gives us `♘` since these chess piece characters are all 3 bytes each in U
 
 ### Re-inventing the wheel
 
-fql is not a new idea.  There are multiple similar projects (csvsql, csvq, q, textql) that are loaded with 
-more bells and whistles, however, they do not scale well with the size of the input. fql aims closer in speed 
-to an actual relational-database system.  At the bare minimum, I would *always* expect a single query to out-perform 
-a relational-database if we factor in the time required to import the data into that database's native format.  
+fql is not a new idea.  There are multiple similar projects (csvsql, csvq, q, textql) that are loaded with
+more bells and whistles, however, they do not scale well with the size of the input. fql aims closer in speed
+to an actual relational-database system.  At the bare minimum, I would *always* expect a single query to out-perform
+a relational-database if we factor in the time required to import the data into that database's native format.

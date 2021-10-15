@@ -30,6 +30,12 @@ enum join_side {
 	SIDE_MIXED,
 };
 
+enum fuzzy_return {
+	FUZZY_SUCCESS,
+	FUZZY_AMBIGUOUS,
+	FUZZY_NOTFOUND,
+};
+
 struct expression;
 struct query;
 
@@ -39,6 +45,8 @@ void schema_destroy(void*);
 void schema_copy(struct schema*, const struct schema*);
 void schema_set_delim(struct schema*, const char*);
 
+enum fuzzy_return
+schema_fuzzy_resolve_file(string* dest, const string* input, int strictness);
 bool schema_eq(const struct schema*, const struct schema*);
 
 int schema_resolve(struct fqlhandle*);

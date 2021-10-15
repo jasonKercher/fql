@@ -147,16 +147,11 @@ void schema_preflight(schema* self)
 	}
 }
 
-enum _fuzzy_return {
-	FUZZY_SUCCESS,
-	FUZZY_AMBIGUOUS,
-	FUZZY_NOTFOUND,
-};
 
-
-enum _fuzzy_return _fuzzy_resolve_file(string* dest, const string* input, int strictness)
+enum fuzzy_return
+schema_fuzzy_resolve_file(string* dest, const string* input, int strictness)
 {
-	enum _fuzzy_return ret = FUZZY_NOTFOUND;
+	enum fuzzy_return ret = FUZZY_NOTFOUND;
 	string basedata;
 	string dirdata;
 	string file_noext;
@@ -245,9 +240,9 @@ int _resolve_file(struct fqlhandle* fql, query* query, table* table)
 		return FQL_GOOD;
 	}
 
-	switch (_fuzzy_resolve_file(&table->reader->file_name,
-	                            &table->name,
-	                            fql->props.strictness)) {
+	switch (schema_fuzzy_resolve_file(&table->reader->file_name,
+	                                  &table->name,
+	                                  fql->props.strictness)) {
 	case FUZZY_AMBIGUOUS:
 		fprintf(stderr, "Table name ambiguous: %s\n", string_c_str(&table->name));
 		return FQL_FAIL;
@@ -466,7 +461,7 @@ int _load_by_name(table* table, struct fqlhandle* fql, int src_idx)
 {
 	schema* self = table->schema;
 	string* full_path_temp = new_(string);
-	enum _fuzzy_return ret = FUZZY_NOTFOUND;
+	enum fuzzy_return ret = FUZZY_NOTFOUND;
 
 	string** path_iter = vec_begin(fql->schema_paths);
 	for (; path_iter != vec_end(fql->schema_paths) && ret == FUZZY_NOTFOUND;
@@ -476,9 +471,9 @@ int _load_by_name(table* table, struct fqlhandle* fql, int src_idx)
 		               string_c_str(*path_iter),
 		               string_c_str(self->name));
 
-		ret = _fuzzy_resolve_file(self->schema_path,
-		                          full_path_temp,
-		                          fql->props.strictness);
+		ret = schema_fuzzy_resolve_file(self->schema_path,
+		                                full_path_temp,
+		                                fql->props.strictness);
 		if (ret == FUZZY_AMBIGUOUS) {
 			fprintf(stderr,
 			        "schema name `%s' ambiguous in directory `%s'\n",
@@ -1280,7 +1275,10 @@ int _resolve_query(struct fqlhandle* fql, query* aquery, enum io union_io)
 		try_(_resolve_unions(fql, aquery));
 	}
 
+	////
 	try_(op_writer_init(aquery));
+	////
+	////
 
 	if (aquery->groupby == NULL && aquery->orderby != NULL) {
 		/* This is normally handled in _op_find_group,

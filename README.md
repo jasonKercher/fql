@@ -74,8 +74,8 @@ a05c7214        b1      143027
 
 program|time
 ---|---
-fql -t|1.907s
-fql|2.218s
+fql -t|2.095s
+fql|2.620s
 shell tools|6.435s
 sqlite3|20.560s
 q|53.742s
@@ -88,8 +88,8 @@ csvq|N/A #
 program|time
 ---|---
 shell tools|0.630s
-fql -t|0.785
-fql|0.944s
+fql -t|0.842s
+fql|0.980s
 sqlite3|1.160s
 csvq|4.213s
 q|15.405s
@@ -103,8 +103,8 @@ program|time
 ---|---
 sqlite3|0.211s *
 shell tools|0.470s
-fql|0.721s
-fql -t|0.790s
+fql -t|0.738s
+fql|0.745s
 csvq|4.089s
 q|13.737s *
 textql|14.154s
@@ -117,8 +117,8 @@ program|time
 ---|---
 sqlite3|2.105s
 shell tools|3.125s *
-fql -t|5.447s
-fql|5.545s
+fql -t|5.654s
+fql|5.779s
 csvq|11.926s
 textql|22.980s
 q|42.524s

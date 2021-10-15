@@ -33,6 +33,7 @@ void op_set_delim(enum fql_operation*, const char* delim);
 void op_assign_rownum_ref(enum fql_operation*, struct expression*);
 int op_apply_process(struct query*, struct fqlplan*, bool is_subquery);
 int op_resolve_final_types(enum fql_operation*);
+int op_writer_reset(struct query*);
 int op_writer_init(struct query*);
 int op_reset(enum fql_operation*);
 void op_expand_asterisks(struct query*, bool force_expansion);
