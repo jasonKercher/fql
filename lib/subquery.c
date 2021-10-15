@@ -36,6 +36,7 @@ int subquery_get_record(reader* reader, node* rg)
 	vec* expressions = self->select->current_select->schema->expressions;
 
 	record* rec = rg->data;
+	rec->ref_count = 1;
 	record_clear_strings(&self->copy_data, self->copy_data.subquery_strings);
 
 	vec_clear(&self->copy_data.fields);

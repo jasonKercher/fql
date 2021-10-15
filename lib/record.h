@@ -19,6 +19,8 @@ struct record {
 	stringview rec_ref;
 	size_t offset;
 	int src_idx;
+	struct node* rec_copy_node;
+	_Atomic unsigned ref_count;
 	unsigned node_idx;
 	unsigned rec_idx;
 	unsigned select_len;
@@ -31,7 +33,7 @@ typedef struct record record;
 struct record* record_construct(struct record*, unsigned rec_idx);
 void record_destroy(struct record*);
 struct record* record_at(const struct node*, int src_idx);
-void record_copy(struct record* dest, const struct record* src);
+void record_copy(struct record* dest, struct node* src_node);
 void record_resize(struct record*, unsigned size);
 void record_swap(struct record*, struct record* src);
 void record_clear_strings(struct record*, struct vec*);

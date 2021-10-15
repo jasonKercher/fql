@@ -8,6 +8,7 @@ record* record_construct(record* self, unsigned idx)
 	*self = (record) {
 	        .src_idx = -1,
 	        .node_idx = idx,
+	        .ref_count = 1,
 	};
 
 	vec_construct_(&self->fields, stringview);
@@ -55,8 +56,19 @@ record* record_at(const node* head, int idx)
 	return rec;
 }
 
-void record_copy(record* self, const record* src)
+void record_copy(record* self, node* src_node)
 {
+	record* src = src_node->data;
+	self->rec_copy_node = src_node;
+
+	/* Reference Counting */
+	++src->ref_count;
+
+	/* Reference counting is necessary because self->fields
+	 * may be pointing to memory owned by self->libcsv_rec.
+	 * If we recycle the src record, this memory can be over-
+	 * written since we do not actually copy any buffers.
+	 */
 	vec_clear(&self->fields);
 	vec_extend(&self->fields, &src->fields);
 	self->src_idx = src->src_idx;
