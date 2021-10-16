@@ -157,11 +157,12 @@ ID,Student Name
 
 ### Types
 
-Note in the WHERE clause in the above example. We had to cast one of the addition inputs to an INT.  By default, fields from files are a VARCHAR (string) type.
-And if we add 2 strings, we will concatenate.  Casting one of them to an INT causes an implicit cast on the second addition input.
+Note in the WHERE clause in the above example. We had to cast one of the addition inputs to an INT.  By default, 
+fields from files are a VARCHAR (string) type.  And if we add 2 strings, we will concatenate.  Casting one of 
+them to an INT causes an implicit cast on the second addition input.
 
-fql only has 3 types. These are STRING, INT, and FLOAT.  Casting to string requires casting to either VARCHAR, or CHAR.  The only difference is casting to CHAR
-will add trailing spaces.
+fql only has 3 types. These are STRING, INT, and FLOAT.  Casting to string requires casting to either VARCHAR, TEXT
+or CHAR.  The only difference is casting to CHAR will add trailing spaces.
 
 The query...
 ```sql
@@ -175,6 +176,11 @@ bob       ,xx
 Scalar string functions assume data to be UTF-8 by default. So the expression `right('♗♕♔♗♘', 3)` should give
 us `♔♗♘`.  This can be toggled with the `--char-as-byte (-b)` option.  Given this option, the previous query
 only gives us `♘` since these chess piece characters are all 3 bytes each in UTF-8.
+
+### Examples
+
+
+
 
 ### Re-inventing the wheel
 

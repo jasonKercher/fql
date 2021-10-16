@@ -816,6 +816,9 @@ int query_set_top_count(query* self, const char* count_str)
 int query_set_into_table(query* self, const char* table_name)
 {
 	if (*table_name != '@') {
+		//if (*table_name == '#') {
+		//	self->into_table_is_temp = true;
+		//}
 		self->into_table_name = table_name;
 		return FQL_GOOD;
 	}

@@ -2,6 +2,7 @@
 #include <csv.h>
 #include "fql.h"
 #include "misc.h"
+#include "fqlsig.h"
 #include "fqlhandle.h"
 
 void _assign(writer*, struct fqlhandle*);
@@ -65,6 +66,7 @@ void _assign(writer* self, struct fqlhandle* fql)
 
 int writer_open(writer* self, const char* file_name)
 {
+	string_strcpy(&self->file_name, file_name);
 	switch (self->type) {
 	case IO_LIBCSV:
 		if (csv_writer_open(self->writer_data, file_name) == CSV_FAIL) {
@@ -85,18 +87,26 @@ int writer_close(writer* self)
 	if (self == NULL) {
 		return FQL_GOOD;
 	}
+
 	switch (self->type) {
 	case IO_LIBCSV:
 		if (csv_writer_close(self->writer_data) == CSV_FAIL) {
 			return FQL_FAIL;
 		}
-		return FQL_GOOD;
+		break;
 	case IO_FIXED:
 		try_(fixedwriter_close(self->writer_data));
-		return FQL_GOOD;
+		break;
 	default:
 		return FQL_FAIL;
 	}
+
+	if (*string_c_str(&self->file_name) == '#') {
+		fqlsig_tmp_push(string_c_str(&self->file_name));
+	}
+	string_clear(&self->file_name);
+
+	return FQL_GOOD;
 }
 
 FILE* writer_get_file(writer* self)

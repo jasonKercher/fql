@@ -22,7 +22,6 @@ the same as `select * from t1 where foo = 'bar'`.
 ### What can it *not* do?
 
 - windowed-functions (like RANK)
-- temp tables not so temp
 - RIGHT and FULL JOIN. INNER and LEFT JOIN work.
 - TOP PERCENT
 - WITH / common table expressions

@@ -163,7 +163,7 @@ struct query {
 	int union_id;
 	int query_id;
 	int query_total;
-	int expect_where; /* Boolean */
+	bool expect_where;
 
 	/* all the variables below are temporaries for
 	 * tracking the query as antlr traverses it
