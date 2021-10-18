@@ -1,8 +1,8 @@
-Just showing off features here... For more details and options, try the `--help` option. fql is a command line program that targets Linux and is not cross-platform.
+Just showing off features here... For more details and options, try the `--help` option. fql is a command line program
+that targets Linux and is not cross-platform. fql allows you to treat your delimited or fixed-length files as tables
+without having to import them into a database.
 
-fql allows you to treat your delimited or fixed-length files as tables without having to import them into a database.
-
-### *Basic* command line usage
+## *Basic* command line usage
 
 By default, queries are read from stdin or from a file argument if one is provided. It can also be sent as an argument
 to the `-c (--command)` option.
@@ -19,51 +19,6 @@ select id
 from [${filename}]
 group by ID
 having count(*) > 1
-FQL
-```
-
-Alternatively, if shell injection is not a safe option, variables can be declared on the command line with `-D (--declare)`.
-```sh
-fql -D "user_name=${user_name}" <<FQL
-select id
-from userlist
-where user_name = @user_name
-FQL
-```
-
->But wait! How would you define a table as a variable to support the query above where we used a shell variable for the
-table name? After all, SQL has table variables, but they don't just work like strings like the shell variables do.
-
-For the most part, fql is designed to behave like any relational database system. In order to achieve this behavior with
-your normal database, it would require dynamic SQL.  Something like the following:
-```sql
-exec('select * from ' + QUOTENAME(@table_name) + ' where name like ''Jame%''')
-```
-
-Personally, I cannot stand dynamic SQL, so fql breaks with traditional SQL here and allows you to treat regular variables
-as if they were table variables:
-```sh
-fql -D "mytable=${filename}" <<FQL
-select id
-from @mytable
-group by ID
-having count(*) > 1
-FQL
-```
-Note: If a variable is used as a table, it must be defined on the command line or via the API (`fql_import_variable`).
-
->But Wait! Again! It looks like all these variable declared on the command line are strings. What if I want an integer?
-Would I have to cast my variable every time I use it?!
-
-Variables declared on the command line can be re-declared in SQL if necessary:
-
-```sh
-fql -Dmin_limit=5 <<FQL
-declare @min_limit int  --re-declare @min_limit to int.
-
-select distinct [first name], [last name]
-from sales
-where [product quantity] >= @min_limit
 FQL
 ```
 
@@ -92,10 +47,57 @@ Now, we can do this:
 cat namelist.txt | fql nameupdate.sql
 ```
 
+## The Language
+fql's syntax is modeled after Transact-SQL.  This is the dielect of SQL used in Microsoft's SQL Server.
+
+
+### Variables
+
+If shell injection is not a safe option, variables can be declared on the command line with `-D (--declare)`.
+```sh
+fql -D "user_name=${user_name}" <<FQL
+select id
+from userlist
+where user_name = @user_name
+FQL
+```
+
+**Table Variables**
+In order to achieve this behavior with your normal database, it would require dynamic SQL.  Something like the following:
+```sql
+exec('select * from ' + QUOTENAME(@table_name) + ' where name like ''Jame%''')
+```
+
+Personally, I cannot stand dynamic SQL, so fql breaks with traditional SQL here and allows you to treat regular variables
+as if they were table variables:
+```sh
+fql -D "mytable=${filename}" <<FQL
+select id
+from @mytable
+group by ID
+having count(*) > 1
+FQL
+```
+Note: If a variable is used as a table, it must be defined on the command line or via the API (`fql_import_variable`).
+
+
+**Variable Types**
+Variables declared on the command line can be re-declared as a different type.  By default, they are a string (VARCHAR) type:
+```sh
+fql -Dmin_limit=5 <<FQL
+declare @min_limit int                  -- re-declare @min_limit to int.
+
+select distinct [first name], [last name]
+from sales
+where [product quantity] >= @min_limit  -- no need to cast here
+FQL
+```
+
+### Tables
+
 In the spirit of the caseless nature of SQL, tables names are also caselessly matched to files. And... In the spirit of not
 having to use brackets around each table name, the extension of the file can be ommited as well. So these 2 queries are
 equivalent (if we assume no ambiguity in file names):
-
 
 ```sql
 select * from [names.csv]
@@ -120,8 +122,8 @@ were looking for.
 
 The schema can be defined to tell fql what kind of file we are working with.  This is better explained by example...
 
-The default layout that fql expects is a delimited file with headers on the first row.  fql can also be set to work
-Let's say the math teacher was nice enough to give us the grades in the default layout. Imagine your standard csv file:
+The default layout that fql expects is a delimited file with headers on the first row.  Let's say the math teacher was nice
+enough to give us the grades in the default layout. Imagine your standard csv file:
 
 **math_grades.csv**
 ```none
@@ -131,8 +133,8 @@ id,name,grade
 3,"Dwayne ""The Rock"" Johnson",99
 ```
 
-Now, for comparison, let's the art teacher gave us the class grades in tab delimited files with no header. AND, to
-make matters worse, she put spaces in the file name...
+Now, for comparison, the art teacher gave us the class grades in tab delimited files with no header. AND, to
+make matters worse, she put a space in the file name...
 A pre-installed schema that should install with fql called "noheader" can handle this for us.
 
 **art grades.txt**
@@ -198,7 +200,7 @@ Scalar string functions assume data to be UTF-8 by default. So the expression `r
 us `♔♗♘`.  This can be toggled with the `--char-as-byte (-b)` option.  Given this option, the previous query
 only gives us `♘` since these chess piece characters are all 3 bytes each in UTF-8.
 
-### Example
+## Example
 
 Let's say we have some random sales data (I've generated some data to play with in tests/sales.txt).
 In this data, you will find names and addresses of customers.  Someone who makes decisions
@@ -228,7 +230,7 @@ BEGIN
 END
 ```
 
-### Re-inventing the wheel
+## Re-inventing the wheel
 
 fql is not a new idea.  There are multiple similar projects (csvsql, csvq, q, textql) that are loaded with
 more bells and whistles, however, they do not scale well with the size of the input. fql aims to be closer in speed
