@@ -1,10 +1,10 @@
-```c
-  __       _
- / _| __ _| |
-| |_ / _` | |
-|  _| (_| | |
-|_|  \__, |_|
-        |_|
+```none
+  __                _
+ / _|     __ _     | |
+| |_     / _` |    | |
+|  _|ile| (_| |uery| |anguage
+|_|      \__, |    |_|
+            |_|     
 ```
 This is an [ANTLR](https://www.antlr.org/) powered text processing language for Linux.
 Similar in spirit to awk which uses a C-like syntax, fql uses SQL (T-SQL specifically).
