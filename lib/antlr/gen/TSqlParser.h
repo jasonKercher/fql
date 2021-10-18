@@ -3447,8 +3447,9 @@ public:
     TSqlParser::Function_callContext *oldstyle_fcall = nullptr;
     Table_source_itemContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
-    Table_name_with_hintContext *table_name_with_hint();
+    antlr4::tree::TerminalNode *LOCAL_ID();
     As_table_aliasContext *as_table_alias();
+    Table_name_with_hintContext *table_name_with_hint();
     Full_table_nameContext *full_table_name();
     antlr4::tree::TerminalNode *LR_BRACKET();
     Derived_tableContext *derived_table();
@@ -3456,7 +3457,6 @@ public:
     Column_alias_listContext *column_alias_list();
     Change_tableContext *change_table();
     Function_callContext *function_call();
-    antlr4::tree::TerminalNode *LOCAL_ID();
     Nodes_methodContext *nodes_method();
     antlr4::tree::TerminalNode *DOT();
     antlr4::tree::TerminalNode *DOUBLE_COLON();
@@ -4775,12 +4775,14 @@ public:
 
   class  Table_nameContext : public antlr4::ParserRuleContext {
   public:
+    antlr4::Token *loc_id = nullptr;
     TSqlParser::Id_Context *database = nullptr;
     TSqlParser::Id_Context *schema = nullptr;
     TSqlParser::Id_Context *table = nullptr;
     antlr4::Token *blocking_hierarchy = nullptr;
     Table_nameContext(antlr4::ParserRuleContext *parent, size_t invokingState);
     virtual size_t getRuleIndex() const override;
+    antlr4::tree::TerminalNode *LOCAL_ID();
     std::vector<Id_Context *> id_();
     Id_Context* id_(size_t i);
     std::vector<antlr4::tree::TerminalNode *> DOT();

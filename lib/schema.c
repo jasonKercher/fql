@@ -1275,10 +1275,7 @@ int _resolve_query(struct fqlhandle* fql, query* aquery, enum io union_io)
 		try_(_resolve_unions(fql, aquery));
 	}
 
-	////
 	try_(op_writer_init(aquery));
-	////
-	////
 
 	if (aquery->groupby == NULL && aquery->orderby != NULL) {
 		/* This is normally handled in _op_find_group,
@@ -1322,6 +1319,21 @@ int _resolve_query(struct fqlhandle* fql, query* aquery, enum io union_io)
 				perror(aquery->into_table_name);
 				return FQL_FAIL;
 			}
+		} else if (*(enum fql_operation*)aquery->op == FQL_SELECT
+		           && !aquery->fqlref->props.overwrite) {
+			/* If we are dealing specifically with
+			 *
+			 * SELECT foo
+			 * INTO [new.txt]
+			 * FROM t1
+			 *
+			 * verify new.txt does not already exist.
+			 * NOTE: --overwrite nullifies this test.
+			 */
+			fprintf(stderr,
+			        "Cannot SELECT INTO: file `%s' already exists\n",
+			        aquery->into_table_name);
+			return FQL_FAIL;
 		}
 
 		char absolute_path[PATH_MAX];

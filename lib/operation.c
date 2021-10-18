@@ -328,7 +328,7 @@ int _resolve_into_table_variable(query* query)
 }
 
 /* NOTE: do not allow any writer initialization if a union query */
-int op_reset(query* query)
+int op_reset(query* query, bool has_executed)
 {
 	enum fql_operation* self = query->op;
 	writer* op_writer = op_get_writer(query->op);
@@ -371,17 +371,8 @@ int op_reset(query* query)
 		_resolve_into_table_variable(query);
 	}
 
-	/* If we are dealing specifically with
-	 *
-	 * SELECT foo
-	 * INTO [new.txt]
-	 * FROM t1
-	 *
-	 * verify new.txt does not already exist.
-	 * NOTE: --overwrite nullifies this test.
-	 */
 	if (!query->union_id && query->into_table_name) {
-		if (*self == FQL_SELECT && !query->fqlref->props.overwrite
+		if (has_executed && *self == FQL_SELECT && !query->fqlref->props.overwrite
 		    && access(query->into_table_name, F_OK) == 0) {
 			fprintf(stderr,
 			        "Cannot SELECT INTO: file `%s' already exists\n",

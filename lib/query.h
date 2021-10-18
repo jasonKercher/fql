@@ -230,7 +230,7 @@ int query_enter_assignment_operator(struct query*,
                                     enum scalar_function op);
 
 /* sources */
-int query_add_source(struct query*, struct node**, const char*);
+int query_add_source(struct query*, struct node**, const char*, bool is_variable);
 void query_add_subquery_source(struct query*, struct query*, const char*);
 
 /* aliasing */
@@ -257,6 +257,7 @@ int query_set_top_count(struct query*, const char*);
 int query_set_op_table(struct query*, const char*);
 void query_exit_non_select_op(struct query*);
 int query_set_into_table(struct query*, const char*);
+int query_set_into_table_var(struct query*, const char*);
 
 /* in statement */
 void query_enter_in_statement(struct query*);

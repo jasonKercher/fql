@@ -35,7 +35,7 @@ int op_apply_process(struct query*, struct fqlplan*, bool is_subquery);
 int op_resolve_final_types(enum fql_operation*);
 //int op_writer_reset(struct query*);
 int op_writer_init(struct query*);
-int op_reset(struct query*);
+int op_reset(struct query*, bool);
 void op_expand_asterisks(struct query*, bool force_expansion);
 
 void op_destroy(enum fql_operation*);

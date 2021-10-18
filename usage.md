@@ -1,6 +1,5 @@
-Just showing off features here... For more details and options, try the `--help` option.
+Just showing off features here... For more details and options, try the `--help` option. fql is a command line program that targets Linux and is not cross-platform.
 
-fql is a command line program that targets Linux and is not cross-platform. For the following, let's assume a bash shell.
 fql allows you to treat your delimited or fixed-length files as tables without having to import them into a database.
 
 ### *Basic* command line usage
@@ -23,7 +22,26 @@ having count(*) > 1
 FQL
 ```
 
-Alternatively, if this is not a safe option, variables can be declared on the command line with `-D (--declare)`.
+Alternatively, if shell injection is not a safe option, variables can be declared on the command line with `-D (--declare)`.
+```sh
+fql -D "user_name=${user_name}" <<FQL
+select id
+from userlist
+where user_name = @user_name
+FQL
+```
+
+>But wait! How would you define a table as a variable to support the query above where we used a shell variable for the
+table name? After all, SQL has table variables, but they don't just work like strings like the shell variables do.
+
+For the most part, fql is designed to behave like any relational database system. In order to achieve this behavior with
+your normal database, it would require dynamic SQL.  Something like the following:
+```sql
+exec('select * from ' + QUOTENAME(@table_name) + ' where name like ''Jame%''')
+```
+
+Personally, I cannot stand dynamic SQL, so fql breaks with traditional SQL here and allows you to treat regular variables
+as if they were table variables:
 ```sh
 fql -D "mytable=${filename}" <<FQL
 select id
@@ -34,15 +52,20 @@ FQL
 ```
 Note: If a variable is used as a table, it must be defined on the command line or via the API (`fql_import_variable`).
 
-More standard style variables can be declared as well.
+>But Wait! Again! It looks like all these variable declared on the command line are strings. What if I want an integer?
+Would I have to cast my variable every time I use it?!
+
+Variables declared on the command line can be re-declared in SQL if necessary:
+
 ```sh
-fql -D "user_name=${user_name}" <<FQL
-select id
-from userlist
-where user_name = @user_name
+fql -Dmin_limit=5 <<FQL
+declare @min_limit int  --re-declare @min_limit to int.
+
+select distinct [first name], [last name]
+from sales
+where [product quantity] >= @min_limit
 FQL
 ```
-
 
 If stdin is not being used to read a query, that frees it up to be used as another table.  fql has a handful of internal
 features that are named with 2 leading underscores.  One of them is `__stdin`.
@@ -135,8 +158,7 @@ fql --schema=noheader <<< "select * from [art grades.txt] where __3 > 60"
 And one more step further... two files need not have the same layout in order to interact.  A pipe delimited
 file with headers will interface with a comma delimited file without headers or even a fixed-length file seemlessly.
 If we use our example layouts above, we can join those 2 grade files with ease...
-```sh
-fql <<FQL
+```sql
 select A.__1 ID, m.name [Student Name]
 into [passing.txt]
 from math_grades M
@@ -144,7 +166,6 @@ join noheader.[art grades] A
     on A.__1 = m.ID
 where (cast(a.__3 as int) + m.grade) / 2.0 > 60
 order by 1 desc
-FQL
 ```
 
 When using a join, the output will be in the same format as the left side of the join. So the
@@ -177,14 +198,39 @@ Scalar string functions assume data to be UTF-8 by default. So the expression `r
 us `♔♗♘`.  This can be toggled with the `--char-as-byte (-b)` option.  Given this option, the previous query
 only gives us `♘` since these chess piece characters are all 3 bytes each in UTF-8.
 
-### Examples
+### Example
 
+Let's say we have some random sales data (I've generated some data to play with in tests/sales.txt).
+In this data, you will find names and addresses of customers.  Someone who makes decisions
+has decided, this file needs to be split by which state each customer resides in. ALSO, this
+over-paid individual also requested that you sort these new files by age (youngest to oldest).
+one of these files should be named "sales_${state}.txt" where ${state} is the state field
+for each customer. This is the kind of problem that fql can handle with ease:
 
+```sql
+/* keep a list of states for faster look-ups */
+select distinct state
+into #statelist
+from sales
 
+declare @state varchar = (select top 1 state from #statelist order by state)
+declare @filename varchar = 'sales_' + @state + '.txt'
+while @state is not NULL
+BEGIN
+	select *
+	into @filename
+	from sales
+	where state = @state
+	order by [date of birth] desc    --YYYY-MM-DD formatted text here...
+
+	set @state = (select top 1 state from #statelist where state > @state order by state)
+	set @filename = 'sales_' + @state + '.txt'
+END
+```
 
 ### Re-inventing the wheel
 
 fql is not a new idea.  There are multiple similar projects (csvsql, csvq, q, textql) that are loaded with
-more bells and whistles, however, they do not scale well with the size of the input. fql aims closer in speed
+more bells and whistles, however, they do not scale well with the size of the input. fql aims to be closer in speed
 to an actual relational-database system.  At the bare minimum, I would *always* expect a single query to out-perform
 a relational-database if we factor in the time required to import the data into that database's native format.

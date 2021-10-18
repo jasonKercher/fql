@@ -155,7 +155,7 @@ int query_preflight(query* self, bool has_executed)
 		}
 	}
 
-	try_(op_reset(self));
+	try_(op_reset(self, has_executed));
 
 	/* need to reset all readers */
 	table* table_iter = vec_begin(self->sources);
@@ -572,16 +572,16 @@ int _query_resolve_table_variable(query* self, string* table_name)
  * object->schema->database->server
  * we ignore database and server for now.
  */
-int query_add_source(query* self, node** source_stack, const char* alias)
+int query_add_source(query* self,
+                     node** source_stack,
+                     const char* alias,
+                     bool is_variable)
 {
 	string table_name;
 	string_construct_take(&table_name, node_pop(source_stack));
 	char* schema_name = node_pop(source_stack);
 
-	bool is_variable = false;
-
-	if (*string_c_str(&table_name) == '@') {
-		is_variable = true;
+	if (is_variable) {
 		try_(_query_resolve_table_variable(self, &table_name));
 	}
 
@@ -813,15 +813,8 @@ int query_set_top_count(query* self, const char* count_str)
 	return FQL_GOOD;
 }
 
-int query_set_into_table(query* self, const char* table_name)
+int query_set_into_table_var(query* self, const char* table_name)
 {
-	if (*table_name != '@') {
-		//if (*table_name == '#') {
-		//	self->into_table_is_temp = true;
-		//}
-		self->into_table_name = table_name;
-		return FQL_GOOD;
-	}
 	self->into_table_var_idx =
 	        try_(scope_get_var_index(self->fqlref->_scope, table_name));
 	variable* table_var = vec_at(self->fqlref->variables, self->into_table_var_idx);
@@ -836,8 +829,15 @@ int query_set_into_table(query* self, const char* table_name)
 		return FQL_FAIL;
 	}
 
-	free_(table_name);
+	/* We do not own table_name here... */
+	//free_(table_name);
 
+	return FQL_GOOD;
+}
+
+int query_set_into_table(query* self, const char* table_name)
+{
+	self->into_table_name = table_name;
 	return FQL_GOOD;
 }
 
@@ -876,7 +876,7 @@ void query_exit_non_select_op(query* self)
 
 	node* fake_source_stack = NULL;
 	node_push(&fake_source_stack, table_name_dup);
-	query_add_source(self, &fake_source_stack, table_name_dup);
+	query_add_source(self, &fake_source_stack, table_name_dup, false);
 
 	/* query_add_source will free the stack and its data */
 }

@@ -46,6 +46,7 @@ class ListenerInterface : public TSqlParserBaseListener {
 	bool _on_asterisk = false;
 	bool _entering_block_stmt = false;
 	bool _exiting_block_stmt = false;
+	bool _is_table_variable = false;
 
 	void _set_failure();
 	void _no_impl(const std::string&, int);

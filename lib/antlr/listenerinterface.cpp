@@ -285,6 +285,12 @@ void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemCont
 {
 	_subquery = NULL;
 	if (ctx->LOCAL_ID()) {
+		/* Little hack here. If we have entered this branch, we have referenced
+		 * a variable as a table. I only support variables as tables (not schema).
+		 * Therefor, I can just check the most recent value of this variable as
+		 * opposed to the passing a variable along with this token.
+		 */
+		_is_table_variable = true;
 		char* token_copy = strdup(ctx->LOCAL_ID()->getText().c_str());
 		node_push(&_source_stack, token_copy);
 	}
@@ -292,7 +298,7 @@ void ListenerInterface::enterTable_source_item(TSqlParser::Table_source_itemCont
 void ListenerInterface::exitTable_source_item(TSqlParser::Table_source_itemContext * ctx)
 {
 	if (_subquery == NULL) {
-		if (query_add_source(_query, &_source_stack, _table_alias) == FQL_FAIL) {
+		if (query_add_source(_query, &_source_stack, _table_alias, _is_table_variable) == FQL_FAIL) {
 			_set_failure();
 		}
 	} else {
@@ -384,6 +390,13 @@ void ListenerInterface::exitExpression_list(TSqlParser::Expression_listContext *
 void ListenerInterface::enterTable_name(TSqlParser::Table_nameContext * ctx)
 {
 	if (_query->mode == MODE_INTO) {
+		/* Found a variable */
+		if (ctx->LOCAL_ID()) {
+			/* TODO (maybe): strdup LOCAL_ID?? */
+			if (query_set_into_table_var(_query, ctx->LOCAL_ID()->getText().c_str())) {
+				_set_failure();
+			}
+		}
 		_tok_type = TOK_INTO_TABLE;
 		return;
 	}
@@ -503,6 +516,7 @@ void ListenerInterface::enterId_(TSqlParser::Id_Context* ctx)
 		free_(token);
 		break;
 	case TOK_TABLE_SOURCE:
+		_is_table_variable = false;
 		node_push(&_source_stack, token);
 		break;
 	case TOK_TABLE_ALIAS:

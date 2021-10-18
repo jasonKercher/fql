@@ -955,12 +955,12 @@ table_source_item_joined
     ;
 
 table_source_item
-    : table_name_with_hint        as_table_alias?
+    : loc_id=LOCAL_ID             as_table_alias?
+    | table_name_with_hint        as_table_alias?
     | full_table_name             as_table_alias?
     | '(' derived_table ')'       (as_table_alias column_alias_list?)?
     | change_table                as_table_alias?
     | function_call               (as_table_alias column_alias_list?)?
-    | loc_id=LOCAL_ID             as_table_alias?
     | nodes_method                (as_table_alias column_alias_list?)?
     | loc_id_call=LOCAL_ID '.' loc_fcall=function_call (as_table_alias column_alias_list?)?
     | DOUBLE_COLON oldstyle_fcall=function_call       as_table_alias? // Build-in function (old syntax)
@@ -1261,7 +1261,8 @@ full_table_name
     ;
 
 table_name
-    : (database=id_ '.' (schema=id_)? '.' | schema=id_ '.')? table=id_
+    : loc_id=LOCAL_ID
+    | (database=id_ '.' (schema=id_)? '.' | schema=id_ '.')? table=id_
     | (database=id_ '.' (schema=id_)? '.' | schema=id_ '.')? blocking_hierarchy=BLOCKING_HIERARCHY
     ;
 

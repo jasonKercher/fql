@@ -257,6 +257,9 @@ void fql_set_print_plan(fqlhandle* fql, int print_plan)
 
 int fql_set_in_std(fqlhandle* fql, const char* std)
 {
+	if (std == NULL) {
+		return FQL_FAIL;
+	}
 	if (istring_eq(std, "ALL")) {
 		fql->props.in_std = QUOTE_ALL;
 	} else if (istring_eq(std, "WEAK")) {
@@ -277,6 +280,9 @@ int fql_set_in_std(fqlhandle* fql, const char* std)
 
 int fql_set_out_std(fqlhandle* fql, const char* std)
 {
+	if (std == NULL) {
+		return FQL_FAIL;
+	}
 	if (istring_eq(std, "ALL")) {
 		fql->props.out_std = QUOTE_ALL;
 	} else if (istring_eq(std, "WEAK")) {
@@ -297,17 +303,26 @@ int fql_set_out_std(fqlhandle* fql, const char* std)
 
 void fql_set_in_delim(fqlhandle* fql, const char* delim)
 {
+	if (delim == NULL) {
+		return;
+	}
 	strncpy_(fql->props.in_delim, delim, DELIM_LEN_MAX);
 }
 
 void fql_set_out_delim(fqlhandle* fql, const char* delim)
 {
+	if (delim == NULL) {
+		return;
+	}
 	strncpy_(fql->props.out_delim, delim, DELIM_LEN_MAX);
 	fql->_out_delim_set = true;
 }
 
 void fql_set_record_terminator(fqlhandle* fql, const char* term)
 {
+	if (term == NULL) {
+		return;
+	}
 	strncpy_(fql->props.rec_terminator, term, 32);
 }
 
@@ -360,11 +375,17 @@ void fql_set_strict_mode(fqlhandle* fql, int strictness)
 
 void fql_set_schema_path(fqlhandle* fql, const char* schema_path)
 {
+	if (schema_path == NULL) {
+		return;
+	}
 	string_strcpy(fql->props.schema_path, schema_path);
 }
 
 void fql_set_schema(fqlhandle* fql, const char* schema)
 {
+	if (schema == NULL) {
+		return;
+	}
 	string_strcpy(fql->props.schema, schema);
 }
 
@@ -397,6 +418,10 @@ void fql_set_allow_stdin(fqlhandle* fql, int allow_stdin)
 
 int fql_import_variable(fqlhandle* fql, const char* assign_expression)
 {
+	if (assign_expression == NULL) {
+		return FQL_FAIL;
+	}
+
 	/* skip leading space */
 	for (; isspace(*assign_expression); ++assign_expression)
 		;
