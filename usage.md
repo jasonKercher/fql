@@ -11,7 +11,7 @@ fql <<< "select 'hello world!'"
 fql hello.sql
 ```
 
-Personally, I prefer a here-doc especially for bigger queries.  It just looks cleaner, while still giving you access
+Personally, I prefer a here-doc (especially for bigger queries).  It just looks cleaner, while still giving you access
 to shell variables (if that is an option).
 ```sh
 fql <<FQL
@@ -63,6 +63,8 @@ FQL
 ```
 
 **Table Variables**
+
+SQL has table variables, but we really want to use table variables as strings since they are just file names.
 In order to achieve this behavior with your normal database, it would require dynamic SQL.  Something like the following:
 ```sql
 exec('select * from ' + QUOTENAME(@table_name) + ' where name like ''Jame%''')
@@ -82,6 +84,7 @@ Note: If a variable is used as a table, it must be defined on the command line o
 
 
 **Variable Types**
+
 Variables declared on the command line can be re-declared as a different type.  By default, they are a string (VARCHAR) type:
 ```sh
 fql -Dmin_limit=5 <<FQL
@@ -110,8 +113,8 @@ Assuming `select * from t1`, here is the priority list for matching files:
 RULE                   EXAMPLE MATCHES
 exact match            t1
 exact ignoring case    T1,t1
-ignore extension       t1.txt,t1.csv
-ignore extension/case  t1.txt,T1.csv
+ignore extension       t1.txt,t1.random
+ignore extension/case  t1.txt,T1.extension
 ```
 
 If the brackets are missing from a table name with an extension, the parser will
@@ -126,6 +129,7 @@ The default layout that fql expects is a delimited file with headers on the firs
 enough to give us the grades in the default layout. Imagine your standard csv file:
 
 **math_grades.csv**
+
 ```none
 id,name,grade
 1,Joe Shepard,55
@@ -138,6 +142,7 @@ make matters worse, she put a space in the file name...
 A pre-installed schema that should install with fql called "noheader" can handle this for us.
 
 **art grades.txt**
+
 ```none
 1       Joe Shepard     61
 2       John Davidson   77
