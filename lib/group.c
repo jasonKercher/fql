@@ -69,7 +69,7 @@ void group_add_expression(group* self, expression* expr)
 {
 	expr->index = self->expressions.size;
 	vec_push_back(&self->expressions, &expr);
-	if (expr->expr != EXPR_AGGREGATE) {
+	if (expr->expr != EXPR_AGGREGATE && expr->expr != EXPR_ROW_NUMBER) {
 		vec_add_one(&self->_composite);
 	}
 }
@@ -119,7 +119,8 @@ int group_record(group* self, node* rg)
 	stringview* sv = vec_begin(&self->_composite);
 	unsigned i = 0;
 	for (; i < self->expressions.size; ++i) {
-		if (exprs[i]->expr == EXPR_AGGREGATE) {
+		if (exprs[i]->expr == EXPR_AGGREGATE
+		    || exprs[i]->expr == EXPR_ROW_NUMBER) {
 			continue;
 		}
 		switch (exprs[i]->field_type) {
@@ -203,6 +204,11 @@ int group_dump_record(group* self, record* rec)
 		if (group_exprs[i]->expr == EXPR_AGGREGATE) {
 			string* s = record_generate_groupby_string(rec);
 			_read_aggregate(group_exprs[i], s, &rec_svs[i], self->_dump_idx);
+			continue;
+		}
+		if (group_exprs[i]->expr == EXPR_ROW_NUMBER) {
+			string* s = record_generate_groupby_string(rec);
+			string_sprintf(s, "%lu", idx + 1);
 			continue;
 		}
 		rec_svs[i] = flex_pair_at(&self->group_data, idx++);
