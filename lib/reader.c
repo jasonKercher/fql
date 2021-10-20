@@ -149,7 +149,8 @@ int reader_start_file_backed_input(reader* self)
 
 int reader_stop_file_backed_input(reader* self)
 {
-	fclose(self->random_access_file);
+	// Should close on csv_writer_free
+	//fclose(self->random_access_file);
 	self->random_access_file = NULL;
 	return FQL_GOOD;
 }

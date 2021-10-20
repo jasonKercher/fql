@@ -47,7 +47,9 @@ void fqlsig_cleanexit()
 	/* The -1 here tells the libcsv sig handler not
 	 * to call exit(), so we can clean up here too.
 	 */
-	libcsv_action__(-1);
+	if (libcsv_action__ != NULL) {
+		libcsv_action__(-1);
+	}
 	fqlsig_tmp_removeall();
 	exit(EXIT_FAILURE);
 }

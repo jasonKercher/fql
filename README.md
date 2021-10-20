@@ -19,6 +19,10 @@ Keep in mind that memory consumption increases for things like GROUP BY, ORDER B
 and JOIN. Queries are case insensitive so `SELECT * FROM T1 WHERE FOO = 'BAR'` is
 the same as `select * from t1 where foo = 'bar'`.
 
+
+![fqlgif](https://raw.githubusercontent.com/jasonKercher/fql/master/fql.gif)
+
+
 ### What can it *not* do?
 
 - windowed-functions (like RANK)
@@ -31,6 +35,7 @@ the same as `select * from t1 where foo = 'bar'`.
 - UNION without ALL
 - PIVOT/UNPIVOT
 - Implicit UPDATE/DELETE into subqueries
+- UPDATE/DELETE TOP (...)
 
 Most recent and possibly unstable feature(s):
 - fql --thread (-t)
