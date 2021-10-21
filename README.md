@@ -20,7 +20,7 @@ and JOIN. Queries are case insensitive so `SELECT * FROM T1 WHERE FOO = 'BAR'` i
 the same as `select * from t1 where foo = 'bar'`.
 
 
-![fql_example](https://raw.githubusercontent.com/jasonKercher/fql/master/fql.mp4)
+![fql_example](https://raw.githubusercontent.com/jasonKercher/fql/master/fql.gif)
 
 
 ### What can it *not* do?
