@@ -440,8 +440,13 @@ void ListenerInterface::exitFull_column_name(TSqlParser::Full_column_nameContext
 void ListenerInterface::enterConstant(TSqlParser::ConstantContext * ctx)
 {
 	std::string new_str = ctx->getText();
-	if (new_str[0] == '\'' && new_str.length() > 2) {
+	if (new_str[0] == '\'') {
+		_trim_end_chars(new_str, '\'', '\'');
 		_find_replace(new_str, "''", "'");
+		if (query_add_constant_string(_query, new_str.c_str(), new_str.length())) {
+			_set_failure();
+		}
+		return;
 	}
 	if (query_add_constant(_query, new_str.c_str(), new_str.length())) {
 		_set_failure();

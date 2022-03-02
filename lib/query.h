@@ -215,6 +215,7 @@ void query_set_variable_idx(struct query*, int);
 int query_add_variable_expression(struct query*, const char*);
 
 /* expressions */
+int query_add_constant_string(struct query*, const char*, int);
 int query_add_constant(struct query*, const char*, int);
 int query_add_null_expression(struct query*);
 int query_add_expression(struct query*, char*, const char* table);

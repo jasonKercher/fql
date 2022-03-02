@@ -352,26 +352,31 @@ int query_add_variable_expression(query* self, const char* varname)
 	return _add_variable_expression_by_index(self, idx);
 }
 
+int query_add_constant_string(query* self, const char* s, int len)
+{
+	expression* expr = new_(expression, EXPR_CONST, NULL, "");
+
+	string_strcpy(&expr->buf, s);
+	expr->field.s = &expr->buf;
+	expr->field_type = FIELD_STRING;
+	try_(_distribute_expression(self, expr));
+
+	return FQL_GOOD;
+}
+
+
 /** expressions **/
 int query_add_constant(query* self, const char* s, int len)
 {
 	expression* expr = new_(expression, EXPR_CONST, NULL, "");
 
 	enum field_type type = FIELD_UNDEFINED;
-	if (s[0] == '\'') {
-		type = FIELD_STRING;
-		string_strcpy(&expr->buf, s + 1);
-		((char*)expr->buf.data)[len - 2] = '\0';
-		--expr->buf.size;
-		expr->field.s = &expr->buf;
+	if (strhaschar(s, '.')) {
+		type = FIELD_FLOAT;
+		fail_if_(str2double(&expr->field.f, s));
 	} else {
-		if (strhaschar(s, '.')) {
-			type = FIELD_FLOAT;
-			fail_if_(str2double(&expr->field.f, s));
-		} else {
-			type = FIELD_INT;
-			fail_if_(str2long(&expr->field.i, s));
-		}
+		type = FIELD_INT;
+		fail_if_(str2long(&expr->field.i, s));
 	}
 
 	expr->field_type = type;
