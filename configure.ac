@@ -1,4 +1,4 @@
-AC_INIT([fql], [1.1])
+AC_INIT([fql], [1.2.0])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE([foreign -Wall -Werror])

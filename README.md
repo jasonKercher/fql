@@ -4,7 +4,7 @@
 | |_     / _` |    | |
 |  _|ile| (_| |uery| |anguage
 |_|      \__, |    |_|
-            |_|     
+            |_|
 ```
 This is an [ANTLR](https://www.antlr.org/) powered text processing language for Linux.
 Similar in spirit to awk which uses a C-like syntax, fql uses SQL (T-SQL specifically).
@@ -155,10 +155,10 @@ These headers are installed at `${PREFIX}/include/antlr4-runtime` where `$PREFIX
 the antlr4-runtime. So we need to set ANTLR4_CPATH (`ANTLR4_CPATH=${PREFIX}/include`) Rather than searching
 for it manually, you can use the find_antlr_cpath.sh script to find it for you:
 ```sh
-ANTLR4_CPATH=$(./find_antlr_cpath.sh) ./configure
+./configure
+ANTLR4_CPATH=$(./find_antlr_cpath.sh) make
 # Or if you know what it is...
-ANTLR4_CPATH=/usr/lib ./configure
-make
+ANTLR4_CPATH=/usr/lib make
 make check   # optional
 make install
 ```
