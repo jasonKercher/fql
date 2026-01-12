@@ -42,8 +42,9 @@ void fqlsig_init_sig()
 	_signals_ready = true;
 }
 
-void fqlsig_cleanexit()
+void fqlsig_cleanexit(int signo)
 {
+	(void)signo;
 	/* The -1 here tells the libcsv sig handler not
 	 * to call exit(), so we can clean up here too.
 	 */

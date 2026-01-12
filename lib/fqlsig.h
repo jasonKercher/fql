@@ -14,7 +14,7 @@ void fqlsig_init_sig();
  * This function simply removes any temporary files
  * in the event of an error or SIGxxx detected.
  */
-void fqlsig_cleanexit();
+void fqlsig_cleanexit(int signo);
 
 /**
  * Add temp file
